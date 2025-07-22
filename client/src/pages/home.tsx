@@ -47,7 +47,7 @@ export default function Home() {
                 주문하기
               </button>
               <Link href="/order-lookup">
-                <Button variant="ghost" className="text-eden-brown hover:text-eden-dark">
+                <Button variant="ghost" className="text-eden-brown hover:text-eden-dark text-[16px]">
                   주문 조회
                 </Button>
               </Link>
