@@ -46,6 +46,11 @@ export default function Home() {
               >
                 주문하기
               </button>
+              <Link href="/order-lookup">
+                <Button variant="ghost" className="text-eden-brown hover:text-eden-dark">
+                  주문 조회
+                </Button>
+              </Link>
               <Link href="/admin">
                 <Button variant="ghost" className="text-eden-red hover:text-eden-brown">
                   관리자
