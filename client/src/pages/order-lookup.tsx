@@ -216,7 +216,6 @@ export default function OrderLookup() {
               </Card>
             ) : (
               orders.map((order) => {
-                const trackingInfo = getTrackingInfo(order);
                 return (
                   <Card key={order.id} className="border border-gray-200">
                     <CardHeader>
