@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { Box, User, ShoppingCart } from "lucide-react";
@@ -36,6 +36,7 @@ const prices = {
 
 export default function OrderForm() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [totalAmount, setTotalAmount] = useState(15000);
 
   const form = useForm<OrderFormData>({
@@ -56,6 +57,8 @@ export default function OrderForm() {
   const createOrderMutation = useMutation({
     mutationFn: api.orders.create,
     onSuccess: (order) => {
+      // Invalidate orders cache so admin panel updates
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({
         title: "주문 완료",
         description: `주문번호 ${order.orderNumber}로 접수되었습니다. 감사합니다!`,

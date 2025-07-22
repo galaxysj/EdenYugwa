@@ -39,6 +39,8 @@ export default function Admin() {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['/api/orders'],
     queryFn: () => api.orders.getAll(),
+    refetchInterval: 5000, // Refetch every 5 seconds
+    refetchIntervalInBackground: true,
   });
 
   const updateStatusMutation = useMutation({
