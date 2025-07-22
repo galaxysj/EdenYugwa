@@ -94,67 +94,69 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-eden-cream">
       {/* Header */}
-      <div className="bg-eden-red text-white p-6">
-        <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <Link href="/">
-              <Button variant="ghost" className="text-white hover:text-gray-200">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                홈으로
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold font-korean">
-              <Settings className="inline mr-3 h-6 w-6" />
-              관리자 패널
-            </h1>
+      <div className="bg-eden-red text-white p-4 sm:p-6">
+        <div className="container mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/">
+                <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
+                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">홈으로</span>
+                </Button>
+              </Link>
+              <h1 className="text-lg sm:text-2xl font-bold font-korean">
+                <Settings className="inline mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+                관리자 패널
+              </h1>
+            </div>
+            <Button 
+              onClick={handleLogout}
+              variant="ghost" 
+              className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+            >
+              <LogOut className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">로그아웃</span>
+            </Button>
           </div>
-          <Button 
-            onClick={handleLogout}
-            variant="ghost" 
-            className="text-white hover:text-gray-200"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            로그아웃
-          </Button>
         </div>
       </div>
 
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-4 sm:p-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-              <div className="text-sm text-gray-600">총 주문</div>
+            <CardContent className="p-2 sm:p-4 text-center">
+              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.total}</div>
+              <div className="text-xs sm:text-sm text-gray-600">총 주문</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center bg-yellow-50">
-              <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <div className="text-sm text-gray-600">주문 접수</div>
+            <CardContent className="p-2 sm:p-4 text-center bg-yellow-50">
+              <div className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending}</div>
+              <div className="text-xs sm:text-sm text-gray-600">주문 접수</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center bg-blue-50">
-              <div className="text-2xl font-bold text-blue-600">{stats.preparing}</div>
-              <div className="text-sm text-gray-600">제작 중</div>
+            <CardContent className="p-2 sm:p-4 text-center bg-blue-50">
+              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.preparing}</div>
+              <div className="text-xs sm:text-sm text-gray-600">제작 중</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center bg-orange-50">
-              <div className="text-2xl font-bold text-orange-600">{stats.shipping}</div>
-              <div className="text-sm text-gray-600">배송 중</div>
+            <CardContent className="p-2 sm:p-4 text-center bg-orange-50">
+              <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.shipping}</div>
+              <div className="text-xs sm:text-sm text-gray-600">배송 중</div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center bg-green-50">
-              <div className="text-2xl font-bold text-green-600">{stats.delivered}</div>
-              <div className="text-sm text-gray-600">배송 완료</div>
+            <CardContent className="p-2 sm:p-4 text-center bg-green-50">
+              <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.delivered}</div>
+              <div className="text-xs sm:text-sm text-gray-600">배송 완료</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Orders Table */}
+        {/* Orders List */}
         <Card>
           <CardHeader>
             <CardTitle className="font-korean">주문 목록</CardTitle>
@@ -165,111 +167,208 @@ export default function Admin() {
                 아직 주문이 없습니다.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">고객정보</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">상태</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => {
-                      const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
-                      return (
-                        <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-4 px-4">
-                            <div className="font-medium text-gray-900">#{order.orderNumber}</div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(order.createdAt).toLocaleDateString()}
+              <>
+                {/* Desktop Table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객정보</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">상태</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((order) => {
+                        const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+                        return (
+                          <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-4 px-4">
+                              <div className="font-medium text-gray-900">#{order.orderNumber}</div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="font-medium text-gray-900">{order.customerName}</div>
+                              <div className="text-sm text-gray-500">{order.customerPhone}</div>
+                              <div className="text-xs text-gray-500 truncate max-w-xs">
+                                {order.address1} {order.address2}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-sm text-gray-900">
+                                {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {order.hasWrapping === 'yes' ? '보자기 포장' : '보자기 없음'}
+                              </div>
+                            </td>
+                            <td className="py-4 px-4 font-medium text-gray-900">
+                              {formatPrice(order.totalAmount)}
+                            </td>
+                            <td className="py-4 px-4">
+                              <Select
+                                value={order.status}
+                                onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                                disabled={updateStatusMutation.isPending}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">
+                                    <div className="flex items-center space-x-2">
+                                      <Clock className="h-4 w-4" />
+                                      <span>주문 접수</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="preparing">
+                                    <div className="flex items-center space-x-2">
+                                      <Package className="h-4 w-4" />
+                                      <span>제작 중</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="shipping">
+                                    <div className="flex items-center space-x-2">
+                                      <Truck className="h-4 w-4" />
+                                      <span>배송 중</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="delivered">
+                                    <div className="flex items-center space-x-2">
+                                      <CheckCircle className="h-4 w-4" />
+                                      <span>배송 완료</span>
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="flex space-x-1">
+                                <SmsDialog order={order} />
+                                <SmsHistory order={order} />
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    // TODO: Implement order detail modal
+                                    toast({
+                                      title: "주문 상세",
+                                      description: `${order.orderNumber} 주문 상세보기 기능은 추후 구현될 예정입니다.`,
+                                    });
+                                  }}
+                                  className="h-8 text-xs"
+                                >
+                                  <Eye className="mr-1 h-3 w-3" />
+                                  상세
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="lg:hidden space-y-4">
+                  {orders.map((order) => {
+                    const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+                    return (
+                      <Card key={order.id} className="border border-gray-200">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
+                              <div className="text-sm text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                              </div>
                             </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="font-medium text-gray-900">{order.customerName}</div>
-                            <div className="text-sm text-gray-500">{order.customerPhone}</div>
-                            <div className="text-xs text-gray-500 truncate max-w-xs">
-                              {order.address1} {order.address2}
+                            <div className="text-right">
+                              <div className="font-bold text-lg text-eden-brown">
+                                {formatPrice(order.totalAmount)}
+                              </div>
                             </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="text-sm text-gray-900">
-                              {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                          </div>
+
+                          <div className="space-y-2 mb-4">
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">고객: </span>
+                              <span className="text-sm text-gray-900">{order.customerName}</span>
                             </div>
-                            <div className="text-xs text-gray-500">
-                              {order.hasWrapping === 'yes' ? '보자기 포장' : '보자기 없음'}
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">연락처: </span>
+                              <span className="text-sm text-gray-900">{order.customerPhone}</span>
                             </div>
-                          </td>
-                          <td className="py-4 px-4 font-medium text-gray-900">
-                            {formatPrice(order.totalAmount)}
-                          </td>
-                          <td className="py-4 px-4">
-                            <Select
-                              value={order.status}
-                              onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                              disabled={updateStatusMutation.isPending}
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">
-                                  <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4" />
-                                    <span>주문 접수</span>
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="preparing">
-                                  <div className="flex items-center space-x-2">
-                                    <Package className="h-4 w-4" />
-                                    <span>제작 중</span>
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="shipping">
-                                  <div className="flex items-center space-x-2">
-                                    <Truck className="h-4 w-4" />
-                                    <span>배송 중</span>
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="delivered">
-                                  <div className="flex items-center space-x-2">
-                                    <CheckCircle className="h-4 w-4" />
-                                    <span>배송 완료</span>
-                                  </div>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </td>
-                          <td className="py-4 px-4">
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">상품: </span>
+                              <span className="text-sm text-gray-900">
+                                {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                                {order.hasWrapping === 'yes' && ' (보자기 포장)'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">배송지: </span>
+                              <span className="text-sm text-gray-900">
+                                {order.address1} {order.address2}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <div className="flex-1 mr-2">
+                              <Select
+                                value={order.status}
+                                onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                                disabled={updateStatusMutation.isPending}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">
+                                    <div className="flex items-center space-x-2">
+                                      <Clock className="h-4 w-4" />
+                                      <span>주문 접수</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="preparing">
+                                    <div className="flex items-center space-x-2">
+                                      <Package className="h-4 w-4" />
+                                      <span>제작 중</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="shipping">
+                                    <div className="flex items-center space-x-2">
+                                      <Truck className="h-4 w-4" />
+                                      <span>배송 중</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="delivered">
+                                    <div className="flex items-center space-x-2">
+                                      <CheckCircle className="h-4 w-4" />
+                                      <span>배송 완료</span>
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                             <div className="flex space-x-1">
                               <SmsDialog order={order} />
                               <SmsHistory order={order} />
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  // TODO: Implement order detail modal
-                                  toast({
-                                    title: "주문 상세",
-                                    description: `${order.orderNumber} 주문 상세보기 기능은 추후 구현될 예정입니다.`,
-                                  });
-                                }}
-                                className="h-8 text-xs"
-                              >
-                                <Eye className="mr-1 h-3 w-3" />
-                                상세
-                              </Button>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
