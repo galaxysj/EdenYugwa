@@ -347,27 +347,14 @@ export default function OrderForm() {
                   )}
                 />
 
-                <div className="space-y-3">
-                  <Button 
-                    type="submit" 
-                    disabled={createOrderMutation.isPending}
-                    className="w-full bg-eden-brown text-white py-4 font-semibold text-lg hover:bg-eden-dark transition-colors"
-                  >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    {createOrderMutation.isPending ? "주문 처리 중..." : "주문하기"}
-                  </Button>
-                  
-                  <Link href="/order-lookup">
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      className="w-full border-2 border-eden-brown text-eden-brown py-4 font-semibold text-lg hover:bg-eden-brown hover:text-white transition-colors"
-                    >
-                      <Search className="mr-2 h-5 w-5" />
-                      주문 조회하기
-                    </Button>
-                  </Link>
-                </div>
+                <Button 
+                  type="submit" 
+                  disabled={createOrderMutation.isPending}
+                  className="w-full bg-eden-brown text-white py-4 font-semibold text-lg hover:bg-eden-dark transition-colors"
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  {createOrderMutation.isPending ? "주문 처리 중..." : "주문하기"}
+                </Button>
               </form>
             </Form>
           </CardContent>
