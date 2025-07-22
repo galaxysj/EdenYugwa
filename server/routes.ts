@@ -89,6 +89,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lookup orders by phone number
+  app.get("/api/orders/lookup", async (req, res) => {
+    try {
+      const { phone } = req.query;
+      
+      if (!phone || typeof phone !== 'string') {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const orders = await storage.getOrdersByPhone(phone);
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to lookup orders" });
+    }
+  });
+
+  // Update order (for customer edits)
+  app.patch("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const order = await storage.getOrder(id);
+      
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // Only allow editing if order is still pending and payment not confirmed
+      if (order.status !== 'pending' || order.paymentStatus !== 'pending') {
+        return res.status(400).json({ message: "Order cannot be modified at this stage" });
+      }
+      
+      const validatedData = insertOrderSchema.parse(req.body);
+      const updatedOrder = await storage.updateOrder(id, validatedData);
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to update order" });
+      }
+    }
+  });
+
   // Send SMS notification
   app.post("/api/sms/send", async (req, res) => {
     try {

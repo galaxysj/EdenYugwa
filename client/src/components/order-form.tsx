@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { Box, User, ShoppingCart } from "lucide-react";
+import { Box, User, ShoppingCart, Search } from "lucide-react";
 
 const orderSchema = z.object({
   customerName: z.string().min(1, "이름을 입력해주세요"),
@@ -346,14 +347,27 @@ export default function OrderForm() {
                   )}
                 />
 
-                <Button 
-                  type="submit" 
-                  disabled={createOrderMutation.isPending}
-                  className="w-full bg-eden-brown text-white py-4 font-semibold text-lg hover:bg-eden-dark transition-colors"
-                >
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  {createOrderMutation.isPending ? "주문 처리 중..." : "주문하기"}
-                </Button>
+                <div className="space-y-3">
+                  <Button 
+                    type="submit" 
+                    disabled={createOrderMutation.isPending}
+                    className="w-full bg-eden-brown text-white py-4 font-semibold text-lg hover:bg-eden-dark transition-colors"
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    {createOrderMutation.isPending ? "주문 처리 중..." : "주문하기"}
+                  </Button>
+                  
+                  <Link href="/order-lookup">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="w-full border-2 border-eden-brown text-eden-brown py-4 font-semibold text-lg hover:bg-eden-brown hover:text-white transition-colors"
+                    >
+                      <Search className="mr-2 h-5 w-5" />
+                      주문 조회하기
+                    </Button>
+                  </Link>
+                </div>
               </form>
             </Form>
           </CardContent>

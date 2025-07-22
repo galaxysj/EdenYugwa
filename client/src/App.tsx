@@ -7,6 +7,8 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Admin from "@/pages/admin";
 import Login from "@/pages/login";
+import OrderLookup from "@/pages/order-lookup";
+import OrderEdit from "@/pages/order-edit";
 import { ProtectedRoute } from "@/components/protected-route";
 
 function Router() {
@@ -19,6 +21,8 @@ function Router() {
           <Admin />
         </ProtectedRoute>
       </Route>
+      <Route path="/order-lookup" component={OrderLookup} />
+      <Route path="/order-edit/:id" component={OrderEdit} />
       <Route component={NotFound} />
     </Switch>
   );

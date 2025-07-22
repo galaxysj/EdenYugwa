@@ -1,40 +1,33 @@
-import { apiRequest } from "./queryClient";
-import type { InsertOrder, Order } from "@shared/schema";
+import { apiRequest } from './queryClient';
 
 export const api = {
-  // Orders
   orders: {
-    create: async (order: InsertOrder): Promise<Order> => {
-      const response = await apiRequest("POST", "/api/orders", order);
-      return response.json();
-    },
-    
-    getAll: async (): Promise<Order[]> => {
-      const response = await apiRequest("GET", "/api/orders");
-      return response.json();
-    },
-    
-    getById: async (id: number): Promise<Order> => {
-      const response = await apiRequest("GET", `/api/orders/${id}`);
-      return response.json();
-    },
-    
-    updateStatus: async (id: number, status: string): Promise<Order> => {
-      const response = await apiRequest("PATCH", `/api/orders/${id}/status`, { status });
-      return response.json();
-    },
-    
-    updatePaymentStatus: async (id: number, paymentStatus: string): Promise<Order> => {
-      const response = await apiRequest("PATCH", `/api/orders/${id}/payment`, { paymentStatus });
-      return response.json();
-    },
+    create: (data: any) => apiRequest('/api/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    updateStatus: (id: number, status: string) => apiRequest(`/api/orders/${id}/status`, {
+      method: 'PATCH', 
+      body: JSON.stringify({ status }),
+    }),
+    updatePaymentStatus: (id: number, paymentStatus: string) => apiRequest(`/api/orders/${id}/payment`, {
+      method: 'PATCH',
+      body: JSON.stringify({ paymentStatus }),
+    }),
   },
-  
-  // SMS
   sms: {
-    send: async (data: { orderId: number; phoneNumber: string; message: string }) => {
-      const response = await apiRequest("POST", "/api/sms/send", data);
-      return response.json();
-    },
+    send: (data: { orderId: number; phoneNumber: string; message: string }) => 
+      apiRequest('/api/sms/send', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+  },
+  admin: {
+    login: (credentials: { username: string; password: string }) =>
+      apiRequest('/api/admin/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      }),
+    check: () => apiRequest('/api/admin/check'),
   },
 };
