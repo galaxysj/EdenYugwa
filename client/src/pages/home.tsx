@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info } from "lucide-react";
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160409387.png";
+import edenHangwaImage2 from "@assets/image_1753160530604.png";
 
 export default function Home() {
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -157,7 +158,7 @@ export default function Home() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <img 
-                  src="https://pixabay.com/get/g7fd5b9332259def811822182a2de47b2fc2258acc9d038d2a56e99d885ad6719a5ae3ad311adf2d59c25f70d7b31e32622aa9a3748e131f0e09c0ac697e33c20_1280.jpg" 
+                  src={edenHangwaImage2} 
                   alt="전통 한과 재료" 
                   className="rounded-xl shadow-lg w-full"
                 />
