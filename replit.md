@@ -31,7 +31,7 @@ The application follows a modern full-stack architecture with clear separation b
 - **Framework**: Express.js with TypeScript
 - **API Style**: RESTful endpoints under `/api` prefix
 - **Middleware**: Request logging, JSON parsing, error handling
-- **Storage**: Abstracted storage interface with in-memory implementation (ready for database integration)
+- **Storage**: PostgreSQL database with Drizzle ORM for persistent data storage
 - **Validation**: Zod schemas for request validation
 
 ### Database Schema
@@ -101,7 +101,7 @@ Using Drizzle ORM with PostgreSQL:
 
 **Drizzle ORM Choice**: Selected for type safety, PostgreSQL compatibility, and excellent TypeScript integration. Provides schema-first approach with automatic type generation.
 
-**In-Memory Storage Pattern**: Implemented storage abstraction to allow easy transition from development (in-memory) to production (PostgreSQL) without code changes.
+**Database Integration**: Migrated from in-memory storage to PostgreSQL with Drizzle ORM for persistent data storage across sessions and deployments.
 
 **shadcn/ui Components**: Chosen for consistent design system, accessibility compliance, and customizable Tailwind CSS integration.
 
