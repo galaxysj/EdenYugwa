@@ -219,7 +219,7 @@ export default function Admin() {
                           <td className="py-4 px-4">
                             <div className="font-medium text-gray-900">#{order.orderNumber}</div>
                             <div className="text-xs text-gray-500">
-                              {order.createdAt.toLocaleDateString()}
+                              {new Date(order.createdAt).toLocaleDateString()}
                             </div>
                           </td>
                           <td className="py-4 px-4">
