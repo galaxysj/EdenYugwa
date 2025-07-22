@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, MessageSquare, Eye, LogOut } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut } from "lucide-react";
+import { SmsDialog } from "@/components/sms-dialog";
+import { SmsHistory } from "@/components/sms-history";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
@@ -62,44 +64,8 @@ export default function Admin() {
     },
   });
 
-  const sendSMSMutation = useMutation({
-    mutationFn: api.sms.send,
-    onSuccess: () => {
-      toast({
-        title: "SMS 발송 완료",
-        description: "고객에게 SMS가 성공적으로 발송되었습니다.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "SMS 발송 실패",
-        description: "SMS 발송 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
-  };
-
-  const handleSendSMS = (order: Order) => {
-    const statusMessage = getStatusMessage(order.status);
-    sendSMSMutation.mutate({
-      orderId: order.id,
-      phoneNumber: order.customerPhone,
-      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${statusMessage}`,
-    });
-  };
-
-  const getStatusMessage = (status: string) => {
-    const messages = {
-      pending: "주문이 접수되었습니다.",
-      preparing: "상품을 준비 중입니다.",
-      shipping: "상품이 배송 중입니다.",
-      delivered: "상품이 배송 완료되었습니다.",
-    };
-    return messages[status as keyof typeof messages] || "상태가 업데이트되었습니다.";
   };
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
@@ -278,16 +244,9 @@ export default function Admin() {
                             </Select>
                           </td>
                           <td className="py-4 px-4">
-                            <div className="flex space-x-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleSendSMS(order)}
-                                disabled={sendSMSMutation.isPending}
-                                className="bg-green-500 hover:bg-green-600"
-                              >
-                                <MessageSquare className="h-4 w-4 mr-1" />
-                                SMS
-                              </Button>
+                            <div className="flex space-x-1">
+                              <SmsDialog order={order} />
+                              <SmsHistory order={order} />
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -298,8 +257,9 @@ export default function Admin() {
                                     description: `${order.orderNumber} 주문 상세보기 기능은 추후 구현될 예정입니다.`,
                                   });
                                 }}
+                                className="h-8 text-xs"
                               >
-                                <Eye className="h-4 w-4 mr-1" />
+                                <Eye className="mr-1 h-3 w-3" />
                                 상세
                               </Button>
                             </div>
