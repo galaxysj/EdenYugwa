@@ -49,6 +49,7 @@ export default function OrderLookup() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [expandedDelivery, setExpandedDelivery] = useState<number | null>(null);
   const { toast } = useToast();
 
   const form = useForm<LookupFormData>({
@@ -60,27 +61,33 @@ export default function OrderLookup() {
 
   const onSubmit = async (data: LookupFormData) => {
     setIsLoading(true);
+    setExpandedDelivery(null); // 새 검색 시 배송 정보 접기
     try {
       const response = await fetch(`/api/orders/lookup?phone=${encodeURIComponent(data.phoneNumber)}`);
+      
+      if (response.status === 404) {
+        // 404인 경우 주문 내역이 없음
+        setOrders([]);
+        setHasSearched(true);
+        return;
+      }
+      
       if (!response.ok) {
         throw new Error('주문 조회에 실패했습니다');
       }
+      
       const foundOrders = await response.json();
       setOrders(foundOrders);
       setHasSearched(true);
       
-      if (foundOrders.length === 0) {
-        toast({
-          title: "주문 없음",
-          description: "해당 전화번호로 등록된 주문이 없습니다.",
-        });
-      }
     } catch (error) {
       toast({
         title: "조회 실패",
         description: "주문 조회 중 오류가 발생했습니다.",
         variant: "destructive",
       });
+      setOrders([]);
+      setHasSearched(false);
     } finally {
       setIsLoading(false);
     }
@@ -208,10 +215,17 @@ export default function OrderLookup() {
         {hasSearched && (
           <div className="space-y-6">
             {orders.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <Package className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-                  <p className="text-gray-500">해당 전화번호로 등록된 주문이 없습니다.</p>
+              <Card className="border-2 border-dashed border-gray-300">
+                <CardContent className="p-12 text-center">
+                  <Package className="mx-auto h-16 w-16 text-gray-300 mb-6" />
+                  <h3 className="text-xl font-semibold text-gray-700 mb-3">주문 내역이 없습니다</h3>
+                  <p className="text-gray-500 mb-4">
+                    입력하신 전화번호로 등록된 주문을 찾을 수 없습니다.
+                  </p>
+                  <div className="text-sm text-gray-400 space-y-1">
+                    <p>• 전화번호를 정확히 입력했는지 확인해 주세요</p>
+                    <p>• 주문 시 사용한 번호와 동일한지 확인해 주세요</p>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -308,8 +322,8 @@ export default function OrderLookup() {
                         </div>
                       </div>
 
-                      {/* Delivery Status */}
-                      {(() => {
+                      {/* Delivery Status - Shows only when expanded */}
+                      {expandedDelivery === order.id && (() => {
                         const deliveryInfo = getDeliveryStatus(order);
                         if (!deliveryInfo) return null;
                         
@@ -394,6 +408,20 @@ export default function OrderLookup() {
                             </Button>
                           </Link>
                         )}
+                        
+                        {/* Delivery Info Toggle Button */}
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            setExpandedDelivery(expandedDelivery === order.id ? null : order.id);
+                          }}
+                        >
+                          <Truck className="mr-2 h-4 w-4" />
+                          {expandedDelivery === order.id ? '배송 정보 닫기' : '배송 조회'}
+                        </Button>
+                        
+                        {/* External Tracking Link for shipped orders */}
                         {(() => {
                           const deliveryInfo = getDeliveryStatus(order);
                           return deliveryInfo?.trackingAvailable && (
@@ -401,7 +429,7 @@ export default function OrderLookup() {
                               window.open(`https://www.cjlogistics.com/ko/tool/parcel/tracking?paramInvc=${deliveryInfo.trackingNumber}`, '_blank');
                             }}>
                               <Truck className="mr-2 h-4 w-4" />
-                              배송 추적
+                              택배사 추적
                             </Button>
                           );
                         })()}
