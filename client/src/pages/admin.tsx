@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, MessageSquare, Eye } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, MessageSquare, Eye, LogOut } from "lucide-react";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
@@ -26,6 +26,15 @@ const statusIcons = {
 export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+
+  const handleLogout = () => {
+    toast({
+      title: "로그아웃",
+      description: "관리자 페이지에서 로그아웃되었습니다.",
+    });
+    setLocation("/admin/login");
+  };
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['/api/orders'],
@@ -131,6 +140,14 @@ export default function Admin() {
               관리자 패널
             </h1>
           </div>
+          <Button 
+            onClick={handleLogout}
+            variant="ghost" 
+            className="text-white hover:text-gray-200"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            로그아웃
+          </Button>
         </div>
       </div>
 

@@ -107,6 +107,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin login
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "아이디와 비밀번호를 모두 입력해주세요" });
+      }
+      
+      const admin = await storage.getAdminByUsername(username);
+      
+      if (!admin || admin.password !== password) {
+        return res.status(401).json({ message: "아이디나 비밀번호가 틀렸습니다" });
+      }
+      
+      // In a real app, you would use proper session management or JWT
+      res.json({ 
+        success: true, 
+        message: "로그인 성공",
+        admin: {
+          id: admin.id,
+          username: admin.username
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+    }
+  });
+
+  // Check admin authentication status
+  app.get("/api/admin/check", async (req, res) => {
+    // Simple check - in a real app you would validate JWT or session
+    res.json({ authenticated: true });
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

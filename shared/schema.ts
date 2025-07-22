@@ -44,3 +44,19 @@ export const insertSmsNotificationSchema = createInsertSchema(smsNotifications).
 
 export type InsertSmsNotification = z.infer<typeof insertSmsNotificationSchema>;
 export type SmsNotification = typeof smsNotifications.$inferSelect;
+
+// Admin authentication schema
+export const admins = pgTable("admins", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertAdminSchema = createInsertSchema(admins).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAdmin = z.infer<typeof insertAdminSchema>;
+export type Admin = typeof admins.$inferSelect;

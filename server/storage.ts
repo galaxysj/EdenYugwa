@@ -1,4 +1,4 @@
-import { orders, smsNotifications, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification } from "@shared/schema";
+import { orders, smsNotifications, admins, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin } from "@shared/schema";
 
 export interface IStorage {
   // Order management
@@ -11,21 +11,35 @@ export interface IStorage {
   // SMS notifications
   createSmsNotification(notification: InsertSmsNotification): Promise<SmsNotification>;
   getSmsNotificationsByOrderId(orderId: number): Promise<SmsNotification[]>;
+
+  // Admin authentication
+  getAdminByUsername(username: string): Promise<Admin | undefined>;
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
 }
 
 export class MemStorage implements IStorage {
   private orders: Map<number, Order>;
   private smsNotifications: Map<number, SmsNotification>;
+  private admins: Map<number, Admin>;
   private currentOrderId: number;
   private currentSmsId: number;
+  private currentAdminId: number;
   private orderCounter: number;
 
   constructor() {
     this.orders = new Map();
     this.smsNotifications = new Map();
+    this.admins = new Map();
     this.currentOrderId = 1;
     this.currentSmsId = 1;
+    this.currentAdminId = 1;
     this.orderCounter = 1;
+
+    // Create default admin account
+    this.createAdmin({
+      username: "admin",
+      password: "eden2024!",
+    });
   }
 
   private generateOrderNumber(): string {
@@ -41,6 +55,10 @@ export class MemStorage implements IStorage {
       ...insertOrder,
       id,
       orderNumber,
+      zipCode: insertOrder.zipCode || null,
+      address2: insertOrder.address2 || null,
+      specialRequests: insertOrder.specialRequests || null,
+      status: insertOrder.status || "pending",
       createdAt: new Date(),
     };
     this.orders.set(id, order);
@@ -88,6 +106,23 @@ export class MemStorage implements IStorage {
     return Array.from(this.smsNotifications.values()).filter(
       (notification) => notification.orderId === orderId,
     );
+  }
+
+  async getAdminByUsername(username: string): Promise<Admin | undefined> {
+    return Array.from(this.admins.values()).find(
+      (admin) => admin.username === username,
+    );
+  }
+
+  async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
+    const id = this.currentAdminId++;
+    const admin: Admin = {
+      ...insertAdmin,
+      id,
+      createdAt: new Date(),
+    };
+    this.admins.set(id, admin);
+    return admin;
   }
 }
 
