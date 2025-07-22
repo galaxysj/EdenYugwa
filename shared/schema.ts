@@ -1,0 +1,46 @@
+import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  orderNumber: text("order_number").notNull().unique(),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone").notNull(),
+  zipCode: text("zip_code"),
+  address1: text("address1").notNull(),
+  address2: text("address2"),
+  specialRequests: text("special_requests"),
+  boxSize: text("box_size").notNull(), // 'small' or 'large'
+  quantity: integer("quantity").notNull(),
+  hasWrapping: text("has_wrapping").notNull(), // 'yes' or 'no'
+  totalAmount: integer("total_amount").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'shipping', 'delivered'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertOrderSchema = createInsertSchema(orders).omit({
+  id: true,
+  orderNumber: true,
+  createdAt: true,
+});
+
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Order = typeof orders.$inferSelect;
+
+// SMS notification schema
+export const smsNotifications = pgTable("sms_notifications", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  message: text("message").notNull(),
+  sentAt: timestamp("sent_at").defaultNow().notNull(),
+});
+
+export const insertSmsNotificationSchema = createInsertSchema(smsNotifications).omit({
+  id: true,
+  sentAt: true,
+});
+
+export type InsertSmsNotification = z.infer<typeof insertSmsNotificationSchema>;
+export type SmsNotification = typeof smsNotifications.$inferSelect;
