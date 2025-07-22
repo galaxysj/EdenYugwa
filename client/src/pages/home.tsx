@@ -55,7 +55,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
       {/* Hero Section */}
       <section id="home" className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-hero opacity-90"></div>
@@ -104,14 +103,13 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* About Section */}
       <section id="about" className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-eden-brown mb-4 font-korean">에덴한과 이야기</h3>
-            <p className="text-eden-dark max-w-2xl mx-auto">
-              하나님의 은혜로 시작된 에덴한과는 진안&nbsp;지역에서 부모님이 정성껏 만드시는 전통&nbsp;유과입니다.
+            <p className="text-eden-dark max-w-2xl mx-auto text-[20px]">
+              하나님의 은혜로 시작된 에덴한과는 진안 지역에서 부모님이 정성껏 만드시는 전통 유과입니다.
             </p>
           </div>
 
@@ -196,7 +194,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Order Section */}
       <section id="order" className="py-16 bg-eden-cream">
         <div className="container mx-auto px-4">
@@ -212,7 +209,6 @@ export default function Home() {
           <OrderForm />
         </div>
       </section>
-
       {/* Footer */}
       <footer className="bg-eden-dark text-white py-12">
         <div className="container mx-auto px-4">
