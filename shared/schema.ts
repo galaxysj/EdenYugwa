@@ -16,6 +16,8 @@ export const orders = pgTable("orders", {
   hasWrapping: text("has_wrapping").notNull(), // 'yes' or 'no'
   totalAmount: integer("total_amount").notNull(),
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'shipping', 'delivered'
+  paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
+  paymentConfirmedAt: timestamp("payment_confirmed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

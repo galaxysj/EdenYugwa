@@ -7,6 +7,7 @@ export interface IStorage {
   getOrderByNumber(orderNumber: string): Promise<Order | undefined>;
   getAllOrders(): Promise<Order[]>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+  updatePaymentStatus(id: number, paymentStatus: string): Promise<Order | undefined>;
   
   // SMS notifications
   createSmsNotification(notification: InsertSmsNotification): Promise<SmsNotification>;
@@ -59,6 +60,8 @@ export class MemStorage implements IStorage {
       address2: insertOrder.address2 || null,
       specialRequests: insertOrder.specialRequests || null,
       status: insertOrder.status || "pending",
+      paymentStatus: "pending",
+      paymentConfirmedAt: null,
       createdAt: new Date(),
     };
     this.orders.set(id, order);
@@ -85,6 +88,20 @@ export class MemStorage implements IStorage {
     const order = this.orders.get(id);
     if (order) {
       const updatedOrder = { ...order, status };
+      this.orders.set(id, updatedOrder);
+      return updatedOrder;
+    }
+    return undefined;
+  }
+
+  async updatePaymentStatus(id: number, paymentStatus: string): Promise<Order | undefined> {
+    const order = this.orders.get(id);
+    if (order) {
+      const updatedOrder = { 
+        ...order, 
+        paymentStatus,
+        paymentConfirmedAt: paymentStatus === 'confirmed' ? new Date() : order.paymentConfirmedAt
+      };
       this.orders.set(id, updatedOrder);
       return updatedOrder;
     }

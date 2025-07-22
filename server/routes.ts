@@ -67,6 +67,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update payment status
+  app.patch("/api/orders/:id/payment", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { paymentStatus } = req.body;
+      
+      if (!paymentStatus) {
+        return res.status(400).json({ message: "Payment status is required" });
+      }
+      
+      const updatedOrder = await storage.updatePaymentStatus(id, paymentStatus);
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update payment status" });
+    }
+  });
+
   // Send SMS notification
   app.post("/api/sms/send", async (req, res) => {
     try {

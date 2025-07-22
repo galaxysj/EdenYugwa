@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import { SmsHistory } from "@/components/sms-history";
 import type { Order } from "@shared/schema";
@@ -64,8 +64,31 @@ export default function Admin() {
     },
   });
 
+  const updatePaymentMutation = useMutation({
+    mutationFn: ({ id, paymentStatus }: { id: number; paymentStatus: string }) => 
+      api.orders.updatePaymentStatus(id, paymentStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: "입금 상태 업데이트",
+        description: "입금 상태가 성공적으로 업데이트되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "업데이트 실패",
+        description: "입금 상태 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
+  };
+
+  const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
+    updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
   };
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
@@ -75,9 +98,11 @@ export default function Admin() {
     (acc, order) => {
       acc.total++;
       acc[order.status as keyof typeof acc]++;
+      if (order.paymentStatus === 'confirmed') acc.paidOrders++;
+      if (order.paymentStatus === 'pending') acc.unpaidOrders++;
       return acc;
     },
-    { total: 0, pending: 0, preparing: 0, shipping: 0, delivered: 0 }
+    { total: 0, pending: 0, preparing: 0, shipping: 0, delivered: 0, paidOrders: 0, unpaidOrders: 0 }
   );
 
   if (isLoading) {
@@ -123,7 +148,7 @@ export default function Admin() {
 
       <div className="container mx-auto p-4 sm:p-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-2 sm:p-4 text-center">
               <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.total}</div>
@@ -154,6 +179,18 @@ export default function Admin() {
               <div className="text-xs sm:text-sm text-gray-600">배송 완료</div>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-2 sm:p-4 text-center bg-emerald-50">
+              <div className="text-lg sm:text-2xl font-bold text-emerald-600">{stats.paidOrders}</div>
+              <div className="text-xs sm:text-sm text-gray-600">입금 완료</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-2 sm:p-4 text-center bg-red-50">
+              <div className="text-lg sm:text-2xl font-bold text-red-600">{stats.unpaidOrders}</div>
+              <div className="text-xs sm:text-sm text-gray-600">입금 대기</div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Orders List */}
@@ -177,7 +214,8 @@ export default function Admin() {
                         <th className="text-left py-3 px-4 font-medium text-gray-600">고객정보</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">상태</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
                       </tr>
                     </thead>
@@ -209,6 +247,37 @@ export default function Admin() {
                             </td>
                             <td className="py-4 px-4 font-medium text-gray-900">
                               {formatPrice(order.totalAmount)}
+                            </td>
+                            <td className="py-4 px-4">
+                              <Select
+                                value={order.paymentStatus || 'pending'}
+                                onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                                disabled={updatePaymentMutation.isPending}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">
+                                    <div className="flex items-center space-x-2">
+                                      <AlertCircle className="h-4 w-4 text-orange-500" />
+                                      <span>입금 대기</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="confirmed">
+                                    <div className="flex items-center space-x-2">
+                                      <DollarSign className="h-4 w-4 text-green-500" />
+                                      <span>입금 완료</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="refunded">
+                                    <div className="flex items-center space-x-2">
+                                      <AlertCircle className="h-4 w-4 text-red-500" />
+                                      <span>환불</span>
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
                             </td>
                             <td className="py-4 px-4">
                               <Select
@@ -320,45 +389,80 @@ export default function Admin() {
                             </div>
                           </div>
 
-                          <div className="flex justify-between items-center">
-                            <div className="flex-1 mr-2">
-                              <Select
-                                value={order.status}
-                                onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                                disabled={updateStatusMutation.isPending}
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    <div className="flex items-center space-x-2">
-                                      <Clock className="h-4 w-4" />
-                                      <span>주문 접수</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="preparing">
-                                    <div className="flex items-center space-x-2">
-                                      <Package className="h-4 w-4" />
-                                      <span>제작 중</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="shipping">
-                                    <div className="flex items-center space-x-2">
-                                      <Truck className="h-4 w-4" />
-                                      <span>배송 중</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="delivered">
-                                    <div className="flex items-center space-x-2">
-                                      <CheckCircle className="h-4 w-4" />
-                                      <span>배송 완료</span>
-                                    </div>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-xs font-medium text-gray-600 mb-1 block">입금 상태</label>
+                                <Select
+                                  value={order.paymentStatus || 'pending'}
+                                  onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                                  disabled={updatePaymentMutation.isPending}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">
+                                      <div className="flex items-center space-x-2">
+                                        <AlertCircle className="h-4 w-4 text-orange-500" />
+                                        <span>입금 대기</span>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="confirmed">
+                                      <div className="flex items-center space-x-2">
+                                        <DollarSign className="h-4 w-4 text-green-500" />
+                                        <span>입금 완료</span>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="refunded">
+                                      <div className="flex items-center space-x-2">
+                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                        <span>환불</span>
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-gray-600 mb-1 block">주문 상태</label>
+                                <Select
+                                  value={order.status}
+                                  onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                                  disabled={updateStatusMutation.isPending}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">
+                                      <div className="flex items-center space-x-2">
+                                        <Clock className="h-4 w-4" />
+                                        <span>주문 접수</span>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="preparing">
+                                      <div className="flex items-center space-x-2">
+                                        <Package className="h-4 w-4" />
+                                        <span>제작 중</span>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="shipping">
+                                      <div className="flex items-center space-x-2">
+                                        <Truck className="h-4 w-4" />
+                                        <span>배송 중</span>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="delivered">
+                                      <div className="flex items-center space-x-2">
+                                        <CheckCircle className="h-4 w-4" />
+                                        <span>배송 완료</span>
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                             </div>
-                            <div className="flex space-x-1">
+                            <div className="flex justify-end space-x-1">
                               <SmsDialog order={order} />
                               <SmsHistory order={order} />
                             </div>

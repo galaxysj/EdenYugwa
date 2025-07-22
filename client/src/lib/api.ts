@@ -23,6 +23,11 @@ export const api = {
       const response = await apiRequest("PATCH", `/api/orders/${id}/status`, { status });
       return response.json();
     },
+    
+    updatePaymentStatus: async (id: number, paymentStatus: string): Promise<Order> => {
+      const response = await apiRequest("PATCH", `/api/orders/${id}/payment`, { paymentStatus });
+      return response.json();
+    },
   },
   
   // SMS
