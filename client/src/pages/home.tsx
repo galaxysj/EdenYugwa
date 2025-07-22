@@ -89,7 +89,7 @@ export default function Home() {
             <div className="flex justify-center">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                  src="/attached_assets/image_1753160311749.png" 
                   alt="에덴한과 유과 상품" 
                   className="rounded-2xl shadow-2xl w-full max-w-md"
                 />
