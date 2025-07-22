@@ -17,6 +17,15 @@ export const api = {
       
       return response.json();
     },
+    getAll: async () => {
+      const response = await fetch('/api/orders');
+      
+      if (!response.ok) {
+        throw new Error('주문 목록 조회에 실패했습니다');
+      }
+      
+      return response.json();
+    },
     updateStatus: async (id: number, status: string) => {
       const response = await fetch(`/api/orders/${id}/status`, {
         method: 'PATCH',

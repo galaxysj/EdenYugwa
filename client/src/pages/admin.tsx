@@ -38,12 +38,14 @@ export default function Admin() {
     setLocation("/admin/login");
   };
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['/api/orders'],
     queryFn: () => api.orders.getAll(),
     refetchInterval: 5000, // Refetch every 5 seconds
     refetchIntervalInBackground: true,
   });
+
+
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) => 
@@ -199,7 +201,24 @@ export default function Admin() {
             <CardTitle className="font-korean">주문 목록</CardTitle>
           </CardHeader>
           <CardContent>
-            {orders.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
+                <div className="text-gray-500">주문 목록을 불러오는 중...</div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">
+                <div className="mb-2">주문 목록을 불러오는 중 오류가 발생했습니다.</div>
+                <div className="text-sm text-gray-500">{error.message}</div>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  다시 시도
+                </Button>
+              </div>
+            ) : orders.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 아직 주문이 없습니다.
               </div>
@@ -345,11 +364,11 @@ export default function Admin() {
                 </div>
 
                 {/* Mobile Cards */}
-                <div className="lg:hidden space-y-4">
+                <div className="block lg:hidden space-y-4">
                   {orders.map((order) => {
                     const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                     return (
-                      <Card key={order.id} className="border border-gray-200">
+                      <Card key={order.id} className="border border-gray-200 shadow-sm">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-3">
                             <div>
