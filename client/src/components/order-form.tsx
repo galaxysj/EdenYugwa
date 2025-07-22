@@ -57,7 +57,7 @@ export default function OrderForm() {
 
   const createOrderMutation = useMutation({
     mutationFn: api.orders.create,
-    onSuccess: (order) => {
+    onSuccess: (order: any) => {
       // Invalidate orders cache so admin panel updates
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({
@@ -66,10 +66,10 @@ export default function OrderForm() {
       });
       form.reset();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "주문 실패",
-        description: "주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+        description: error.message || "주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive",
       });
     },

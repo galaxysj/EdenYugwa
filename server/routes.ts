@@ -14,6 +14,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lookup orders by phone number (must come before /api/orders/:id)
+  app.get("/api/orders/lookup", async (req, res) => {
+    try {
+      const { phone } = req.query;
+      
+      if (!phone || typeof phone !== 'string') {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const orders = await storage.getOrdersByPhone(phone);
+      if (orders.length === 0) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      res.json(orders);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to lookup orders" });
+    }
+  });
+
   // Get single order
   app.get("/api/orders/:id", async (req, res) => {
     try {
@@ -89,21 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lookup orders by phone number
-  app.get("/api/orders/lookup", async (req, res) => {
-    try {
-      const { phone } = req.query;
-      
-      if (!phone || typeof phone !== 'string') {
-        return res.status(400).json({ message: "Phone number is required" });
-      }
-      
-      const orders = await storage.getOrdersByPhone(phone);
-      res.json(orders);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to lookup orders" });
-    }
-  });
+
 
   // Update order (for customer edits)
   app.patch("/api/orders/:id", async (req, res) => {
