@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info } from "lucide-react";
+import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Menu, X } from "lucide-react";
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
 
 export default function Home() {
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -27,6 +28,8 @@ export default function Home() {
               <Leaf className="text-eden-sage text-2xl" />
               <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
             </div>
+            
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
               <button 
                 onClick={() => scrollToSection('home')}
@@ -57,7 +60,68 @@ export default function Home() {
                 </Button>
               </Link>
             </nav>
+
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <nav className="md:hidden mt-4 pb-4 border-t border-eden-beige pt-4">
+              <div className="flex flex-col space-y-4">
+                <button 
+                  onClick={() => {
+                    scrollToSection('home');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-left text-eden-dark hover:text-eden-brown transition-colors py-2"
+                >
+                  홈
+                </button>
+                <button 
+                  onClick={() => {
+                    scrollToSection('about');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-left text-eden-dark hover:text-eden-brown transition-colors py-2"
+                >
+                  소개
+                </button>
+                <button 
+                  onClick={() => {
+                    scrollToSection('order');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="text-left text-eden-dark hover:text-eden-brown transition-colors py-2"
+                >
+                  주문하기
+                </button>
+                <Link href="/order-lookup">
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full"
+                  >
+                    주문 조회
+                  </button>
+                </Link>
+                <Link href="/admin">
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-left text-eden-red hover:text-eden-brown transition-colors py-2 w-full"
+                  >
+                    관리자
+                  </button>
+                </Link>
+              </div>
+            </nav>
+          )}
         </div>
       </header>
       {/* Hero Section */}
