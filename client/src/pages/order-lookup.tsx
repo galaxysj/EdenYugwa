@@ -96,16 +96,49 @@ export default function OrderLookup() {
     });
   };
 
-  const getTrackingInfo = (order: Order) => {
-    if (order.status !== 'shipping') return null;
-    
-    // 실제 배송 추적 시스템과 연동 시 여기에 구현
-    return {
-      company: "한진택배",
-      trackingNumber: `${order.orderNumber}-TRACK`,
-      currentLocation: "배송센터",
-      estimatedDelivery: "내일 도착 예정",
+  const getDeliveryStatus = (order: Order) => {
+    const baseInfo = {
+      company: "CJ대한통운",
+      trackingNumber: `${order.orderNumber}TRACK`,
     };
+
+    switch (order.status) {
+      case 'pending':
+        return {
+          ...baseInfo,
+          status: "주문 접수",
+          statusDescription: "주문이 접수되었습니다. 상품 준비 중입니다.",
+          estimatedShipping: "1-2일 후 발송 예정",
+          trackingAvailable: false,
+        };
+      case 'preparing':
+        return {
+          ...baseInfo,
+          status: "상품 준비",
+          statusDescription: "정성껏 상품을 준비하고 있습니다.",
+          estimatedShipping: "오늘 또는 내일 발송 예정",
+          trackingAvailable: false,
+        };
+      case 'shipping':
+        return {
+          ...baseInfo,
+          status: "배송 중",
+          statusDescription: "상품이 배송 중입니다.",
+          currentLocation: "대전 허브터미널",
+          estimatedDelivery: "내일 오후 도착 예정",
+          trackingAvailable: true,
+        };
+      case 'delivered':
+        return {
+          ...baseInfo,
+          status: "배송 완료",
+          statusDescription: "상품이 배송 완료되었습니다.",
+          deliveredDate: new Date(order.createdAt).toLocaleDateString('ko-KR'),
+          trackingAvailable: true,
+        };
+      default:
+        return null;
+    }
   };
 
   return (
@@ -276,35 +309,81 @@ export default function OrderLookup() {
                         </div>
                       </div>
 
-                      {/* Tracking Info for Shipping Orders */}
-                      {trackingInfo && (
-                        <div>
-                          <h3 className="font-medium text-gray-900 mb-3 flex items-center">
-                            <Truck className="mr-2 h-4 w-4" />
-                            배송 추적
-                          </h3>
-                          <div className="bg-blue-50 p-4 rounded border text-sm">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <span className="text-gray-600">택배사: </span>
-                                <span className="font-medium">{trackingInfo.company}</span>
+                      {/* Delivery Status */}
+                      {(() => {
+                        const deliveryInfo = getDeliveryStatus(order);
+                        if (!deliveryInfo) return null;
+                        
+                        return (
+                          <div>
+                            <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+                              <Truck className="mr-2 h-4 w-4" />
+                              배송 조회
+                            </h3>
+                            <div className={`p-4 rounded border text-sm ${
+                              order.status === 'delivered' ? 'bg-green-50 border-green-200' :
+                              order.status === 'shipping' ? 'bg-blue-50 border-blue-200' :
+                              'bg-gray-50 border-gray-200'
+                            }`}>
+                              <div className="mb-3">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  {order.status === 'delivered' ? (
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                  ) : order.status === 'shipping' ? (
+                                    <Truck className="h-5 w-5 text-blue-600" />
+                                  ) : (
+                                    <Clock className="h-5 w-5 text-gray-600" />
+                                  )}
+                                  <span className="font-medium text-lg">{deliveryInfo.status}</span>
+                                </div>
+                                <p className="text-gray-700">{deliveryInfo.statusDescription}</p>
                               </div>
-                              <div>
-                                <span className="text-gray-600">운송장번호: </span>
-                                <span className="font-medium">{trackingInfo.trackingNumber}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">현재위치: </span>
-                                <span className="font-medium">{trackingInfo.currentLocation}</span>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">배송예정: </span>
-                                <span className="font-medium">{trackingInfo.estimatedDelivery}</span>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <span className="text-gray-600">택배사: </span>
+                                  <span className="font-medium">{deliveryInfo.company}</span>
+                                </div>
+                                
+                                {deliveryInfo.trackingAvailable && (
+                                  <div>
+                                    <span className="text-gray-600">운송장번호: </span>
+                                    <span className="font-medium">{deliveryInfo.trackingNumber}</span>
+                                  </div>
+                                )}
+                                
+                                {deliveryInfo.currentLocation && (
+                                  <div>
+                                    <span className="text-gray-600">현재위치: </span>
+                                    <span className="font-medium">{deliveryInfo.currentLocation}</span>
+                                  </div>
+                                )}
+                                
+                                {deliveryInfo.estimatedDelivery && (
+                                  <div>
+                                    <span className="text-gray-600">배송예정: </span>
+                                    <span className="font-medium">{deliveryInfo.estimatedDelivery}</span>
+                                  </div>
+                                )}
+                                
+                                {deliveryInfo.estimatedShipping && (
+                                  <div>
+                                    <span className="text-gray-600">발송예정: </span>
+                                    <span className="font-medium">{deliveryInfo.estimatedShipping}</span>
+                                  </div>
+                                )}
+                                
+                                {deliveryInfo.deliveredDate && (
+                                  <div>
+                                    <span className="text-gray-600">배송완료일: </span>
+                                    <span className="font-medium">{deliveryInfo.deliveredDate}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {/* Action Buttons */}
                       <div className="flex justify-end space-x-2 pt-4 border-t">
@@ -316,14 +395,17 @@ export default function OrderLookup() {
                             </Button>
                           </Link>
                         )}
-                        {trackingInfo && (
-                          <Button variant="outline" size="sm" onClick={() => {
-                            window.open(`https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnum=${trackingInfo.trackingNumber}`, '_blank');
-                          }}>
-                            <Truck className="mr-2 h-4 w-4" />
-                            배송 추적
-                          </Button>
-                        )}
+                        {(() => {
+                          const deliveryInfo = getDeliveryStatus(order);
+                          return deliveryInfo?.trackingAvailable && (
+                            <Button variant="outline" size="sm" onClick={() => {
+                              window.open(`https://www.cjlogistics.com/ko/tool/parcel/tracking?paramInvc=${deliveryInfo.trackingNumber}`, '_blank');
+                            }}>
+                              <Truck className="mr-2 h-4 w-4" />
+                              배송 추적
+                            </Button>
+                          );
+                        })()}
                       </div>
                     </CardContent>
                   </Card>
