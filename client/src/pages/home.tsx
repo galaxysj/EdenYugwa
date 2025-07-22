@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info } from "lucide-react";
 import OrderForm from "@/components/order-form";
+import edenHangwaImage from "@assets/image_1753160311749.png";
 
 export default function Home() {
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -89,7 +90,7 @@ export default function Home() {
             <div className="flex justify-center">
               <div className="relative">
                 <img 
-                  src="/attached_assets/image_1753160311749.png" 
+                  src={edenHangwaImage} 
                   alt="에덴한과 유과 상품" 
                   className="rounded-2xl shadow-2xl w-full max-w-md"
                 />
