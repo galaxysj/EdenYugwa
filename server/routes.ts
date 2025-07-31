@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertOrderSchema, insertSmsNotificationSchema } from "@shared/schema";
+import * as XLSX from "xlsx";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all orders (for admin)
@@ -215,6 +216,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/check", async (req, res) => {
     // Simple check - in a real app you would validate JWT or session
     res.json({ authenticated: true });
+  });
+
+  // Export orders to Excel
+  app.get("/api/orders/export/excel", async (req, res) => {
+    try {
+      const orders = await storage.getAllOrders();
+      
+      // Convert orders to Excel format
+      const excelData = orders.map(order => ({
+        '주문번호': order.orderNumber,
+        '고객명': order.customerName,
+        '전화번호': order.customerPhone,
+        '주소': `${order.address1}${order.address2 ? ' ' + order.address2 : ''}`,
+        '박스크기': order.boxSize === 'small' ? '소형 (15,000원)' : '대형 (18,000원)',
+        '수량': order.quantity,
+        '포장방식': order.hasWrapping === 'yes' ? '보자기포장 (+1,000원)' : '일반포장',
+        '총금액': `${order.totalAmount.toLocaleString()}원`,
+        '주문상태': order.status === 'pending' ? '주문접수' :
+                    order.status === 'confirmed' ? '주문확인' :
+                    order.status === 'preparing' ? '제작중' :
+                    order.status === 'ready' ? '배송준비' :
+                    order.status === 'shipped' ? '배송중' :
+                    order.status === 'delivered' ? '배송완료' : 
+                    order.status === 'cancelled' ? '취소됨' : order.status,
+        '결제상태': order.paymentStatus === 'pending' ? '결제대기' :
+                    order.paymentStatus === 'confirmed' ? '결제완료' :
+                    order.paymentStatus === 'failed' ? '결제실패' : order.paymentStatus,
+        '주문일시': new Date(order.createdAt).toLocaleString('ko-KR'),
+        '결제확인일시': order.paymentConfirmedAt ? new Date(order.paymentConfirmedAt).toLocaleString('ko-KR') : '-',
+        '특별요청': order.specialRequests || '-'
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, '주문목록');
+      
+      // Generate Excel file buffer
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+      
+      // Set headers for file download
+      const fileName = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      
+      // Send the Excel file
+      res.send(excelBuffer);
+    } catch (error) {
+      console.error('Excel export error:', error);
+      res.status(500).json({ message: "엑셀 파일 생성에 실패했습니다" });
+    }
   });
 
   const httpServer = createServer(app);

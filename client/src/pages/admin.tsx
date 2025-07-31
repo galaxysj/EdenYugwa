@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import { SmsHistory } from "@/components/sms-history";
 import type { Order } from "@shared/schema";
@@ -93,6 +93,37 @@ export default function Admin() {
     updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
   };
 
+  const handleExcelDownload = async () => {
+    try {
+      const response = await fetch('/api/orders/export/excel');
+      if (!response.ok) {
+        throw new Error('엑셀 파일 다운로드에 실패했습니다');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "다운로드 완료",
+        description: "엑셀 파일이 성공적으로 다운로드되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "다운로드 실패",
+        description: "엑셀 파일 다운로드 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
 
   // Calculate stats
@@ -136,14 +167,24 @@ export default function Admin() {
                 관리자 패널
               </h1>
             </div>
-            <Button 
-              onClick={handleLogout}
-              variant="ghost" 
-              className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
-            >
-              <LogOut className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">로그아웃</span>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button 
+                onClick={handleExcelDownload}
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+              >
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">엑셀 다운로드</span>
+              </Button>
+              <Button 
+                onClick={handleLogout}
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+              >
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">로그아웃</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
