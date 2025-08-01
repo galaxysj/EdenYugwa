@@ -11,6 +11,7 @@ export interface IStorage {
   getOrdersByPhone(phone: string): Promise<Order[]>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order | undefined>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
+  updateOrderScheduledDate(id: number, scheduledDate: Date | null): Promise<Order | undefined>;
   updatePaymentStatus(id: number, paymentStatus: string): Promise<Order | undefined>;
   
   // SMS notifications

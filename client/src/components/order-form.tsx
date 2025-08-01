@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ShoppingCart, Box, Calculator, Search } from "lucide-react";
+import { ShoppingCart, Box, Calculator, Search, Calendar } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";  
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { z } from "zod";
@@ -30,6 +34,7 @@ const orderSchema = z.object({
   smallBoxQuantity: z.number().min(0, "소박스 수량은 0개 이상이어야 합니다"),
   largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
   wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
+  scheduledDate: z.date().optional(),
 }).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
   message: "최소 1개 이상의 상품을 선택해주세요",
   path: ["smallBoxQuantity"],
@@ -76,6 +81,7 @@ export default function OrderForm() {
       smallBoxQuantity: 0,
       largeBoxQuantity: 0,
       wrappingQuantity: 0,
+      scheduledDate: undefined,
     },
   });
 
@@ -123,6 +129,8 @@ export default function OrderForm() {
       ...data,
       shippingFee,
       totalAmount,
+      scheduledDate: data.scheduledDate || null,
+      status: data.scheduledDate ? 'scheduled' : 'pending', // 예약발송일이 있으면 자동으로 발송예약 상태로 설정
     };
     createOrderMutation.mutate(orderData);
   };
@@ -345,6 +353,60 @@ export default function OrderForm() {
                             </Button>
                           </div>
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Scheduled Delivery Date */}
+                  <FormField
+                    control={form.control}
+                    name="scheduledDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>예약발송</FormLabel>
+                        <p className="text-xs text-gray-600 mb-2">원하는 발송일을 선택하세요 (선택사항)</p>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                className={`w-full justify-start text-left font-normal ${
+                                  !field.value && "text-muted-foreground"
+                                }`}
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {field.value ? (
+                                  format(field.value, "PPP", { locale: ko })
+                                ) : (
+                                  <span>날짜를 선택하세요</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) => date < new Date() || date < new Date("1900-01-01")}
+                              initialFocus
+                              locale={ko}
+                            />
+                            {field.value && (
+                              <div className="p-3 border-t">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => field.onChange(undefined)}
+                                  className="w-full"
+                                >
+                                  날짜 선택 해제
+                                </Button>
+                              </div>
+                            )}
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
