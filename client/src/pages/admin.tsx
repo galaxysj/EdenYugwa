@@ -94,15 +94,15 @@ export default function Admin() {
                       <div className="text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </div>
-                      {order.scheduledDate && (
+                      {(order.scheduledDate || order.status === 'scheduled') && (
                         <div className="mt-1">
                           <div className="text-red-600 font-bold text-sm">
-                            예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                            예약발송 {order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
                               year: 'numeric',
                               month: '2-digit', 
                               day: '2-digit',
                               weekday: 'short'
-                            })}
+                            }) : '날짜 미설정'}
                           </div>
                         </div>
                       )}
@@ -233,15 +233,15 @@ export default function Admin() {
                         <div className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString('ko-KR')}
                         </div>
-                        {order.scheduledDate && (
+                        {(order.scheduledDate || order.status === 'scheduled') && (
                           <div className="mt-1">
                             <div className="text-red-600 font-bold text-base">
-                              예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                              예약발송 {order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
                                 year: 'numeric',
                                 month: '2-digit', 
                                 day: '2-digit',
                                 weekday: 'short'
-                              })}
+                              }) : '날짜 미설정'}
                             </div>
                           </div>
                         )}
