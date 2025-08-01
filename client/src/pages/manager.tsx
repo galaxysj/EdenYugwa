@@ -262,7 +262,7 @@ export default function Manager() {
                                 <div className="mt-1">
                                   <div className="text-red-600 font-bold text-sm">
                                     예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                      year: '2-digit',
+                                      year: 'numeric',
                                       month: '2-digit', 
                                       day: '2-digit',
                                       weekday: 'short'
@@ -364,7 +364,7 @@ export default function Manager() {
                                 <div className="mt-1">
                                   <div className="text-red-600 font-bold text-base">
                                     예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                      year: '2-digit',
+                                      year: 'numeric',
                                       month: '2-digit', 
                                       day: '2-digit',
                                       weekday: 'short'
