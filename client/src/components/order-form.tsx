@@ -212,7 +212,7 @@ export default function OrderForm() {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h5 className="text-lg font-semibold text-eden-brown">한과1호(약 1.1kg)</h5>
-
+                        <p className="text-xs text-eden-dark mt-1">약 35.5×21×11.2cm</p>
                       </div>
                       <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.small)}</span>
                     </div>
@@ -262,7 +262,7 @@ export default function OrderForm() {
                     <div className="flex justify-between items-start mb-4">
                       <div>
                         <h5 className="text-lg font-semibold text-eden-brown">한과2호(약 1.3kg)</h5>
-
+                        <p className="text-xs text-eden-dark mt-1">약 37×23×11.5cm</p>
                       </div>
                       <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.large)}</span>
                     </div>
