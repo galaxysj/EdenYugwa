@@ -489,6 +489,147 @@ export default function Admin() {
   const scheduledOrders = filterOrdersByStatus("scheduled");
   const deliveredOrders = filterOrdersByStatus("delivered");
 
+  // Render revenue report function
+  const renderRevenueReport = () => {
+    const paidOrders = orders.filter((order: Order) => order.paymentStatus === 'confirmed' && order.actualPaidAmount);
+    
+    const handleRevenueExcelDownload = async () => {
+      try {
+        const response = await fetch('/api/export/revenue');
+        
+        if (!response.ok) {
+          throw new Error('Export failed');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `에덴한과_매출관리_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast({
+          title: "다운로드 완료",
+          description: "매출관리 엑셀 파일이 성공적으로 다운로드되었습니다.",
+        });
+      } catch (error) {
+        toast({
+          title: "다운로드 실패",
+          description: "매출관리 엑셀 파일 다운로드 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* 매출 요약 */}
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">매출 관리 리포트</h3>
+          <Button onClick={handleRevenueExcelDownload} className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            매출 엑셀 다운로드
+          </Button>
+        </div>
+
+        {/* 전체 매출 통계 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center bg-eden-red/5">
+              <div className="text-2xl font-bold text-eden-red">
+                {formatPrice(stats.totalRevenue)}
+              </div>
+              <div className="text-sm text-gray-600">총 주문 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-green-50">
+              <div className="text-2xl font-bold text-green-600">
+                {formatPrice(stats.actualRevenue)}
+              </div>
+              <div className="text-sm text-gray-600">실제 입금 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-blue-50">
+              <div className="text-2xl font-bold text-blue-600">
+                {formatPrice(stats.totalDiscounts)}
+              </div>
+              <div className="text-sm text-gray-600">총 할인 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-purple-50">
+              <div className={`text-2xl font-bold ${stats.totalProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                {formatPrice(stats.totalProfit)}
+              </div>
+              <div className="text-sm text-gray-600">총 수익</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 입금완료 주문별 상세 매출 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>입금완료 주문 상세</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {paidOrders.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                입금완료된 주문이 없습니다.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문일</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문금액</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">실입금</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">할인</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">수익</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paidOrders.map((order: Order) => (
+                      <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">#{order.orderNumber}</td>
+                        <td className="py-3 px-4">{order.customerName}</td>
+                        <td className="py-3 px-4 text-sm text-gray-600">
+                          {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                        </td>
+                        <td className="py-3 px-4 font-medium text-eden-red">
+                          {formatPrice(order.totalAmount)}
+                        </td>
+                        <td className="py-3 px-4 font-medium text-green-600">
+                          {formatPrice(order.actualPaidAmount || 0)}
+                        </td>
+                        <td className="py-3 px-4 font-medium text-blue-600">
+                          {formatPrice(order.discountAmount || 0)}
+                        </td>
+                        <td className="py-3 px-4 font-medium">
+                          <span className={order.netProfit && order.netProfit >= 0 ? "text-purple-600" : "text-red-600"}>
+                            {formatPrice(order.netProfit || 0)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   // Render deleted orders function
   const renderTrashOrdersList = (ordersList: Order[]) => {
     if (ordersList.length === 0) {
@@ -1194,6 +1335,14 @@ export default function Admin() {
               </h1>
             </div>
             <div className="flex items-center space-x-2">
+              <Button 
+                onClick={() => setActiveTab('revenue')}
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${activeTab === 'revenue' ? 'bg-white/20' : ''}`}
+              >
+                <DollarSign className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">매출관리</span>
+              </Button>
               <CostSettingsDialog />
               <Button 
                 onClick={handleExcelDownload}
@@ -1321,11 +1470,15 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="revenue" className="text-purple-600">
+                    <DollarSign className="h-4 w-4 mr-1" />
+                    매출관리
+                  </TabsTrigger>
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
                     휴지통 ({deletedOrders.length})
@@ -1346,6 +1499,10 @@ export default function Admin() {
                 
                 <TabsContent value="delivered" className="mt-6">
                   {renderOrdersList(deliveredOrders)}
+                </TabsContent>
+                
+                <TabsContent value="revenue" className="mt-6">
+                  {renderRevenueReport()}
                 </TabsContent>
                 
                 <TabsContent value="trash" className="mt-6">

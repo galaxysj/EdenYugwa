@@ -450,6 +450,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export revenue report to Excel
+  app.get("/api/export/revenue", async (req, res) => {
+    try {
+      const orders = await storage.getAllOrders();
+      const paidOrders = orders.filter(order => order.paymentStatus === 'confirmed' && order.actualPaidAmount);
+      
+      // Format revenue data
+      const revenueData = paidOrders.map(order => ({
+        '주문번호': order.orderNumber,
+        '고객명': order.customerName,
+        '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
+        '주문금액': order.totalAmount,
+        '실입금': order.actualPaidAmount || 0,
+        '할인금액': order.discountAmount || 0,
+        '수익': order.netProfit || 0,
+        '소박스수량': order.smallBoxQuantity,
+        '대박스수량': order.largeBoxQuantity,
+        '보자기수량': order.wrappingQuantity,
+        '주문상태': order.status === 'pending' ? '주문접수' :
+                   order.status === 'scheduled' ? '발송예약' :
+                   order.status === 'delivered' ? '발송완료' : order.status,
+        '할인사유': order.discountReason || '-'
+      }));
+
+      // Calculate summary statistics
+      const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+      const actualRevenue = paidOrders.reduce((sum, order) => sum + (order.actualPaidAmount || 0), 0);
+      const totalDiscounts = paidOrders.reduce((sum, order) => sum + (order.discountAmount || 0), 0);
+      const totalProfit = paidOrders.reduce((sum, order) => sum + (order.netProfit || 0), 0);
+
+      const summaryData = [
+        { '항목': '총 주문 금액', '금액': totalRevenue },
+        { '항목': '실제 입금 금액', '금액': actualRevenue },
+        { '항목': '총 할인 금액', '금액': totalDiscounts },
+        { '항목': '총 수익', '금액': totalProfit },
+        { '항목': '총 주문 건수', '금액': orders.length },
+        { '항목': '입금 완료 건수', '금액': paidOrders.length }
+      ];
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // Add summary sheet
+      const summaryWs = XLSX.utils.json_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, summaryWs, '매출요약');
+      
+      // Add detailed revenue sheet
+      const revenueWs = XLSX.utils.json_to_sheet(revenueData);
+      XLSX.utils.book_append_sheet(wb, revenueWs, '상세매출');
+      
+      // Generate Excel file buffer
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+      
+      // Set headers for file download
+      const fileName = `에덴한과_매출관리_${new Date().toISOString().split('T')[0]}.xlsx`;
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`);
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      
+      // Send the Excel file
+      res.send(excelBuffer);
+    } catch (error) {
+      console.error('Revenue export error:', error);
+      res.status(500).json({ message: "매출 엑셀 파일 생성에 실패했습니다" });
+    }
+  });
+
   // Soft delete order (move to trash)
   app.delete("/api/orders/:id", async (req, res) => {
     try {
