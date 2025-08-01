@@ -412,6 +412,17 @@ export default function OrderForm() {
                       </FormItem>
                     )}
                   />
+
+                  {/* 배송 안내 */}
+                  <div className="mt-6 p-4 bg-eden-cream/30 rounded-lg border border-eden-brown/20">
+                    <h4 className="text-base font-semibold text-eden-brown mb-3">에덴한과 배송</h4>
+                    <div className="text-sm text-gray-700 space-y-2 leading-relaxed">
+                      <p>• 물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
+                      <p>• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.</p>
+                      <p>• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.</p>
+                      <p className="text-eden-brown font-medium">• 설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
