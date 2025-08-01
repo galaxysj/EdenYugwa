@@ -644,17 +644,9 @@ export default function Admin() {
                         <div className="font-medium text-gray-900">
                           주문: {formatPrice(order.totalAmount)}
                         </div>
-                        <div className="text-red-600">
-                          실입금: {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
-                        </div>
                         {order.discountAmount && order.discountAmount > 0 && (
                           <div className="text-blue-600">
                             할인: -{formatPrice(order.discountAmount)}
-                          </div>
-                        )}
-                        {order.netProfit !== undefined && order.netProfit !== null && (
-                          <div className={order.netProfit >= 0 ? "text-green-600" : "text-red-600"}>
-                            수익: {formatPrice(order.netProfit)}
                           </div>
                         )}
                       </div>
@@ -711,6 +703,19 @@ export default function Admin() {
                             >
                               {confirmPaymentMutation.isPending ? "처리중..." : "금액저장"}
                             </Button>
+                          </div>
+                        )}
+                        
+                        {order.paymentStatus === 'confirmed' && order.actualPaidAmount && (
+                          <div className="space-y-1 text-xs">
+                            <div className="text-red-600 font-medium">
+                              실입금: {formatPrice(order.actualPaidAmount)}
+                            </div>
+                            {order.netProfit !== undefined && order.netProfit !== null && (
+                              <div className={order.netProfit >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+                                수익: {formatPrice(order.netProfit)}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
