@@ -53,6 +53,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new order
   app.post("/api/orders", async (req, res) => {
     try {
+      // scheduledDate를 Date 객체로 변환
+      if (req.body.scheduledDate && typeof req.body.scheduledDate === 'string') {
+        req.body.scheduledDate = new Date(req.body.scheduledDate);
+      }
+      
       const validatedData = insertOrderSchema.parse(req.body);
       const order = await storage.createOrder(validatedData);
       res.status(201).json(order);

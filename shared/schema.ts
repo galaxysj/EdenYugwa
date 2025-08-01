@@ -28,6 +28,12 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   orderNumber: true,
   paymentConfirmedAt: true,
   createdAt: true,
+}).extend({
+  scheduledDate: z.union([
+    z.date(), 
+    z.string(), 
+    z.null()
+  ]).optional().nullable(),
 });
 
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
