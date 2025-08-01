@@ -205,7 +205,7 @@ export default function OrderForm() {
     <div className="max-w-4xl mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-8">
+          <div className="grid lg:grid-cols-2 gap-12">
             {/* Product Selection */}
             <Card className="shadow-lg">
               <CardContent className="p-8">
