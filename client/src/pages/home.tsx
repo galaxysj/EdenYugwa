@@ -152,18 +152,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Order Form Section */}
-          <div id="order" className="mb-16">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-eden-cream rounded-2xl p-8 shadow-lg">
-                <h3 className="text-2xl font-bold text-eden-brown mb-6 text-center font-korean">
-                  주문하기
-                </h3>
-                <OrderForm />
-              </div>
-            </div>
-          </div>
-
           {/* Product Images */}
           <div className="grid md:grid-cols-2 gap-8 mb-16">
             <div className="flex justify-center">
@@ -179,6 +167,18 @@ export default function Home() {
                 alt="에덴한과 유과 상품" 
                 className="rounded-2xl shadow-lg w-full max-w-md"
               />
+            </div>
+          </div>
+
+          {/* Order Form Section */}
+          <div id="order" className="mb-16">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-eden-cream rounded-2xl p-8 shadow-lg">
+                <h3 className="text-2xl font-bold text-eden-brown mb-6 text-center font-korean">
+                  주문하기
+                </h3>
+                <OrderForm />
+              </div>
             </div>
           </div>
 
