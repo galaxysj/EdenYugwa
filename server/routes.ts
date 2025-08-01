@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, type Order } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, type Order } from "@shared/schema";
 import * as XLSX from "xlsx";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -321,6 +321,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Check admin authentication status
   app.get("/api/admin/check", async (req, res) => {
+    // Simple check - in a real app you would validate JWT or session
+    res.json({ authenticated: true });
+  });
+
+  // Manager login
+  app.post("/api/manager/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "아이디와 비밀번호를 모두 입력해주세요" });
+      }
+      
+      const manager = await storage.getManagerByUsername(username);
+      
+      if (!manager || manager.password !== password) {
+        return res.status(401).json({ message: "아이디나 비밀번호가 틀렸습니다" });
+      }
+      
+      // In a real app, you would use proper session management or JWT
+      res.json({ 
+        success: true, 
+        message: "로그인 성공",
+        manager: {
+          id: manager.id,
+          username: manager.username
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+    }
+  });
+
+  // Check manager authentication status
+  app.get("/api/manager/check", async (req, res) => {
     // Simple check - in a real app you would validate JWT or session
     res.json({ authenticated: true });
   });

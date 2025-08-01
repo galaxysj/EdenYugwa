@@ -80,6 +80,22 @@ export const insertAdminSchema = createInsertSchema(admins).omit({
 export type InsertAdmin = z.infer<typeof insertAdminSchema>;
 export type Admin = typeof admins.$inferSelect;
 
+// Manager authentication schema
+export const managers = pgTable("managers", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertManagerSchema = createInsertSchema(managers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertManager = z.infer<typeof insertManagerSchema>;
+export type Manager = typeof managers.$inferSelect;
+
 // Settings schema for global configurations
 export const settings = pgTable("settings", {
   id: serial("id").primaryKey(),

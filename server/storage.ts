@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, settings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Setting, type InsertSetting } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -23,6 +23,10 @@ export interface IStorage {
   getAdminByUsername(username: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
   
+  // Manager authentication
+  getManagerByUsername(username: string): Promise<Manager | undefined>;
+  createManager(manager: InsertManager): Promise<Manager>;
+  
   // Settings management
   getSetting(key: string): Promise<Setting | undefined>;
   setSetting(key: string, value: string, description?: string): Promise<Setting>;
@@ -35,6 +39,7 @@ export class DatabaseStorage implements IStorage {
   constructor() {
     this.initializeOrderCounter();
     this.ensureDefaultAdmin();
+    this.ensureDefaultManager();
   }
 
   private async initializeOrderCounter() {
@@ -63,6 +68,20 @@ export class DatabaseStorage implements IStorage {
       }
     } catch (error) {
       console.error('Failed to create default admin:', error);
+    }
+  }
+
+  private async ensureDefaultManager() {
+    try {
+      const existingManager = await this.getManagerByUsername("manager");
+      if (!existingManager) {
+        await this.createManager({
+          username: "manager",
+          password: "eden2024!",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create default manager:', error);
     }
   }
 
@@ -230,6 +249,20 @@ export class DatabaseStorage implements IStorage {
       .values(insertAdmin)
       .returning();
     return admin;
+  }
+
+  // Manager authentication
+  async getManagerByUsername(username: string): Promise<Manager | undefined> {
+    const [manager] = await db.select().from(managers).where(eq(managers.username, username));
+    return manager || undefined;
+  }
+
+  async createManager(insertManager: InsertManager): Promise<Manager> {
+    const [manager] = await db
+      .insert(managers)
+      .values(insertManager)
+      .returning();
+    return manager;
   }
 
   async updateFinancialInfo(id: number, data: {
