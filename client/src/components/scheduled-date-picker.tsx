@@ -119,3 +119,5 @@ export function ScheduledDatePicker({ order }: ScheduledDatePickerProps) {
     </Dialog>
   );
 }
+
+export default ScheduledDatePicker;

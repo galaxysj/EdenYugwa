@@ -4,17 +4,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Clock, Calendar, CheckCircle, Download, Eye } from "lucide-react";
+import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar } from "lucide-react";
-import { SmsDialog } from "@/components/sms-dialog";
-import { SmsHistory } from "@/components/sms-history";
-import { ScheduledDatePicker } from "@/components/scheduled-date-picker";
-import type { Order } from "@shared/schema";
+import { Order } from "@shared/schema";
+import * as XLSX from 'xlsx';
 
 const statusLabels = {
   pending: "주문접수",
-  scheduled: "발송예약",
+  scheduled: "발송예약", 
   delivered: "발송완료",
 };
 
@@ -28,6 +29,7 @@ export default function Manager() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState("all");
 
   const { data: orders = [], isLoading, error } = useQuery({
     queryKey: ['/api/orders'],
@@ -36,7 +38,45 @@ export default function Manager() {
     refetchIntervalInBackground: true,
   });
 
-  // Calculate stats (excluding payment-related stats)
+  // Filter orders by status
+  const filterOrdersByStatus = (status: string) => {
+    if (status === "all") return orders;
+    return orders.filter((order: Order) => order.status === status);
+  };
+
+  const allOrders = orders;
+  const pendingOrders = filterOrdersByStatus("pending");
+  const scheduledOrders = filterOrdersByStatus("scheduled");
+  const deliveredOrders = filterOrdersByStatus("delivered");
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: number; status: string }) => {
+      return apiRequest(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: "주문 상태 업데이트 완료",
+        description: "주문 상태가 성공적으로 변경되었습니다.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "상태 변경 실패",
+        description: `오류: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusChange = (orderId: number, newStatus: string) => {
+    updateStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
+  // Stats calculation
   const stats = {
     total: orders.length,
     pending: orders.filter((order: Order) => order.status === 'pending').length,
@@ -44,121 +84,77 @@ export default function Manager() {
     delivered: orders.filter((order: Order) => order.status === 'delivered').length,
   };
 
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: number; status: string }) => 
-      api.orders.updateStatus(id, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: "상태 업데이트",
-        description: "주문 상태가 성공적으로 업데이트되었습니다.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "업데이트 실패",
-        description: "상태 업데이트 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
+  // Excel export function (no financial data)
+  const handleExcelDownload = () => {
+    const exportData = orders.map((order: Order) => ({
+      '주문번호': order.orderNumber,
+      '주문일시': new Date(order.createdAt).toLocaleString('ko-KR'),
+      '고객명': order.customerName,
+      '연락처': order.customerPhone,
+      '우편번호': order.zipCode,
+      '주소1': order.address1,
+      '주소2': order.address2 || '',
+      '소박스수량': order.smallBoxQuantity,
+      '대박스수량': order.largeBoxQuantity,
+      '보자기수량': order.wrappingQuantity,
+      '특별요청': order.specialRequests || '',
+      '주문상태': statusLabels[order.status as keyof typeof statusLabels],
+      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
+    }));
 
-  const handleStatusChange = (orderId: number, newStatus: string) => {
-    updateStatusMutation.mutate({ id: orderId, status: newStatus });
-  };
-
-  const handleExcelDownload = async () => {
-    try {
-      const response = await fetch('/api/orders/export/excel');
-      if (!response.ok) {
-        throw new Error('엑셀 파일 다운로드에 실패했습니다');
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: "다운로드 완료",
-        description: "엑셀 파일이 성공적으로 다운로드되었습니다.",
-      });
-    } catch (error) {
-      toast({
-        title: "다운로드 실패",
-        description: "엑셀 파일 다운로드 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      weekday: 'short'
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '주문목록');
+    
+    const fileName = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    
+    toast({
+      title: "엑셀 다운로드 완료",
+      description: "주문 목록이 엑셀 파일로 다운로드되었습니다.",
     });
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors = {
-      pending: 'text-yellow-600 bg-yellow-50',
-      preparing: 'text-blue-600 bg-blue-50',
-      shipping: 'text-orange-600 bg-orange-50',
-      delivered: 'text-green-600 bg-green-50',
-    };
-    return colors[status as keyof typeof colors] || 'text-gray-600 bg-gray-50';
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-eden-cream via-white to-eden-cream/30">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-eden-brown mx-auto mb-4"></div>
+            <div className="text-gray-600">주문 목록을 불러오는 중...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="p-6 max-w-md">
-          <CardContent className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">오류가 발생했습니다</h2>
-            <p className="text-gray-600 mb-4">주문 목록을 불러올 수 없습니다.</p>
-            <Button onClick={() => window.location.reload()}>
-              다시 시도
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-eden-cream via-white to-eden-cream/30">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">오류가 발생했습니다</div>
+            <div className="text-gray-600 mb-4">{(error as Error).message}</div>
+            <Button onClick={() => window.location.reload()}>다시 시도</Button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-eden-cream">
+    <div className="min-h-screen bg-gradient-to-br from-eden-cream via-white to-eden-cream/30">
       {/* Header */}
-      <div className="bg-eden-red text-white p-4 sm:p-6">
-        <div className="container mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-gradient-to-r from-eden-brown to-eden-brown/90 text-white shadow-lg">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex justify-between items-center py-4 sm:py-6">
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Link href="/">
-                <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
-                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">홈으로</span>
+                <Button variant="ghost" className="text-white hover:text-gray-200 p-2">
+                  ← 홈으로
                 </Button>
               </Link>
-              <h1 className="text-lg sm:text-2xl font-bold font-korean">
-                <Settings className="inline mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+              <h1 className="text-xl sm:text-3xl font-bold font-korean">
                 매니저 관리
               </h1>
             </div>
@@ -211,235 +207,286 @@ export default function Manager() {
             <CardTitle className="font-korean">주문 목록</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
-                <div className="text-gray-500">주문 목록을 불러오는 중...</div>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8 text-red-500">
-                <div className="mb-2">주문 목록을 불러오는 중 오류가 발생했습니다.</div>
-                <div className="text-sm text-gray-500">{(error as Error).message}</div>
-                <Button 
-                  onClick={() => window.location.reload()} 
-                  variant="outline" 
-                  className="mt-4"
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : orders.length === 0 ? (
+            {orders.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 아직 주문이 없습니다.
               </div>
             ) : (
-              <>
-                {/* Desktop Table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.map((order: Order) => {
-                        const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
-                        return (
-                          <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-4 px-4">
-                              <div className="font-medium text-gray-900">#{order.orderNumber}</div>
-                              <div className="text-xs text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </div>
-                              {order.scheduledDate && (
-                                <div className="mt-1">
-                                  <div className="text-red-600 font-bold text-sm">
-                                    예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                      year: 'numeric',
-                                      month: '2-digit', 
-                                      day: '2-digit',
-                                      weekday: 'short'
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="font-medium text-gray-900">{order.customerName}</div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="text-sm text-gray-900">{order.customerPhone}</div>
-                            </td>
-                            <td className="py-4 px-4 max-w-xs">
-                              <div className="text-sm text-gray-900">
-                                <div className="mb-1">[{order.zipCode}]</div>
-                                <div className="mb-1">{order.address1}</div>
-                                <div>{order.address2}</div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4 min-w-[120px]">
-                              <div className="space-y-2">
-                                <div className="text-base font-medium text-gray-900 whitespace-nowrap">
-                                  소박스 × {order.smallBoxQuantity}개
-                                </div>
-                                <div className="text-base font-medium text-gray-900 whitespace-nowrap">
-                                  대박스 × {order.largeBoxQuantity}개
-                                </div>
-                                <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown whitespace-nowrap" : "text-base text-gray-500 whitespace-nowrap"}>
-                                  {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <Select
-                                value={order.status}
-                                onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                                disabled={updateStatusMutation.isPending}
-                              >
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    <div className="flex items-center space-x-2">
-                                      <Clock className="h-4 w-4" />
-                                      <span>주문접수</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="scheduled">
-                                    <div className="flex items-center space-x-2">
-                                      <Calendar className="h-4 w-4" />
-                                      <span>발송예약</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="delivered">
-                                    <div className="flex items-center space-x-2">
-                                      <CheckCircle className="h-4 w-4" />
-                                      <span>발송완료</span>
-                                    </div>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex items-center space-x-2">
-                                <SmsDialog order={order} />
-                                <SmsHistory order={order} />
-                                <ScheduledDatePicker order={order} />
-                                <Link href={`/order-edit/${order.id}`}>
-                                  <Button size="sm" variant="outline">
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                </Link>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile Cards */}
-                <div className="lg:hidden space-y-4">
-                  {orders.map((order: Order) => {
-                    const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
-                    return (
-                      <Card key={order.id} className="border border-gray-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <div className="font-medium text-gray-900">#{order.orderNumber}</div>
-                              <div className="text-sm text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString('ko-KR')}
-                              </div>
-                              {order.scheduledDate && (
-                                <div className="mt-1">
-                                  <div className="text-red-600 font-bold text-base">
-                                    예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                      year: 'numeric',
-                                      month: '2-digit', 
-                                      day: '2-digit',
-                                      weekday: 'short'
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                              <StatusIcon className="h-3 w-3 inline mr-1" />
-                              {statusLabels[order.status as keyof typeof statusLabels]}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2 mb-4">
-                            <div>
-                              <span className="text-sm font-medium text-gray-700">고객: </span>
-                              <span className="text-sm text-gray-900">{order.customerName}</span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-700">전화: </span>
-                              <span className="text-sm text-gray-900">{order.customerPhone}</span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-700">상품: </span>
-                              <div className="mt-1">
-                                <div className="text-base font-medium text-gray-900">
-                                  소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
-                                </div>
-                                {order.wrappingQuantity > 0 && (
-                                  <div className="text-sm font-medium text-eden-brown">
-                                    보자기 × {order.wrappingQuantity}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Select
-                              value={order.status || 'pending'}
-                              onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                              disabled={updateStatusMutation.isPending}
-                            >
-                              <SelectTrigger className="flex-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">주문접수</SelectItem>
-                                <SelectItem value="scheduled">발송예약</SelectItem>
-                                <SelectItem value="delivered">발송완료</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            
-                            <div className="flex space-x-2">
-                              <SmsDialog order={order} />
-                              <SmsHistory order={order} />
-                              <ScheduledDatePicker order={order} />
-                              <Link href={`/order-edit/${order.id}`}>
-                                <Button size="sm" variant="outline">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
+                  <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
+                  <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
+                  <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="all" className="mt-6">
+                  <OrdersList ordersList={allOrders} handleStatusChange={handleStatusChange} updateStatusMutation={updateStatusMutation} />
+                </TabsContent>
+                
+                <TabsContent value="pending" className="mt-6">
+                  <OrdersList ordersList={pendingOrders} handleStatusChange={handleStatusChange} updateStatusMutation={updateStatusMutation} />
+                </TabsContent>
+                
+                <TabsContent value="scheduled" className="mt-6">
+                  <OrdersList ordersList={scheduledOrders} handleStatusChange={handleStatusChange} updateStatusMutation={updateStatusMutation} />
+                </TabsContent>
+                
+                <TabsContent value="delivered" className="mt-6">
+                  <OrdersList ordersList={deliveredOrders} handleStatusChange={handleStatusChange} updateStatusMutation={updateStatusMutation} />
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
       </div>
     </div>
+  );
+}
+
+function OrdersList({ ordersList, handleStatusChange, updateStatusMutation }: { 
+  ordersList: Order[], 
+  handleStatusChange: (orderId: number, newStatus: string) => void,
+  updateStatusMutation: any 
+}) {
+  if (ordersList.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        해당하는 주문이 없습니다.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop Table */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-200">
+              <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
+              <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordersList.map((order: Order) => {
+              const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+              return (
+                <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-4 px-4">
+                    <div className="font-medium text-gray-900">#{order.orderNumber}</div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </div>
+                    {order.scheduledDate && (
+                      <div className="mt-1">
+                        <div className="text-red-600 font-bold text-sm">
+                          예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit', 
+                            day: '2-digit',
+                            weekday: 'short'
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="font-medium text-gray-900">{order.customerName}</div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="text-sm text-gray-900">{order.customerPhone}</div>
+                  </td>
+                  <td className="py-4 px-4 max-w-xs">
+                    <div className="text-sm text-gray-900">
+                      <div className="mb-1">[{order.zipCode}]</div>
+                      <div className="mb-1">{order.address1}</div>
+                      <div>{order.address2}</div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="space-y-2">
+                      <div className="text-base font-medium text-gray-900">
+                        소박스 × {order.smallBoxQuantity}개
+                      </div>
+                      <div className="text-base font-medium text-gray-900">
+                        대박스 × {order.largeBoxQuantity}개
+                      </div>
+                      <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown" : "text-base text-gray-500"}>
+                        {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <Select
+                      value={order.status}
+                      onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4 text-yellow-500" />
+                            <span>주문접수</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="scheduled">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <span>발송예약</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="delivered">
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span>발송완료</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex flex-col gap-2">
+                      <ScheduledDatePicker order={order} />
+                      <Link href={`/order-edit/${order.id}`}>
+                        <Button size="sm" variant="outline" className="w-full">
+                          <Eye className="h-4 w-4 mr-1" />
+                          상세보기
+                        </Button>
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="lg:hidden space-y-4">
+        {ordersList.map((order: Order) => {
+          const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+          return (
+            <Card key={order.id} className="border border-gray-200">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium text-gray-900">#{order.orderNumber}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                      </div>
+                      {order.scheduledDate && (
+                        <div className="mt-1">
+                          <div className="text-red-600 font-bold text-base">
+                            예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: '2-digit', 
+                              day: '2-digit',
+                              weekday: 'short'
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <StatusIcon className="h-5 w-5 text-blue-500" />
+                      <span className="text-sm font-medium text-blue-600">
+                        {statusLabels[order.status as keyof typeof statusLabels]}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-gray-500 mb-1">고객명</div>
+                      <div className="font-medium">{order.customerName}</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500 mb-1">연락처</div>
+                      <div className="font-medium">{order.customerPhone}</div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm">
+                    <div className="text-gray-500 mb-1">배송주소</div>
+                    <div className="space-y-1">
+                      <div>[{order.zipCode}]</div>
+                      <div>{order.address1}</div>
+                      <div>{order.address2}</div>
+                    </div>
+                  </div>
+
+                  <div className="text-sm">
+                    <div className="text-gray-500 mb-2">주문상품</div>
+                    <div className="space-y-1">
+                      <div className="font-medium">소박스 × {order.smallBoxQuantity}개</div>
+                      <div className="font-medium">대박스 × {order.largeBoxQuantity}개</div>
+                      <div className={order.wrappingQuantity > 0 ? "font-medium text-eden-brown" : "text-gray-500"}>
+                        {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-gray-500 mb-2">주문상태</div>
+                    <Select
+                      value={order.status}
+                      onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">
+                          <div className="flex items-center space-x-2">
+                            <Clock className="h-4 w-4 text-yellow-500" />
+                            <span>주문접수</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="scheduled">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <span>발송예약</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="delivered">
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span>발송완료</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100">
+                    <div className="flex flex-col gap-3">
+                      <ScheduledDatePicker order={order} />
+                      <Link href={`/order-edit/${order.id}`}>
+                        <Button size="sm" variant="outline" className="w-full">
+                          <Eye className="h-4 w-4 mr-2" />
+                          상세보기
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </>
   );
 }

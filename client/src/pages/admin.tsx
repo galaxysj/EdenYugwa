@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar } from "lucide-react";
@@ -28,6 +29,7 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState("all");
 
   const handleLogout = () => {
     toast({
@@ -43,6 +45,329 @@ export default function Admin() {
     refetchInterval: 5000, // Refetch every 5 seconds
     refetchIntervalInBackground: true,
   });
+
+  // Filter orders by status
+  const filterOrdersByStatus = (status: string) => {
+    if (status === "all") return orders;
+    return orders.filter((order: Order) => order.status === status);
+  };
+
+  const allOrders = orders;
+  const pendingOrders = filterOrdersByStatus("pending");
+  const scheduledOrders = filterOrdersByStatus("scheduled");
+  const deliveredOrders = filterOrdersByStatus("delivered");
+
+  // Render orders function
+  const renderOrdersList = (ordersList: Order[]) => {
+    if (ordersList.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          해당하는 주문이 없습니다.
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {/* Desktop Table */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ordersList.map((order: Order) => {
+                const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+                return (
+                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-gray-900">#{order.orderNumber}</div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </div>
+                      {order.scheduledDate && (
+                        <div className="mt-1">
+                          <div className="text-red-600 font-bold text-sm">
+                            예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: '2-digit', 
+                              day: '2-digit',
+                              weekday: 'short'
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-gray-900">{order.customerName}</div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="text-sm text-gray-900">{order.customerPhone}</div>
+                    </td>
+                    <td className="py-4 px-4 max-w-xs">
+                      <div className="text-sm text-gray-900">
+                        <div className="mb-1">[{order.zipCode}]</div>
+                        <div className="mb-1">{order.address1}</div>
+                        <div>{order.address2}</div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 min-w-[120px]">
+                      <div className="space-y-2">
+                        <div className="text-base font-medium text-gray-900 whitespace-nowrap">
+                          소박스 × {order.smallBoxQuantity}개
+                        </div>
+                        <div className="text-base font-medium text-gray-900 whitespace-nowrap">
+                          대박스 × {order.largeBoxQuantity}개
+                        </div>
+                        <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown whitespace-nowrap" : "text-base text-gray-500 whitespace-nowrap"}>
+                          {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 font-medium text-gray-900">
+                      {formatPrice(order.totalAmount)}
+                    </td>
+                    <td className="py-4 px-4">
+                      <Select
+                        value={order.paymentStatus || 'pending'}
+                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                        disabled={updatePaymentMutation.isPending}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center space-x-2">
+                              <AlertCircle className="h-4 w-4 text-orange-500" />
+                              <span>입금 대기</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="confirmed">
+                            <div className="flex items-center space-x-2">
+                              <DollarSign className="h-4 w-4 text-green-500" />
+                              <span>입금 완료</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="refunded">
+                            <div className="flex items-center space-x-2">
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <span>환불</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-4 px-4">
+                      <Select
+                        value={order.status}
+                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center space-x-2">
+                              <Clock className="h-4 w-4 text-yellow-500" />
+                              <span>주문접수</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="scheduled">
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="h-4 w-4 text-blue-500" />
+                              <span>발송예약</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="delivered">
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>발송완료</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex flex-col gap-2">
+                        <SmsDialog order={order} />
+                        <ScheduledDatePicker order={order} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden space-y-4">
+          {ordersList.map((order: Order) => {
+            const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+            return (
+              <Card key={order.id} className="border border-gray-200">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                        </div>
+                        {order.scheduledDate && (
+                          <div className="mt-1">
+                            <div className="text-red-600 font-bold text-base">
+                              예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                                year: 'numeric',
+                                month: '2-digit', 
+                                day: '2-digit',
+                                weekday: 'short'
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <StatusIcon className="h-5 w-5 text-blue-500" />
+                        <span className="text-sm font-medium text-blue-600">
+                          {statusLabels[order.status as keyof typeof statusLabels]}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="text-gray-500 mb-1">고객명</div>
+                        <div className="font-medium">{order.customerName}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-1">연락처</div>
+                        <div className="font-medium">{order.customerPhone}</div>
+                      </div>
+                    </div>
+
+                    <div className="text-sm">
+                      <div className="text-gray-500 mb-1">배송주소</div>
+                      <div className="space-y-1">
+                        <div>[{order.zipCode}]</div>
+                        <div>{order.address1}</div>
+                        <div>{order.address2}</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="text-gray-500 mb-2">주문상품</div>
+                        <div className="space-y-1">
+                          <div className="font-medium">소박스 × {order.smallBoxQuantity}개</div>
+                          <div className="font-medium">대박스 × {order.largeBoxQuantity}개</div>
+                          <div className={order.wrappingQuantity > 0 ? "font-medium text-eden-brown" : "text-gray-500"}>
+                            {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-2">주문금액</div>
+                        <div className="text-xl font-bold text-eden-brown">
+                          {formatPrice(order.totalAmount)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-gray-500 mb-2">입금상태</div>
+                        <Select
+                          value={order.paymentStatus || 'pending'}
+                          onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                          disabled={updatePaymentMutation.isPending}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">
+                              <div className="flex items-center space-x-2">
+                                <AlertCircle className="h-4 w-4 text-orange-500" />
+                                <span>입금 대기</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="confirmed">
+                              <div className="flex items-center space-x-2">
+                                <DollarSign className="h-4 w-4 text-green-500" />
+                                <span>입금 완료</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="refunded">
+                              <div className="flex items-center space-x-2">
+                                <AlertCircle className="h-4 w-4 text-red-500" />
+                                <span>환불</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-2">주문상태</div>
+                        <Select
+                          value={order.status}
+                          onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4 text-yellow-500" />
+                                <span>주문접수</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="scheduled">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-blue-500" />
+                                <span>발송예약</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="delivered">
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>발송완료</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-gray-100">
+                      <div className="flex flex-col gap-3">
+                        <SmsDialog order={order} />
+                        <ScheduledDatePicker order={order} />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
 
 
 
@@ -223,7 +548,7 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* Orders List */}
+        {/* Orders List with Tabs */}
         <Card>
           <CardHeader>
             <CardTitle className="font-korean">주문 목록</CardTitle>
@@ -246,313 +571,31 @@ export default function Admin() {
                   다시 시도
                 </Button>
               </div>
-            ) : orders.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                아직 주문이 없습니다.
-              </div>
             ) : (
-              <>
-                {/* Desktop Table */}
-                <div className="hidden lg:block overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.map((order: Order) => {
-                        const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
-                        return (
-                          <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                            <td className="py-4 px-4">
-                              <div className="font-medium text-gray-900">#{order.orderNumber}</div>
-                              <div className="text-xs text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString()}
-                              </div>
-                              {order.scheduledDate && (
-                                <div className="mt-1">
-                                  <div className="text-red-600 font-bold text-sm">
-                                    예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                      year: 'numeric',
-                                      month: '2-digit', 
-                                      day: '2-digit',
-                                      weekday: 'short'
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="font-medium text-gray-900">{order.customerName}</div>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="text-sm text-gray-900">{order.customerPhone}</div>
-                            </td>
-                            <td className="py-4 px-4 max-w-xs">
-                              <div className="text-sm text-gray-900">
-                                <div className="mb-1">[{order.zipCode}]</div>
-                                <div className="mb-1">{order.address1}</div>
-                                <div>{order.address2}</div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4 min-w-[120px]">
-                              <div className="space-y-2">
-                                <div className="text-base font-medium text-gray-900 whitespace-nowrap">
-                                  소박스 × {order.smallBoxQuantity}개
-                                </div>
-                                <div className="text-base font-medium text-gray-900 whitespace-nowrap">
-                                  대박스 × {order.largeBoxQuantity}개
-                                </div>
-                                <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown whitespace-nowrap" : "text-base text-gray-500 whitespace-nowrap"}>
-                                  {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-4 font-medium text-gray-900">
-                              {formatPrice(order.totalAmount)}
-                            </td>
-                            <td className="py-4 px-4">
-                              <Select
-                                value={order.paymentStatus || 'pending'}
-                                onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
-                                disabled={updatePaymentMutation.isPending}
-                              >
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    <div className="flex items-center space-x-2">
-                                      <AlertCircle className="h-4 w-4 text-orange-500" />
-                                      <span>입금 대기</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="confirmed">
-                                    <div className="flex items-center space-x-2">
-                                      <DollarSign className="h-4 w-4 text-green-500" />
-                                      <span>입금 완료</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="refunded">
-                                    <div className="flex items-center space-x-2">
-                                      <AlertCircle className="h-4 w-4 text-red-500" />
-                                      <span>환불</span>
-                                    </div>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
-                            <td className="py-4 px-4">
-                              <Select
-                                value={order.status}
-                                onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                                disabled={updateStatusMutation.isPending}
-                              >
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    <div className="flex items-center space-x-2">
-                                      <Clock className="h-4 w-4" />
-                                      <span>주문접수</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="scheduled">
-                                    <div className="flex items-center space-x-2">
-                                      <Calendar className="h-4 w-4" />
-                                      <span>발송예약</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="delivered">
-                                    <div className="flex items-center space-x-2">
-                                      <CheckCircle className="h-4 w-4" />
-                                      <span>발송완료</span>
-                                    </div>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="flex space-x-1">
-                                <SmsDialog order={order} />
-                                <SmsHistory order={order} />
-                                <ScheduledDatePicker order={order} />
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    // TODO: Implement order detail modal
-                                    toast({
-                                      title: "주문 상세",
-                                      description: `${order.orderNumber} 주문 상세보기 기능은 추후 구현될 예정입니다.`,
-                                    });
-                                  }}
-                                  className="h-8 text-xs"
-                                >
-                                  <Eye className="mr-1 h-3 w-3" />
-                                  상세
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile Cards */}
-                <div className="block lg:hidden space-y-4">
-                  {orders.map((order: Order) => {
-                    const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
-                    return (
-                      <Card key={order.id} className="border border-gray-200 shadow-sm">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
-                              <div className="text-sm text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString('ko-KR')}
-                              </div>
-                              {order.scheduledDate && (
-                                <div className="mt-1">
-                                  <div className="text-red-600 font-bold text-base">
-                                    예약발송 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                      year: 'numeric',
-                                      month: '2-digit', 
-                                      day: '2-digit',
-                                      weekday: 'short'
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <div className="font-bold text-lg text-eden-brown">
-                                {formatPrice(order.totalAmount)}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2 mb-4">
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">고객: </span>
-                              <span className="text-sm text-gray-900">{order.customerName}</span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">연락처: </span>
-                              <span className="text-sm text-gray-900">{order.customerPhone}</span>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">상품: </span>
-                              <div className="mt-1">
-                                <div className="text-base font-medium text-gray-900">
-                                  소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
-                                </div>
-                                {order.wrappingQuantity > 0 && (
-                                  <div className="text-sm font-medium text-eden-brown">
-                                    보자기 × {order.wrappingQuantity}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">배송지: </span>
-                              <span className="text-sm text-gray-900">
-                                {order.address1} {order.address2}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <label className="text-xs font-medium text-gray-600 mb-1 block">입금 상태</label>
-                                <Select
-                                  value={order.paymentStatus || 'pending'}
-                                  onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
-                                  disabled={updatePaymentMutation.isPending}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="pending">
-                                      <div className="flex items-center space-x-2">
-                                        <AlertCircle className="h-4 w-4 text-orange-500" />
-                                        <span>입금 대기</span>
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="confirmed">
-                                      <div className="flex items-center space-x-2">
-                                        <DollarSign className="h-4 w-4 text-green-500" />
-                                        <span>입금 완료</span>
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="refunded">
-                                      <div className="flex items-center space-x-2">
-                                        <AlertCircle className="h-4 w-4 text-red-500" />
-                                        <span>환불</span>
-                                      </div>
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <label className="text-xs font-medium text-gray-600 mb-1 block">주문 상태</label>
-                                <Select
-                                  value={order.status}
-                                  onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                                  disabled={updateStatusMutation.isPending}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="pending">
-                                      <div className="flex items-center space-x-2">
-                                        <Clock className="h-4 w-4" />
-                                        <span>주문접수</span>
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="scheduled">
-                                      <div className="flex items-center space-x-2">
-                                        <Calendar className="h-4 w-4" />
-                                        <span>발송예약</span>
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="delivered">
-                                      <div className="flex items-center space-x-2">
-                                        <CheckCircle className="h-4 w-4" />
-                                        <span>발송완료</span>
-                                      </div>
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                            <div className="flex justify-end space-x-1">
-                              <SmsDialog order={order} />
-                              <SmsHistory order={order} />
-                              <ScheduledDatePicker order={order} />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
+                  <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
+                  <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
+                  <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="all" className="mt-6">
+                  {renderOrdersList(allOrders)}
+                </TabsContent>
+                
+                <TabsContent value="pending" className="mt-6">
+                  {renderOrdersList(pendingOrders)}
+                </TabsContent>
+                
+                <TabsContent value="scheduled" className="mt-6">
+                  {renderOrdersList(scheduledOrders)}
+                </TabsContent>
+                
+                <TabsContent value="delivered" className="mt-6">
+                  {renderOrdersList(deliveredOrders)}
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
