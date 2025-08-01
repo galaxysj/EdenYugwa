@@ -277,13 +277,13 @@ export default function Manager() {
                             <td className="py-4 px-4">
                               <div className="space-y-1">
                                 <div className="text-base font-medium text-gray-900">
-                                  소박스 × {order.smallBoxQuantity}
+                                  소박스 × {order.smallBoxQuantity}개
                                 </div>
                                 <div className="text-base font-medium text-gray-900">
-                                  대박스 × {order.largeBoxQuantity}
+                                  대박스 × {order.largeBoxQuantity}개
                                 </div>
-                                <div className={order.wrappingQuantity > 0 ? "text-sm font-medium text-eden-brown" : "text-sm text-gray-500"}>
-                                  {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
+                                <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown" : "text-base text-gray-500"}>
+                                  {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
                                 </div>
                               </div>
                             </td>
