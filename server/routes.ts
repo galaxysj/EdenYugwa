@@ -173,12 +173,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/orders/:id/financial', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { actualPaidAmount, discountAmount, discountReason } = req.body;
+      const { actualPaidAmount, discountAmount, discountReason, smallBoxCost, largeBoxCost } = req.body;
+      
+      // Get current order to calculate costs
+      const currentOrder = await storage.getOrder(id);
+      if (!currentOrder) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
       
       const updateData: any = {};
       if (actualPaidAmount !== undefined) updateData.actualPaidAmount = actualPaidAmount;
       if (discountAmount !== undefined) updateData.discountAmount = discountAmount;
       if (discountReason !== undefined) updateData.discountReason = discountReason;
+      if (smallBoxCost !== undefined) updateData.smallBoxCost = smallBoxCost;
+      if (largeBoxCost !== undefined) updateData.largeBoxCost = largeBoxCost;
+      
+      // Calculate total cost and net profit if cost information is provided
+      if (smallBoxCost !== undefined || largeBoxCost !== undefined) {
+        const finalSmallBoxCost = smallBoxCost !== undefined ? smallBoxCost : (currentOrder.smallBoxCost || 0);
+        const finalLargeBoxCost = largeBoxCost !== undefined ? largeBoxCost : (currentOrder.largeBoxCost || 0);
+        
+        // Calculate total cost: (소박스 수량 × 소박스 원가) + (대박스 수량 × 대박스 원가)
+        const totalCost = (currentOrder.smallBoxQuantity * finalSmallBoxCost) + 
+                         (currentOrder.largeBoxQuantity * finalLargeBoxCost);
+        updateData.totalCost = totalCost;
+        
+        // Calculate net profit: 실입금 - 총원가 - 배송비
+        const finalActualPaid = actualPaidAmount !== undefined ? actualPaidAmount : (currentOrder.actualPaidAmount || 0);
+        const netProfit = finalActualPaid - totalCost - currentOrder.shippingFee;
+        updateData.netProfit = netProfit;
+      }
       
       const updatedOrder = await storage.updateFinancialInfo(id, updateData);
       if (!updatedOrder) {

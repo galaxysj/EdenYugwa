@@ -198,6 +198,10 @@ export class DatabaseStorage implements IStorage {
     actualPaidAmount?: number;
     discountAmount?: number;
     discountReason?: string;
+    smallBoxCost?: number;
+    largeBoxCost?: number;
+    totalCost?: number;
+    netProfit?: number;
   }): Promise<Order | undefined> {
     const [updatedOrder] = await db.update(orders)
       .set(data)

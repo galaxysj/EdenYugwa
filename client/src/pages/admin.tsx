@@ -33,17 +33,32 @@ function FinancialDialog({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
   const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || '');
   const [discountReason, setDiscountReason] = useState(order.discountReason || '');
+  const [smallBoxCost, setSmallBoxCost] = useState(order.smallBoxCost?.toString() || '');
+  const [largeBoxCost, setLargeBoxCost] = useState(order.largeBoxCost?.toString() || '');
   
   // 할인금액 자동 계산
   const calculatedDiscount = actualPaidAmount ? 
     Math.max(0, order.totalAmount - parseInt(actualPaidAmount)) : 
     (order.discountAmount || 0);
+    
+  // 원가 및 수익 계산
+  const smallCost = smallBoxCost ? parseInt(smallBoxCost) : 0;
+  const largeCost = largeBoxCost ? parseInt(largeBoxCost) : 0;
+  const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost);
+  const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
+  const netProfit = paidAmount - totalCost - order.shippingFee;
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const updateFinancialMutation = useMutation({
-    mutationFn: async (data: { actualPaidAmount?: number; discountAmount?: number; discountReason?: string }) => {
+    mutationFn: async (data: { 
+      actualPaidAmount?: number; 
+      discountAmount?: number; 
+      discountReason?: string;
+      smallBoxCost?: number;
+      largeBoxCost?: number;
+    }) => {
       const response = await fetch(`/api/orders/${order.id}/financial`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -82,6 +97,8 @@ function FinancialDialog({ order }: { order: Order }) {
       data.discountAmount = calculatedDiscount > 0 ? calculatedDiscount : 0;
     }
     if (discountReason) data.discountReason = discountReason;
+    if (smallBoxCost) data.smallBoxCost = parseInt(smallBoxCost);
+    if (largeBoxCost) data.largeBoxCost = parseInt(largeBoxCost);
     
     updateFinancialMutation.mutate(data);
   };
@@ -143,6 +160,73 @@ function FinancialDialog({ order }: { order: Order }) {
                 실제 입금 금액을 입력하면 할인금액이 자동으로 계산됩니다.
               </p>
             </div>
+          </div>
+
+          <div className="space-y-4 border-t pt-4">
+            <Label className="text-base font-semibold">원가 정보</Label>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="smallBoxCost">한과1호 원가 (개당)</Label>
+                <Input
+                  id="smallBoxCost"
+                  type="number"
+                  placeholder="소박스 원가"
+                  value={smallBoxCost}
+                  onChange={(e) => setSmallBoxCost(e.target.value)}
+                />
+                <p className="text-xs text-gray-500">
+                  주문수량: {order.smallBoxQuantity}개
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="largeBoxCost">한과2호 원가 (개당)</Label>
+                <Input
+                  id="largeBoxCost"
+                  type="number"
+                  placeholder="대박스 원가"
+                  value={largeBoxCost}
+                  onChange={(e) => setLargeBoxCost(e.target.value)}
+                />
+                <p className="text-xs text-gray-500">
+                  주문수량: {order.largeBoxQuantity}개
+                </p>
+              </div>
+            </div>
+
+            {(smallBoxCost || largeBoxCost) && (
+              <div className="p-4 bg-green-50 rounded-md border border-green-200">
+                <div className="space-y-2 text-sm">
+                  <div className="font-semibold text-green-800">수익 계산</div>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <div className="text-gray-600">총 원가:</div>
+                      <div className="font-medium">
+                        소박스: {order.smallBoxQuantity}개 × {formatPrice(smallCost)} = {formatPrice(order.smallBoxQuantity * smallCost)}
+                      </div>
+                      <div className="font-medium">
+                        대박스: {order.largeBoxQuantity}개 × {formatPrice(largeCost)} = {formatPrice(order.largeBoxQuantity * largeCost)}
+                      </div>
+                      <div className="font-semibold text-green-700 border-t pt-1 mt-1">
+                        합계: {formatPrice(totalCost)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-gray-600">수익 계산:</div>
+                      <div>실입금: {formatPrice(paidAmount)}</div>
+                      <div>원가: -{formatPrice(totalCost)}</div>
+                      <div>배송비: -{formatPrice(order.shippingFee)}</div>
+                      <div className="font-semibold text-green-700 border-t pt-1 mt-1">
+                        실제수익: <span className={netProfit >= 0 ? "text-green-600" : "text-red-600"}>
+                          {formatPrice(netProfit)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -297,6 +381,11 @@ export default function Admin() {
                         {order.discountAmount && order.discountAmount > 0 && (
                           <div className="text-blue-600">
                             할인: -{formatPrice(order.discountAmount)}
+                          </div>
+                        )}
+                        {order.netProfit !== undefined && order.netProfit !== null && (
+                          <div className={order.netProfit >= 0 ? "text-green-600" : "text-red-600"}>
+                            수익: {formatPrice(order.netProfit)}
                           </div>
                         )}
                       </div>
@@ -468,6 +557,13 @@ export default function Admin() {
                               {order.discountReason && (
                                 <span className="text-xs text-gray-500 block">({order.discountReason})</span>
                               )}
+                            </div>
+                          )}
+                          {order.netProfit !== undefined && order.netProfit !== null && (
+                            <div className="text-sm text-gray-600">
+                              실제수익: <span className={`font-medium ${order.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                                {formatPrice(order.netProfit)}
+                              </span>
                             </div>
                           )}
                         </div>

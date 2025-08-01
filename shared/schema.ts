@@ -19,6 +19,11 @@ export const orders = pgTable("orders", {
   actualPaidAmount: integer("actual_paid_amount").default(0), // 실제 입금된 금액
   discountAmount: integer("discount_amount").default(0), // 할인 금액
   discountReason: text("discount_reason"), // 할인 사유
+  // 원가 정보
+  smallBoxCost: integer("small_box_cost").default(0), // 한과1호 원가 (개당)
+  largeBoxCost: integer("large_box_cost").default(0), // 한과2호 원가 (개당)
+  totalCost: integer("total_cost").default(0), // 총 원가
+  netProfit: integer("net_profit").default(0), // 실제 수익 (실입금 - 원가 - 배송비)
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'scheduled', 'shipping', 'delivered'
   scheduledDate: timestamp("scheduled_date"),
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
