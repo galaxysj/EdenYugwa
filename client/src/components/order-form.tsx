@@ -416,7 +416,7 @@ export default function OrderForm() {
                   />
 
                   {/* 배송 안내 */}
-                  <div className="mt-6 p-4 bg-eden-cream/30 rounded-lg border border-eden-brown/20">
+                  <div className="mt-6 p-4 bg-eden-cream/30 rounded-lg">
                     <h4 className="text-base font-semibold text-eden-brown mb-3">에덴한과 배송</h4>
                     <div className="text-sm text-gray-700 space-y-2 leading-relaxed">
                       <p>• 물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
