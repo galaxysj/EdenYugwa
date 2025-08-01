@@ -150,20 +150,22 @@ export default function Home() {
           </div>
 
           {/* Product Images */}
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <div className="flex justify-center">
-              <img 
-                src={edenHangwaImage} 
-                alt="에덴한과 유과 상품" 
-                className="rounded-2xl shadow-lg w-full max-w-md"
-              />
-            </div>
-            <div className="flex justify-center">
-              <img 
-                src={edenHangwaImage2} 
-                alt="에덴한과 유과 상품" 
-                className="rounded-2xl shadow-lg w-full max-w-md"
-              />
+          <div className="max-w-4xl mx-auto mb-16">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex justify-center">
+                <img 
+                  src={edenHangwaImage} 
+                  alt="에덴한과 유과 상품" 
+                  className="rounded-xl shadow-md w-full max-w-sm"
+                />
+              </div>
+              <div className="flex justify-center">
+                <img 
+                  src={edenHangwaImage2} 
+                  alt="에덴한과 유과 상품" 
+                  className="rounded-xl shadow-md w-full max-w-sm"
+                />
+              </div>
             </div>
           </div>
 
