@@ -59,6 +59,11 @@ export default function Home() {
                   관리자
                 </Button>
               </Link>
+              <Link href="/manager">
+                <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
+                  매니저
+                </Button>
+              </Link>
             </nav>
 
             {/* Mobile Menu Button */}
@@ -117,6 +122,14 @@ export default function Home() {
                     className="text-left text-eden-red hover:text-eden-brown transition-colors py-2 w-full"
                   >
                     관리자
+                  </button>
+                </Link>
+                <Link href="/manager">
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
+                  >
+                    매니저
                   </button>
                 </Link>
               </div>
