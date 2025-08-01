@@ -46,6 +46,10 @@ const orderSchema = z.object({
 
 type OrderFormData = z.infer<typeof orderSchema>;
 
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('ko-KR').format(price) + '원';
+};
+
 const prices = {
   small: 19000, // 한과1호
   large: 21000, // 한과2호
@@ -53,10 +57,107 @@ const prices = {
   shipping: 4000,
 };
 
+interface ProductSelectorProps {
+  onProductAdd: (product: {type: string, quantity: number}) => void;
+}
+
+function ProductSelector({ onProductAdd }: ProductSelectorProps) {
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [quantity, setQuantity] = useState<number>(1);
+
+  const productOptions = [
+    { value: "small", label: "한과1호 (약 1.1kg)", price: prices.small, description: "약 35.5×21×11.2cm" },
+    { value: "large", label: "한과2호 (약 1.3kg)", price: prices.large, description: "약 37×23×11.5cm" },
+    { value: "wrapping", label: "보자기", price: prices.wrapping, description: "개당 +1,000원" }
+  ];
+
+  const selectedProduct = productOptions.find(p => p.value === selectedType);
+
+  const handleAdd = () => {
+    if (selectedType && quantity > 0) {
+      onProductAdd({ type: selectedType, quantity });
+      setQuantity(1);
+      setSelectedType("");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="text-base font-medium text-eden-brown mb-2 block">상품 종류</label>
+        <Select value={selectedType} onValueChange={setSelectedType}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="상품을 선택해주세요" />
+          </SelectTrigger>
+          <SelectContent>
+            {productOptions.map((product) => (
+              <SelectItem key={product.value} value={product.value}>
+                {product.label} - {formatPrice(product.price)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {selectedProduct && (
+        <div className="border border-eden-beige/50 rounded-lg p-4 bg-eden-cream/20">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h5 className="text-lg font-semibold text-eden-brown">{selectedProduct.label}</h5>
+              <p className="text-xs text-eden-dark mt-1">{selectedProduct.description}</p>
+            </div>
+            <span className="text-xl font-bold text-eden-brown">{formatPrice(selectedProduct.price)}</span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-eden-brown">수량:</label>
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-8 h-8 p-0"
+              >
+                -
+              </Button>
+              <Input
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                className="w-20 text-center"
+              />
+              <Button 
+                type="button"
+                variant="outline" 
+                size="sm"
+                onClick={() => setQuantity(quantity + 1)}
+                className="w-8 h-8 p-0"
+              >
+                +
+              </Button>
+            </div>
+            
+            <Button 
+              type="button"
+              onClick={handleAdd}
+              className="bg-eden-brown hover:bg-eden-brown/90 text-white"
+            >
+              담기
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OrderForm() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [totalAmount, setTotalAmount] = useState(0);
+  const [selectedProducts, setSelectedProducts] = useState<Array<{type: string, quantity: number}>>([]);
 
   // Daum 우편번호 서비스 스크립트 로드
   useEffect(() => {
@@ -216,160 +317,74 @@ export default function OrderForm() {
                 </h4>
                 
                 <div className="space-y-6">
-                  {/* Product Selection - All in One Border */}
+                  {/* Product Selection Interface */}
                   <div className="border-2 border-eden-beige rounded-lg p-6">
-                    <div className="space-y-6">
-                      {/* 한과1호 Selection */}
-                      <div>
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h5 className="text-lg font-semibold text-eden-brown">한과1호(약 1.1kg)</h5>
-                            <p className="text-xs text-eden-dark mt-1">약 35.5×21×11.2cm</p>
-                          </div>
-                          <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.small)}</span>
+                    <ProductSelector 
+                      onProductAdd={(product) => {
+                        const existingIndex = selectedProducts.findIndex(p => p.type === product.type);
+                        if (existingIndex >= 0) {
+                          const updated = [...selectedProducts];
+                          updated[existingIndex].quantity += product.quantity;
+                          setSelectedProducts(updated);
+                        } else {
+                          setSelectedProducts([...selectedProducts, product]);
+                        }
+                        
+                        // Update form values
+                        if (product.type === 'small') {
+                          const currentSmall = form.getValues('smallBoxQuantity');
+                          form.setValue('smallBoxQuantity', currentSmall + product.quantity);
+                        } else if (product.type === 'large') {
+                          const currentLarge = form.getValues('largeBoxQuantity');
+                          form.setValue('largeBoxQuantity', currentLarge + product.quantity);
+                        } else if (product.type === 'wrapping') {
+                          const currentWrapping = form.getValues('wrappingQuantity');
+                          form.setValue('wrappingQuantity', currentWrapping + product.quantity);
+                        }
+                      }}
+                    />
+                    
+                    {/* Selected Products Summary */}
+                    {selectedProducts.length > 0 && (
+                      <div className="mt-6 pt-4 border-t border-eden-beige/50">
+                        <h6 className="text-sm font-medium text-eden-brown mb-3">선택된 상품</h6>
+                        <div className="space-y-2">
+                          {selectedProducts.map((product, index) => (
+                            <div key={index} className="flex justify-between items-center text-sm">
+                              <span>
+                                {product.type === 'small' && '한과1호'}
+                                {product.type === 'large' && '한과2호'}
+                                {product.type === 'wrapping' && '보자기'}
+                              </span>
+                              <div className="flex items-center space-x-2">
+                                <span>{product.quantity}개</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const updated = selectedProducts.filter((_, i) => i !== index);
+                                    setSelectedProducts(updated);
+                                    
+                                    // Update form values
+                                    if (product.type === 'small') {
+                                      form.setValue('smallBoxQuantity', Math.max(0, form.getValues('smallBoxQuantity') - product.quantity));
+                                    } else if (product.type === 'large') {
+                                      form.setValue('largeBoxQuantity', Math.max(0, form.getValues('largeBoxQuantity') - product.quantity));
+                                    } else if (product.type === 'wrapping') {
+                                      form.setValue('wrappingQuantity', Math.max(0, form.getValues('wrappingQuantity') - product.quantity));
+                                    }
+                                  }}
+                                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                                >
+                                  ×
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                        <FormField
-                          control={form.control}
-                          name="smallBoxQuantity"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>수량</FormLabel>
-                              <FormControl>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    className="w-20 text-center"
-                                  />
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(field.value + 1)}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
-
-                      {/* Divider */}
-                      <div className="border-t border-eden-beige/50"></div>
-
-                      {/* 한과2호 Selection */}
-                      <div>
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h5 className="text-lg font-semibold text-eden-brown">한과2호(약 1.3kg)</h5>
-                            <p className="text-xs text-eden-dark mt-1">약 37×23×11.5cm</p>
-                          </div>
-                          <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.large)}</span>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="largeBoxQuantity"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>수량</FormLabel>
-                              <FormControl>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    className="w-20 text-center"
-                                  />
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(field.value + 1)}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Divider */}
-                      <div className="border-t border-eden-beige/50"></div>
-
-                      {/* Wrapping Selection */}
-                      <div>
-                        <FormField
-                          control={form.control}
-                          name="wrappingQuantity"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>보자기 수량</FormLabel>
-                              <p className="text-xs text-gray-600 mb-2">개당 +1,000원</p>
-                              <FormControl>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    max={totalQuantity}
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    className="w-20 text-center"
-                                  />
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(field.value + 1)}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Scheduled Delivery Date */}
