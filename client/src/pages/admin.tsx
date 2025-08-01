@@ -439,20 +439,11 @@ export default function Admin() {
   // Fetch deleted orders (trash)
   const { data: deletedOrders = [], isLoading: isLoadingTrash, error: trashError } = useQuery({
     queryKey: ['/api/orders/trash'],
-    queryFn: () => {
-      console.log('Fetching trash orders...');
-      return api.orders.getTrash();
-    },
-    enabled: activeTab === "trash",
+    queryFn: () => api.orders.getTrash(),
+    enabled: true, // Always load trash data for tab counter
     retry: 3,
+    refetchInterval: activeTab === "trash" ? 5000 : false, // Only auto-refresh when trash tab is active
   });
-
-  // Debug logging
-  console.log('Active tab:', activeTab);
-  console.log('Deleted orders:', deletedOrders);
-  console.log('Deleted orders length:', deletedOrders.length);
-  console.log('Is loading trash:', isLoadingTrash);
-  console.log('Trash error:', trashError);
 
   // Restore order mutation
   const restoreOrderMutation = useMutation({
