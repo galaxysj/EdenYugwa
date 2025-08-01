@@ -278,6 +278,19 @@ export default function Admin() {
                               <div className="text-xs text-gray-500">
                                 {new Date(order.createdAt).toLocaleDateString()}
                               </div>
+                              {order.scheduledDate && (
+                                <div className="mt-1">
+                                  <div className="text-red-600 font-bold text-sm">예약발송</div>
+                                  <div className="text-red-600 font-bold text-sm">
+                                    {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                                      year: 'numeric',
+                                      month: '2-digit', 
+                                      day: '2-digit',
+                                      weekday: 'short'
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                             </td>
                             <td className="py-4 px-4">
                               <div className="font-medium text-gray-900">{order.customerName}</div>
@@ -412,6 +425,19 @@ export default function Admin() {
                               <div className="text-sm text-gray-500">
                                 {new Date(order.createdAt).toLocaleDateString('ko-KR')}
                               </div>
+                              {order.scheduledDate && (
+                                <div className="mt-1">
+                                  <div className="text-red-600 font-bold text-base">예약발송</div>
+                                  <div className="text-red-600 font-bold text-base">
+                                    {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                                      year: 'numeric',
+                                      month: '2-digit', 
+                                      day: '2-digit',
+                                      weekday: 'short'
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
                               <div className="font-bold text-lg text-eden-brown">

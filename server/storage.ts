@@ -91,7 +91,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllOrders(): Promise<Order[]> {
-    return await db.select().from(orders).orderBy(desc(orders.createdAt));
+    return await db.select().from(orders).orderBy(
+      // 예약발송일이 있는 주문을 먼저, 그 다음 생성일 역순
+      orders.scheduledDate,
+      desc(orders.createdAt)
+    );
   }
 
   async getOrdersByPhone(phone: string): Promise<Order[]> {
