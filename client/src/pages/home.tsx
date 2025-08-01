@@ -247,7 +247,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <h4 className="text-2xl font-bold text-eden-brown mb-6">우리 유과의 특별함</h4>
+                <h4 className="text-2xl font-bold text-eden-brown mb-6">에덴한과의 특별함</h4>
                 <ul className="space-y-4">
                   <li className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-eden-sage rounded-full flex items-center justify-center mt-0.5">
