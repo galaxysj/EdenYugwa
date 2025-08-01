@@ -148,10 +148,9 @@ export default function Home() {
                 <span className="text-eden-red">정성 가득</span> 유과
               </h2>
               <p className="text-lg text-eden-dark mb-8 leading-relaxed">
-                부모님이 직접 만드시는 찹쌀유과로<br />
-                100% 국내산 찹쌀로 만든 한과입니다.<br />
-                달지 않고 고소한 맛이 일품으로<br />
-                선물로도 완벽한 에덴한과입니다.
+                부모님이 직접 만드시는 수제 유과로<br />
+                달지 않고 고소한 맛이 일품입니다.<br />
+                교회 선물로도 완벽한 에덴한과를 만나보세요.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
