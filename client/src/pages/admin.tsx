@@ -115,9 +115,7 @@ export default function Admin() {
                     </td>
                     <td className="py-4 px-4 max-w-xs">
                       <div className="text-sm text-gray-900">
-                        <div className="mb-1">[{order.zipCode}]</div>
-                        <div className="mb-1">{order.address1}</div>
-                        <div>{order.address2}</div>
+                        [{order.zipCode}] {order.address1} {order.address2}
                       </div>
                     </td>
                     <td className="py-4 px-4 min-w-[120px]">
@@ -269,10 +267,8 @@ export default function Admin() {
 
                     <div className="text-sm">
                       <div className="text-gray-500 mb-1">배송주소</div>
-                      <div className="space-y-1">
-                        <div>[{order.zipCode}]</div>
-                        <div>{order.address1}</div>
-                        <div>{order.address2}</div>
+                      <div>
+                        [{order.zipCode}] {order.address1} {order.address2}
                       </div>
                     </div>
 
