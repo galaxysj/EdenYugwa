@@ -248,32 +248,20 @@ export default function Home() {
               </div>
               <div>
                 <h4 className="text-2xl font-bold text-eden-brown mb-6">에덴한과의 특별함</h4>
-                <ul className="space-y-4">
-                  <li className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-eden-sage rounded-full flex items-center justify-center mt-0.5">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                    <span className="text-eden-dark">엄선된 국산 재료만을 사용하여 건강하고 안전합니다</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-eden-sage rounded-full flex items-center justify-center mt-0.5">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                    <span className="text-eden-dark">전통 제조 방식을 고수하여 깊은 맛과 향을 자랑합니다</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-eden-sage rounded-full flex items-center justify-center mt-0.5">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                    <span className="text-eden-dark">과도하지 않은 단맛으로 부담 없이 즐길 수 있습니다</span>
-                  </li>
-                  <li className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-eden-sage rounded-full flex items-center justify-center mt-0.5">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                    <span className="text-eden-dark">아름다운 포장으로 선물용으로도 완벽합니다</span>
-                  </li>
-                </ul>
+                <div className="text-eden-dark text-base leading-relaxed">
+                  <p className="mb-4">
+                    1년 중 설날 명절 전에만 만들어서 판매하기 때문에 재고 없이 바로 바로 만들어지는 맛있는 유과를 맛볼 수 있습니다.
+                  </p>
+                  <p className="mb-4">
+                    시중마트에서 판매하는 유과와는 비교 불가입니다.
+                  </p>
+                  <p className="mb-4">
+                    두께감 있는 칼라 박스에 가지런히 차곡차곡 정성을 담아 유과를 보내드립니다.
+                  </p>
+                  <p>
+                    박스에 손잡이가 있어서 들기도 편하고 선물하기도 더욱 좋습니다.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
