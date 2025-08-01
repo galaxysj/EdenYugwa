@@ -203,8 +203,8 @@ export default function Home() {
                 <div className="w-16 h-16 bg-eden-sage rounded-full flex items-center justify-center mx-auto mb-4">
                   <BicepsFlexed className="text-white text-2xl" />
                 </div>
-                <h4 className="text-xl font-semibold text-eden-brown mb-3">믿을 수 있는 재료 사용</h4>
-                <p className="text-eden-dark">
+                <h4 className="text-xl font-semibold text-eden-brown mb-4 leading-tight">믿을 수 있는 재료 사용</h4>
+                <p className="text-eden-dark text-sm leading-relaxed px-2">
                   우리 가족이 먹을 음식이기에 최대한 깨끗하고 건강하게 만드는 찹쌀한과입니다.
                 </p>
               </CardContent>
@@ -215,8 +215,8 @@ export default function Home() {
                 <div className="w-16 h-16 bg-eden-brown rounded-full flex items-center justify-center mx-auto mb-4">
                   <Sprout className="text-white text-2xl" />
                 </div>
-                <h4 className="text-xl font-semibold text-eden-brown mb-3">정성과 손길로 빚어낸 전통한과</h4>
-                <p className="text-eden-dark">
+                <h4 className="text-xl font-semibold text-eden-brown mb-4 leading-tight">정성과 손길로 빚어낸 전통한과</h4>
+                <p className="text-eden-dark text-sm leading-relaxed px-2">
                   색 유과로 예쁘게 가지런히 담고,<br />
                   하얀색 유과로 차곡차곡 정성을 담아 담습니다.
                 </p>
@@ -228,8 +228,8 @@ export default function Home() {
                 <div className="w-16 h-16 bg-eden-red rounded-full flex items-center justify-center mx-auto mb-4">
                   <Church className="text-white text-2xl" />
                 </div>
-                <h4 className="text-xl font-semibold text-eden-brown mb-3">특별한 순간에 딱 맞는 간식</h4>
-                <p className="text-eden-dark">
+                <h4 className="text-xl font-semibold text-eden-brown mb-4 leading-tight">특별한 순간에 딱 맞는 간식</h4>
+                <p className="text-eden-dark text-sm leading-relaxed px-2">
                   명절 선물, 아이들 간식, 부모님과 함께하는 티타임 등 다양한 순간에 어울리는 한과입니다.
                 </p>
               </CardContent>
