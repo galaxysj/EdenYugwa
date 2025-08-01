@@ -367,7 +367,7 @@ export default function OrderForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>예약발송</FormLabel>
-                        <p className="text-xs text-gray-600 mb-2">발송은 순차적으로 발송하며, 미리 주문시 예약발송 지정 가능합니다.</p>
+                        <p className="text-xs text-gray-600 mb-2">발송은 순차적으로 진행하며, 미리 주문시 예약발송 지정 가능합니다.</p>
                         <p className="text-xs text-gray-500 mb-3 border-l-2 border-gray-300 pl-2">예약 발송날짜 지정(선택사항)</p>
                         <Popover>
                           <PopoverTrigger asChild>
