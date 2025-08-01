@@ -159,37 +159,23 @@ function FinancialDialog({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
   const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || '');
   const [discountReason, setDiscountReason] = useState(order.discountReason || '');
-  const [smallBoxCost, setSmallBoxCost] = useState(order.smallBoxCost?.toString() || '');
-  const [largeBoxCost, setLargeBoxCost] = useState(order.largeBoxCost?.toString() || '');
 
   const { data: settings } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
   });
-
-  // Load global cost settings when dialog opens
-  useEffect(() => {
-    if (settings && open) {
-      const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
-      const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
-      
-      // Only use global settings if order doesn't have custom costs
-      if (!order.smallBoxCost && smallCostSetting) {
-        setSmallBoxCost(smallCostSetting.value);
-      }
-      if (!order.largeBoxCost && largeCostSetting) {
-        setLargeBoxCost(largeCostSetting.value);
-      }
-    }
-  }, [settings, open, order.smallBoxCost, order.largeBoxCost]);
   
   // 할인금액 자동 계산
   const calculatedDiscount = actualPaidAmount ? 
     Math.max(0, order.totalAmount - parseInt(actualPaidAmount)) : 
     (order.discountAmount || 0);
     
+  // 전역 설정에서 원가 가져오기
+  const smallCostSetting = settings?.find(s => s.key === "smallBoxCost");
+  const largeCostSetting = settings?.find(s => s.key === "largeBoxCost");
+  const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
+  const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
+  
   // 원가 및 수익 계산
-  const smallCost = smallBoxCost ? parseInt(smallBoxCost) : 0;
-  const largeCost = largeBoxCost ? parseInt(largeBoxCost) : 0;
   const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원 원가
   const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost) + wrappingCost;
   const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
@@ -207,8 +193,6 @@ function FinancialDialog({ order }: { order: Order }) {
       actualPaidAmount?: number; 
       discountAmount?: number; 
       discountReason?: string;
-      smallBoxCost?: number;
-      largeBoxCost?: number;
     }) => {
       const response = await fetch(`/api/orders/${order.id}/financial`, {
         method: 'PATCH',
@@ -248,8 +232,6 @@ function FinancialDialog({ order }: { order: Order }) {
       data.discountAmount = calculatedDiscount > 0 ? calculatedDiscount : 0;
     }
     if (discountReason) data.discountReason = discountReason;
-    if (smallBoxCost) data.smallBoxCost = parseInt(smallBoxCost);
-    if (largeBoxCost) data.largeBoxCost = parseInt(largeBoxCost);
     
     updateFinancialMutation.mutate(data);
   };
@@ -316,37 +298,24 @@ function FinancialDialog({ order }: { order: Order }) {
           <div className="space-y-4 border-t pt-4">
             <Label className="text-base font-semibold">원가 정보</Label>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="smallBoxCost">한과1호 원가 (개당)</Label>
-                <Input
-                  id="smallBoxCost"
-                  type="number"
-                  placeholder="소박스 원가"
-                  value={smallBoxCost}
-                  onChange={(e) => setSmallBoxCost(e.target.value)}
-                />
-                <p className="text-xs text-gray-500">
-                  주문수량: {order.smallBoxQuantity}개
-                </p>
+            <div className="p-3 bg-gray-50 rounded-md border">
+              <div className="text-sm font-medium text-gray-700 mb-2">원가 정보 (전역 설정값 자동 적용)</div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div className="text-gray-600">한과1호 원가:</div>
+                  <div className="font-medium">{formatPrice(smallCost)} × {order.smallBoxQuantity}개</div>
+                </div>
+                <div>
+                  <div className="text-gray-600">한과2호 원가:</div>
+                  <div className="font-medium">{formatPrice(largeCost)} × {order.largeBoxQuantity}개</div>
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="largeBoxCost">한과2호 원가 (개당)</Label>
-                <Input
-                  id="largeBoxCost"
-                  type="number"
-                  placeholder="대박스 원가"
-                  value={largeBoxCost}
-                  onChange={(e) => setLargeBoxCost(e.target.value)}
-                />
-                <p className="text-xs text-gray-500">
-                  주문수량: {order.largeBoxQuantity}개
-                </p>
+              <div className="text-xs text-gray-500 mt-2">
+                원가는 관리자 패널 상단의 "원가 설정" 버튼에서 변경할 수 있습니다.
               </div>
             </div>
 
-            {(smallBoxCost || largeBoxCost) && (
+            {(smallCost > 0 || largeCost > 0) && (
               <div className="p-4 bg-green-50 rounded-md border border-green-200">
                 <div className="space-y-2 text-sm">
                   <div className="font-semibold text-green-800">수익 계산</div>
