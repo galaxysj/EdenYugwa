@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
-import { SmsHistory } from "@/components/sms-history";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import type { Order } from "@shared/schema";
 
