@@ -196,9 +196,8 @@ function FinancialDialog({ order }: { order: Order }) {
   const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
   const shippingFee = totalItems >= 6 ? 0 : 4000;
   
-  // 실제 수익 = 실입금 - 원가 - 배송비 - 할인금액
-  // 할인금액은 이미 실입금에 반영되었으므로 별도로 빼지 않음
-  const netProfit = paidAmount - totalCost - shippingFee;
+  // 실제 수익 = 실입금 - 원가 - 보자기 - 배송비 - 할인금액
+  const netProfit = paidAmount - totalCost - shippingFee - calculatedDiscount;
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -372,6 +371,7 @@ function FinancialDialog({ order }: { order: Order }) {
                       <div>실입금: {formatPrice(paidAmount)}</div>
                       <div>원가: -{formatPrice(totalCost)}</div>
                       <div>배송비: -{formatPrice(shippingFee)}</div>
+                      <div>할인: -{formatPrice(calculatedDiscount)}</div>
                       <div className="font-semibold text-green-700 border-t pt-1 mt-1">
                         실제수익: <span className={netProfit >= 0 ? "text-green-600" : "text-red-600"}>
                           {formatPrice(netProfit)}
