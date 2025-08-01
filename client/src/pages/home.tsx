@@ -192,7 +192,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-eden-brown mb-4 font-korean">에덴한과 이야기</h3>
             <p className="text-eden-dark max-w-2xl mx-auto text-[20px]">
-              하나님의 은혜로 시작된 에덴한과는 진안 지역에서 부모님이 정성껏 만드시는 전통 유과입니다.
+              국내산 찹쌀과 물엿, 튀밥, 생강, 콩기름(식용유) 등으로 만들고 있으며, 생강 향과 물엿의 달콤함이 어우러진 맛을 자랑합니다.
             </p>
           </div>
 
