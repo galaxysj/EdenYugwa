@@ -156,9 +156,9 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button 
                   onClick={() => scrollToSection('order')}
-                  className="bg-eden-brown text-white px-8 py-3 hover:bg-eden-dark transition-colors"
+                  className="bg-eden-brown text-white px-12 py-4 text-lg hover:bg-eden-dark transition-colors"
                 >
-                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  <ShoppingCart className="mr-3 h-5 w-5" />
                   지금 주문하기
                 </Button>
                 <Button 
