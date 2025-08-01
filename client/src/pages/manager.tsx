@@ -277,7 +277,7 @@ export default function Manager() {
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {order.wrappingQuantity > 0 ? '보자기 포장' : '보자기 없음'}
+                                {order.wrappingQuantity > 0 ? `보자기 ${order.wrappingQuantity}개` : '보자기 없음'}
                               </div>
                             </td>
                             <td className="py-4 px-4">
@@ -369,7 +369,7 @@ export default function Manager() {
                               <span className="text-sm font-medium text-gray-700">상품: </span>
                               <span className="text-sm text-gray-900">
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
-                                {order.wrappingQuantity > 0 && ' (보자기 포장)'}
+                                {order.wrappingQuantity > 0 && ` (보자기 ${order.wrappingQuantity}개)`}
                               </span>
                             </div>
                           </div>

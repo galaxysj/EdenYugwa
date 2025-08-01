@@ -302,7 +302,7 @@ export default function Admin() {
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {order.hasWrapping === 'yes' ? '보자기 포장' : '보자기 없음'}
+                                {order.wrappingQuantity > 0 ? `보자기 ${order.wrappingQuantity}개` : '보자기 없음'}
                               </div>
                             </td>
                             <td className="py-4 px-4 font-medium text-gray-900">
