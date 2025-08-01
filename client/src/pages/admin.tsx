@@ -938,6 +938,11 @@ export default function Admin() {
       acc.actualRevenue += order.actualPaidAmount || 0;
       acc.totalDiscounts += order.discountAmount || 0;
       
+      // Total profit calculation
+      if (order.netProfit !== undefined && order.netProfit !== null) {
+        acc.totalProfit += order.netProfit;
+      }
+      
       return acc;
     },
     { 
@@ -949,7 +954,8 @@ export default function Admin() {
       unpaidOrders: 0,
       totalRevenue: 0,
       actualRevenue: 0,
-      totalDiscounts: 0
+      totalDiscounts: 0,
+      totalProfit: 0
     }
   );
 
@@ -1041,7 +1047,7 @@ export default function Admin() {
         </div>
 
         {/* Revenue Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-4 text-center bg-eden-red/5">
               <div className="text-xl sm:text-2xl font-bold text-eden-red">
@@ -1062,13 +1068,24 @@ export default function Admin() {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 text-center bg-red-50">
-              <div className="text-xl sm:text-2xl font-bold text-red-600">
+            <CardContent className="p-4 text-center bg-blue-50">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">
                 {formatPrice(stats.totalDiscounts)}
               </div>
               <div className="text-sm text-gray-600">총 할인 금액</div>
               <div className="text-xs text-gray-500 mt-1">
                 할인률: {stats.totalRevenue > 0 ? Math.round((stats.totalDiscounts / stats.totalRevenue) * 100) : 0}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-purple-50">
+              <div className={`text-xl sm:text-2xl font-bold ${stats.totalProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                {formatPrice(stats.totalProfit)}
+              </div>
+              <div className="text-sm text-gray-600">총 수익</div>
+              <div className="text-xs text-gray-500 mt-1">
+                수익률: {stats.actualRevenue > 0 ? Math.round((stats.totalProfit / stats.actualRevenue) * 100) : 0}%
               </div>
             </CardContent>
           </Card>
