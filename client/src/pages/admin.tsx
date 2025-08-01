@@ -302,7 +302,7 @@ export default function Admin() {
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                               </div>
                               <div className={order.wrappingQuantity > 0 ? "text-sm text-gray-900" : "text-xs text-gray-500"}>
-                                {order.wrappingQuantity > 0 ? `보자기 ${order.wrappingQuantity}개` : '보자기 없음'}
+                                {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
                               </div>
                             </td>
                             <td className="py-4 px-4 font-medium text-gray-900">
@@ -438,7 +438,7 @@ export default function Admin() {
                               <span className="text-sm font-medium text-gray-600">상품: </span>
                               <span className="text-sm text-gray-900">
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
-                                {order.wrappingQuantity > 0 && ` (보자기 ${order.wrappingQuantity}개)`}
+                                {order.wrappingQuantity > 0 && ` (보자기 × ${order.wrappingQuantity})`}
                               </span>
                             </div>
                             <div>
