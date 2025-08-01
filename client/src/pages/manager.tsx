@@ -273,11 +273,13 @@ export default function Manager() {
                               </div>
                             </td>
                             <td className="py-4 px-4">
-                              <div className="text-sm text-gray-900">
-                                소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
-                              </div>
-                              <div className={order.wrappingQuantity > 0 ? "text-sm text-gray-900" : "text-xs text-gray-500"}>
-                                {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
+                              <div className="space-y-1">
+                                <div className="text-base font-medium text-gray-900">
+                                  소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
+                                </div>
+                                <div className={order.wrappingQuantity > 0 ? "text-sm font-medium text-eden-brown" : "text-sm text-gray-500"}>
+                                  {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
+                                </div>
                               </div>
                             </td>
                             <td className="py-4 px-4">
@@ -367,10 +369,16 @@ export default function Manager() {
                             </div>
                             <div>
                               <span className="text-sm font-medium text-gray-700">상품: </span>
-                              <span className="text-sm text-gray-900">
-                                소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
-                                {order.wrappingQuantity > 0 && ` (보자기 × ${order.wrappingQuantity})`}
-                              </span>
+                              <div className="mt-1">
+                                <div className="text-base font-medium text-gray-900">
+                                  소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
+                                </div>
+                                {order.wrappingQuantity > 0 && (
+                                  <div className="text-sm font-medium text-eden-brown">
+                                    보자기 × {order.wrappingQuantity}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
 
