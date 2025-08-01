@@ -13,7 +13,7 @@ export const orders = pgTable("orders", {
   specialRequests: text("special_requests"),
   boxSize: text("box_size").notNull(), // 'small' or 'large'
   quantity: integer("quantity").notNull(),
-  hasWrapping: text("has_wrapping").notNull(), // 'yes' or 'no'
+  wrappingQuantity: integer("wrapping_quantity").notNull().default(0), // 보자기 포장 수량
   totalAmount: integer("total_amount").notNull(),
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'shipping', 'delivered'
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'

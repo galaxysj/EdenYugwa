@@ -24,7 +24,10 @@ const orderSchema = z.object({
   specialRequests: z.string().optional(),
   boxSize: z.enum(["small", "large"]),
   quantity: z.number().min(1, "수량은 1개 이상이어야 합니다"),
-  hasWrapping: z.enum(["yes", "no"]),
+  wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
+}).refine((data) => data.wrappingQuantity <= data.quantity, {
+  message: "보자기 포장 수량은 전체 수량보다 클 수 없습니다",
+  path: ["wrappingQuantity"],
 });
 
 type OrderFormData = z.infer<typeof orderSchema>;
@@ -51,7 +54,7 @@ export default function OrderForm() {
       specialRequests: "",
       boxSize: "small",
       quantity: 1,
-      hasWrapping: "no",
+      wrappingQuantity: 0,
     },
   });
 
@@ -75,13 +78,13 @@ export default function OrderForm() {
     },
   });
 
-  const watchedValues = form.watch(["boxSize", "quantity", "hasWrapping"]);
+  const watchedValues = form.watch(["boxSize", "quantity", "wrappingQuantity"]);
 
   useEffect(() => {
-    const [boxSize, quantity, hasWrapping] = watchedValues;
+    const [boxSize, quantity, wrappingQuantity] = watchedValues;
     const basePrice = prices[boxSize as keyof typeof prices] || prices.small;
     const productTotal = basePrice * quantity;
-    const wrappingTotal = hasWrapping === "yes" ? prices.wrapping * quantity : 0;
+    const wrappingTotal = wrappingQuantity * prices.wrapping;
     const total = productTotal + wrappingTotal;
     setTotalAmount(total);
   }, [watchedValues]);
@@ -98,7 +101,7 @@ export default function OrderForm() {
 
   const basePrice = prices[form.watch("boxSize")] || prices.small;
   const productTotal = basePrice * form.watch("quantity");
-  const wrappingTotal = form.watch("hasWrapping") === "yes" ? prices.wrapping * form.watch("quantity") : 0;
+  const wrappingTotal = form.watch("wrappingQuantity") * prices.wrapping;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -181,25 +184,20 @@ export default function OrderForm() {
 
                   <FormField
                     control={form.control}
-                    name="hasWrapping"
+                    name="wrappingQuantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>보자기 포장</FormLabel>
+                        <FormLabel>보자기 포장 수량</FormLabel>
+                        <p className="text-xs text-gray-600 mb-2">개당 +1,000원</p>
                         <FormControl>
-                          <RadioGroup
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            className="flex space-x-4 mt-3"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="no" id="no-wrap" />
-                              <Label htmlFor="no-wrap">없음</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="yes" id="yes-wrap" />
-                              <Label htmlFor="yes-wrap">있음 (+1,000원)</Label>
-                            </div>
-                          </RadioGroup>
+                          <Input
+                            type="number"
+                            min="0"
+                            max={form.watch("quantity")}
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            className="focus:ring-2 focus:ring-eden-sage focus:border-transparent"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

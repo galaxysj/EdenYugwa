@@ -310,7 +310,7 @@ export default function OrderLookup() {
                                 수량: {order.quantity}개
                               </div>
                               <div className="text-gray-600">
-                                포장: {order.hasWrapping === 'yes' ? '보자기 포장 (+1,000원)' : '일반 포장'}
+                                포장: {order.wrappingQuantity > 0 ? `보자기 포장 ${order.wrappingQuantity}개 (+${(order.wrappingQuantity * 1000).toLocaleString()}원)` : '일반 포장'}
                               </div>
                             </div>
                             <div className="text-right">

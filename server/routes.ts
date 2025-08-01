@@ -231,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '주소': `${order.address1}${order.address2 ? ' ' + order.address2 : ''}`,
         '박스크기': order.boxSize === 'small' ? '소형 (15,000원)' : '대형 (18,000원)',
         '수량': order.quantity,
-        '포장방식': order.hasWrapping === 'yes' ? '보자기포장 (+1,000원)' : '일반포장',
+        '포장방식': order.wrappingQuantity > 0 ? `보자기포장 ${order.wrappingQuantity}개 (+${(order.wrappingQuantity * 1000).toLocaleString()}원)` : '일반포장',
         '총금액': `${order.totalAmount.toLocaleString()}원`,
         '주문상태': order.status === 'pending' ? '주문접수' :
                     order.status === 'confirmed' ? '주문확인' :

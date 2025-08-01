@@ -438,7 +438,7 @@ export default function Admin() {
                               <span className="text-sm font-medium text-gray-600">상품: </span>
                               <span className="text-sm text-gray-900">
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
-                                {order.hasWrapping === 'yes' && ' (보자기 포장)'}
+                                {order.wrappingQuantity > 0 && ` (보자기 ${order.wrappingQuantity}개)`}
                               </span>
                             </div>
                             <div>

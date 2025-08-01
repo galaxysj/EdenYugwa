@@ -20,7 +20,7 @@ const editOrderSchema = insertOrderSchema.extend({
   address1: z.string().min(1, "주소를 입력해주세요"),
   boxSize: z.enum(["small", "large"]),
   quantity: z.number().min(1, "수량은 1개 이상이어야 합니다"),
-  hasWrapping: z.enum(["yes", "no"]),
+  wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
 });
 
 type EditOrderFormData = z.infer<typeof editOrderSchema>;
@@ -68,7 +68,7 @@ export default function OrderEdit() {
           specialRequests: orderData.specialRequests || '',
           boxSize: orderData.boxSize,
           quantity: orderData.quantity,
-          hasWrapping: orderData.hasWrapping,
+          wrappingQuantity: orderData.wrappingQuantity || 0,
         });
       } catch (error) {
         toast({
@@ -87,16 +87,17 @@ export default function OrderEdit() {
     }
   }, [id, form, toast, setLocation]);
 
-  const calculateTotal = (boxSize: string, quantity: number, hasWrapping: string) => {
+  const calculateTotal = (boxSize: string, quantity: number, wrappingQuantity: number) => {
     const basePrice = boxSize === 'small' ? 15000 : 18000;
-    const wrappingPrice = hasWrapping === 'yes' ? 1000 : 0;
-    return (basePrice + wrappingPrice) * quantity;
+    const productTotal = basePrice * quantity;
+    const wrappingTotal = wrappingQuantity * 1000;
+    return productTotal + wrappingTotal;
   };
 
   const onSubmit = async (data: EditOrderFormData) => {
     setIsSaving(true);
     try {
-      const totalAmount = calculateTotal(data.boxSize, data.quantity, data.hasWrapping);
+      const totalAmount = calculateTotal(data.boxSize, data.quantity, data.wrappingQuantity);
       
       const response = await fetch(`/api/orders/${id}`, {
         method: 'PATCH',
@@ -132,10 +133,10 @@ export default function OrderEdit() {
 
   const boxSize = form.watch('boxSize');
   const quantity = form.watch('quantity');
-  const hasWrapping = form.watch('hasWrapping');
+  const wrappingQuantity = form.watch('wrappingQuantity');
 
-  const currentTotal = boxSize && quantity && hasWrapping 
-    ? calculateTotal(boxSize, quantity, hasWrapping)
+  const currentTotal = boxSize && quantity && wrappingQuantity !== undefined 
+    ? calculateTotal(boxSize, quantity, wrappingQuantity)
     : 0;
 
   if (isLoading) {
@@ -332,21 +333,19 @@ export default function OrderEdit() {
                     />
                     <FormField
                       control={form.control}
-                      name="hasWrapping"
+                      name="wrappingQuantity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>보자기 포장</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="포장 선택" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="no">일반 포장</SelectItem>
-                              <SelectItem value="yes">보자기 포장 (+1,000원)</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormLabel>보자기 포장 수량</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0" 
+                              max={quantity || 0}
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
