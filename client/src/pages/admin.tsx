@@ -194,9 +194,12 @@ function FinancialDialog({ order }: { order: Order }) {
   // 원가 및 수익 계산
   const smallCost = smallBoxCost ? parseInt(smallBoxCost) : 0;
   const largeCost = largeBoxCost ? parseInt(largeBoxCost) : 0;
-  const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost);
+  const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원
+  const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost) + wrappingCost;
   const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
-  const netProfit = paidAmount - totalCost - order.shippingFee;
+  const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+  const shippingFee = totalItems >= 6 ? 0 : 4000;
+  const netProfit = paidAmount - totalCost - shippingFee;
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -358,6 +361,9 @@ function FinancialDialog({ order }: { order: Order }) {
                       <div className="font-medium">
                         대박스: {order.largeBoxQuantity}개 × {formatPrice(largeCost)} = {formatPrice(order.largeBoxQuantity * largeCost)}
                       </div>
+                      <div className="font-medium">
+                        보자기: {order.wrappingQuantity}개 × {formatPrice(2000)} = {formatPrice(wrappingCost)}
+                      </div>
                       <div className="font-semibold text-green-700 border-t pt-1 mt-1">
                         합계: {formatPrice(totalCost)}
                       </div>
@@ -366,7 +372,7 @@ function FinancialDialog({ order }: { order: Order }) {
                       <div className="text-gray-600">수익 계산:</div>
                       <div>실입금: {formatPrice(paidAmount)}</div>
                       <div>원가: -{formatPrice(totalCost)}</div>
-                      <div>배송비: -{formatPrice(order.shippingFee)}</div>
+                      <div>배송비: -{formatPrice(shippingFee)}</div>
                       <div className="font-semibold text-green-700 border-t pt-1 mt-1">
                         실제수익: <span className={netProfit >= 0 ? "text-green-600" : "text-red-600"}>
                           {formatPrice(netProfit)}

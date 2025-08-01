@@ -126,8 +126,9 @@ export class DatabaseStorage implements IStorage {
       const smallBoxCost = order.smallBoxCost || globalSmallBoxCost;
       const largeBoxCost = order.largeBoxCost || globalLargeBoxCost;
       
-      // Calculate total cost
-      const totalCost = (smallBoxCost * order.smallBoxQuantity) + (largeBoxCost * order.largeBoxQuantity);
+      // Calculate total cost (including wrapping cost)
+      const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원
+      const totalCost = (smallBoxCost * order.smallBoxQuantity) + (largeBoxCost * order.largeBoxQuantity) + wrappingCost;
       
       // Calculate shipping fee
       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
