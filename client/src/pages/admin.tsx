@@ -209,7 +209,7 @@ export default function Admin() {
                 <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">매출정보</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
@@ -262,8 +262,20 @@ export default function Admin() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 font-medium text-gray-900">
-                      {formatPrice(order.totalAmount)}
+                    <td className="py-4 px-4">
+                      <div className="space-y-1 text-sm">
+                        <div className="font-medium text-gray-900">
+                          주문: {formatPrice(order.totalAmount)}
+                        </div>
+                        <div className="text-green-600">
+                          실입금: {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
+                        </div>
+                        {order.discountAmount && order.discountAmount > 0 && (
+                          <div className="text-red-600">
+                            할인: -{formatPrice(order.discountAmount)}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <Select
@@ -331,6 +343,7 @@ export default function Admin() {
                       <div className="flex flex-col gap-2">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
+                        <FinancialDialog order={order} />
                         <Button
                           size="sm"
                           variant="destructive"
