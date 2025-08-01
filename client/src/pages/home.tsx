@@ -177,10 +177,7 @@ export default function Home() {
                   alt="에덴한과 유과 상품" 
                   className="rounded-2xl shadow-2xl w-full max-w-md"
                 />
-                <div className="absolute -bottom-4 -right-4 bg-eden-red text-white px-4 py-2 rounded-lg font-semibold shadow-lg">
-                  <Heart className="inline mr-1 h-4 w-4" />
-                  수제 한과
-                </div>
+
               </div>
             </div>
           </div>
