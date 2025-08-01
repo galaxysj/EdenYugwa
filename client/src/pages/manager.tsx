@@ -341,17 +341,15 @@ function OrdersList({ ordersList, handleStatusChange, updateStatusMutation }: {
                       <div>{order.address2}</div>
                     </div>
                   </td>
-                  <td className="py-4 px-4">
-                    <div className="space-y-2">
-                      <div className="text-base font-medium text-gray-900">
-                        소박스 × {order.smallBoxQuantity}개
-                      </div>
-                      <div className="text-base font-medium text-gray-900">
-                        대박스 × {order.largeBoxQuantity}개
-                      </div>
-                      <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown" : "text-base text-gray-500"}>
-                        {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
-                      </div>
+                  <td className="py-4 px-4 min-w-max">
+                    <div className="text-sm whitespace-nowrap">
+                      <span className="font-medium text-gray-900">소박스 × {order.smallBoxQuantity}개</span>
+                      <span className="mx-2 text-gray-400">|</span>
+                      <span className="font-medium text-gray-900">대박스 × {order.largeBoxQuantity}개</span>
+                      <span className="mx-2 text-gray-400">|</span>
+                      <span className={order.wrappingQuantity > 0 ? "font-medium text-eden-brown" : "text-gray-500"}>
+                        보자기 × {order.wrappingQuantity}개
+                      </span>
                     </div>
                   </td>
                   <td className="py-4 px-4">
