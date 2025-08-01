@@ -190,11 +190,14 @@ function FinancialDialog({ order }: { order: Order }) {
   // 원가 및 수익 계산
   const smallCost = smallBoxCost ? parseInt(smallBoxCost) : 0;
   const largeCost = largeBoxCost ? parseInt(largeBoxCost) : 0;
-  const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원
+  const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원 원가
   const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost) + wrappingCost;
   const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
   const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
   const shippingFee = totalItems >= 6 ? 0 : 4000;
+  
+  // 실제 수익 = 실입금 - 원가 - 배송비 - 할인금액
+  // 할인금액은 이미 실입금에 반영되었으므로 별도로 빼지 않음
   const netProfit = paidAmount - totalCost - shippingFee;
   
   const { toast } = useToast();
