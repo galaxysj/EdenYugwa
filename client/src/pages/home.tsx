@@ -140,15 +140,12 @@ export default function Home() {
       <section id="home" className="relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-eden-brown mb-6 leading-tight font-korean">
-              진안에서 온<br />
-              <span className="text-eden-red">정성 가득</span> 유과
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-eden-brown mb-6 leading-tight font-korean max-w-4xl mx-auto">
+              진안에서 온 <span className="text-eden-red">정성 가득</span> 유과
             </h2>
-            <p className="text-lg text-eden-dark mb-8 leading-relaxed">
-              부모님이 직접 만드시는 찹쌀유과로<br />
-              100% 국내산 찹쌀로 만든 한과입니다.<br />
-              달지 않고 고소한 맛이 일품으로<br />
-              선물로도 완벽한 에덴한과입니다.
+            <p className="text-base sm:text-lg text-eden-dark mb-8 leading-relaxed max-w-2xl mx-auto">
+              부모님이 직접 만드시는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
+              달지 않고 고소한 맛이 일품으로 선물로도 완벽한 에덴한과입니다.
             </p>
           </div>
 
