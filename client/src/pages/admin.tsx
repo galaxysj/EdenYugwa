@@ -711,11 +711,9 @@ export default function Admin() {
                             <div className="text-red-600 font-medium">
                               실입금: {formatPrice(order.actualPaidAmount)}
                             </div>
-                            {order.discountAmount && order.discountAmount > 0 && (
-                              <div className="text-blue-600 font-medium">
-                                할인: {formatPrice(order.discountAmount)}
-                              </div>
-                            )}
+                            <div className="text-blue-600 font-medium">
+                              할인: {formatPrice(order.discountAmount || 0)}
+                            </div>
                             {order.netProfit !== undefined && order.netProfit !== null && (
                               <div className={order.netProfit >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
                                 수익: {formatPrice(order.netProfit)}
