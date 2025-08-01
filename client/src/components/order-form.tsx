@@ -68,7 +68,7 @@ function ProductSelector({ onProductAdd }: ProductSelectorProps) {
   const productOptions = [
     { value: "small", label: "한과1호 (약 1.1kg)", price: prices.small, description: "약 35.5×21×11.2cm" },
     { value: "large", label: "한과2호 (약 1.3kg)", price: prices.large, description: "약 37×23×11.5cm" },
-    { value: "wrapping", label: "보자기", price: prices.wrapping, description: "개당 +1,000원" }
+    { value: "wrapping", label: "보자기 (개당 +1,000원)", price: prices.wrapping, description: "개당 +1,000원" }
   ];
 
   const selectedProduct = productOptions.find(p => p.value === selectedType);
