@@ -86,32 +86,64 @@ export default function Manager() {
 
   // Excel export function (no financial data)
   const handleExcelDownload = () => {
-    const exportData = orders.map((order: Order) => ({
-      '주문번호': order.orderNumber,
-      '주문일시': new Date(order.createdAt).toLocaleString('ko-KR'),
-      '고객명': order.customerName,
-      '연락처': order.customerPhone,
-      '우편번호': order.zipCode,
-      '주소1': order.address1,
-      '주소2': order.address2 || '',
-      '소박스수량': order.smallBoxQuantity,
-      '대박스수량': order.largeBoxQuantity,
-      '보자기수량': order.wrappingQuantity,
-      '특별요청': order.specialRequests || '',
-      '주문상태': statusLabels[order.status as keyof typeof statusLabels],
-      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
-    }));
+    // Group orders by status
+    const ordersByStatus = {
+      pending: orders.filter((order: Order) => order.status === 'pending'),
+      scheduled: orders.filter((order: Order) => order.status === 'scheduled'),
+      delivered: orders.filter((order: Order) => order.status === 'delivered')
+    };
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
+    // Function to format order data (without financial information)
+    const formatOrderData = (orderList: Order[]) => {
+      return orderList.map((order: Order) => ({
+        '주문번호': order.orderNumber,
+        '주문일시': new Date(order.createdAt).toLocaleString('ko-KR'),
+        '고객명': order.customerName,
+        '연락처': order.customerPhone,
+        '우편번호': order.zipCode,
+        '주소': `${order.address1} ${order.address2 || ''}`.trim(),
+        '소박스수량': order.smallBoxQuantity,
+        '대박스수량': order.largeBoxQuantity,
+        '보자기수량': order.wrappingQuantity,
+        '주문상태': statusLabels[order.status as keyof typeof statusLabels],
+        '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '-',
+        '특별요청': order.specialRequests || '',
+      }));
+    };
+
+    // Create workbook
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '주문목록');
     
-    const fileName = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+    // Add all orders sheet
+    const allOrdersData = formatOrderData(orders);
+    const allOrdersWs = XLSX.utils.json_to_sheet(allOrdersData);
+    XLSX.utils.book_append_sheet(wb, allOrdersWs, '전체주문');
+    
+    // Add individual status sheets
+    if (ordersByStatus.pending.length > 0) {
+      const pendingData = formatOrderData(ordersByStatus.pending);
+      const pendingWs = XLSX.utils.json_to_sheet(pendingData);
+      XLSX.utils.book_append_sheet(wb, pendingWs, '주문접수');
+    }
+    
+    if (ordersByStatus.scheduled.length > 0) {
+      const scheduledData = formatOrderData(ordersByStatus.scheduled);
+      const scheduledWs = XLSX.utils.json_to_sheet(scheduledData);
+      XLSX.utils.book_append_sheet(wb, scheduledWs, '발송예약');
+    }
+    
+    if (ordersByStatus.delivered.length > 0) {
+      const deliveredData = formatOrderData(ordersByStatus.delivered);
+      const deliveredWs = XLSX.utils.json_to_sheet(deliveredData);
+      XLSX.utils.book_append_sheet(wb, deliveredWs, '발송완료');
+    }
+    
+    const fileName = `에덴한과_배송목록_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
     
     toast({
       title: "엑셀 다운로드 완료",
-      description: "주문 목록이 엑셀 파일로 다운로드되었습니다.",
+      description: "주문목록이 상태별 시트로 다운로드되었습니다.",
     });
   };
 

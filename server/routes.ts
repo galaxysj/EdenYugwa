@@ -283,37 +283,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orders = await storage.getAllOrders();
       
-      // Convert orders to Excel format
-      const excelData = orders.map(order => ({
-        '주문번호': order.orderNumber,
-        '고객명': order.customerName,
-        '전화번호': order.customerPhone,
-        '주소': `${order.address1}${order.address2 ? ' ' + order.address2 : ''}`,
-        '소박스': order.smallBoxQuantity,
-        '대박스': order.largeBoxQuantity,
-        '포장방식': order.wrappingQuantity > 0 ? `보자기포장 ${order.wrappingQuantity}개 (+${(order.wrappingQuantity * 1000).toLocaleString()}원)` : '일반포장',
-        '총금액': `${order.totalAmount.toLocaleString()}원`,
-        '주문상태': order.status === 'pending' ? '주문접수' :
-                    order.status === 'confirmed' ? '주문확인' :
-                    order.status === 'preparing' ? '제작중' :
-                    order.status === 'ready' ? '배송준비' :
-                    order.status === 'shipped' ? '배송중' :
-                    order.status === 'delivered' ? '배송완료' : 
-                    order.status === 'cancelled' ? '취소됨' : order.status,
-        '결제상태': order.paymentStatus === 'pending' ? '결제대기' :
-                    order.paymentStatus === 'confirmed' ? '결제완료' :
-                    order.paymentStatus === 'failed' ? '결제실패' : order.paymentStatus,
-        '주문일시': new Date(order.createdAt).toLocaleString('ko-KR'),
-        '결제확인일시': order.paymentConfirmedAt ? new Date(order.paymentConfirmedAt).toLocaleString('ko-KR') : '-',
-        '특별요청': order.specialRequests || '-'
-      }));
+      // Group orders by status
+      const ordersByStatus = {
+        pending: orders.filter(order => order.status === 'pending'),
+        scheduled: orders.filter(order => order.status === 'scheduled'),
+        delivered: orders.filter(order => order.status === 'delivered')
+      };
 
-      // Create workbook and worksheet
+      // Function to format order data
+      const formatOrderData = (orderList: any[]) => {
+        return orderList.map(order => ({
+          '주문번호': order.orderNumber,
+          '고객명': order.customerName,
+          '전화번호': order.customerPhone,
+          '우편번호': order.zipCode,
+          '주소': `${order.address1} ${order.address2 || ''}`.trim(),
+          '소박스': order.smallBoxQuantity,
+          '대박스': order.largeBoxQuantity,
+          '보자기수량': order.wrappingQuantity,
+          '포장방식': order.wrappingQuantity > 0 ? `보자기포장 ${order.wrappingQuantity}개 (+${(order.wrappingQuantity * 1000).toLocaleString()}원)` : '일반포장',
+          '총금액': `${order.totalAmount.toLocaleString()}원`,
+          '결제상태': order.paymentStatus === 'pending' ? '입금대기' :
+                      order.paymentStatus === 'confirmed' ? '입금완료' :
+                      order.paymentStatus === 'refunded' ? '환불' : order.paymentStatus,
+          '주문일시': new Date(order.createdAt).toLocaleString('ko-KR'),
+          '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '-',
+          '특별요청': order.specialRequests || '-'
+        }));
+      };
+
+      // Create workbook
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(excelData);
       
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, '주문목록');
+      // Add all orders sheet
+      const allOrdersData = formatOrderData(orders);
+      const allOrdersWs = XLSX.utils.json_to_sheet(allOrdersData);
+      XLSX.utils.book_append_sheet(wb, allOrdersWs, '전체주문');
+      
+      // Add individual status sheets
+      if (ordersByStatus.pending.length > 0) {
+        const pendingData = formatOrderData(ordersByStatus.pending);
+        const pendingWs = XLSX.utils.json_to_sheet(pendingData);
+        XLSX.utils.book_append_sheet(wb, pendingWs, '주문접수');
+      }
+      
+      if (ordersByStatus.scheduled.length > 0) {
+        const scheduledData = formatOrderData(ordersByStatus.scheduled);
+        const scheduledWs = XLSX.utils.json_to_sheet(scheduledData);
+        XLSX.utils.book_append_sheet(wb, scheduledWs, '발송예약');
+      }
+      
+      if (ordersByStatus.delivered.length > 0) {
+        const deliveredData = formatOrderData(ordersByStatus.delivered);
+        const deliveredWs = XLSX.utils.json_to_sheet(deliveredData);
+        XLSX.utils.book_append_sheet(wb, deliveredWs, '발송완료');
+      }
       
       // Generate Excel file buffer
       const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
