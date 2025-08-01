@@ -271,7 +271,9 @@ export default function Admin() {
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객정보</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">금액</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
@@ -292,8 +294,12 @@ export default function Admin() {
                             </td>
                             <td className="py-4 px-4">
                               <div className="font-medium text-gray-900">{order.customerName}</div>
-                              <div className="text-sm text-gray-500">{order.customerPhone}</div>
-                              <div className="text-sm text-gray-500 mt-1 max-w-xs">
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-sm text-gray-900">{order.customerPhone}</div>
+                            </td>
+                            <td className="py-4 px-4 max-w-xs">
+                              <div className="text-sm text-gray-900">
                                 <div className="mb-1">[{order.zipCode}]</div>
                                 <div className="mb-1">{order.address1}</div>
                                 <div>{order.address2}</div>

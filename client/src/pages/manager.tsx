@@ -40,10 +40,10 @@ export default function Manager() {
   // Calculate stats (excluding payment-related stats)
   const stats = {
     total: orders.length,
-    pending: orders.filter(order => order.status === 'pending').length,
-    preparing: orders.filter(order => order.status === 'preparing').length,
-    shipping: orders.filter(order => order.status === 'shipping').length,
-    delivered: orders.filter(order => order.status === 'delivered').length,
+    pending: orders.filter((order: Order) => order.status === 'pending').length,
+    preparing: orders.filter((order: Order) => order.status === 'preparing').length,
+    shipping: orders.filter((order: Order) => order.status === 'shipping').length,
+    delivered: orders.filter((order: Order) => order.status === 'delivered').length,
   };
 
   const updateStatusMutation = useMutation({
@@ -227,7 +227,7 @@ export default function Manager() {
             ) : error ? (
               <div className="text-center py-8 text-red-500">
                 <div className="mb-2">주문 목록을 불러오는 중 오류가 발생했습니다.</div>
-                <div className="text-sm text-gray-500">{error.message}</div>
+                <div className="text-sm text-gray-500">{(error as Error).message}</div>
                 <Button 
                   onClick={() => window.location.reload()} 
                   variant="outline" 
@@ -248,14 +248,16 @@ export default function Manager() {
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객정보</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
+                        <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
                         <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((order) => {
+                      {orders.map((order: Order) => {
                         const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                         return (
                           <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -267,8 +269,12 @@ export default function Manager() {
                             </td>
                             <td className="py-4 px-4">
                               <div className="font-medium text-gray-900">{order.customerName}</div>
-                              <div className="text-sm text-gray-500">{order.customerPhone}</div>
-                              <div className="text-sm text-gray-500 mt-1 max-w-xs">
+                            </td>
+                            <td className="py-4 px-4">
+                              <div className="text-sm text-gray-900">{order.customerPhone}</div>
+                            </td>
+                            <td className="py-4 px-4 max-w-xs">
+                              <div className="text-sm text-gray-900">
                                 <div className="mb-1">[{order.zipCode}]</div>
                                 <div className="mb-1">{order.address1}</div>
                                 <div>{order.address2}</div>
@@ -326,10 +332,7 @@ export default function Manager() {
                             </td>
                             <td className="py-4 px-4">
                               <div className="flex items-center space-x-2">
-                                <SmsDialog 
-                                  order={order} 
-                                  onSuccess={() => queryClient.invalidateQueries({ queryKey: ['/api/orders'] })}
-                                />
+                                <SmsDialog order={order} />
                                 <SmsHistory order={order} />
                                 <Link href={`/order-edit/${order.id}`}>
                                   <Button size="sm" variant="outline">
@@ -347,7 +350,7 @@ export default function Manager() {
 
                 {/* Mobile Cards */}
                 <div className="lg:hidden space-y-4">
-                  {orders.map((order) => {
+                  {orders.map((order: Order) => {
                     const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                     return (
                       <Card key={order.id} className="border border-gray-200">
@@ -355,7 +358,9 @@ export default function Manager() {
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <div className="font-medium text-gray-900">#{order.orderNumber}</div>
-                              <div className="text-sm text-gray-500">{formatDate(order.createdAt)}</div>
+                              <div className="text-sm text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                              </div>
                             </div>
                             <div className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                               <StatusIcon className="h-3 w-3 inline mr-1" />
@@ -405,10 +410,7 @@ export default function Manager() {
                             </Select>
                             
                             <div className="flex space-x-2">
-                              <SmsDialog 
-                                order={order} 
-                                onSuccess={() => queryClient.invalidateQueries({ queryKey: ['/api/orders'] })}
-                              />
+                              <SmsDialog order={order} />
                               <SmsHistory order={order} />
                               <Link href={`/order-edit/${order.id}`}>
                                 <Button size="sm" variant="outline">
