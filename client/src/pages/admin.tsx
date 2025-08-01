@@ -267,11 +267,11 @@ export default function Admin() {
                         <div className="font-medium text-gray-900">
                           주문: {formatPrice(order.totalAmount)}
                         </div>
-                        <div className="text-green-600">
+                        <div className="text-red-600">
                           실입금: {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
                         </div>
                         {order.discountAmount && order.discountAmount > 0 && (
-                          <div className="text-red-600">
+                          <div className="text-blue-600">
                             할인: -{formatPrice(order.discountAmount)}
                           </div>
                         )}
@@ -434,13 +434,13 @@ export default function Admin() {
                             주문금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
                           </div>
                           <div className="text-sm text-gray-600">
-                            실제입금: <span className="font-medium text-green-600">
+                            실제입금: <span className="font-medium text-red-600">
                               {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
                             </span>
                           </div>
                           {order.discountAmount && order.discountAmount > 0 && (
                             <div className="text-sm text-gray-600">
-                              할인금액: <span className="font-medium text-red-600">-{formatPrice(order.discountAmount)}</span>
+                              할인금액: <span className="font-medium text-blue-600">-{formatPrice(order.discountAmount)}</span>
                               {order.discountReason && (
                                 <span className="text-xs text-gray-500 block">({order.discountReason})</span>
                               )}
