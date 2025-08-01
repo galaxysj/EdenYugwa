@@ -13,18 +13,14 @@ import { ScheduledDatePicker } from "@/components/scheduled-date-picker";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
-  pending: "주문 접수",
-  preparing: "제작 중",
+  pending: "주문접수",
   scheduled: "발송예약",
-  shipping: "배송 중",
-  delivered: "배송 완료",
+  delivered: "발송완료",
 };
 
 const statusIcons = {
   pending: Clock,
-  preparing: Package,
   scheduled: Calendar,
-  shipping: Truck,
   delivered: CheckCircle,
 };
 
@@ -44,9 +40,7 @@ export default function Manager() {
   const stats = {
     total: orders.length,
     pending: orders.filter((order: Order) => order.status === 'pending').length,
-    preparing: orders.filter((order: Order) => order.status === 'preparing').length,
     scheduled: orders.filter((order: Order) => order.status === 'scheduled').length,
-    shipping: orders.filter((order: Order) => order.status === 'shipping').length,
     delivered: orders.filter((order: Order) => order.status === 'delivered').length,
   };
 
@@ -184,7 +178,7 @@ export default function Manager() {
 
       <div className="container mx-auto p-4 sm:p-6">
         {/* Stats Overview (excluding payment stats) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-2 sm:p-4 text-center">
               <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.total}</div>
@@ -194,25 +188,19 @@ export default function Manager() {
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-yellow-50">
               <div className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <div className="text-xs sm:text-sm text-gray-600">주문 접수</div>
+              <div className="text-xs sm:text-sm text-gray-600">주문접수</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-blue-50">
-              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.preparing}</div>
-              <div className="text-xs sm:text-sm text-gray-600">제작 중</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-orange-50">
-              <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.shipping}</div>
-              <div className="text-xs sm:text-sm text-gray-600">배송 중</div>
+              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.scheduled}</div>
+              <div className="text-xs sm:text-sm text-gray-600">발송예약</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-green-50">
               <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.delivered}</div>
-              <div className="text-xs sm:text-sm text-gray-600">배송 완료</div>
+              <div className="text-xs sm:text-sm text-gray-600">발송완료</div>
             </CardContent>
           </Card>
         </div>
@@ -310,13 +298,7 @@ export default function Manager() {
                                   <SelectItem value="pending">
                                     <div className="flex items-center space-x-2">
                                       <Clock className="h-4 w-4" />
-                                      <span>주문 접수</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="preparing">
-                                    <div className="flex items-center space-x-2">
-                                      <Package className="h-4 w-4" />
-                                      <span>제작 중</span>
+                                      <span>주문접수</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="scheduled">
@@ -325,16 +307,10 @@ export default function Manager() {
                                       <span>발송예약</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="shipping">
-                                    <div className="flex items-center space-x-2">
-                                      <Truck className="h-4 w-4" />
-                                      <span>배송 중</span>
-                                    </div>
-                                  </SelectItem>
                                   <SelectItem value="delivered">
                                     <div className="flex items-center space-x-2">
                                       <CheckCircle className="h-4 w-4" />
-                                      <span>배송 완료</span>
+                                      <span>발송완료</span>
                                     </div>
                                   </SelectItem>
                                 </SelectContent>
@@ -413,11 +389,9 @@ export default function Manager() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="pending">주문 접수</SelectItem>
-                                <SelectItem value="preparing">제작 중</SelectItem>
+                                <SelectItem value="pending">주문접수</SelectItem>
                                 <SelectItem value="scheduled">발송예약</SelectItem>
-                                <SelectItem value="shipping">배송 중</SelectItem>
-                                <SelectItem value="delivered">배송 완료</SelectItem>
+                                <SelectItem value="delivered">발송완료</SelectItem>
                               </SelectContent>
                             </Select>
                             

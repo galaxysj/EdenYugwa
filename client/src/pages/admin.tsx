@@ -13,18 +13,14 @@ import { ScheduledDatePicker } from "@/components/scheduled-date-picker";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
-  pending: "주문 접수",
-  preparing: "제작 중",
+  pending: "주문접수",
   scheduled: "발송예약",
-  shipping: "배송 중",
-  delivered: "배송 완료",
+  delivered: "발송완료",
 };
 
 const statusIcons = {
   pending: Clock,
-  preparing: Package,
   scheduled: Calendar,
-  shipping: Truck,
   delivered: CheckCircle,
 };
 
@@ -138,7 +134,7 @@ export default function Admin() {
       if (order.paymentStatus === 'pending') acc.unpaidOrders++;
       return acc;
     },
-    { total: 0, pending: 0, preparing: 0, scheduled: 0, shipping: 0, delivered: 0, paidOrders: 0, unpaidOrders: 0 }
+    { total: 0, pending: 0, scheduled: 0, delivered: 0, paidOrders: 0, unpaidOrders: 0 }
   );
 
   if (isLoading) {
@@ -194,7 +190,7 @@ export default function Admin() {
 
       <div className="container mx-auto p-4 sm:p-6">
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-2 sm:p-4 text-center">
               <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.total}</div>
@@ -203,38 +199,26 @@ export default function Admin() {
           </Card>
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-yellow-50">
-              <div className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <div className="text-xs sm:text-sm text-gray-600">주문 접수</div>
+              <div className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending || 0}</div>
+              <div className="text-xs sm:text-sm text-gray-600">주문접수</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-blue-50">
-              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.preparing}</div>
-              <div className="text-xs sm:text-sm text-gray-600">제작 중</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-orange-50">
-              <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.shipping}</div>
-              <div className="text-xs sm:text-sm text-gray-600">배송 중</div>
+              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.scheduled || 0}</div>
+              <div className="text-xs sm:text-sm text-gray-600">발송예약</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-green-50">
-              <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.delivered}</div>
-              <div className="text-xs sm:text-sm text-gray-600">배송 완료</div>
+              <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.delivered || 0}</div>
+              <div className="text-xs sm:text-sm text-gray-600">발송완료</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-emerald-50">
-              <div className="text-lg sm:text-2xl font-bold text-emerald-600">{stats.paidOrders}</div>
+              <div className="text-lg sm:text-2xl font-bold text-emerald-600">{stats.paidOrders || 0}</div>
               <div className="text-xs sm:text-sm text-gray-600">입금 완료</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-red-50">
-              <div className="text-lg sm:text-2xl font-bold text-red-600">{stats.unpaidOrders}</div>
-              <div className="text-xs sm:text-sm text-gray-600">입금 대기</div>
             </CardContent>
           </Card>
         </div>
@@ -368,13 +352,7 @@ export default function Admin() {
                                   <SelectItem value="pending">
                                     <div className="flex items-center space-x-2">
                                       <Clock className="h-4 w-4" />
-                                      <span>주문 접수</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="preparing">
-                                    <div className="flex items-center space-x-2">
-                                      <Package className="h-4 w-4" />
-                                      <span>제작 중</span>
+                                      <span>주문접수</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="scheduled">
@@ -383,16 +361,10 @@ export default function Admin() {
                                       <span>발송예약</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="shipping">
-                                    <div className="flex items-center space-x-2">
-                                      <Truck className="h-4 w-4" />
-                                      <span>배송 중</span>
-                                    </div>
-                                  </SelectItem>
                                   <SelectItem value="delivered">
                                     <div className="flex items-center space-x-2">
                                       <CheckCircle className="h-4 w-4" />
-                                      <span>배송 완료</span>
+                                      <span>발송완료</span>
                                     </div>
                                   </SelectItem>
                                 </SelectContent>
@@ -526,13 +498,7 @@ export default function Admin() {
                                     <SelectItem value="pending">
                                       <div className="flex items-center space-x-2">
                                         <Clock className="h-4 w-4" />
-                                        <span>주문 접수</span>
-                                      </div>
-                                    </SelectItem>
-                                    <SelectItem value="preparing">
-                                      <div className="flex items-center space-x-2">
-                                        <Package className="h-4 w-4" />
-                                        <span>제작 중</span>
+                                        <span>주문접수</span>
                                       </div>
                                     </SelectItem>
                                     <SelectItem value="scheduled">
@@ -541,16 +507,10 @@ export default function Admin() {
                                         <span>발송예약</span>
                                       </div>
                                     </SelectItem>
-                                    <SelectItem value="shipping">
-                                      <div className="flex items-center space-x-2">
-                                        <Truck className="h-4 w-4" />
-                                        <span>배송 중</span>
-                                      </div>
-                                    </SelectItem>
                                     <SelectItem value="delivered">
                                       <div className="flex items-center space-x-2">
                                         <CheckCircle className="h-4 w-4" />
-                                        <span>배송 완료</span>
+                                        <span>발송완료</span>
                                       </div>
                                     </SelectItem>
                                   </SelectContent>
