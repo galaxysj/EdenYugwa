@@ -66,6 +66,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update order status
+  // Update entire order
+  app.patch("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      const order = await storage.updateOrder(id, updateData);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(order);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update order" });
+    }
+  });
+
   app.patch("/api/orders/:id/status", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -229,8 +246,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '고객명': order.customerName,
         '전화번호': order.customerPhone,
         '주소': `${order.address1}${order.address2 ? ' ' + order.address2 : ''}`,
-        '박스크기': order.boxSize === 'small' ? '소형 (15,000원)' : '대형 (18,000원)',
-        '수량': order.quantity,
+        '소박스': order.smallBoxQuantity,
+        '대박스': order.largeBoxQuantity,
         '포장방식': order.wrappingQuantity > 0 ? `보자기포장 ${order.wrappingQuantity}개 (+${(order.wrappingQuantity * 1000).toLocaleString()}원)` : '일반포장',
         '총금액': `${order.totalAmount.toLocaleString()}원`,
         '주문상태': order.status === 'pending' ? '주문접수' :

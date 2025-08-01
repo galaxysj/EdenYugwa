@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -18,12 +17,22 @@ const editOrderSchema = insertOrderSchema.extend({
   customerName: z.string().min(1, "이름을 입력해주세요"),
   customerPhone: z.string().min(1, "전화번호를 입력해주세요"),
   address1: z.string().min(1, "주소를 입력해주세요"),
-  boxSize: z.enum(["small", "large"]),
-  quantity: z.number().min(1, "수량은 1개 이상이어야 합니다"),
+  smallBoxQuantity: z.number().min(0, "소박스 수량은 0개 이상이어야 합니다"),
+  largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
   wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
+}).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
+  message: "최소 1개 이상의 상품을 선택해주세요",
+  path: ["smallBoxQuantity"],
 });
 
 type EditOrderFormData = z.infer<typeof editOrderSchema>;
+
+const prices = {
+  small: 19000,
+  large: 21000,
+  wrapping: 1000,
+  shipping: 4000,
+};
 
 export default function OrderEdit() {
   const { id } = useParams();
@@ -66,14 +75,14 @@ export default function OrderEdit() {
           address1: orderData.address1,
           address2: orderData.address2 || '',
           specialRequests: orderData.specialRequests || '',
-          boxSize: orderData.boxSize,
-          quantity: orderData.quantity,
+          smallBoxQuantity: orderData.smallBoxQuantity || 0,
+          largeBoxQuantity: orderData.largeBoxQuantity || 0,
           wrappingQuantity: orderData.wrappingQuantity || 0,
         });
       } catch (error) {
         toast({
           title: "오류",
-          description: "주문 정보를 불러오는 중 오류가 발생했습니다.",
+          description: error instanceof Error ? error.message : "주문 정보를 불러오는 중 오류가 발생했습니다.",
           variant: "destructive",
         });
         setLocation('/order-lookup');
@@ -85,45 +94,37 @@ export default function OrderEdit() {
     if (id) {
       fetchOrder();
     }
-  }, [id, form, toast, setLocation]);
-
-  const calculateTotal = (boxSize: string, quantity: number, wrappingQuantity: number) => {
-    const basePrice = boxSize === 'small' ? 15000 : 18000;
-    const productTotal = basePrice * quantity;
-    const wrappingTotal = wrappingQuantity * 1000;
-    return productTotal + wrappingTotal;
-  };
+  }, [id, toast, setLocation, form]);
 
   const onSubmit = async (data: EditOrderFormData) => {
+    if (!order) return;
+    
     setIsSaving(true);
     try {
-      const totalAmount = calculateTotal(data.boxSize, data.quantity, data.wrappingQuantity);
-      
-      const response = await fetch(`/api/orders/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...data,
-          totalAmount,
-        }),
-      });
+      const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
+      const shippingFee = totalQuantity >= 6 ? 0 : prices.shipping;
+      const totalAmount = 
+        data.smallBoxQuantity * prices.small + 
+        data.largeBoxQuantity * prices.large + 
+        data.wrappingQuantity * prices.wrapping + 
+        shippingFee;
 
-      if (!response.ok) {
-        throw new Error('주문 수정에 실패했습니다');
-      }
+      await api.orders.update(order.id, {
+        ...data,
+        shippingFee,
+        totalAmount,
+      });
 
       toast({
         title: "수정 완료",
-        description: "주문이 성공적으로 수정되었습니다.",
+        description: "주문 정보가 성공적으로 수정되었습니다.",
       });
       
       setLocation('/order-lookup');
     } catch (error) {
       toast({
         title: "수정 실패",
-        description: "주문 수정 중 오류가 발생했습니다.",
+        description: "주문 수정 중 오류가 발생했습니다. 다시 시도해주세요.",
         variant: "destructive",
       });
     } finally {
@@ -131,13 +132,21 @@ export default function OrderEdit() {
     }
   };
 
-  const boxSize = form.watch('boxSize');
-  const quantity = form.watch('quantity');
-  const wrappingQuantity = form.watch('wrappingQuantity');
+  const calculateTotal = () => {
+    const smallBoxQuantity = form.watch("smallBoxQuantity") || 0;
+    const largeBoxQuantity = form.watch("largeBoxQuantity") || 0;
+    const wrappingQuantity = form.watch("wrappingQuantity") || 0;
+    
+    const totalQuantity = smallBoxQuantity + largeBoxQuantity;
+    const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+    
+    return smallBoxQuantity * prices.small + 
+           largeBoxQuantity * prices.large + 
+           wrappingQuantity * prices.wrapping + 
+           shippingFee;
+  };
 
-  const currentTotal = boxSize && quantity && wrappingQuantity !== undefined 
-    ? calculateTotal(boxSize, quantity, wrappingQuantity)
-    : 0;
+  const formatPrice = (price: number) => `${price.toLocaleString()}원`;
 
   if (isLoading) {
     return (
@@ -151,49 +160,43 @@ export default function OrderEdit() {
   }
 
   if (!order) {
-    return null;
+    return (
+      <div className="min-h-screen bg-eden-cream flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600 mb-4">주문을 찾을 수 없습니다.</p>
+          <Link href="/order-lookup">
+            <Button>주문 조회로 돌아가기</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-eden-cream">
-      {/* Header */}
-      <div className="bg-eden-red text-white p-6">
-        <div className="container mx-auto">
-          <div className="flex items-center space-x-4">
-            <Link href="/order-lookup">
-              <Button variant="ghost" className="text-white hover:text-gray-200">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                주문 조회로
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold font-korean">주문 수정</h1>
-          </div>
+    <div className="min-h-screen bg-eden-cream py-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="mb-6">
+          <Link href="/order-lookup">
+            <Button variant="ghost" className="text-eden-brown hover:text-eden-dark">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              뒤로 가기
+            </Button>
+          </Link>
         </div>
-      </div>
 
-      <div className="container mx-auto p-6">
-        {/* Warning */}
-        <Card className="mb-6 border-orange-200 bg-orange-50">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <p className="text-orange-800">
-                주문번호 #{order.orderNumber} - 입금 전 주문만 수정 가능합니다.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-korean">주문 정보 수정</CardTitle>
+        <Card className="shadow-lg">
+          <CardHeader className="bg-eden-sage text-white">
+            <CardTitle className="text-xl font-korean">
+              주문 수정 - #{order.orderNumber}
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 {/* Customer Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">주문자 정보</h3>
+                  <h3 className="text-lg font-medium text-gray-900">고객 정보</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -202,12 +205,13 @@ export default function OrderEdit() {
                         <FormItem>
                           <FormLabel>이름 *</FormLabel>
                           <FormControl>
-                            <Input {...field} />
+                            <Input placeholder="성함을 입력해주세요" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
                     <FormField
                       control={form.control}
                       name="customerPhone"
@@ -215,18 +219,14 @@ export default function OrderEdit() {
                         <FormItem>
                           <FormLabel>전화번호 *</FormLabel>
                           <FormControl>
-                            <Input placeholder="010-1234-5678" {...field} />
+                            <Input placeholder="010-0000-0000" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </div>
 
-                {/* Delivery Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">배송 정보</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
@@ -241,22 +241,22 @@ export default function OrderEdit() {
                         </FormItem>
                       )}
                     />
-                    <div className="md:col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="address1"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>주소 *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="기본 주소를 입력해주세요" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="address1"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>주소 *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="기본 주소" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
+
                   <FormField
                     control={form.control}
                     name="address2"
@@ -264,12 +264,13 @@ export default function OrderEdit() {
                       <FormItem>
                         <FormLabel>상세 주소</FormLabel>
                         <FormControl>
-                          <Input placeholder="상세 주소를 입력해주세요" {...field} />
+                          <Input placeholder="상세 주소" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
                   <FormField
                     control={form.control}
                     name="specialRequests"
@@ -291,103 +292,174 @@ export default function OrderEdit() {
                 {/* Product Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">상품 정보</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  
+                  {/* Small Box */}
+                  <div className="border-2 border-eden-beige rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-lg font-semibold text-eden-brown">소박스 - 한과1호</h4>
+                        <p className="text-sm text-eden-sage">전통유과 15개입 (약 1.2kg)</p>
+                        <p className="text-xs text-eden-dark">약 35.5×21×11.2cm</p>
+                      </div>
+                      <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.small)}</span>
+                    </div>
                     <FormField
                       control={form.control}
-                      name="boxSize"
+                      name="smallBoxQuantity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>박스 크기 *</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="크기 선택" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="small">소박스 (15,000원)</SelectItem>
-                              <SelectItem value="large">대박스 (18,000원)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="quantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>수량 *</FormLabel>
+                          <FormLabel>수량</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="number" 
-                              min="1" 
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="wrappingQuantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>보자기 포장 수량</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="number" 
-                              min="0" 
-                              max={quantity || 0}
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                            />
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                className="w-8 h-8 p-0"
+                              >
+                                -
+                              </Button>
+                              <Input
+                                type="number"
+                                min="0"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                className="w-20 text-center"
+                              />
+                              <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => field.onChange(field.value + 1)}
+                                className="w-8 h-8 p-0"
+                              >
+                                +
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
+
+                  {/* Large Box */}
+                  <div className="border-2 border-eden-beige rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-lg font-semibold text-eden-brown">대박스 - 한과2호</h4>
+                        <p className="text-sm text-eden-sage">전통유과 25개입 (약 1.3kg)</p>
+                        <p className="text-xs text-eden-dark">약 37×23×11.5cm</p>
+                      </div>
+                      <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.large)}</span>
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="largeBoxQuantity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>수량</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                className="w-8 h-8 p-0"
+                              >
+                                -
+                              </Button>
+                              <Input
+                                type="number"
+                                min="0"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                className="w-20 text-center"
+                              />
+                              <Button 
+                                type="button"
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => field.onChange(field.value + 1)}
+                                className="w-8 h-8 p-0"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Wrapping */}
+                  <FormField
+                    control={form.control}
+                    name="wrappingQuantity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>보자기 포장 수량</FormLabel>
+                        <p className="text-xs text-gray-600 mb-2">개당 +1,000원</p>
+                        <FormControl>
+                          <div className="flex items-center space-x-2">
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                              className="w-8 h-8 p-0"
+                            >
+                              -
+                            </Button>
+                            <Input
+                              type="number"
+                              min="0"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              className="w-20 text-center"
+                            />
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => field.onChange(field.value + 1)}
+                              className="w-8 h-8 p-0"
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Total Price */}
+                  <div className="bg-eden-cream p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold text-eden-brown">총 주문 금액:</span>
+                      <span className="text-xl font-bold text-eden-brown">{formatPrice(calculateTotal())}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Total */}
-                {currentTotal > 0 && (
-                  <Card className="bg-eden-sage/10 border-eden-sage">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-medium">총 결제 금액</span>
-                        <span className="text-2xl font-bold text-eden-brown">
-                          {currentTotal.toLocaleString()}원
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Submit Button */}
-                <div className="flex justify-end space-x-4">
+                <div className="flex space-x-4">
+                  <Button 
+                    type="submit" 
+                    disabled={isSaving}
+                    className="flex-1 bg-eden-brown hover:bg-eden-dark text-white"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    {isSaving ? "저장 중..." : "수정 완료"}
+                  </Button>
                   <Link href="/order-lookup">
-                    <Button type="button" variant="outline">
+                    <Button type="button" variant="outline" className="text-eden-brown border-eden-brown">
                       취소
                     </Button>
                   </Link>
-                  <Button
-                    type="submit"
-                    disabled={isSaving}
-                    className="bg-eden-brown hover:bg-eden-dark text-white"
-                  >
-                    {isSaving ? (
-                      "저장 중..."
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        수정 완료
-                      </>
-                    )}
-                  </Button>
                 </div>
               </form>
             </Form>

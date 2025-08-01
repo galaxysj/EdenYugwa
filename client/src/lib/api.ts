@@ -56,6 +56,21 @@ export const api = {
       
       return response.json();
     },
+    update: async (id: number, data: any) => {
+      const response = await fetch(`/api/orders/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error('주문 수정에 실패했습니다');
+      }
+      
+      return response.json();
+    },
   },
   sms: {
     send: async (data: { orderId: number; phoneNumber: string; message: string }) => {

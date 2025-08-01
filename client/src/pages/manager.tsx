@@ -274,7 +274,7 @@ export default function Manager() {
                             </td>
                             <td className="py-4 px-4">
                               <div className="text-sm text-gray-900">
-                                {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                                소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
                               </div>
                               <div className={order.wrappingQuantity > 0 ? "text-sm text-gray-900" : "text-xs text-gray-500"}>
                                 {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
@@ -368,7 +368,7 @@ export default function Manager() {
                             <div>
                               <span className="text-sm font-medium text-gray-700">상품: </span>
                               <span className="text-sm text-gray-900">
-                                {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                                소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
                                 {order.wrappingQuantity > 0 && ` (보자기 × ${order.wrappingQuantity})`}
                               </span>
                             </div>

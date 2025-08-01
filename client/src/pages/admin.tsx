@@ -128,7 +128,7 @@ export default function Admin() {
 
   // Calculate stats
   const stats = orders.reduce(
-    (acc, order) => {
+    (acc: any, order: Order) => {
       acc.total++;
       acc[order.status as keyof typeof acc]++;
       if (order.paymentStatus === 'confirmed') acc.paidOrders++;
@@ -280,7 +280,7 @@ export default function Admin() {
                       </tr>
                     </thead>
                     <tbody>
-                      {orders.map((order) => {
+                      {orders.map((order: Order) => {
                         const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                         return (
                           <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -299,7 +299,7 @@ export default function Admin() {
                             </td>
                             <td className="py-4 px-4">
                               <div className="text-sm text-gray-900">
-                                {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                                소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
                               </div>
                               <div className={order.wrappingQuantity > 0 ? "text-sm text-gray-900" : "text-xs text-gray-500"}>
                                 {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
@@ -406,7 +406,7 @@ export default function Admin() {
 
                 {/* Mobile Cards */}
                 <div className="block lg:hidden space-y-4">
-                  {orders.map((order) => {
+                  {orders.map((order: Order) => {
                     const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                     return (
                       <Card key={order.id} className="border border-gray-200 shadow-sm">
@@ -437,7 +437,7 @@ export default function Admin() {
                             <div>
                               <span className="text-sm font-medium text-gray-600">상품: </span>
                               <span className="text-sm text-gray-900">
-                                {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                                소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
                                 {order.wrappingQuantity > 0 && ` (보자기 × ${order.wrappingQuantity})`}
                               </span>
                             </div>

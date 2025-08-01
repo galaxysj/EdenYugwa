@@ -11,9 +11,10 @@ export const orders = pgTable("orders", {
   address1: text("address1").notNull(),
   address2: text("address2"),
   specialRequests: text("special_requests"),
-  boxSize: text("box_size").notNull(), // 'small' or 'large'
-  quantity: integer("quantity").notNull(),
+  smallBoxQuantity: integer("small_box_quantity").notNull().default(0), // 소박스(한과1호) 수량
+  largeBoxQuantity: integer("large_box_quantity").notNull().default(0), // 대박스(한과2호) 수량
   wrappingQuantity: integer("wrapping_quantity").notNull().default(0), // 보자기 포장 수량
+  shippingFee: integer("shipping_fee").notNull().default(0), // 배송비
   totalAmount: integer("total_amount").notNull(),
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'shipping', 'delivered'
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
