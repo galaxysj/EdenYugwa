@@ -313,7 +313,7 @@ export default function OrderForm() {
                     name="wrappingQuantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>보자기 포장 수량</FormLabel>
+                        <FormLabel>보자기 수량</FormLabel>
                         <p className="text-xs text-gray-600 mb-2">개당 +1,000원</p>
                         <FormControl>
                           <div className="flex items-center space-x-2">
