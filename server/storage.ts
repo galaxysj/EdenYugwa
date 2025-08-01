@@ -9,6 +9,7 @@ export interface IStorage {
   getOrderByNumber(orderNumber: string): Promise<Order | undefined>;
   getAllOrders(): Promise<Order[]>;
   getOrdersByPhone(phone: string): Promise<Order[]>;
+  getOrdersByName(name: string): Promise<Order[]>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order | undefined>;
   updateOrderStatus(id: number, status: string): Promise<Order | undefined>;
   updateOrderScheduledDate(id: number, scheduledDate: Date | null): Promise<Order | undefined>;
@@ -112,6 +113,12 @@ export class DatabaseStorage implements IStorage {
   async getOrdersByPhone(phone: string): Promise<Order[]> {
     return await db.select().from(orders)
       .where(eq(orders.customerPhone, phone))
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async getOrdersByName(name: string): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.customerName, name))
       .orderBy(desc(orders.createdAt));
   }
 

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, type Order } from "@shared/schema";
 import * as XLSX from "xlsx";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -15,20 +15,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lookup orders by phone number (must come before /api/orders/:id)
+  // Lookup orders by phone number or name (must come before /api/orders/:id)
   app.get("/api/orders/lookup", async (req, res) => {
     try {
-      const { phone } = req.query;
+      const { phone, name } = req.query;
       
-      if (!phone || typeof phone !== 'string') {
-        return res.status(400).json({ message: "Phone number is required" });
+      if ((!phone || typeof phone !== 'string') && (!name || typeof name !== 'string')) {
+        return res.status(400).json({ message: "Phone number or name is required" });
       }
       
-      const orders = await storage.getOrdersByPhone(phone);
-      if (orders.length === 0) {
+      let orders: Order[] = [];
+      
+      if (phone && typeof phone === 'string') {
+        const phoneOrders = await storage.getOrdersByPhone(phone);
+        orders = [...orders, ...phoneOrders];
+      }
+      
+      if (name && typeof name === 'string') {
+        const nameOrders = await storage.getOrdersByName(name);
+        orders = [...orders, ...nameOrders];
+      }
+      
+      // Remove duplicates if searching by both phone and name
+      const uniqueOrders = orders.filter((order, index, self) => 
+        index === self.findIndex(o => o.id === order.id)
+      );
+      
+      if (uniqueOrders.length === 0) {
         return res.status(404).json({ message: "Order not found" });
       }
-      res.json(orders);
+      
+      res.json(uniqueOrders);
     } catch (error) {
       res.status(500).json({ message: "Failed to lookup orders" });
     }

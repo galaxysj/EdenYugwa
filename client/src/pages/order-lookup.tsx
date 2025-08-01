@@ -14,7 +14,11 @@ import { api } from "@/lib/api";
 import type { Order } from "@shared/schema";
 
 const lookupSchema = z.object({
-  phoneNumber: z.string().min(1, "전화번호를 입력해주세요"),
+  phoneNumber: z.string().optional(),
+  customerName: z.string().optional(),
+}).refine(data => data.phoneNumber || data.customerName, {
+  message: "전화번호 또는 이름 중 하나는 입력해주세요",
+  path: ["phoneNumber"],
 });
 
 type LookupFormData = z.infer<typeof lookupSchema>;
@@ -56,6 +60,7 @@ export default function OrderLookup() {
     resolver: zodResolver(lookupSchema),
     defaultValues: {
       phoneNumber: "",
+      customerName: "",
     },
   });
 
@@ -63,7 +68,11 @@ export default function OrderLookup() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/orders/lookup?phone=${encodeURIComponent(data.phoneNumber)}`);
+      const queryParams = new URLSearchParams();
+      if (data.phoneNumber) queryParams.append('phone', data.phoneNumber);
+      if (data.customerName) queryParams.append('name', data.customerName);
+      
+      const response = await fetch(`/api/orders/lookup?${queryParams.toString()}`);
       
       if (response.status === 404) {
         // 404인 경우 주문 내역이 없음
@@ -127,32 +136,55 @@ export default function OrderLookup() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="font-korean">주문 조회하기</CardTitle>
-            <p className="text-gray-600">주문 시 입력하신 전화번호로 주문 내역을 조회할 수 있습니다.</p>
+            <p className="text-gray-600">주문 시 입력하신 전화번호 또는 이름으로 주문 내역을 조회할 수 있습니다.</p>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>전화번호</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="010-1234-5678"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="phoneNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>전화번호</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="010-1234-5678"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="customerName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문자 이름</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="홍길동"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="text-sm text-gray-500 mt-2">
+                  * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
+                </div>
                 
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="bg-eden-brown hover:bg-eden-dark text-white"
+                  className="bg-eden-brown hover:bg-eden-dark text-white w-full md:w-auto"
                 >
                   {isLoading ? (
                     "조회 중..."
