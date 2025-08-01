@@ -713,7 +713,7 @@ export default function Admin() {
                             </div>
                             {order.discountAmount && order.discountAmount > 0 && (
                               <div className="text-blue-600 font-medium">
-                                할인: -{formatPrice(order.discountAmount)}
+                                할인: {formatPrice(order.discountAmount)}
                               </div>
                             )}
                             {order.netProfit !== undefined && order.netProfit !== null && (
