@@ -437,11 +437,22 @@ export default function Admin() {
   });
 
   // Fetch deleted orders (trash)
-  const { data: deletedOrders = [] } = useQuery({
+  const { data: deletedOrders = [], isLoading: isLoadingTrash, error: trashError } = useQuery({
     queryKey: ['/api/orders/trash'],
-    queryFn: () => api.orders.getTrash(),
+    queryFn: () => {
+      console.log('Fetching trash orders...');
+      return api.orders.getTrash();
+    },
     enabled: activeTab === "trash",
+    retry: 3,
   });
+
+  // Debug logging
+  console.log('Active tab:', activeTab);
+  console.log('Deleted orders:', deletedOrders);
+  console.log('Deleted orders length:', deletedOrders.length);
+  console.log('Is loading trash:', isLoadingTrash);
+  console.log('Trash error:', trashError);
 
   // Restore order mutation
   const restoreOrderMutation = useMutation({
@@ -1262,7 +1273,19 @@ export default function Admin() {
                 </TabsContent>
                 
                 <TabsContent value="trash" className="mt-6">
-                  {renderTrashOrdersList(deletedOrders)}
+                  {isLoadingTrash ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
+                      <div className="text-gray-500">휴지통을 불러오는 중...</div>
+                    </div>
+                  ) : trashError ? (
+                    <div className="text-center py-8 text-red-500">
+                      <div className="mb-2">휴지통을 불러오는 중 오류가 발생했습니다.</div>
+                      <div className="text-sm text-gray-500">{trashError.message}</div>
+                    </div>
+                  ) : (
+                    renderTrashOrdersList(deletedOrders)
+                  )}
                 </TabsContent>
               </Tabs>
             )}
