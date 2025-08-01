@@ -314,6 +314,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete order
+  app.delete("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteOrder(id);
+      res.json({ message: "Order deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete order" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

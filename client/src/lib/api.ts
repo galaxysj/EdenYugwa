@@ -86,6 +86,17 @@ export const api = {
       
       return response.json();
     },
+    delete: async (id: number) => {
+      const response = await fetch(`/api/orders/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('주문 삭제에 실패했습니다');
+      }
+      
+      return response.json();
+    },
   },
   sms: {
     send: async (data: { orderId: number; phoneNumber: string; message: string }) => {

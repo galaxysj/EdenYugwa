@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2 } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import type { Order } from "@shared/schema";
@@ -202,6 +202,16 @@ export default function Admin() {
                       <div className="flex flex-col gap-2">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          disabled={deleteOrderMutation.isPending}
+                          className="flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          삭제
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -356,6 +366,16 @@ export default function Admin() {
                       <div className="flex flex-col gap-3">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          disabled={deleteOrderMutation.isPending}
+                          className="flex items-center gap-1"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          삭제
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -414,6 +434,30 @@ export default function Admin() {
 
   const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
     updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+  };
+
+  const deleteOrderMutation = useMutation({
+    mutationFn: (orderId: number) => api.orders.delete(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: "주문 삭제 완료",
+        description: "주문이 성공적으로 삭제되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "삭제 실패",
+        description: "주문 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteOrder = (orderId: number) => {
+    if (confirm("정말로 이 주문을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+      deleteOrderMutation.mutate(orderId);
+    }
   };
 
   const handleExcelDownload = async () => {

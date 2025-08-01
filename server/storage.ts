@@ -68,14 +68,25 @@ export class DatabaseStorage implements IStorage {
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const orderNumber = this.generateOrderNumber();
+    const orderData = {
+      customerName: insertOrder.customerName,
+      customerPhone: insertOrder.customerPhone,
+      zipCode: insertOrder.zipCode,
+      address1: insertOrder.address1,
+      address2: insertOrder.address2,
+      smallBoxQuantity: insertOrder.smallBoxQuantity,
+      largeBoxQuantity: insertOrder.largeBoxQuantity,
+      wrappingQuantity: insertOrder.wrappingQuantity,
+      totalAmount: insertOrder.totalAmount,
+      specialRequests: insertOrder.specialRequests,
+      orderNumber,
+      status: insertOrder.status || "pending",
+      paymentStatus: "pending",
+    };
+    
     const [order] = await db
       .insert(orders)
-      .values({
-        ...insertOrder,
-        orderNumber,
-        status: insertOrder.status || "pending",
-        paymentStatus: "pending",
-      })
+      .values(orderData)
       .returning();
     return order;
   }
@@ -105,9 +116,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrder(id: number, updateData: Partial<InsertOrder>): Promise<Order | undefined> {
+    // Convert string dates to Date objects if needed
+    const processedData: any = { ...updateData };
+    if (processedData.scheduledDate && typeof processedData.scheduledDate === 'string') {
+      processedData.scheduledDate = new Date(processedData.scheduledDate);
+    }
+    
     const [order] = await db
       .update(orders)
-      .set(updateData)
+      .set(processedData)
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;
@@ -168,6 +185,10 @@ export class DatabaseStorage implements IStorage {
       .values(insertAdmin)
       .returning();
     return admin;
+  }
+
+  async deleteOrder(id: number): Promise<void> {
+    await db.delete(orders).where(eq(orders.id, id));
   }
 }
 
