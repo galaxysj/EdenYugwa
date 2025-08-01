@@ -51,6 +51,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get deleted orders (trash) - must come before /api/orders/:id
+  app.get("/api/orders/trash", async (req, res) => {
+    console.log('GET /api/orders/trash called');
+    try {
+      const deletedOrders = await storage.getDeletedOrders();
+      console.log('Deleted orders found:', deletedOrders.length);
+      res.json(deletedOrders);
+    } catch (error) {
+      console.error('Get deleted orders error:', error);
+      res.status(500).json({ message: "휴지통 주문 조회에 실패했습니다" });
+    }
+  });
+
   // Get single order
   app.get("/api/orders/:id", async (req, res) => {
     try {
@@ -456,15 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get deleted orders (trash)
-  app.get("/api/orders/trash", async (req, res) => {
-    try {
-      const deletedOrders = await storage.getDeletedOrders();
-      res.json(deletedOrders);
-    } catch (error) {
-      res.status(500).json({ message: "휴지통 주문 조회에 실패했습니다" });
-    }
-  });
+
 
   // Restore order from trash
   app.post("/api/orders/:id/restore", async (req, res) => {
