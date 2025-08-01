@@ -394,7 +394,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("all");
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false);
   const [paymentConfirmOrder, setPaymentConfirmOrder] = useState<Order | null>(null);
-  const [actualPaidAmount, setActualPaidAmount] = useState("");
+  const [actualPaidAmounts, setActualPaidAmounts] = useState<{[key: number]: string}>({});
 
   const handleLogout = () => {
     toast({
@@ -660,35 +660,60 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <Select
-                        value={order.paymentStatus || 'pending'}
-                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
-                        disabled={updatePaymentMutation.isPending}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">
-                            <div className="flex items-center space-x-2">
-                              <AlertCircle className="h-4 w-4 text-orange-500" />
-                              <span>입금 대기</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="confirmed">
-                            <div className="flex items-center space-x-2">
-                              <DollarSign className="h-4 w-4 text-green-500" />
-                              <span>입금 완료</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="refunded">
-                            <div className="flex items-center space-x-2">
-                              <AlertCircle className="h-4 w-4 text-red-500" />
-                              <span>환불</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Select
+                          value={order.paymentStatus || 'pending'}
+                          onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                          disabled={updatePaymentMutation.isPending}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">
+                              <div className="flex items-center space-x-2">
+                                <AlertCircle className="h-4 w-4 text-orange-500" />
+                                <span>입금 대기</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="confirmed">
+                              <div className="flex items-center space-x-2">
+                                <DollarSign className="h-4 w-4 text-green-500" />
+                                <span>입금 완료</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="refunded">
+                              <div className="flex items-center space-x-2">
+                                <AlertCircle className="h-4 w-4 text-red-500" />
+                                <span>환불</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {order.paymentStatus === 'confirmed' && !order.actualPaidAmount && (
+                          <div className="space-y-1">
+                            <Input
+                              type="number"
+                              placeholder="실제 입금금액"
+                              value={actualPaidAmounts[order.id] || ''}
+                              onChange={(e) => setActualPaidAmounts(prev => ({
+                                ...prev,
+                                [order.id]: e.target.value
+                              }))}
+                              className="w-32 text-xs"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => handlePaymentConfirm(order.id)}
+                              disabled={confirmPaymentMutation.isPending || !actualPaidAmounts[order.id]}
+                              className="w-32 h-6 text-xs"
+                            >
+                              {confirmPaymentMutation.isPending ? "처리중..." : "금액저장"}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <Select
@@ -989,11 +1014,16 @@ export default function Admin() {
       if (!response.ok) throw new Error('Failed to update actual paid amount');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setShowPaymentConfirmDialog(false);
       setPaymentConfirmOrder(null);
-      setActualPaidAmount("");
+      // 해당 주문의 입금금액 상태 제거
+      setActualPaidAmounts(prev => {
+        const newState = { ...prev };
+        delete newState[variables.id];
+        return newState;
+      });
       toast({
         title: "입금 확인 완료",
         description: "입금이 확인되었고 실제 입금금액이 기록되었습니다.",
@@ -1061,9 +1091,13 @@ export default function Admin() {
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
 
-  // 입금확인 다이얼로그 핸들러
-  const handlePaymentConfirm = () => {
-    if (!paymentConfirmOrder || !actualPaidAmount) {
+  // 입금확인 핸들러 (개별 주문용)
+  const handlePaymentConfirm = (orderId?: number) => {
+    const targetOrderId = orderId || paymentConfirmOrder?.id;
+    if (!targetOrderId) return;
+    
+    const paidAmountStr = actualPaidAmounts[targetOrderId];
+    if (!paidAmountStr) {
       toast({
         title: "입력 오류",
         description: "실제 입금금액을 입력해주세요.",
@@ -1072,7 +1106,7 @@ export default function Admin() {
       return;
     }
 
-    const paidAmount = parseInt(actualPaidAmount);
+    const paidAmount = parseInt(paidAmountStr);
     if (paidAmount <= 0) {
       toast({
         title: "입력 오류", 
@@ -1083,7 +1117,7 @@ export default function Admin() {
     }
 
     confirmPaymentMutation.mutate({ 
-      id: paymentConfirmOrder.id, 
+      id: targetOrderId, 
       actualPaidAmount: paidAmount 
     });
   };
@@ -1353,8 +1387,11 @@ export default function Admin() {
                   id="actualPaidAmount"
                   type="number"
                   placeholder="실제 입금된 금액을 입력하세요"
-                  value={actualPaidAmount}
-                  onChange={(e) => setActualPaidAmount(e.target.value)}
+                  value={paymentConfirmOrder ? (actualPaidAmounts[paymentConfirmOrder.id] || '') : ''}
+                  onChange={(e) => paymentConfirmOrder && setActualPaidAmounts(prev => ({
+                    ...prev,
+                    [paymentConfirmOrder.id]: e.target.value
+                  }))}
                 />
               </div>
               
@@ -1370,7 +1407,6 @@ export default function Admin() {
                   onClick={() => {
                     setShowPaymentConfirmDialog(false);
                     setPaymentConfirmOrder(null);
-                    setActualPaidAmount("");
                   }}
                   className="flex-1"
                 >
