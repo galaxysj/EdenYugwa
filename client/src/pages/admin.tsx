@@ -7,9 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2 } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
@@ -23,6 +27,133 @@ const statusIcons = {
   scheduled: Calendar,
   delivered: CheckCircle,
 };
+
+// Financial Dialog Component
+function FinancialDialog({ order }: { order: Order }) {
+  const [open, setOpen] = useState(false);
+  const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || '');
+  const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || '');
+  const [discountReason, setDiscountReason] = useState(order.discountReason || '');
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const updateFinancialMutation = useMutation({
+    mutationFn: async (data: { actualPaidAmount?: number; discountAmount?: number; discountReason?: string }) => {
+      const response = await fetch(`/api/orders/${order.id}/financial`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update financial info');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: "성공",
+        description: "매출 정보가 업데이트되었습니다.",
+      });
+      setOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "오류",
+        description: "매출 정보 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const data: any = {};
+    if (actualPaidAmount) data.actualPaidAmount = parseInt(actualPaidAmount);
+    if (discountAmount) data.discountAmount = parseInt(discountAmount);
+    if (discountReason) data.discountReason = discountReason;
+    
+    updateFinancialMutation.mutate(data);
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('ko-KR').format(price) + '원';
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+          <PiggyBank className="h-3 w-3" />
+          매출 관리
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>매출 정보 관리</DialogTitle>
+          <DialogDescription>
+            주문 #{order.orderNumber}의 매출 정보를 관리합니다.
+            <br />
+            주문 금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
+          </DialogDescription>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="actualPaidAmount">실제 입금 금액</Label>
+            <Input
+              id="actualPaidAmount"
+              type="number"
+              placeholder="실제 입금된 금액을 입력하세요"
+              value={actualPaidAmount}
+              onChange={(e) => setActualPaidAmount(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="discountAmount">할인 금액</Label>
+            <Input
+              id="discountAmount"
+              type="number"
+              placeholder="할인 금액이 있다면 입력하세요"
+              value={discountAmount}
+              onChange={(e) => setDiscountAmount(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="discountReason">할인 사유</Label>
+            <Textarea
+              id="discountReason"
+              placeholder="할인 사유를 입력하세요 (선택사항)"
+              value={discountReason}
+              onChange={(e) => setDiscountReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              className="flex-1"
+            >
+              취소
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={updateFinancialMutation.isPending}
+              className="flex-1"
+            >
+              {updateFinancialMutation.isPending ? "저장 중..." : "저장"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function Admin() {
   const { toast } = useToast();
@@ -284,9 +415,24 @@ export default function Admin() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-gray-500 mb-2">주문금액</div>
-                        <div className="text-xl font-bold text-eden-brown">
-                          {formatPrice(order.totalAmount)}
+                        <div className="text-gray-500 mb-2">매출현황</div>
+                        <div className="space-y-2">
+                          <div className="text-sm text-gray-600">
+                            주문금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            실제입금: <span className="font-medium text-green-600">
+                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
+                            </span>
+                          </div>
+                          {order.discountAmount && order.discountAmount > 0 && (
+                            <div className="text-sm text-gray-600">
+                              할인금액: <span className="font-medium text-red-600">-{formatPrice(order.discountAmount)}</span>
+                              {order.discountReason && (
+                                <span className="text-xs text-gray-500 block">({order.discountReason})</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -362,6 +508,7 @@ export default function Admin() {
                       <div className="flex flex-col gap-3">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
+                        <FinancialDialog order={order} />
                         <Button
                           size="sm"
                           variant="destructive"
@@ -489,16 +636,32 @@ export default function Admin() {
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
 
-  // Calculate stats
+  // Calculate stats including financial data
   const stats = orders.reduce(
     (acc: any, order: Order) => {
       acc.total++;
       acc[order.status as keyof typeof acc]++;
       if (order.paymentStatus === 'confirmed') acc.paidOrders++;
       if (order.paymentStatus === 'pending') acc.unpaidOrders++;
+      
+      // Financial calculations
+      acc.totalRevenue += order.totalAmount;
+      acc.actualRevenue += order.actualPaidAmount || 0;
+      acc.totalDiscounts += order.discountAmount || 0;
+      
       return acc;
     },
-    { total: 0, pending: 0, scheduled: 0, delivered: 0, paidOrders: 0, unpaidOrders: 0 }
+    { 
+      total: 0, 
+      pending: 0, 
+      scheduled: 0, 
+      delivered: 0, 
+      paidOrders: 0, 
+      unpaidOrders: 0,
+      totalRevenue: 0,
+      actualRevenue: 0,
+      totalDiscounts: 0
+    }
   );
 
   if (isLoading) {
@@ -583,6 +746,40 @@ export default function Admin() {
             <CardContent className="p-2 sm:p-4 text-center bg-emerald-50">
               <div className="text-lg sm:text-2xl font-bold text-emerald-600">{stats.paidOrders || 0}</div>
               <div className="text-xs sm:text-sm text-gray-600">입금 완료</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Revenue Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <Card>
+            <CardContent className="p-4 text-center bg-eden-red/5">
+              <div className="text-xl sm:text-2xl font-bold text-eden-red">
+                {formatPrice(stats.totalRevenue)}
+              </div>
+              <div className="text-sm text-gray-600">총 주문 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-green-50">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">
+                {formatPrice(stats.actualRevenue)}
+              </div>
+              <div className="text-sm text-gray-600">실제 입금 금액</div>
+              <div className="text-xs text-gray-500 mt-1">
+                수입률: {stats.totalRevenue > 0 ? Math.round((stats.actualRevenue / stats.totalRevenue) * 100) : 0}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-red-50">
+              <div className="text-xl sm:text-2xl font-bold text-red-600">
+                {formatPrice(stats.totalDiscounts)}
+              </div>
+              <div className="text-sm text-gray-600">총 할인 금액</div>
+              <div className="text-xs text-gray-500 mt-1">
+                할인률: {stats.totalRevenue > 0 ? Math.round((stats.totalDiscounts / stats.totalRevenue) * 100) : 0}%
+              </div>
             </CardContent>
           </Card>
         </div>

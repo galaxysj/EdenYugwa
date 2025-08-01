@@ -194,6 +194,19 @@ export class DatabaseStorage implements IStorage {
     return admin;
   }
 
+  async updateFinancialInfo(id: number, data: {
+    actualPaidAmount?: number;
+    discountAmount?: number;
+    discountReason?: string;
+  }): Promise<Order | undefined> {
+    const [updatedOrder] = await db.update(orders)
+      .set(data)
+      .where(eq(orders.id, id))
+      .returning();
+    
+    return updatedOrder;
+  }
+
   async deleteOrder(id: number): Promise<void> {
     await db.delete(orders).where(eq(orders.id, id));
   }

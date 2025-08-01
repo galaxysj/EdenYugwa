@@ -169,6 +169,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update order financial information (admin only)
+  app.patch('/api/orders/:id/financial', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { actualPaidAmount, discountAmount, discountReason } = req.body;
+      
+      const updateData: any = {};
+      if (actualPaidAmount !== undefined) updateData.actualPaidAmount = actualPaidAmount;
+      if (discountAmount !== undefined) updateData.discountAmount = discountAmount;
+      if (discountReason !== undefined) updateData.discountReason = discountReason;
+      
+      const updatedOrder = await storage.updateFinancialInfo(id, updateData);
+      if (!updatedOrder) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error('Error updating financial info:', error);
+      res.status(500).json({ error: 'Failed to update financial info' });
+    }
+  });
+
 
 
   // Update order (for customer edits)
