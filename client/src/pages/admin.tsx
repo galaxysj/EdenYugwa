@@ -239,7 +239,7 @@ export default function Admin() {
                         )}
                       </div>
                       <div className="flex items-center space-x-1">
-                        <StatusIcon className="h-5 w-5 text-blue-500" />
+                        {StatusIcon && <StatusIcon className="h-5 w-5 text-blue-500" />}
                         <span className="text-sm font-medium text-blue-600">
                           {statusLabels[order.status as keyof typeof statusLabels]}
                         </span>
