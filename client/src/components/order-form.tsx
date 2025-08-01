@@ -211,7 +211,7 @@ export default function OrderForm() {
                   <div className="border-2 border-eden-beige rounded-lg p-4">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h5 className="text-lg font-semibold text-eden-brown">한과1호(약 1.2kg)</h5>
+                        <h5 className="text-lg font-semibold text-eden-brown">한과1호(약 1.1kg)</h5>
 
                       </div>
                       <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.small)}</span>
