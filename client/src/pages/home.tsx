@@ -8,7 +8,6 @@ import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
 
 export default function Home() {
-  const [showOrderForm, setShowOrderForm] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
@@ -137,49 +136,62 @@ export default function Home() {
           )}
         </div>
       </header>
-      {/* Hero Section */}
-      <section id="home" className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-90"></div>
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-left">
-              <h2 className="text-4xl md:text-5xl font-bold text-eden-brown mb-6 leading-tight font-korean">
-                진안에서 온<br />
-                <span className="text-eden-red">정성 가득</span> 유과
-              </h2>
-              <p className="text-lg text-eden-dark mb-8 leading-relaxed">
-                부모님이 직접 만드시는 찹쌀유과로<br />
-                100% 국내산 찹쌀로 만든 한과입니다.<br />
-                달지 않고 고소한 맛이 일품으로<br />
-                선물로도 완벽한 에덴한과입니다.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Button 
-                  onClick={() => scrollToSection('order')}
-                  className="bg-eden-brown text-white px-12 py-4 text-lg hover:bg-eden-dark transition-colors"
-                >
-                  <ShoppingCart className="mr-3 h-5 w-5" />
-                  지금 주문하기
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => scrollToSection('about')}
-                  className="border-2 border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white transition-colors"
-                >
-                  자세히 알아보기
-                </Button>
+      {/* Order Section - Main Content */}
+      <section id="home" className="relative overflow-hidden bg-white">
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-eden-brown mb-6 leading-tight font-korean">
+              진안에서 온<br />
+              <span className="text-eden-red">정성 가득</span> 유과
+            </h2>
+            <p className="text-lg text-eden-dark mb-8 leading-relaxed">
+              부모님이 직접 만드시는 찹쌀유과로<br />
+              100% 국내산 찹쌀로 만든 한과입니다.<br />
+              달지 않고 고소한 맛이 일품으로<br />
+              선물로도 완벽한 에덴한과입니다.
+            </p>
+          </div>
+
+          {/* Order Form Section */}
+          <div id="order" className="mb-16">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-eden-cream rounded-2xl p-8 shadow-lg">
+                <h3 className="text-2xl font-bold text-eden-brown mb-6 text-center font-korean">
+                  주문하기
+                </h3>
+                <OrderForm />
               </div>
+            </div>
+          </div>
+
+          {/* Product Images */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <div className="flex justify-center">
+              <img 
+                src={edenHangwaImage} 
+                alt="에덴한과 유과 상품" 
+                className="rounded-2xl shadow-lg w-full max-w-md"
+              />
             </div>
             <div className="flex justify-center">
-              <div className="relative">
-                <img 
-                  src={edenHangwaImage} 
-                  alt="에덴한과 유과 상품" 
-                  className="rounded-2xl shadow-2xl w-full max-w-md"
-                />
-
-              </div>
+              <img 
+                src={edenHangwaImage2} 
+                alt="에덴한과 유과 상품" 
+                className="rounded-2xl shadow-lg w-full max-w-md"
+              />
             </div>
+          </div>
+
+          {/* Learn More Button */}
+          <div className="text-center">
+            <Button 
+              variant="outline"
+              onClick={() => scrollToSection('about')}
+              className="border-2 border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white transition-colors px-8 py-3 text-lg"
+            >
+              <Info className="mr-2 h-5 w-5" />
+              자세히 알아보기
+            </Button>
           </div>
         </div>
       </section>
@@ -264,26 +276,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Order Section */}
-      <section id="order" className="py-16 bg-eden-cream">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-eden-brown mb-4 font-korean">주문하기</h3>
-            <p className="text-eden-dark mb-2">에덴한과와 함께 따뜻하고 달콤한 시간을 만들어보세요</p>
-            <p className="text-sm text-eden-sage mb-3">
-              <Info className="inline mr-1 h-4 w-4" />
-              배송까지 1-2일 소요됩니다
-            </p>
-            <div className="bg-gradient-to-br from-eden-sage/20 to-eden-brown/10 rounded-xl p-8 border-3 border-eden-brown max-w-lg mx-auto shadow-lg">
-              <p className="text-eden-brown font-bold text-center mb-4 text-2xl">입금 계좌</p>
-              <p className="text-eden-dark text-center font-mono text-3xl font-bold">농협 352-1701-3342-63</p>
-              <p className="text-eden-dark text-center text-xl font-semibold mt-3">손*진</p>
-            </div>
-          </div>
 
-          <OrderForm />
-        </div>
-      </section>
       {/* Footer */}
       <footer className="bg-eden-dark text-white py-12">
         <div className="container mx-auto px-4">

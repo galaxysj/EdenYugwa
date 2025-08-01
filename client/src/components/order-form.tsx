@@ -623,6 +623,16 @@ export default function OrderForm() {
                       </div>
                     )}
 
+                    {/* Bank Account Info */}
+                    <div className="bg-gradient-to-br from-eden-sage/20 to-eden-brown/10 rounded-xl p-6 border-2 border-eden-brown shadow-lg">
+                      <p className="text-eden-brown font-bold text-center mb-3 text-xl">입금 계좌</p>
+                      <p className="text-eden-dark text-center font-mono text-2xl font-bold">농협 352-1701-3342-63</p>
+                      <p className="text-eden-dark text-center text-lg font-semibold mt-2">손*진</p>
+                      <p className="text-xs text-center text-eden-sage mt-3">
+                        주문 후 입금 확인되면 발송 준비를 시작합니다
+                      </p>
+                    </div>
+
                     <Button 
                       type="submit" 
                       size="lg" 
