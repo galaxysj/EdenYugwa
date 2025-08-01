@@ -582,7 +582,8 @@ export default function Admin() {
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">고객정보 / 상품</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
+                <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">매출정보</th>
@@ -614,19 +615,19 @@ export default function Admin() {
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-4 min-w-[200px]">
-                      <div className="space-y-2">
-                        <div className="font-medium text-gray-900 text-base">{order.customerName}</div>
-                        <div className="space-y-1 text-sm">
-                          <div className="text-gray-900 font-medium">
-                            소박스 × {order.smallBoxQuantity}개
-                          </div>
-                          <div className="text-gray-900 font-medium">
-                            대박스 × {order.largeBoxQuantity}개
-                          </div>
-                          <div className={order.wrappingQuantity > 0 ? "text-eden-brown font-medium" : "text-gray-500"}>
-                            {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
-                          </div>
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-gray-900">{order.customerName}</div>
+                    </td>
+                    <td className="py-4 px-4 min-w-[120px]">
+                      <div className="space-y-1">
+                        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                          소박스 × {order.smallBoxQuantity}개
+                        </div>
+                        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                          대박스 × {order.largeBoxQuantity}개
+                        </div>
+                        <div className={order.wrappingQuantity > 0 ? "text-sm font-medium text-eden-brown whitespace-nowrap" : "text-sm text-gray-500 whitespace-nowrap"}>
+                          {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
                         </div>
                       </div>
                     </td>
