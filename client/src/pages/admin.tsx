@@ -32,8 +32,12 @@ const statusIcons = {
 function FinancialDialog({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
   const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || '');
-  const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || '');
   const [discountReason, setDiscountReason] = useState(order.discountReason || '');
+  
+  // 할인금액 자동 계산
+  const calculatedDiscount = actualPaidAmount ? 
+    Math.max(0, order.totalAmount - parseInt(actualPaidAmount)) : 
+    (order.discountAmount || 0);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -69,8 +73,14 @@ function FinancialDialog({ order }: { order: Order }) {
     e.preventDefault();
     
     const data: any = {};
-    if (actualPaidAmount) data.actualPaidAmount = parseInt(actualPaidAmount);
-    if (discountAmount) data.discountAmount = parseInt(discountAmount);
+    const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
+    
+    if (actualPaidAmount) {
+      data.actualPaidAmount = paidAmount;
+      // 할인금액 자동 계산: 주문금액 - 실입금
+      const calculatedDiscount = order.totalAmount - paidAmount;
+      data.discountAmount = calculatedDiscount > 0 ? calculatedDiscount : 0;
+    }
     if (discountReason) data.discountReason = discountReason;
     
     updateFinancialMutation.mutate(data);
@@ -108,17 +118,31 @@ function FinancialDialog({ order }: { order: Order }) {
               value={actualPaidAmount}
               onChange={(e) => setActualPaidAmount(e.target.value)}
             />
+            {actualPaidAmount && (
+              <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                <div className="text-sm font-medium text-blue-800">
+                  할인금액 자동 계산: <span className="text-blue-600">{formatPrice(calculatedDiscount)}</span>
+                </div>
+                <div className="text-xs text-blue-600 mt-1">
+                  주문금액 - 실입금 = 할인금액
+                </div>
+                <div className="text-xs text-blue-600">
+                  {formatPrice(order.totalAmount)} - {formatPrice(parseInt(actualPaidAmount))} = {formatPrice(calculatedDiscount)}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="discountAmount">할인 금액</Label>
-            <Input
-              id="discountAmount"
-              type="number"
-              placeholder="할인 금액이 있다면 입력하세요"
-              value={discountAmount}
-              onChange={(e) => setDiscountAmount(e.target.value)}
-            />
+            <Label>할인 정보</Label>
+            <div className="p-3 bg-gray-50 rounded-md border">
+              <div className="text-sm text-gray-700">
+                할인금액: <span className="font-medium text-blue-600">{formatPrice(calculatedDiscount)}</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                실제 입금 금액을 입력하면 할인금액이 자동으로 계산됩니다.
+              </p>
+            </div>
           </div>
 
           <div className="space-y-2">
