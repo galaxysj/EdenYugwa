@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import { SmsHistory } from "@/components/sms-history";
 import type { Order } from "@shared/schema";
@@ -69,6 +69,37 @@ export default function Manager() {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
+  const handleExcelDownload = async () => {
+    try {
+      const response = await fetch('/api/orders/export/excel');
+      if (!response.ok) {
+        throw new Error('엑셀 파일 다운로드에 실패했습니다');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: "다운로드 완료",
+        description: "엑셀 파일이 성공적으로 다운로드되었습니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "다운로드 실패",
+        description: "엑셀 파일 다운로드 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -116,11 +147,11 @@ export default function Manager() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-eden-cream">
       {/* Header */}
-      <div className="bg-eden-brown text-white py-4 sm:py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
+      <div className="bg-eden-red text-white p-4 sm:p-6">
+        <div className="container mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Link href="/">
                 <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
@@ -128,7 +159,20 @@ export default function Manager() {
                   <span className="hidden sm:inline">홈으로</span>
                 </Button>
               </Link>
-              <h1 className="text-xl sm:text-3xl font-bold font-korean">매니저 관리</h1>
+              <h1 className="text-lg sm:text-2xl font-bold font-korean">
+                <Settings className="inline mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+                매니저 관리
+              </h1>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button 
+                onClick={handleExcelDownload}
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+              >
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">엑셀 다운로드</span>
+              </Button>
             </div>
           </div>
         </div>
@@ -233,12 +277,12 @@ export default function Manager() {
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {order.wrappingQuantity > 0 ? `보자기 ${order.wrappingQuantity}개` : '일반 포장'}
+                                {order.wrappingQuantity > 0 ? '보자기 포장' : '보자기 없음'}
                               </div>
                             </td>
                             <td className="py-4 px-4">
                               <Select
-                                value={order.status || 'pending'}
+                                value={order.status}
                                 onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
                                 disabled={updateStatusMutation.isPending}
                               >
@@ -248,25 +292,25 @@ export default function Manager() {
                                 <SelectContent>
                                   <SelectItem value="pending">
                                     <div className="flex items-center space-x-2">
-                                      <Clock className="h-4 w-4 text-yellow-500" />
+                                      <Clock className="h-4 w-4" />
                                       <span>주문 접수</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="preparing">
                                     <div className="flex items-center space-x-2">
-                                      <Package className="h-4 w-4 text-blue-500" />
+                                      <Package className="h-4 w-4" />
                                       <span>제작 중</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="shipping">
                                     <div className="flex items-center space-x-2">
-                                      <Truck className="h-4 w-4 text-orange-500" />
+                                      <Truck className="h-4 w-4" />
                                       <span>배송 중</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="delivered">
                                     <div className="flex items-center space-x-2">
-                                      <CheckCircle className="h-4 w-4 text-green-500" />
+                                      <CheckCircle className="h-4 w-4" />
                                       <span>배송 완료</span>
                                     </div>
                                   </SelectItem>
@@ -325,7 +369,7 @@ export default function Manager() {
                               <span className="text-sm font-medium text-gray-700">상품: </span>
                               <span className="text-sm text-gray-900">
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
-                                {order.wrappingQuantity > 0 && ` (보자기 ${order.wrappingQuantity}개)`}
+                                {order.wrappingQuantity > 0 && ' (보자기 포장)'}
                               </span>
                             </div>
                           </div>
