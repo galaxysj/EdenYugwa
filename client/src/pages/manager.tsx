@@ -276,7 +276,7 @@ export default function Manager() {
                               <div className="text-sm text-gray-900">
                                 {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className={order.wrappingQuantity > 0 ? "text-sm text-gray-900" : "text-xs text-gray-500"}>
                                 {order.wrappingQuantity > 0 ? `보자기 ${order.wrappingQuantity}개` : '보자기 없음'}
                               </div>
                             </td>
