@@ -272,7 +272,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-eden-brown mb-4 font-korean">주문하기</h3>
-            <p className="text-eden-dark mb-2">신선하고 정성스런 에덴한과를 주문해보세요</p>
+            <p className="text-eden-dark mb-2">에덴한과와 함께 따뜻하고 달콤한 시간을 만들어보세요</p>
             <p className="text-sm text-eden-sage">
               <Info className="inline mr-1 h-4 w-4" />
               배송까지 1-2일 소요됩니다
