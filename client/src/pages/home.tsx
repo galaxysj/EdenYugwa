@@ -278,9 +278,9 @@ export default function Home() {
               배송까지 1-2일 소요됩니다
             </p>
             <div className="bg-white rounded-lg p-4 border-2 border-eden-brown max-w-md mx-auto">
-              <p className="text-eden-brown font-semibold text-center mb-2">입금 계좌</p>
-              <p className="text-eden-dark text-center font-mono text-lg">농협 352-1701-3342-63</p>
-              <p className="text-eden-dark text-center text-sm mt-1">손*진</p>
+              <p className="text-eden-brown font-bold text-center mb-2 text-lg">입금 계좌</p>
+              <p className="text-eden-dark text-center font-mono text-xl font-bold">농협 352-1701-3342-63</p>
+              <p className="text-eden-dark text-center text-base font-semibold mt-1">손*진</p>
             </div>
           </div>
 
