@@ -293,14 +293,19 @@ export default function Admin() {
                             <td className="py-4 px-4">
                               <div className="font-medium text-gray-900">{order.customerName}</div>
                               <div className="text-sm text-gray-500">{order.customerPhone}</div>
-                              <div className="text-xs text-gray-500 truncate max-w-xs">
-                                {order.address1} {order.address2}
+                              <div className="text-sm text-gray-500 mt-1 max-w-xs">
+                                <div className="mb-1">[{order.zipCode}]</div>
+                                <div className="mb-1">{order.address1}</div>
+                                <div>{order.address2}</div>
                               </div>
                             </td>
                             <td className="py-4 px-4">
                               <div className="space-y-1">
                                 <div className="text-base font-medium text-gray-900">
-                                  소박스 × {order.smallBoxQuantity}, 대박스 × {order.largeBoxQuantity}
+                                  소박스 × {order.smallBoxQuantity}
+                                </div>
+                                <div className="text-base font-medium text-gray-900">
+                                  대박스 × {order.largeBoxQuantity}
                                 </div>
                                 <div className={order.wrappingQuantity > 0 ? "text-sm font-medium text-eden-brown" : "text-sm text-gray-500"}>
                                   {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
