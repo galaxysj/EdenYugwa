@@ -66,8 +66,12 @@ export default function Manager() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await apiRequest("/api/manager/check");
-        setIsAuthenticated(true);
+        const response = await fetch("/api/manager/check");
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
       } catch {
         setIsAuthenticated(false);
       }
@@ -78,13 +82,20 @@ export default function Manager() {
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      return apiRequest("/api/manager/login", {
+      const response = await fetch("/api/manager/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
         headers: {
           "Content-Type": "application/json",
         },
       });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "로그인에 실패했습니다");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       setIsAuthenticated(true);
@@ -100,7 +111,7 @@ export default function Manager() {
   });
 
   // Fetch orders
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
     enabled: isAuthenticated,
   });
@@ -108,13 +119,19 @@ export default function Manager() {
   // Update order mutation
   const updateOrderMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: number; updates: any }) => {
-      return apiRequest(`/api/orders/${id}`, {
+      const response = await fetch(`/api/orders/${id}`, {
         method: "PATCH",
         body: JSON.stringify(updates),
         headers: {
           "Content-Type": "application/json",
         },
       });
+      
+      if (!response.ok) {
+        throw new Error("주문 업데이트에 실패했습니다");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
@@ -136,13 +153,19 @@ export default function Manager() {
   // SMS notification mutation
   const sendSmsNotificationMutation = useMutation({
     mutationFn: async ({ orderId, message, recipient }: { orderId: number; message: string; recipient: string }) => {
-      return apiRequest("/api/sms-notifications", {
+      const response = await fetch("/api/sms-notifications", {
         method: "POST",
         body: JSON.stringify({ orderId, message, recipient }),
         headers: {
           "Content-Type": "application/json",
         },
       });
+      
+      if (!response.ok) {
+        throw new Error("SMS 전송에 실패했습니다");
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
