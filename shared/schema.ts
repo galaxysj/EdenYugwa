@@ -16,7 +16,8 @@ export const orders = pgTable("orders", {
   wrappingQuantity: integer("wrapping_quantity").notNull().default(0), // 보자기 포장 수량
   shippingFee: integer("shipping_fee").notNull().default(0), // 배송비
   totalAmount: integer("total_amount").notNull(),
-  status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'shipping', 'delivered'
+  status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'scheduled', 'shipping', 'delivered'
+  scheduledDate: timestamp("scheduled_date"),
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
   paymentConfirmedAt: timestamp("payment_confirmed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

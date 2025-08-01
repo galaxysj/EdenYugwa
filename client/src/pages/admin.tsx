@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import { SmsHistory } from "@/components/sms-history";
+import { ScheduledDatePicker } from "@/components/scheduled-date-picker";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
   pending: "주문 접수",
-  preparing: "제작 중", 
+  preparing: "제작 중",
+  scheduled: "발송예약",
   shipping: "배송 중",
   delivered: "배송 완료",
 };
@@ -21,6 +23,7 @@ const statusLabels = {
 const statusIcons = {
   pending: Clock,
   preparing: Package,
+  scheduled: Calendar,
   shipping: Truck,
   delivered: CheckCircle,
 };
@@ -135,7 +138,7 @@ export default function Admin() {
       if (order.paymentStatus === 'pending') acc.unpaidOrders++;
       return acc;
     },
-    { total: 0, pending: 0, preparing: 0, shipping: 0, delivered: 0, paidOrders: 0, unpaidOrders: 0 }
+    { total: 0, pending: 0, preparing: 0, scheduled: 0, shipping: 0, delivered: 0, paidOrders: 0, unpaidOrders: 0 }
   );
 
   if (isLoading) {
@@ -374,6 +377,12 @@ export default function Admin() {
                                       <span>제작 중</span>
                                     </div>
                                   </SelectItem>
+                                  <SelectItem value="scheduled">
+                                    <div className="flex items-center space-x-2">
+                                      <Calendar className="h-4 w-4" />
+                                      <span>발송예약</span>
+                                    </div>
+                                  </SelectItem>
                                   <SelectItem value="shipping">
                                     <div className="flex items-center space-x-2">
                                       <Truck className="h-4 w-4" />
@@ -393,6 +402,7 @@ export default function Admin() {
                               <div className="flex space-x-1">
                                 <SmsDialog order={order} />
                                 <SmsHistory order={order} />
+                                <ScheduledDatePicker order={order} />
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -525,6 +535,12 @@ export default function Admin() {
                                         <span>제작 중</span>
                                       </div>
                                     </SelectItem>
+                                    <SelectItem value="scheduled">
+                                      <div className="flex items-center space-x-2">
+                                        <Calendar className="h-4 w-4" />
+                                        <span>발송예약</span>
+                                      </div>
+                                    </SelectItem>
                                     <SelectItem value="shipping">
                                       <div className="flex items-center space-x-2">
                                         <Truck className="h-4 w-4" />
@@ -544,6 +560,7 @@ export default function Admin() {
                             <div className="flex justify-end space-x-1">
                               <SmsDialog order={order} />
                               <SmsHistory order={order} />
+                              <ScheduledDatePicker order={order} />
                             </div>
                           </div>
                         </CardContent>

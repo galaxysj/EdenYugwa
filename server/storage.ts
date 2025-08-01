@@ -129,6 +129,15 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
+  async updateOrderScheduledDate(id: number, scheduledDate: Date | null): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set({ scheduledDate })
+      .where(eq(orders.id, id))
+      .returning();
+    return order || undefined;
+  }
+
   async createSmsNotification(insertNotification: InsertSmsNotification): Promise<SmsNotification> {
     const [notification] = await db
       .insert(smsNotifications)

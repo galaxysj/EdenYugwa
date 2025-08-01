@@ -56,6 +56,21 @@ export const api = {
       
       return response.json();
     },
+    updateScheduledDate: async (id: number, scheduledDate: string | null) => {
+      const response = await fetch(`/api/orders/${id}/scheduled-date`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ scheduledDate }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('발송예약 날짜 업데이트에 실패했습니다');
+      }
+      
+      return response.json();
+    },
     update: async (id: number, data: any) => {
       const response = await fetch(`/api/orders/${id}`, {
         method: 'PATCH',
