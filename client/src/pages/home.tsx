@@ -273,10 +273,15 @@ export default function Home() {
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-eden-brown mb-4 font-korean">주문하기</h3>
             <p className="text-eden-dark mb-2">에덴한과와 함께 따뜻하고 달콤한 시간을 만들어보세요</p>
-            <p className="text-sm text-eden-sage">
+            <p className="text-sm text-eden-sage mb-3">
               <Info className="inline mr-1 h-4 w-4" />
               배송까지 1-2일 소요됩니다
             </p>
+            <div className="bg-white rounded-lg p-4 border-2 border-eden-brown max-w-md mx-auto">
+              <p className="text-eden-brown font-semibold text-center mb-2">입금 계좌</p>
+              <p className="text-eden-dark text-center font-mono text-lg">농협 352-1701-3342-63</p>
+              <p className="text-eden-dark text-center text-sm mt-1">손*진</p>
+            </div>
           </div>
 
           <OrderForm />
