@@ -1,6 +1,6 @@
 import { orders, smsNotifications, admins, managers, settings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   // Order management
@@ -31,6 +31,12 @@ export interface IStorage {
   getSetting(key: string): Promise<Setting | undefined>;
   setSetting(key: string, value: string, description?: string): Promise<Setting>;
   getAllSettings(): Promise<Setting[]>;
+  
+  // Trash/Delete operations
+  softDeleteOrder(id: number): Promise<Order | undefined>;
+  restoreOrder(id: number): Promise<Order | undefined>;
+  getDeletedOrders(): Promise<Order[]>;
+  permanentDeleteOrder(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -127,11 +133,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllOrders(): Promise<Order[]> {
-    const allOrders = await db.select().from(orders).orderBy(
-      // 예약발송일이 있는 주문을 먼저, 그 다음 생성일 역순
-      orders.scheduledDate,
-      desc(orders.createdAt)
-    );
+    const allOrders = await db.select().from(orders)
+      .where(eq(orders.isDeleted, false))
+      .orderBy(
+        // 예약발송일이 있는 주문을 먼저, 그 다음 생성일 역순
+        orders.scheduledDate,
+        desc(orders.createdAt)
+      );
     
     // Get global cost settings
     const smallBoxCostSetting = await this.getSetting("smallBoxCost");
@@ -169,13 +177,13 @@ export class DatabaseStorage implements IStorage {
 
   async getOrdersByPhone(phone: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(eq(orders.customerPhone, phone))
+      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByName(name: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(eq(orders.customerName, name))
+      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
@@ -317,6 +325,39 @@ export class DatabaseStorage implements IStorage {
 
   async getAllSettings(): Promise<Setting[]> {
     return await db.select().from(settings);
+  }
+
+  // Trash/Delete operations
+  async softDeleteOrder(id: number): Promise<Order | undefined> {
+    const [deletedOrder] = await db.update(orders)
+      .set({ 
+        isDeleted: true,
+        deletedAt: new Date()
+      })
+      .where(eq(orders.id, id))
+      .returning();
+    return deletedOrder || undefined;
+  }
+
+  async restoreOrder(id: number): Promise<Order | undefined> {
+    const [restoredOrder] = await db.update(orders)
+      .set({ 
+        isDeleted: false,
+        deletedAt: null
+      })
+      .where(eq(orders.id, id))
+      .returning();
+    return restoredOrder || undefined;
+  }
+
+  async getDeletedOrders(): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.isDeleted, true))
+      .orderBy(desc(orders.deletedAt));
+  }
+
+  async permanentDeleteOrder(id: number): Promise<void> {
+    await db.delete(orders).where(eq(orders.id, id));
   }
 }
 

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -54,11 +54,7 @@ function CostSettingsDialog() {
   
   const updateCostMutation = useMutation({
     mutationFn: async (data: { key: string; value: string; description: string }) => {
-      return await api(`/api/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      return await api.settings.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
@@ -440,6 +436,71 @@ export default function Admin() {
     refetchIntervalInBackground: true,
   });
 
+  // Fetch deleted orders (trash)
+  const { data: deletedOrders = [] } = useQuery({
+    queryKey: ['/api/orders/trash'],
+    queryFn: () => api.orders.getTrash(),
+    enabled: activeTab === "trash",
+  });
+
+  // Restore order mutation
+  const restoreOrderMutation = useMutation({
+    mutationFn: (orderId: number) => api.orders.restore(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders/trash'] });
+      toast({
+        title: "주문 복구 완료",
+        description: "주문이 성공적으로 복구되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "복구 실패",
+        description: "주문 복구에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Soft delete mutation
+  const deleteOrderMutation = useMutation({
+    mutationFn: (orderId: number) => api.orders.delete(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      toast({
+        title: "주문 삭제",
+        description: "주문이 휴지통으로 이동되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "삭제 실패",
+        description: "주문 삭제에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Permanent delete mutation
+  const permanentDeleteMutation = useMutation({
+    mutationFn: (orderId: number) => api.orders.permanentDelete(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders/trash'] });
+      toast({
+        title: "영구 삭제 완료",
+        description: "주문이 영구적으로 삭제되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "삭제 실패",
+        description: "영구 삭제에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Filter orders by status
   const filterOrdersByStatus = (status: string) => {
     if (status === "all") return orders;
@@ -450,6 +511,81 @@ export default function Admin() {
   const pendingOrders = filterOrdersByStatus("pending");
   const scheduledOrders = filterOrdersByStatus("scheduled");
   const deliveredOrders = filterOrdersByStatus("delivered");
+
+  // Render deleted orders function
+  const renderTrashOrdersList = (ordersList: Order[]) => {
+    if (ordersList.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          <Trash2 className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+          <p>휴지통이 비어있습니다.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {ordersList.map((order: Order) => (
+          <Card key={order.id} className="border-red-200 bg-red-50">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900">
+                      주문번호: {order.orderNumber}
+                    </h3>
+                    <div className="text-sm text-gray-500">
+                      삭제일: {order.deletedAt ? new Date(order.deletedAt).toLocaleDateString('ko-KR') : '-'}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">고객명:</span> {order.customerName}
+                    </div>
+                    <div>
+                      <span className="font-medium">연락처:</span> {order.customerPhone}
+                    </div>
+                    <div>
+                      <span className="font-medium">총 금액:</span> {order.totalAmount.toLocaleString()}원
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600">
+                    <span className="font-medium">주소:</span> ({order.zipCode}) {order.address1} {order.address2}
+                  </div>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => restoreOrderMutation.mutate(order.id)}
+                    disabled={restoreOrderMutation.isPending}
+                    className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    복구
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm("이 주문을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+                        permanentDeleteMutation.mutate(order.id);
+                      }
+                    }}
+                    disabled={permanentDeleteMutation.isPending}
+                    className="flex items-center gap-1"
+                  >
+                    <X className="h-3 w-3" />
+                    영구삭제
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
 
   // Render orders function
   const renderOrdersList = (ordersList: Order[]) => {
@@ -868,26 +1004,8 @@ export default function Admin() {
     updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
   };
 
-  const deleteOrderMutation = useMutation({
-    mutationFn: (orderId: number) => api.orders.delete(orderId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: "주문 삭제 완료",
-        description: "주문이 성공적으로 삭제되었습니다.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "삭제 실패",
-        description: "주문 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleDeleteOrder = (orderId: number) => {
-    if (confirm("정말로 이 주문을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) {
+    if (confirm("정말로 이 주문을 삭제하시겠습니까?")) {
       deleteOrderMutation.mutate(orderId);
     }
   };
@@ -1116,11 +1234,15 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="trash" className="text-red-600">
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    휴지통 ({deletedOrders.length})
+                  </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="all" className="mt-6">
@@ -1137,6 +1259,10 @@ export default function Admin() {
                 
                 <TabsContent value="delivered" className="mt-6">
                   {renderOrdersList(deliveredOrders)}
+                </TabsContent>
+                
+                <TabsContent value="trash" className="mt-6">
+                  {renderTrashOrdersList(deletedOrders)}
                 </TabsContent>
               </Tabs>
             )}

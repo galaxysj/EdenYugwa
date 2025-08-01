@@ -97,6 +97,37 @@ export const api = {
       
       return response.json();
     },
+    getTrash: async () => {
+      const response = await fetch('/api/orders/trash');
+      
+      if (!response.ok) {
+        throw new Error('휴지통 조회에 실패했습니다');
+      }
+      
+      return response.json();
+    },
+    restore: async (id: number) => {
+      const response = await fetch(`/api/orders/${id}/restore`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) {
+        throw new Error('주문 복구에 실패했습니다');
+      }
+      
+      return response.json();
+    },
+    permanentDelete: async (id: number) => {
+      const response = await fetch(`/api/orders/${id}/permanent`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        throw new Error('영구 삭제에 실패했습니다');
+      }
+      
+      return response.json();
+    },
   },
   sms: {
     send: async (data: { orderId: number; phoneNumber: string; message: string }) => {
@@ -136,6 +167,23 @@ export const api = {
       
       if (!response.ok) {
         throw new Error('인증 확인에 실패했습니다');
+      }
+      
+      return response.json();
+    },
+  },
+  settings: {
+    create: async (data: { key: string; value: string; description?: string }) => {
+      const response = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        throw new Error('설정 저장에 실패했습니다');
       }
       
       return response.json();

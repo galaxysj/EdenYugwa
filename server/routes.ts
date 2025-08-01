@@ -437,14 +437,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete order
+  // Soft delete order (move to trash)
   app.delete("/api/orders/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteOrder(id);
-      res.json({ message: "Order deleted successfully" });
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 주문 ID입니다" });
+      }
+
+      const deletedOrder = await storage.softDeleteOrder(id);
+      if (!deletedOrder) {
+        return res.status(404).json({ message: "주문을 찾을 수 없습니다" });
+      }
+
+      res.json({ message: "주문이 휴지통으로 이동되었습니다", order: deletedOrder });
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete order" });
+      res.status(500).json({ message: "주문 삭제에 실패했습니다" });
+    }
+  });
+
+  // Get deleted orders (trash)
+  app.get("/api/orders/trash", async (req, res) => {
+    try {
+      const deletedOrders = await storage.getDeletedOrders();
+      res.json(deletedOrders);
+    } catch (error) {
+      res.status(500).json({ message: "휴지통 주문 조회에 실패했습니다" });
+    }
+  });
+
+  // Restore order from trash
+  app.post("/api/orders/:id/restore", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 주문 ID입니다" });
+      }
+
+      const restoredOrder = await storage.restoreOrder(id);
+      if (!restoredOrder) {
+        return res.status(404).json({ message: "주문을 찾을 수 없습니다" });
+      }
+
+      res.json({ message: "주문이 복구되었습니다", order: restoredOrder });
+    } catch (error) {
+      res.status(500).json({ message: "주문 복구에 실패했습니다" });
+    }
+  });
+
+  // Permanently delete order
+  app.delete("/api/orders/:id/permanent", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 주문 ID입니다" });
+      }
+
+      await storage.permanentDeleteOrder(id);
+      res.json({ message: "주문이 영구적으로 삭제되었습니다" });
+    } catch (error) {
+      res.status(500).json({ message: "주문 영구 삭제에 실패했습니다" });
     }
   });
 
