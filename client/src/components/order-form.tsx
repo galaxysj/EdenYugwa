@@ -440,14 +440,29 @@ export default function OrderForm() {
                   />
 
                   {/* 배송 안내 */}
-                  <div className="mt-6 p-4 bg-eden-cream/30 rounded-lg">
-                    <h4 className="text-base font-semibold text-eden-brown mb-3">에덴한과 배송</h4>
-                    <div className="text-sm text-gray-700 space-y-2 leading-relaxed">
-                      <p>• 물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
-                      <p>• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.</p>
-                      <p>• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.</p>
-                      <p className="text-eden-brown font-medium">• 설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
-                      <p className="text-eden-brown font-medium">• 미리 주문 시 예약발송 가능합니다.</p>
+                  <div className="mt-6 p-5 bg-gradient-to-r from-eden-cream/40 to-eden-beige/20 rounded-lg border border-eden-brown/10">
+                    <h4 className="text-lg font-bold text-eden-brown mb-4 text-center font-korean">에덴한과 배송</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <span className="text-eden-brown font-bold">•</span>
+                        <p className="text-sm text-eden-dark leading-relaxed">물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-eden-brown font-bold">•</span>
+                        <p className="text-sm text-eden-dark leading-relaxed">설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-eden-brown font-bold">•</span>
+                        <p className="text-sm text-eden-dark leading-relaxed">주문 접수 후 3일 이내 미도착시 반드시 연락주세요.</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-eden-red font-bold">•</span>
+                        <p className="text-sm text-eden-brown font-semibold leading-relaxed">설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
+                      </div>
+                      <div className="flex items-start space-x-3">
+                        <span className="text-eden-red font-bold">•</span>
+                        <p className="text-sm text-eden-brown font-semibold leading-relaxed">미리 주문 시 예약발송 가능합니다.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
