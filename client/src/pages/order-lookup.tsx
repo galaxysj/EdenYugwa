@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Package, Truck, CheckCircle, Clock, MapPin, Phone, User, Calendar, Edit } from "lucide-react";
+import { ArrowLeft, Search, Package, MapPin, User, Calendar, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import type { Order } from "@shared/schema";
@@ -49,7 +49,7 @@ export default function OrderLookup() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [expandedDelivery, setExpandedDelivery] = useState<number | null>(null);
+
   const { toast } = useToast();
 
   const form = useForm<LookupFormData>({
@@ -61,7 +61,7 @@ export default function OrderLookup() {
 
   const onSubmit = async (data: LookupFormData) => {
     setIsLoading(true);
-    setExpandedDelivery(null); // 새 검색 시 배송 정보 접기
+
     try {
       const response = await fetch(`/api/orders/lookup?phone=${encodeURIComponent(data.phoneNumber)}`);
       
@@ -103,50 +103,7 @@ export default function OrderLookup() {
     });
   };
 
-  const getDeliveryStatus = (order: Order) => {
-    const baseInfo = {
-      company: "CJ대한통운",
-      trackingNumber: `${order.orderNumber}TRACK`,
-    };
 
-    switch (order.status) {
-      case 'pending':
-        return {
-          ...baseInfo,
-          status: "주문 접수",
-          statusDescription: "주문이 접수되었습니다. 상품 준비 중입니다.",
-          estimatedShipping: "1-2일 후 발송 예정",
-          trackingAvailable: false,
-        };
-      case 'preparing':
-        return {
-          ...baseInfo,
-          status: "상품 준비",
-          statusDescription: "정성껏 상품을 준비하고 있습니다.",
-          estimatedShipping: "오늘 또는 내일 발송 예정",
-          trackingAvailable: false,
-        };
-      case 'shipping':
-        return {
-          ...baseInfo,
-          status: "배송 중",
-          statusDescription: "상품이 배송 중입니다.",
-          currentLocation: "대전 허브터미널",
-          estimatedDelivery: "내일 오후 도착 예정",
-          trackingAvailable: true,
-        };
-      case 'delivered':
-        return {
-          ...baseInfo,
-          status: "배송 완료",
-          statusDescription: "상품이 배송 완료되었습니다.",
-          deliveredDate: new Date(order.createdAt).toLocaleDateString('ko-KR'),
-          trackingAvailable: true,
-        };
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-eden-cream">
@@ -322,81 +279,7 @@ export default function OrderLookup() {
                         </div>
                       </div>
 
-                      {/* Delivery Status - Shows only when expanded */}
-                      {expandedDelivery === order.id && (() => {
-                        const deliveryInfo = getDeliveryStatus(order);
-                        if (!deliveryInfo) return null;
-                        
-                        return (
-                          <div>
-                            <h3 className="font-medium text-gray-900 mb-3 flex items-center">
-                              <Truck className="mr-2 h-4 w-4" />
-                              배송 조회
-                            </h3>
-                            <div className={`p-4 rounded border text-sm ${
-                              order.status === 'delivered' ? 'bg-green-50 border-green-200' :
-                              order.status === 'shipping' ? 'bg-blue-50 border-blue-200' :
-                              'bg-gray-50 border-gray-200'
-                            }`}>
-                              <div className="mb-3">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  {order.status === 'delivered' ? (
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                  ) : order.status === 'shipping' ? (
-                                    <Truck className="h-5 w-5 text-blue-600" />
-                                  ) : (
-                                    <Clock className="h-5 w-5 text-gray-600" />
-                                  )}
-                                  <span className="font-medium text-lg">{deliveryInfo.status}</span>
-                                </div>
-                                <p className="text-gray-700">{deliveryInfo.statusDescription}</p>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <span className="text-gray-600">택배사: </span>
-                                  <span className="font-medium">{deliveryInfo.company}</span>
-                                </div>
-                                
-                                {deliveryInfo.trackingAvailable && (
-                                  <div>
-                                    <span className="text-gray-600">운송장번호: </span>
-                                    <span className="font-medium">{deliveryInfo.trackingNumber}</span>
-                                  </div>
-                                )}
-                                
-                                {deliveryInfo.currentLocation && (
-                                  <div>
-                                    <span className="text-gray-600">현재위치: </span>
-                                    <span className="font-medium">{deliveryInfo.currentLocation}</span>
-                                  </div>
-                                )}
-                                
-                                {deliveryInfo.estimatedDelivery && (
-                                  <div>
-                                    <span className="text-gray-600">배송예정: </span>
-                                    <span className="font-medium">{deliveryInfo.estimatedDelivery}</span>
-                                  </div>
-                                )}
-                                
-                                {deliveryInfo.estimatedShipping && (
-                                  <div>
-                                    <span className="text-gray-600">발송예정: </span>
-                                    <span className="font-medium">{deliveryInfo.estimatedShipping}</span>
-                                  </div>
-                                )}
-                                
-                                {deliveryInfo.deliveredDate && (
-                                  <div>
-                                    <span className="text-gray-600">배송완료일: </span>
-                                    <span className="font-medium">{deliveryInfo.deliveredDate}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
+
 
                       {/* Action Buttons */}
                       <div className="flex justify-end space-x-2 pt-4 border-t">
@@ -408,31 +291,6 @@ export default function OrderLookup() {
                             </Button>
                           </Link>
                         )}
-                        
-                        {/* Delivery Info Toggle Button */}
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            setExpandedDelivery(expandedDelivery === order.id ? null : order.id);
-                          }}
-                        >
-                          <Truck className="mr-2 h-4 w-4" />
-                          {expandedDelivery === order.id ? '배송 정보 닫기' : '배송 조회'}
-                        </Button>
-                        
-                        {/* External Tracking Link for shipped orders */}
-                        {(() => {
-                          const deliveryInfo = getDeliveryStatus(order);
-                          return deliveryInfo?.trackingAvailable && (
-                            <Button variant="outline" size="sm" onClick={() => {
-                              window.open(`https://www.cjlogistics.com/ko/tool/parcel/tracking?paramInvc=${deliveryInfo.trackingNumber}`, '_blank');
-                            }}>
-                              <Truck className="mr-2 h-4 w-4" />
-                              택배사 추적
-                            </Button>
-                          );
-                        })()}
                       </div>
                     </CardContent>
                   </Card>
