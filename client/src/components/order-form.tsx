@@ -189,7 +189,7 @@ export default function OrderForm() {
                   <div className="border-2 border-eden-beige rounded-lg p-4">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h5 className="text-lg font-semibold text-eden-brown">대박스 - 한과2호(약 1.3kg)</h5>
+                        <h5 className="text-lg font-semibold text-eden-brown">한과2호(약 1.3kg)</h5>
                         <p className="text-sm text-eden-sage">전통유과 25개입</p>
                         <p className="text-xs text-eden-dark mt-1">약 37×23×11.5cm</p>
                       </div>
