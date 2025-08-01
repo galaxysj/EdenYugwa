@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,14 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Order } from "@shared/schema";
+import type { Order, Setting } from "@shared/schema";
 
 const statusLabels = {
   pending: "주문접수",
@@ -28,6 +28,136 @@ const statusIcons = {
   delivered: CheckCircle,
 };
 
+// Cost Settings Dialog Component
+function CostSettingsDialog() {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const { data: settings } = useQuery<Setting[]>({
+    queryKey: ["/api/settings"],
+  });
+  
+  const [smallBoxCost, setSmallBoxCost] = useState("");
+  const [largeBoxCost, setLargeBoxCost] = useState("");
+  
+  // Load existing settings when dialog opens
+  useEffect(() => {
+    if (settings) {
+      const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
+      const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
+      
+      setSmallBoxCost(smallCostSetting?.value || "");
+      setLargeBoxCost(largeCostSetting?.value || "");
+    }
+  }, [settings]);
+  
+  const updateCostMutation = useMutation({
+    mutationFn: async (data: { key: string; value: string; description: string }) => {
+      return await api(`/api/settings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "원가 설정 완료",
+        description: "전역 원가 설정이 업데이트되었습니다.",
+      });
+      setOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "오류 발생",
+        description: "원가 설정 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const handleSave = async () => {
+    if (!smallBoxCost || !largeBoxCost) {
+      toast({
+        title: "입력 오류",
+        description: "모든 원가 정보를 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      await updateCostMutation.mutateAsync({
+        key: "smallBoxCost",
+        value: smallBoxCost,
+        description: "한과1호 (소박스) 원가"
+      });
+      
+      await updateCostMutation.mutateAsync({
+        key: "largeBoxCost", 
+        value: largeBoxCost,
+        description: "한과2호 (대박스) 원가"
+      });
+    } catch (error) {
+      console.error("Cost settings update error:", error);
+    }
+  };
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
+          <Cog className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">원가 설정</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>전역 원가 설정</DialogTitle>
+          <DialogDescription>
+            모든 주문에 적용할 기본 원가를 설정합니다.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="smallBoxCost">한과1호 (소박스) 원가</Label>
+            <Input
+              id="smallBoxCost"
+              type="number"
+              value={smallBoxCost}
+              onChange={(e) => setSmallBoxCost(e.target.value)}
+              placeholder="원가 입력 (원)"
+            />
+          </div>
+          <div>
+            <Label htmlFor="largeBoxCost">한과2호 (대박스) 원가</Label>
+            <Input
+              id="largeBoxCost"
+              type="number"
+              value={largeBoxCost}
+              onChange={(e) => setLargeBoxCost(e.target.value)}
+              placeholder="원가 입력 (원)"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            취소
+          </Button>
+          <Button 
+            onClick={handleSave}
+            disabled={updateCostMutation.isPending}
+          >
+            {updateCostMutation.isPending ? "저장 중..." : "저장"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Financial Dialog Component
 function FinancialDialog({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
@@ -35,6 +165,26 @@ function FinancialDialog({ order }: { order: Order }) {
   const [discountReason, setDiscountReason] = useState(order.discountReason || '');
   const [smallBoxCost, setSmallBoxCost] = useState(order.smallBoxCost?.toString() || '');
   const [largeBoxCost, setLargeBoxCost] = useState(order.largeBoxCost?.toString() || '');
+
+  const { data: settings } = useQuery<Setting[]>({
+    queryKey: ["/api/settings"],
+  });
+
+  // Load global cost settings when dialog opens
+  useEffect(() => {
+    if (settings && open) {
+      const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
+      const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
+      
+      // Only use global settings if order doesn't have custom costs
+      if (!order.smallBoxCost && smallCostSetting) {
+        setSmallBoxCost(smallCostSetting.value);
+      }
+      if (!order.largeBoxCost && largeCostSetting) {
+        setLargeBoxCost(largeCostSetting.value);
+      }
+    }
+  }, [settings, open, order.smallBoxCost, order.largeBoxCost]);
   
   // 할인금액 자동 계산
   const calculatedDiscount = actualPaidAmount ? 
@@ -827,6 +977,7 @@ export default function Admin() {
               </h1>
             </div>
             <div className="flex items-center space-x-2">
+              <CostSettingsDialog />
               <Button 
                 onClick={handleExcelDownload}
                 variant="ghost" 

@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin } from "@shared/schema";
+import { orders, smsNotifications, admins, settings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Setting, type InsertSetting } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -22,6 +22,11 @@ export interface IStorage {
   // Admin authentication
   getAdminByUsername(username: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
+  
+  // Settings management
+  getSetting(key: string): Promise<Setting | undefined>;
+  setSetting(key: string, value: string, description?: string): Promise<Setting>;
+  getAllSettings(): Promise<Setting[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -103,11 +108,43 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllOrders(): Promise<Order[]> {
-    return await db.select().from(orders).orderBy(
+    const allOrders = await db.select().from(orders).orderBy(
       // 예약발송일이 있는 주문을 먼저, 그 다음 생성일 역순
       orders.scheduledDate,
       desc(orders.createdAt)
     );
+    
+    // Get global cost settings
+    const smallBoxCostSetting = await this.getSetting("smallBoxCost");
+    const largeBoxCostSetting = await this.getSetting("largeBoxCost");
+    
+    const globalSmallBoxCost = smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 0;
+    const globalLargeBoxCost = largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 0;
+    
+    // Apply global costs and calculate profits for orders that don't have custom costs
+    return allOrders.map(order => {
+      const smallBoxCost = order.smallBoxCost || globalSmallBoxCost;
+      const largeBoxCost = order.largeBoxCost || globalLargeBoxCost;
+      
+      // Calculate total cost
+      const totalCost = (smallBoxCost * order.smallBoxQuantity) + (largeBoxCost * order.largeBoxQuantity);
+      
+      // Calculate shipping fee
+      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+      const shippingFee = totalItems >= 6 ? 0 : 4000;
+      
+      // Calculate net profit
+      const actualPaid = order.actualPaidAmount || 0;
+      const netProfit = actualPaid - totalCost - shippingFee;
+      
+      return {
+        ...order,
+        smallBoxCost,
+        largeBoxCost,
+        totalCost,
+        netProfit
+      };
+    });
   }
 
   async getOrdersByPhone(phone: string): Promise<Order[]> {
@@ -213,6 +250,39 @@ export class DatabaseStorage implements IStorage {
 
   async deleteOrder(id: number): Promise<void> {
     await db.delete(orders).where(eq(orders.id, id));
+  }
+
+  // Settings management
+  async getSetting(key: string): Promise<Setting | undefined> {
+    const [setting] = await db.select().from(settings).where(eq(settings.key, key));
+    return setting || undefined;
+  }
+
+  async setSetting(key: string, value: string, description?: string): Promise<Setting> {
+    const existing = await this.getSetting(key);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(settings)
+        .set({ 
+          value, 
+          description: description || existing.description,
+          updatedAt: new Date()  
+        })
+        .where(eq(settings.key, key))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(settings)
+        .values({ key, value, description })
+        .returning();
+      return created;
+    }
+  }
+
+  async getAllSettings(): Promise<Setting[]> {
+    return await db.select().from(settings);
   }
 }
 
