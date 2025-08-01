@@ -175,7 +175,7 @@ export default function Home() {
               <div className="text-center">
                 <h4 className="text-lg font-semibold text-eden-brown mb-2 font-korean">입금계좌</h4>
                 <div className="text-xl font-bold text-eden-dark">
-                  농협 351-1234-5678-90 (예금주: 손*진)
+                  농협 352-1701-3342-63 (예금주: 손*진)
                 </div>
                 <p className="text-sm text-gray-600 mt-2">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
               </div>
