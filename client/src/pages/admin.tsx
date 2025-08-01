@@ -299,15 +299,15 @@ export default function Admin() {
                                 <div>{order.address2}</div>
                               </div>
                             </td>
-                            <td className="py-4 px-4">
-                              <div className="space-y-1">
-                                <div className="text-base font-medium text-gray-900">
+                            <td className="py-4 px-4 min-w-[120px]">
+                              <div className="space-y-2">
+                                <div className="text-base font-medium text-gray-900 whitespace-nowrap">
                                   소박스 × {order.smallBoxQuantity}개
                                 </div>
-                                <div className="text-base font-medium text-gray-900">
+                                <div className="text-base font-medium text-gray-900 whitespace-nowrap">
                                   대박스 × {order.largeBoxQuantity}개
                                 </div>
-                                <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown" : "text-base text-gray-500"}>
+                                <div className={order.wrappingQuantity > 0 ? "text-base font-medium text-eden-brown whitespace-nowrap" : "text-base text-gray-500 whitespace-nowrap"}>
                                   {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
                                 </div>
                               </div>
