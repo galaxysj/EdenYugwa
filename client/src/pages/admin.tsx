@@ -392,6 +392,9 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
+  const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false);
+  const [paymentConfirmOrder, setPaymentConfirmOrder] = useState<Order | null>(null);
+  const [actualPaidAmount, setActualPaidAmount] = useState("");
 
   const handleLogout = () => {
     toast({
@@ -970,12 +973,53 @@ export default function Admin() {
     },
   });
 
+  // 입금확인 및 실제 입금금액 업데이트 뮤테이션
+  const confirmPaymentMutation = useMutation({
+    mutationFn: async ({ id, actualPaidAmount }: { id: number; actualPaidAmount: number }) => {
+      // 입금상태를 confirmed로 변경하고 실제 입금금액 업데이트
+      await api.orders.updatePaymentStatus(id, 'confirmed');
+      
+      // 실제 입금금액을 매출 관리에 업데이트
+      const response = await fetch(`/api/orders/${id}/financial`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actualPaidAmount })
+      });
+      
+      if (!response.ok) throw new Error('Failed to update actual paid amount');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setShowPaymentConfirmDialog(false);
+      setPaymentConfirmOrder(null);
+      setActualPaidAmount("");
+      toast({
+        title: "입금 확인 완료",
+        description: "입금이 확인되었고 실제 입금금액이 기록되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "업데이트 실패",
+        description: "입금 확인 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
   const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
-    updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+    if (newPaymentStatus === 'confirmed') {
+      // 입금완료로 변경할 때는 실제 입금금액 입력 다이얼로그 열기
+      setPaymentConfirmOrder(orders.find(o => o.id === orderId) || null);
+      setShowPaymentConfirmDialog(true);
+    } else {
+      updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+    }
   };
 
   const handleDeleteOrder = (orderId: number) => {
@@ -1016,6 +1060,33 @@ export default function Admin() {
   };
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
+
+  // 입금확인 다이얼로그 핸들러
+  const handlePaymentConfirm = () => {
+    if (!paymentConfirmOrder || !actualPaidAmount) {
+      toast({
+        title: "입력 오류",
+        description: "실제 입금금액을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const paidAmount = parseInt(actualPaidAmount);
+    if (paidAmount <= 0) {
+      toast({
+        title: "입력 오류", 
+        description: "올바른 금액을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    confirmPaymentMutation.mutate({ 
+      id: paymentConfirmOrder.id, 
+      actualPaidAmount: paidAmount 
+    });
+  };
 
   // Calculate stats including financial data
   const stats = orders.reduce(
@@ -1255,6 +1326,68 @@ export default function Admin() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 입금확인 다이얼로그 */}
+      <Dialog open={showPaymentConfirmDialog} onOpenChange={setShowPaymentConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>입금 확인</DialogTitle>
+            <DialogDescription>
+              실제 입금된 금액을 입력해주세요. 매출 관리에 자동으로 반영됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {paymentConfirmOrder && (
+            <div className="space-y-4">
+              <div className="p-4 bg-gray-50 rounded-md">
+                <div className="text-sm space-y-1">
+                  <div><strong>주문번호:</strong> {paymentConfirmOrder.orderNumber}</div>
+                  <div><strong>고객명:</strong> {paymentConfirmOrder.customerName}</div>
+                  <div><strong>주문금액:</strong> {formatPrice(paymentConfirmOrder.totalAmount)}</div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="actualPaidAmount">실제 입금금액</Label>
+                <Input
+                  id="actualPaidAmount"
+                  type="number"
+                  placeholder="실제 입금된 금액을 입력하세요"
+                  value={actualPaidAmount}
+                  onChange={(e) => setActualPaidAmount(e.target.value)}
+                />
+              </div>
+              
+              <div className="text-xs text-gray-500">
+                <div>계좌: 농협 352-1701-3342-63 (예금주: 손*진)</div>
+                <div>입금금액이 주문금액과 다를 경우 할인금액이 자동 계산됩니다.</div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowPaymentConfirmDialog(false);
+                    setPaymentConfirmOrder(null);
+                    setActualPaidAmount("");
+                  }}
+                  className="flex-1"
+                >
+                  취소
+                </Button>
+                <Button 
+                  onClick={handlePaymentConfirm}
+                  disabled={confirmPaymentMutation.isPending}
+                  className="flex-1"
+                >
+                  {confirmPaymentMutation.isPending ? "처리 중..." : "입금 확인"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
