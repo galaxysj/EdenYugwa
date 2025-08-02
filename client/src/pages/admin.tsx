@@ -1413,6 +1413,7 @@ export default function Admin() {
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
                 <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">실제입금</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">할인/부분입금</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">발송일</th>
@@ -1510,6 +1511,23 @@ export default function Admin() {
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <div className="text-xs space-y-1">
+                        {order.discountAmount && order.discountAmount > 0 && (
+                          <div className="text-blue-600">
+                            할인: -{formatPrice(order.discountAmount)}
+                          </div>
+                        )}
+                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
+                          <div className="text-red-600">
+                            미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                          </div>
+                        )}
+                        {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-3 text-center">
                       <Select
@@ -1731,7 +1749,7 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-5 gap-2">
                       <div>
                         <div className="text-gray-500 mb-2">실제입금</div>
                         {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
@@ -1751,6 +1769,24 @@ export default function Admin() {
                         ) : (
                           <div className="text-xs text-gray-400 text-center py-1">-</div>
                         )}
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-2">할인/부분입금</div>
+                        <div className="text-xs space-y-1">
+                          {order.discountAmount && order.discountAmount > 0 && (
+                            <div className="text-blue-600 text-center">
+                              할인: -{formatPrice(order.discountAmount)}
+                            </div>
+                          )}
+                          {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
+                            <div className="text-red-600 text-center">
+                              미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                            </div>
+                          )}
+                          {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
+                            <div className="text-gray-400 text-center py-1">-</div>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
