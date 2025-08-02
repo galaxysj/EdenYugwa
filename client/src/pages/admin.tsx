@@ -963,6 +963,8 @@ export default function Admin() {
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">주문가격</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">할인</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">미입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">원가분석</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제수익</th>
                     </tr>
@@ -1020,6 +1022,24 @@ export default function Admin() {
                           </td>
                           <td className="py-2 px-3 text-right text-sm font-medium text-green-600">
                             {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                          </td>
+                          <td className="py-2 px-3 text-right text-sm">
+                            {discountAmount > 0 ? (
+                              <span className="text-blue-600 font-medium">
+                                {formatPrice(discountAmount)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="py-2 px-3 text-right text-sm">
+                            {unpaidAmount > 0 ? (
+                              <span className="text-red-600 font-medium">
+                                {formatPrice(unpaidAmount)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </td>
                           <td className="py-2 px-3 text-right text-xs">
                             <div className="space-y-1">
