@@ -1604,9 +1604,37 @@ export default function Admin() {
                       <div className="text-xs text-gray-900">{order.customerPhone}</div>
                     </td>
                     <td className="py-2 px-2 max-w-xs">
-                      <div className="text-xs text-gray-900 truncate">
-                        [{order.zipCode}] {order.address1} {order.address2}
-                      </div>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div 
+                            className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
+                            title="클릭하여 전체 주소 보기"
+                          >
+                            {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>배송 주소</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-2">
+                            <div className="p-3 bg-gray-50 rounded-lg">
+                              <div className="text-sm font-medium text-gray-700 mb-1">우편번호</div>
+                              <div className="text-sm text-gray-900">{order.zipCode}</div>
+                            </div>
+                            <div className="p-3 bg-gray-50 rounded-lg">
+                              <div className="text-sm font-medium text-gray-700 mb-1">기본 주소</div>
+                              <div className="text-sm text-gray-900">{order.address1}</div>
+                            </div>
+                            {order.address2 && (
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <div className="text-sm font-medium text-gray-700 mb-1">상세 주소</div>
+                                <div className="text-sm text-gray-900">{order.address2}</div>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </td>
                     <td className="py-2 px-2 text-right">
                       <div className="font-medium text-gray-900 text-xs">
