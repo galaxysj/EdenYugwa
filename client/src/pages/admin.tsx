@@ -41,15 +41,18 @@ function CostSettingsDialog() {
   
   const [smallBoxCost, setSmallBoxCost] = useState("");
   const [largeBoxCost, setLargeBoxCost] = useState("");
+  const [wrappingCost, setWrappingCost] = useState("");
   
   // Load existing settings when dialog opens
   useEffect(() => {
     if (settings) {
       const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
       const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
+      const wrappingCostSetting = settings.find(s => s.key === "wrappingCost");
       
       setSmallBoxCost(smallCostSetting?.value || "");
       setLargeBoxCost(largeCostSetting?.value || "");
+      setWrappingCost(wrappingCostSetting?.value || "");
     }
   }, [settings]);
   
@@ -76,7 +79,7 @@ function CostSettingsDialog() {
   });
   
   const handleSave = async () => {
-    if (!smallBoxCost || !largeBoxCost) {
+    if (!smallBoxCost || !largeBoxCost || !wrappingCost) {
       toast({
         title: "입력 오류",
         description: "모든 원가 정보를 입력해주세요.",
@@ -96,6 +99,12 @@ function CostSettingsDialog() {
         key: "largeBoxCost", 
         value: largeBoxCost,
         description: "한과2호 (대박스) 원가"
+      });
+      
+      await updateCostMutation.mutateAsync({
+        key: "wrappingCost",
+        value: wrappingCost,
+        description: "보자기 원가"
       });
     } catch (error) {
       console.error("Cost settings update error:", error);
@@ -135,6 +144,16 @@ function CostSettingsDialog() {
               type="number"
               value={largeBoxCost}
               onChange={(e) => setLargeBoxCost(e.target.value)}
+              placeholder="원가 입력 (원)"
+            />
+          </div>
+          <div>
+            <Label htmlFor="wrappingCost">보자기 원가</Label>
+            <Input
+              id="wrappingCost"
+              type="number"
+              value={wrappingCost}
+              onChange={(e) => setWrappingCost(e.target.value)}
               placeholder="원가 입력 (원)"
             />
           </div>
@@ -695,7 +714,8 @@ export default function Admin() {
       parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
     const largeBoxCostValue = settings?.find(s => s.key === "largeBoxCost")?.value ? 
       parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
-    const wrappingCostValue = 1000; // Fixed cost for wrapping
+    const wrappingCostValue = settings?.find(s => s.key === "wrappingCost")?.value ? 
+      parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
     
     // Include all orders with confirmed payment status (including scheduled and delivered orders)
     const paidOrders = orders.filter((order: Order) => 
@@ -996,7 +1016,9 @@ export default function Admin() {
                       const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
                       
                       // Calculate actual costs
-                      const wrappingCost = order.wrappingQuantity * 1000; // 보자기 원가 1,000원
+                      const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+                      const wrappingCostValue = wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000;
+                      const wrappingCost = order.wrappingQuantity * wrappingCostValue;
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
                       const largeBoxesCost = order.largeBoxQuantity * largeCost;
                       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
