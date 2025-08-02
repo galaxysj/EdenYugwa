@@ -1415,6 +1415,7 @@ export default function Admin() {
                 <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">발송일</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">관리</th>
               </tr>
             </thead>
@@ -1559,51 +1560,53 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <div className="flex flex-col items-center gap-1">
-                        <Select
-                          value={order.status}
-                          onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                          disabled={updateStatusMutation.isPending}
+                      <Select
+                        value={order.status}
+                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="w-28 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center space-x-2">
+                              <Clock className="h-4 w-4 text-yellow-500" />
+                              <span>주문접수</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="scheduled">
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="h-4 w-4 text-blue-500" />
+                              <span>발송예약</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="delivered">
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              <span>발송완료</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      {order.status === 'delivered' && order.deliveredDate ? (
+                        <div 
+                          className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                          onClick={() => {
+                            const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
+                            if (deliveredDatePicker) {
+                              (deliveredDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 발송완료일 수정"
                         >
-                          <SelectTrigger className="w-28 h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">
-                              <div className="flex items-center space-x-2">
-                                <Clock className="h-4 w-4 text-yellow-500" />
-                                <span>주문접수</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="scheduled">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-blue-500" />
-                                <span>발송예약</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="delivered">
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span>발송완료</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {order.status === 'delivered' && order.deliveredDate && (
-                          <div 
-                            className="text-xs text-green-600 font-medium mt-1 cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
-                            onClick={() => {
-                              const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
-                              if (deliveredDatePicker) {
-                                (deliveredDatePicker as HTMLElement).click();
-                              }
-                            }}
-                            title="클릭하여 발송완료일 수정"
-                          >
-                            완료일: {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
-                          </div>
-                        )}
-                      </div>
+                          {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="py-3 px-3 text-center">
                       <div className="flex flex-col gap-1">
@@ -1777,7 +1780,7 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
                         <Select
@@ -1851,6 +1854,25 @@ export default function Admin() {
                             </SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-2">발송일</div>
+                        {order.status === 'delivered' && order.deliveredDate ? (
+                          <div 
+                            className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                            onClick={() => {
+                              const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
+                              if (deliveredDatePicker) {
+                                (deliveredDatePicker as HTMLElement).click();
+                              }
+                            }}
+                            title="클릭하여 발송완료일 수정"
+                          >
+                            {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
                       </div>
                     </div>
 
