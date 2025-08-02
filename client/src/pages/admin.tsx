@@ -18,6 +18,23 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Order, Setting } from "@shared/schema";
 
+// 정렬 옵션 정의
+const sortOptions = [
+  { value: 'orderNumber', label: '주문번호' },
+  { value: 'customerName', label: '주문자' },
+  { value: 'depositorName', label: '예금자' },
+  { value: 'orderDetails', label: '주문내역' },
+  { value: 'customerPhone', label: '연락처' },
+  { value: 'address', label: '배송주소' },
+  { value: 'totalAmount', label: '매출' },
+  { value: 'actualPaidAmount', label: '입금정보' },
+  { value: 'paymentStatus', label: '입금상태' },
+  { value: 'status', label: '주문상태' },
+  { value: 'scheduledDate', label: '예약발송일' },
+  { value: 'deliveredDate', label: '발송일' },
+  { value: 'createdAt', label: '주문일자' }
+];
+
 const statusLabels = {
   pending: "주문접수",
   scheduled: "발송예약",
@@ -471,6 +488,8 @@ export default function Admin() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'payment-status' | 'order-status' | 'delivery-date'>('latest');
+  const [customSortField, setCustomSortField] = useState<string>('status');
+  const [customSortDirection, setCustomSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -665,8 +684,96 @@ export default function Admin() {
     return orders.filter((order: Order) => order.status === status);
   };
 
+  // Custom sort function for user-defined sorting
+  const customSortOrders = (ordersList: Order[]) => {
+    const sorted = [...ordersList];
+    
+    return sorted.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (customSortField) {
+        case 'orderNumber':
+          // Extract number part from order number for proper numeric sorting
+          const aNum = parseInt(a.orderNumber.split('-')[1] || '0');
+          const bNum = parseInt(b.orderNumber.split('-')[1] || '0');
+          aValue = aNum;
+          bValue = bNum;
+          break;
+        case 'customerName':
+          aValue = a.customerName.toLowerCase();
+          bValue = b.customerName.toLowerCase();
+          break;
+        case 'depositorName':
+          aValue = (a.depositorName || a.customerName).toLowerCase();
+          bValue = (b.depositorName || b.customerName).toLowerCase();
+          break;
+        case 'orderDetails':
+          const aDetails = `한과1호×${a.smallBoxQuantity} 한과2호×${a.largeBoxQuantity} 보자기×${a.wrappingQuantity}`;
+          const bDetails = `한과1호×${b.smallBoxQuantity} 한과2호×${b.largeBoxQuantity} 보자기×${b.wrappingQuantity}`;
+          aValue = aDetails.toLowerCase();
+          bValue = bDetails.toLowerCase();
+          break;
+        case 'customerPhone':
+          aValue = a.customerPhone;
+          bValue = b.customerPhone;
+          break;
+        case 'address':
+          aValue = `${a.address1} ${a.address2}`.toLowerCase();
+          bValue = `${b.address1} ${b.address2}`.toLowerCase();
+          break;
+        case 'totalAmount':
+          aValue = a.totalAmount;
+          bValue = b.totalAmount;
+          break;
+        case 'actualPaidAmount':
+          aValue = a.actualPaidAmount || 0;
+          bValue = b.actualPaidAmount || 0;
+          break;
+        case 'paymentStatus':
+          const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
+          aValue = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 999;
+          bValue = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 999;
+          break;
+        case 'status':
+          const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+          aValue = statusPriority[a.status as keyof typeof statusPriority] || 999;
+          bValue = statusPriority[b.status as keyof typeof statusPriority] || 999;
+          break;
+        case 'scheduledDate':
+          aValue = a.scheduledDate ? new Date(a.scheduledDate).getTime() : 0;
+          bValue = b.scheduledDate ? new Date(b.scheduledDate).getTime() : 0;
+          break;
+        case 'deliveredDate':
+          aValue = a.deliveredDate ? new Date(a.deliveredDate).getTime() : 0;
+          bValue = b.deliveredDate ? new Date(b.deliveredDate).getTime() : 0;
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        default:
+          aValue = 0;
+          bValue = 0;
+      }
+      
+      // Apply sort direction
+      if (customSortDirection === 'asc') {
+        if (aValue < bValue) return -1;
+        if (aValue > bValue) return 1;
+        return 0;
+      } else {
+        if (aValue > bValue) return -1;
+        if (aValue < bValue) return 1;
+        return 0;
+      }
+    });
+  };
+
   // Sort orders function
   const sortOrders = (ordersList: Order[]) => {
+    // Always use custom sort with the selected field and direction
+    return customSortOrders(ordersList);
+    
     const sorted = [...ordersList];
     
     if (sortOrder === 'latest') {
@@ -1359,6 +1466,8 @@ export default function Admin() {
     setPaymentStatusFilter('all');
     setOrderStatusFilter('all');
     setSortOrder('latest');
+    setCustomSortField('status');
+    setCustomSortDirection('asc');
   };
 
   // Render filter UI
@@ -1461,47 +1570,28 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">정렬:</span>
-            <div className="flex gap-1">
-              <Button
-                size="sm"
-                variant={sortOrder === 'latest' ? 'default' : 'outline'}
-                onClick={() => setSortOrder('latest')}
-                className="h-7 text-xs px-2"
-              >
-                최신순
-              </Button>
-              <Button
-                size="sm"
-                variant={sortOrder === 'oldest' ? 'default' : 'outline'}
-                onClick={() => setSortOrder('oldest')}
-                className="h-7 text-xs px-2"
-              >
-                오래된순
-              </Button>
-              <Button
-                size="sm"
-                variant={sortOrder === 'payment-status' ? 'default' : 'outline'}
-                onClick={() => setSortOrder('payment-status')}
-                className="h-7 text-xs px-2"
-              >
-                입금상태순
-              </Button>
-              <Button
-                size="sm"
-                variant={sortOrder === 'order-status' ? 'default' : 'outline'}
-                onClick={() => setSortOrder('order-status')}
-                className="h-7 text-xs px-2"
-              >
-                주문상태순
-              </Button>
-              <Button
-                size="sm"
-                variant={sortOrder === 'delivery-date' ? 'default' : 'outline'}
-                onClick={() => setSortOrder('delivery-date')}
-                className="h-7 text-xs px-2"
-              >
-                발송일순
-              </Button>
+            <div className="flex gap-2">
+              <Select value={customSortField} onValueChange={setCustomSortField}>
+                <SelectTrigger className="w-32 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={customSortDirection} onValueChange={setCustomSortDirection}>
+                <SelectTrigger className="w-20 h-7 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">오름차순</SelectItem>
+                  <SelectItem value="desc">내림차순</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
