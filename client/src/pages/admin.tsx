@@ -1440,8 +1440,8 @@ export default function Admin() {
                           </SelectContent>
                         </Select>
                         {order.status === 'delivered' && order.deliveredDate && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
+                          <div className="text-xs text-green-600 font-medium mt-1">
+                            완료일: {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
                           </div>
                         )}
                       </div>
@@ -1514,7 +1514,7 @@ export default function Admin() {
                         {order.status === 'delivered' && order.deliveredDate && (
                           <div className="mt-1">
                             <div className="text-green-600 font-bold text-base">
-                              발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
+                              ✅ 발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
                                 year: 'numeric',
                                 month: '2-digit', 
                                 day: '2-digit',
