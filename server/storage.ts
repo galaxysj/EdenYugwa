@@ -191,11 +191,7 @@ export class DatabaseStorage implements IStorage {
   async getAllOrders(): Promise<Order[]> {
     const allOrders = await db.select().from(orders)
       .where(eq(orders.isDeleted, false))
-      .orderBy(
-        // 예약발송일이 있는 주문을 먼저, 그 다음 생성일 역순
-        orders.scheduledDate,
-        desc(orders.createdAt)
-      );
+      .orderBy(desc(orders.createdAt)); // 기본적으로 생성일 역순으로 정렬
     
     // Get global cost settings
     const smallBoxCostSetting = await this.getSetting("smallBoxCost");
@@ -205,7 +201,7 @@ export class DatabaseStorage implements IStorage {
     const globalLargeBoxCost = largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 0;
     
     // Apply global costs and calculate profits for orders that don't have custom costs
-    return allOrders.map(order => {
+    const ordersWithCalculations = allOrders.map(order => {
       const smallBoxCost = order.smallBoxCost || globalSmallBoxCost;
       const largeBoxCost = order.largeBoxCost || globalLargeBoxCost;
       
@@ -228,6 +224,37 @@ export class DatabaseStorage implements IStorage {
         totalCost,
         netProfit
       };
+    });
+
+    // 복합 정렬: 1) 예약발송건 우선, 2) 배송완료 최하단, 3) 나머지는 생성일 역순
+    return ordersWithCalculations.sort((a, b) => {
+      // 1. 배송완료 상태 확인 - 배송완료는 맨 아래로
+      if (a.status === 'delivered' && b.status !== 'delivered') return 1;
+      if (b.status === 'delivered' && a.status !== 'delivered') return -1;
+      
+      // 2. 둘 다 배송완료인 경우 발송완료일 기준으로 정렬 (최신순)
+      if (a.status === 'delivered' && b.status === 'delivered') {
+        const aDeliveredDate = a.deliveredDate ? new Date(a.deliveredDate).getTime() : 0;
+        const bDeliveredDate = b.deliveredDate ? new Date(b.deliveredDate).getTime() : 0;
+        return bDeliveredDate - aDeliveredDate;
+      }
+      
+      // 3. 예약발송건 확인 - 예약발송건을 최상단으로
+      const aHasScheduled = a.scheduledDate !== null;
+      const bHasScheduled = b.scheduledDate !== null;
+      
+      if (aHasScheduled && !bHasScheduled) return -1;
+      if (bHasScheduled && !aHasScheduled) return 1;
+      
+      // 4. 둘 다 예약발송건인 경우 예약날짜 기준으로 정렬 (빠른 날짜 우선)
+      if (aHasScheduled && bHasScheduled) {
+        const aScheduledTime = new Date(a.scheduledDate!).getTime();
+        const bScheduledTime = new Date(b.scheduledDate!).getTime();
+        return aScheduledTime - bScheduledTime;
+      }
+      
+      // 5. 나머지는 생성일 역순
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }
 
