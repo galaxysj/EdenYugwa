@@ -28,9 +28,10 @@ type SmsFormData = z.infer<typeof smsSchema>;
 
 interface SmsDialogProps {
   order: Order;
+  children: React.ReactNode;
 }
 
-export function SmsDialog({ order }: SmsDialogProps) {
+export function SmsDialog({ order, children }: SmsDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -118,10 +119,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="h-8 text-xs">
-          <MessageSquare className="mr-1 h-3 w-3" />
-          SMS
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

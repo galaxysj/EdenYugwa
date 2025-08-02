@@ -812,11 +812,7 @@ function Manager() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex gap-1">
-                        <SmsDialog
-                          customerPhone={order.customerPhone}
-                          customerName={order.customerName}
-                          onSendSMS={(phone: string, message: string) => sendSMSMutation.mutate({ phone, message })}
-                        >
+                        <SmsDialog order={order}>
                           <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                             <span className="text-xs">SMS</span>
                           </Button>
@@ -920,11 +916,7 @@ function Manager() {
                       </SelectContent>
                     </Select>
                     
-                    <SmsDialog
-                      customerPhone={order.customerPhone}
-                      customerName={order.customerName}
-                      onSendSMS={(phone: string, message: string) => sendSMSMutation.mutate({ phone, message })}
-                    >
+                    <SmsDialog order={order}>
                       <Button variant="outline" size="sm" className="h-8 text-xs">
                         SMS
                       </Button>
