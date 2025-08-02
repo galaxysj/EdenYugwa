@@ -1563,6 +1563,7 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
@@ -1771,6 +1772,24 @@ export default function Admin() {
                       </Select>
                     </td>
                     <td className="py-2 px-2 text-center">
+                      {order.scheduledDate ? (
+                        <div 
+                          className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 예약발송일 수정"
+                        >
+                          {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-2 text-center">
                       {order.status === 'delivered' && order.deliveredDate ? (
                         <div 
                           className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200"
@@ -1945,7 +1964,7 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-6 gap-2">
                       <div>
                         <div className="text-gray-500 mb-2">실제입금</div>
                         {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
@@ -2057,6 +2076,25 @@ export default function Admin() {
                             </SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-2">예약발송일</div>
+                        {order.scheduledDate ? (
+                          <div 
+                            className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
+                            onClick={() => {
+                              const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                              if (scheduledDatePicker) {
+                                (scheduledDatePicker as HTMLElement).click();
+                              }
+                            }}
+                            title="클릭하여 예약발송일 수정"
+                          >
+                            {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400 text-center py-1">-</span>
+                        )}
                       </div>
                       <div>
                         <div className="text-gray-500 mb-2">발송일</div>

@@ -595,6 +595,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(orders.customerPhone, phoneNumber),
+          eq(orders.isDeleted, false), // 삭제된 주문 제외
           gte(orders.createdAt, twoYearsAgo)
         )
       );
