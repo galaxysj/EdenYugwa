@@ -37,7 +37,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
     defaultValues: {
-      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 주문이 접수되었습니다.`,
+      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 곧 발송예정입니다.`,
     },
   });
 
@@ -91,13 +91,18 @@ export function SmsDialog({ order }: SmsDialogProps) {
     return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
   };
 
-  const handlePresetMessage = (type: 'status' | 'payment' | 'custom') => {
+  const handlePresetMessage = (type: 'status' | 'payment' | 'shipping' | 'custom') => {
     if (type === 'status') {
       const statusMessage = getStatusMessage(order.status);
       form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${statusMessage}`);
     } else if (type === 'payment') {
       const paymentMessage = getStatusMessage(order.status, order.paymentStatus);
       form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${paymentMessage}`);
+    } else if (type === 'shipping') {
+      const shippingDate = order.scheduledDate ? 
+        new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : 
+        '곧';
+      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 ${shippingDate} 발송예정입니다.`);
     } else {
       form.setValue('message', `[에덴한과] ${order.customerName}님께 개별 안내드립니다.`);
     }
@@ -130,6 +135,15 @@ export function SmsDialog({ order }: SmsDialogProps) {
                 className="text-xs"
               >
                 주문상태 알림
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => handlePresetMessage('shipping')}
+                className="text-xs bg-blue-50 border-blue-200"
+              >
+                발송안내
               </Button>
               {order.paymentStatus === 'confirmed' && (
                 <Button
