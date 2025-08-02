@@ -1045,13 +1045,13 @@ export default function Admin() {
                           <td className="py-3 px-4 text-sm">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div>한과1호 {order.smallBoxQuantity}개</div>
+                                <div>한과1호×{order.smallBoxQuantity}개</div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div>한과2호 {order.largeBoxQuantity}개</div>
+                                <div>한과2호×{order.largeBoxQuantity}개</div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div>보자기 {order.wrappingQuantity}개</div>
+                                <div>보자기×{order.wrappingQuantity}개</div>
                               )}
                             </div>
                           </td>
