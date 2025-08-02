@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, FileSpreadsheet } from "lucide-react";
+import * as XLSX from "xlsx";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -326,6 +327,39 @@ function Manager() {
     return 0;
   });
 
+  // Excel export function
+  const exportToExcel = () => {
+    const exportData = managerSortedOrders.map(order => ({
+      '주문번호': order.orderNumber,
+      '주문자': order.customerName,
+      '연락처': order.customerPhone,
+      '주문내용': [
+        order.smallBoxQuantity > 0 ? `한과1호×${order.smallBoxQuantity}개` : '',
+        order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
+        order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
+      ].filter(Boolean).join(', '),
+      '배송주소': `${order.address1} ${order.address2 || ''}`.trim(),
+      '주문상태': statusLabels[order.status as keyof typeof statusLabels],
+      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '-',
+      '발송일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '-',
+      '판매자발송': order.sellerShipped ? '발송완료' : '미발송',
+      '판매자발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '-',
+      '주문일시': new Date(order.createdAt).toLocaleString('ko-KR')
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, '매니저 주문목록');
+    
+    const today = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(workbook, `매니저_주문목록_${today}.xlsx`);
+    
+    toast({
+      title: "엑셀 내보내기 완료",
+      description: "주문 목록이 엑셀 파일로 저장되었습니다.",
+    });
+  };
+
   // SMS mutation
   const sendSMSMutation = useMutation({
     mutationFn: ({ phone, message }: { phone: string; message: string }) =>
@@ -642,6 +676,15 @@ function Manager() {
             <div className="text-xs text-gray-600">
               입금완료 주문: <span className="font-medium text-gray-900">{managerSortedOrders.length}건</span>
             </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={exportToExcel}
+              className="h-7 text-xs"
+            >
+              <FileSpreadsheet className="h-3 w-3 mr-1" />
+              엑셀 내보내기
+            </Button>
             <Button
               size="sm"
               variant="ghost"
