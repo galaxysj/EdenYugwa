@@ -1522,7 +1522,7 @@ export default function Admin() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="w-12 py-3 px-3 text-center">
+                <th className="w-8 py-2 px-2 text-center">
                   <input
                     type="checkbox"
                     checked={selectedOrderItems.size === ordersList.length && ordersList.length > 0}
@@ -1536,14 +1536,19 @@ export default function Admin() {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm min-w-[140px]">주문번호</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm min-w-[120px]">고객정보</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm min-w-[100px]">주문내역</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm min-w-[280px]">배송정보</th>
-                <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm min-w-[80px]">금액</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm min-w-[100px]">입금상태</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm min-w-[100px]">주문상태</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm min-w-[120px]">관리</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">예금자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
+                <th className="text-right py-2 px-2 font-medium text-gray-700 text-xs">매출정보</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">실제입금</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">할인/미입금</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -1551,7 +1556,7 @@ export default function Admin() {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
                   <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50" data-order-id={order.id}>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2 text-center">
                       <input
                         type="checkbox"
                         checked={selectedOrderItems.has(order.id)}
@@ -1559,8 +1564,8 @@ export default function Admin() {
                         className="rounded border-gray-300"
                       />
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="font-medium text-gray-900 text-sm">#{order.orderNumber}</div>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                       </div>
@@ -1573,54 +1578,39 @@ export default function Admin() {
                         <div className="text-orange-600 font-bold text-xs">예약 대기</div>
                       )}
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="space-y-1">
-                        <div className="font-medium text-gray-900 text-sm">{order.customerName}</div>
-                        {order.isDifferentDepositor && order.depositorName && (
-                          <div className="text-xs text-red-600">예금자: {order.depositorName}</div>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                      {order.recipientName && order.recipientName !== order.customerName && (
+                        <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                      )}
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-xs">
+                        {order.isDifferentDepositor && order.depositorName ? (
+                          <span className="text-red-600">{order.depositorName}</span>
+                        ) : (
+                          <span className="text-gray-500">{order.customerName}</span>
                         )}
-                        {order.recipientName && order.recipientName !== order.customerName && (
-                          <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
-                        )}
-                        <div className="text-xs text-gray-600">{order.customerPhone}</div>
                       </div>
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="text-sm space-y-1">
-                        {order.smallBoxQuantity > 0 && <div>한과1호×{order.smallBoxQuantity}개</div>}
-                        {order.largeBoxQuantity > 0 && <div>한과2호×{order.largeBoxQuantity}개</div>}
-                        {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>}
+                    <td className="py-2 px-2 min-w-[80px]">
+                      <div className="text-xs">
+                        {order.smallBoxQuantity > 0 && <div>1호×{order.smallBoxQuantity}</div>}
+                        {order.largeBoxQuantity > 0 && <div>2호×{order.largeBoxQuantity}</div>}
+                        {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}</div>}
                       </div>
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="text-sm text-gray-900">
+                    <td className="py-2 px-2">
+                      <div className="text-xs text-gray-900">{order.customerPhone}</div>
+                    </td>
+                    <td className="py-2 px-2 max-w-xs">
+                      <div className="text-xs text-gray-900 truncate">
                         [{order.zipCode}] {order.address1} {order.address2}
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-right">
-                      <div className="space-y-1">
-                        <div className="font-medium text-gray-900 text-sm">{formatPrice(order.totalAmount)}</div>
-                        {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                          <div 
-                            className="text-xs text-blue-600 cursor-pointer hover:underline"
-                            onClick={() => {
-                              const currentAmount = order.actualPaidAmount || order.totalAmount;
-                              const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                              if (newAmount && !isNaN(Number(newAmount))) {
-                                handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                              }
-                            }}
-                            title="클릭하여 실제 입금금액 수정"
-                          >
-                            실제: {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                          </div>
-                        ) : null}
-                        {order.discountAmount && order.discountAmount > 0 && (
-                          <div className="text-xs text-green-600">할인: -{formatPrice(order.discountAmount)}</div>
-                        )}
-                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
-                          <div className="text-xs text-red-600">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</div>
-                        )}
+                    <td className="py-2 px-2 text-right">
+                      <div className="font-medium text-gray-900 text-xs">
+                        {formatPrice(order.totalAmount)}
                       </div>
                     </td>
                     <td className="py-2 px-2 text-center">
