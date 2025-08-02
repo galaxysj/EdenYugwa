@@ -963,7 +963,6 @@ export default function Admin() {
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">원가분석</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">할인/미입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제수익</th>
                     </tr>
                   </thead>
@@ -988,6 +987,12 @@ export default function Admin() {
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
                       const largeBoxesCost = order.largeBoxQuantity * largeCost;
                       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
+                      
+                      // Calculate discount and unpaid amounts
+                      const discountAmount = order.discountAmount || 0;
+                      const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
+                        ? (order.totalAmount - order.actualPaidAmount) : 0;
+                      const totalCostAnalysis = totalCost + shippingFee + discountAmount + unpaidAmount;
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -1034,32 +1039,31 @@ export default function Admin() {
                                   배송비: {formatPrice(shippingFee)}
                                 </div>
                               )}
+                              {discountAmount > 0 && (
+                                <div className="text-blue-600">
+                                  할인: {formatPrice(discountAmount)}
+                                </div>
+                              )}
+                              {unpaidAmount > 0 && (
+                                <div className="text-red-600">
+                                  미입금: {formatPrice(unpaidAmount)}
+                                </div>
+                              )}
                               <div className="font-medium text-red-600 border-t pt-1">
-                                총원가: {formatPrice(totalCost + shippingFee)}
+                                총원가분석: {formatPrice(totalCostAnalysis)}
                               </div>
                             </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm">
-                            {order.discountAmount && order.discountAmount > 0 ? (
-                              <span className="text-blue-600 font-medium">
-                                -{formatPrice(order.discountAmount)}
-                              </span>
-                            ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount ? (
-                              <span className="text-red-600 font-medium">
-                                {formatPrice(order.totalAmount - order.actualPaidAmount)}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td className="py-2 px-3 text-right text-sm">
-                            {order.netProfit !== undefined && order.netProfit !== null ? (
-                              <span className={`font-medium ${order.netProfit >= 0 ? "text-purple-600" : "text-red-600"}`}>
-                                {formatPrice(order.netProfit)}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
+                            {(() => {
+                              const actualRevenue = order.actualPaidAmount || order.totalAmount;
+                              const actualProfit = actualRevenue - totalCostAnalysis;
+                              return (
+                                <span className={`font-medium ${actualProfit >= 0 ? "text-purple-600" : "text-red-600"}`}>
+                                  {formatPrice(actualProfit)}
+                                </span>
+                              );
+                            })()}
                           </td>
                         </tr>
                       );
