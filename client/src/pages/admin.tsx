@@ -430,7 +430,15 @@ export default function Admin() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
 
+  // Clear selections when switching tabs
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    setSelectedOrderItems(new Set());
+    setSelectedTrashItems(new Set());
+  };
+
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
+  const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
 
@@ -539,6 +547,28 @@ export default function Admin() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (orderIds: number[]) => {
+      const deletePromises = orderIds.map(id => api.orders.delete(id));
+      await Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setSelectedOrderItems(new Set());
+      toast({
+        title: "삭제 완료",
+        description: `선택된 ${selectedOrderItems.size}개 주문이 삭제되었습니다.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "삭제 실패",
+        description: "일괄 삭제에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Toggle selection for trash items
   const toggleTrashSelection = (orderId: number) => {
     const newSelection = new Set(selectedTrashItems);
@@ -559,6 +589,23 @@ export default function Admin() {
   // Clear all selections
   const clearAllSelections = () => {
     setSelectedTrashItems(new Set());
+    setSelectedOrderItems(new Set());
+  };
+
+  // Order selection functions
+  const toggleOrderSelection = (orderId: number) => {
+    const newSelection = new Set(selectedOrderItems);
+    if (newSelection.has(orderId)) {
+      newSelection.delete(orderId);
+    } else {
+      newSelection.add(orderId);
+    }
+    setSelectedOrderItems(newSelection);
+  };
+
+  const selectAllOrders = (ordersList: Order[]) => {
+    const allIds = new Set(ordersList.map(order => order.id));
+    setSelectedOrderItems(allIds);
   };
 
   // Handle bulk permanent delete
@@ -901,6 +948,20 @@ export default function Admin() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
+                <th className="w-8 py-3 px-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrderItems.size === ordersList.length && ordersList.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        selectAllOrders(ordersList);
+                      } else {
+                        setSelectedOrderItems(new Set());
+                      }
+                    }}
+                    className="rounded border-gray-300"
+                  />
+                </th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
                 <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
@@ -917,6 +978,14 @@ export default function Admin() {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
                   <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-4 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderItems.has(order.id)}
+                        onChange={() => toggleOrderSelection(order.id)}
+                        className="rounded border-gray-300"
+                      />
+                    </td>
                     <td className="py-4 px-4">
                       <div className="font-medium text-gray-900">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
@@ -1103,8 +1172,15 @@ export default function Admin() {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedOrderItems.has(order.id)}
+                          onChange={() => toggleOrderSelection(order.id)}
+                          className="rounded border-gray-300 mt-1"
+                        />
+                        <div>
+                          <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
                         <div className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString('ko-KR')}
                         </div>
@@ -1127,6 +1203,7 @@ export default function Admin() {
                             </div>
                           </div>
                         )}
+                        </div>
                       </div>
                       <div className="flex items-center space-x-1">
                         {StatusIcon && <StatusIcon className="h-5 w-5 text-blue-500" />}
@@ -1594,7 +1671,7 @@ export default function Admin() {
                 </Button>
               </div>
             ) : (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
@@ -1611,18 +1688,142 @@ export default function Admin() {
                 </TabsList>
                 
                 <TabsContent value="all" className="mt-6">
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {renderOrdersList(allOrders)}
                 </TabsContent>
                 
                 <TabsContent value="pending" className="mt-6">
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {renderOrdersList(pendingOrders)}
                 </TabsContent>
                 
                 <TabsContent value="scheduled" className="mt-6">
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {renderOrdersList(scheduledOrders)}
                 </TabsContent>
                 
                 <TabsContent value="delivered" className="mt-6">
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {renderOrdersList(deliveredOrders)}
                 </TabsContent>
                 
