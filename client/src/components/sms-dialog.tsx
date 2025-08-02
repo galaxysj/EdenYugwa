@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Order } from "@shared/schema";
 
 const smsSchema = z.object({
-  message: z.string().min(1, "메시지를 입력해주세요").max(90, "SMS는 90자 이내로 입력해주세요"),
+  message: z.string().min(1, "메시지를 입력해주세요").max(200, "SMS는 200자 이내로 입력해주세요"),
 });
 
 type SmsFormData = z.infer<typeof smsSchema>;
@@ -37,7 +37,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
     defaultValues: {
-      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다.`,
+      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`,
     },
   });
 
@@ -102,7 +102,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
       const shippingDate = order.scheduledDate ? 
         new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : 
         '곧';
-      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다.`);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`);
     } else {
       form.setValue('message', `[에덴한과] ${order.customerName}님께 개별 안내드립니다.`);
     }
@@ -181,7 +181,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
                     />
                   </FormControl>
                   <div className="text-xs text-gray-500">
-                    {field.value?.length || 0}/90자
+                    {field.value?.length || 0}/200자
                   </div>
                   <FormMessage />
                 </FormItem>
