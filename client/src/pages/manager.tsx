@@ -658,7 +658,6 @@ function Manager() {
                 </th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">예금자</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
@@ -702,15 +701,6 @@ function Manager() {
                       {order.recipientName && order.recipientName !== order.customerName && (
                         <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
                       )}
-                    </td>
-                    <td className="py-2 px-2">
-                      <div className="font-medium text-xs">
-                        {order.isDifferentDepositor && order.depositorName ? (
-                          <span className="text-red-600">{order.depositorName}</span>
-                        ) : (
-                          <span className="text-gray-500">{order.customerName}</span>
-                        )}
-                      </div>
                     </td>
                     <td className="py-2 px-2 min-w-[80px]">
                       <div className="text-xs space-y-1">
