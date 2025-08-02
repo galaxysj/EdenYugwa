@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { Plus, Edit, Trash2, User, Phone, MapPin, Package } from "lucide-react";
+import { Plus, Edit, Trash2, User, Phone, MapPin, Package, Upload, FileSpreadsheet } from "lucide-react";
 import type { Customer, InsertCustomer } from "@shared/schema";
 
 interface CustomerFormData {
@@ -26,6 +26,8 @@ export function CustomerManagement() {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<CustomerFormData>({
     customerName: "",
     customerPhone: "",
@@ -91,6 +93,39 @@ export function CustomerManagement() {
       toast({
         title: "고객 삭제 실패",
         description: "고객 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const uploadCustomersMutation = useMutation({
+    mutationFn: (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      return fetch('/api/customers/upload', {
+        method: 'POST',
+        body: formData,
+      }).then(async (res) => {
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || '파일 업로드에 실패했습니다');
+        }
+        return res.json();
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      toast({
+        title: "엑셀 업로드 완료",
+        description: `${data.message} (신규등록: ${data.created}명, 중복제외: ${data.skipped}명)`,
+      });
+      setIsUploadDialogOpen(false);
+      setUploadFile(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "엑셀 업로드 실패",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -184,14 +219,69 @@ export function CustomerManagement() {
           <User className="h-5 w-5" />
           고객관리
         </CardTitle>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => resetForm()}>
-              <Plus className="h-4 w-4 mr-2" />
-              고객 등록
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+        <div className="flex gap-2">
+          <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                엑셀 업로드
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>엑셀 파일로 고객 일괄 등록</DialogTitle>
+                <DialogDescription>
+                  엑셀 파일을 업로드하여 여러 고객을 한번에 등록할 수 있습니다.
+                  <br />
+                  필수 컬럼: 고객명, 연락처 | 선택 컬럼: 우편번호, 주소1, 주소2, 메모
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="file">엑셀 파일 (.xlsx, .xls)</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsUploadDialogOpen(false);
+                      setUploadFile(null);
+                    }}
+                  >
+                    취소
+                  </Button>
+                  <Button 
+                    onClick={() => uploadFile && uploadCustomersMutation.mutate(uploadFile)}
+                    disabled={!uploadFile || uploadCustomersMutation.isPending}
+                  >
+                    {uploadCustomersMutation.isPending ? (
+                      <>처리중...</>
+                    ) : (
+                      <>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        업로드
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => resetForm()}>
+                <Plus className="h-4 w-4 mr-2" />
+                고객 등록
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingCustomer ? "고객 정보 수정" : "새 고객 등록"}
@@ -284,6 +374,7 @@ export function CustomerManagement() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       
       <CardContent>

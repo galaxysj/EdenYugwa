@@ -1,8 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, type Order } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, type Order, type InsertCustomer } from "@shared/schema";
 import * as XLSX from "xlsx";
+import multer from "multer";
+
+// Configure multer for file upload
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all orders (for admin)
@@ -89,7 +96,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const validatedData = insertOrderSchema.parse(req.body);
+      
+      // Automatically register or update customer
+      await storage.autoRegisterCustomer({
+        name: validatedData.customerName,
+        phone: validatedData.customerPhone,
+        address: validatedData.address || undefined,
+        zipCode: validatedData.zipCode || undefined
+      });
+      
       const order = await storage.createOrder(validatedData);
+      
+      // Update customer statistics after creating order
+      await storage.updateCustomerStats(validatedData.customerPhone);
       
       res.status(201).json(order);
     } catch (error) {
@@ -938,6 +957,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error syncing customer stats:", error);
       res.status(500).json({ error: "고객 통계 업데이트에 실패했습니다" });
+    }
+  });
+
+  // Excel file upload for bulk customer registration
+  app.post("/api/customers/upload", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "파일이 업로드되지 않았습니다" });
+      }
+
+      // Parse Excel file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      
+      // Convert to JSON
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      
+      if (jsonData.length === 0) {
+        return res.status(400).json({ error: "엑셀 파일에 데이터가 없습니다" });
+      }
+
+      // Validate and transform data
+      const customers: InsertCustomer[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < jsonData.length; i++) {
+        const row: any = jsonData[i];
+        const rowNumber = i + 2; // Excel row number (starting from 2, accounting for header)
+
+        try {
+          // Expected columns: 고객명, 연락처, 우편번호, 주소1, 주소2, 메모
+          const customerData: InsertCustomer = {
+            customerName: row['고객명'] || row['이름'] || row['성명'] || '',
+            customerPhone: String(row['연락처'] || row['전화번호'] || row['핸드폰'] || '').replace(/[^0-9]/g, ''),
+            zipCode: row['우편번호'] || '',
+            address1: row['주소1'] || row['주소'] || '',
+            address2: row['주소2'] || '',
+            orderCount: 0,
+            totalSpent: 0,
+            lastOrderDate: null,
+            notes: row['메모'] || row['비고'] || null
+          };
+
+          // Validate required fields
+          if (!customerData.customerName || !customerData.customerPhone) {
+            errors.push(`행 ${rowNumber}: 고객명과 연락처는 필수 항목입니다`);
+            continue;
+          }
+
+          if (customerData.customerPhone.length < 10) {
+            errors.push(`행 ${rowNumber}: 연락처 형식이 올바르지 않습니다`);
+            continue;
+          }
+
+          customers.push(customerData);
+        } catch (error) {
+          errors.push(`행 ${rowNumber}: 데이터 처리 중 오류가 발생했습니다`);
+        }
+      }
+
+      if (errors.length > 0 && customers.length === 0) {
+        return res.status(400).json({ 
+          error: "처리할 수 있는 데이터가 없습니다", 
+          details: errors 
+        });
+      }
+
+      // Bulk create customers
+      let createdCount = 0;
+      let skippedCount = 0;
+      const skippedCustomers: string[] = [];
+
+      for (const customer of customers) {
+        try {
+          // Check if customer already exists
+          const existing = await storage.getCustomerByPhone(customer.customerPhone);
+          if (existing) {
+            skippedCount++;
+            skippedCustomers.push(`${customer.customerName} (${customer.customerPhone})`);
+            continue;
+          }
+
+          await storage.createCustomer(customer);
+          createdCount++;
+        } catch (error) {
+          console.error('Error creating customer:', error);
+          skippedCount++;
+          skippedCustomers.push(`${customer.customerName} (${customer.customerPhone}) - 생성 실패`);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `총 ${customers.length}명 처리완료`,
+        created: createdCount,
+        skipped: skippedCount,
+        skippedDetails: skippedCustomers,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error("Error uploading customer file:", error);
+      res.status(500).json({ error: "파일 업로드 처리 중 오류가 발생했습니다" });
     }
   });
 

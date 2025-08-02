@@ -54,6 +54,8 @@ export interface IStorage {
   updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
   deleteCustomer(id: number): Promise<void>;
   updateCustomerStats(customerPhone: string): Promise<void>;
+  autoRegisterCustomer(customerData: {name: string, phone: string, address?: string, zipCode?: string}): Promise<Customer | null>;
+  bulkCreateCustomers(customers: InsertCustomer[]): Promise<Customer[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -594,6 +596,51 @@ export class DatabaseStorage implements IStorage {
 
   async deleteManager(id: number): Promise<void> {
     await db.delete(managers).where(eq(managers.id, id));
+  }
+
+  async autoRegisterCustomer(customerData: {name: string, phone: string, address?: string, zipCode?: string}): Promise<Customer | null> {
+    try {
+      // Check if customer already exists
+      const existingCustomer = await this.getCustomerByPhone(customerData.phone);
+      if (existingCustomer) {
+        // Update address if provided and different
+        if (customerData.address && customerData.address !== existingCustomer.address1) {
+          await this.updateCustomer(existingCustomer.id, {
+            address1: customerData.address,
+            zipCode: customerData.zipCode
+          });
+        }
+        return existingCustomer;
+      }
+
+      // Create new customer
+      const newCustomer = await this.createCustomer({
+        customerName: customerData.name,
+        customerPhone: customerData.phone,
+        address1: customerData.address || '',
+        address2: '',
+        zipCode: customerData.zipCode,
+        orderCount: 0,
+        totalSpent: 0,
+        lastOrderDate: null,
+        notes: null
+      });
+
+      return newCustomer;
+    } catch (error) {
+      console.error('Auto register customer error:', error);
+      return null;
+    }
+  }
+
+  async bulkCreateCustomers(customers: InsertCustomer[]): Promise<Customer[]> {
+    try {
+      const result = await db.insert(customersTable).values(customers).returning();
+      return result;
+    } catch (error) {
+      console.error('Bulk create customers error:', error);
+      throw error;
+    }
   }
 }
 
