@@ -110,6 +110,8 @@ export class DatabaseStorage implements IStorage {
       wrappingQuantity: insertOrder.wrappingQuantity,
       totalAmount: insertOrder.totalAmount,
       specialRequests: insertOrder.specialRequests,
+      scheduledDate: insertOrder.scheduledDate,
+      shippingFee: insertOrder.shippingFee || 0,
       orderNumber,
       status: insertOrder.status || "pending",
       paymentStatus: "pending",

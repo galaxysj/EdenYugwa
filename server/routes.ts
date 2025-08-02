@@ -83,24 +83,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new order
   app.post("/api/orders", async (req, res) => {
     try {
-      console.log('Received order data:', req.body);
-      
       // scheduledDate를 Date 객체로 변환
       if (req.body.scheduledDate && typeof req.body.scheduledDate === 'string') {
         req.body.scheduledDate = new Date(req.body.scheduledDate);
-        console.log('Converted scheduledDate:', req.body.scheduledDate);
       }
       
-      console.log('Data before validation:', req.body);
       const validatedData = insertOrderSchema.parse(req.body);
-      console.log('Validated data:', validatedData);
-      
       const order = await storage.createOrder(validatedData);
-      console.log('Created order:', order);
       
       res.status(201).json(order);
     } catch (error) {
-      console.error('Order creation error:', error);
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       } else {
