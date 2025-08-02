@@ -173,7 +173,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto mb-8">
             <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-6 border border-eden-brown/20">
               <div className="text-center">
-                <h4 className="text-2xl font-bold text-eden-red mb-3 font-korean">입금계좌</h4>
+                <h4 className="text-3xl font-bold text-eden-red mb-3 font-korean">입금계좌</h4>
                 <div className="text-2xl font-bold text-eden-red">
                   농협 352-1701-3342-63 (예금주: 손*진)
                 </div>
