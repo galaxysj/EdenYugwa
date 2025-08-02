@@ -882,96 +882,61 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* 매출 총합계 - 깔끔한 버전 */}
-        <Card className="bg-white border-2 border-eden-red/20 shadow-lg">
-          <CardContent className="p-8">
-            {/* 제목 */}
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-eden-red mb-2">
-                매출 총합계
-              </h3>
-              <p className="text-sm text-gray-600">
-                {dateFilter === 'all' ? '전체 기간' : 
+        {/* 매출 총합계 - 통합 테이블 버전 */}
+        <Card className="bg-white border-eden-red/20">
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-eden-red mb-2">
+                매출 총합계 ({dateFilter === 'all' ? '전체 기간' : 
                   dateFilter === 'today' ? '오늘' :
                   dateFilter === 'week' ? '최근 7일' :
                   dateFilter === 'month' ? '최근 30일' :
-                  dateFilter === 'custom' && startDate && endDate ? `${startDate} ~ ${endDate}` : '기간 설정'}
-              </p>
+                  dateFilter === 'custom' && startDate && endDate ? `${startDate} ~ ${endDate}` : '기간 설정'})
+              </h3>
             </div>
             
-            {/* 주문 현황 */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">주문 현황</h4>
-              <div className="grid grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-gray-50 rounded-xl border">
-                  <div className="text-2xl font-bold text-gray-800 mb-2">{filteredTotals.count}건</div>
-                  <div className="text-sm text-gray-600 font-medium">주문 건수</div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
+                <div>
+                  <div className="font-semibold text-gray-700 mb-1">주문건수</div>
+                  <div className="text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
                 </div>
                 
-                <div className="text-center p-4 bg-amber-50 rounded-xl border border-amber-200">
-                  <div className="text-2xl font-bold text-amber-700 mb-2">{filteredTotals.smallBoxQuantity}개</div>
-                  <div className="text-sm text-amber-700 font-medium">한과1호</div>
+                <div>
+                  <div className="font-semibold text-amber-700 mb-1">한과1호</div>
+                  <div className="text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
                 </div>
                 
-                <div className="text-center p-4 bg-orange-50 rounded-xl border border-orange-200">
-                  <div className="text-2xl font-bold text-orange-700 mb-2">{filteredTotals.largeBoxQuantity}개</div>
-                  <div className="text-sm text-orange-700 font-medium">한과2호</div>
-                </div>
-              </div>
-            </div>
-
-            {/* 재무 현황 */}
-            <div className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">재무 현황</h4>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-green-50 rounded-xl border border-green-200">
-                  <div className="text-xl font-bold text-green-700 mb-2">{formatPrice(filteredTotals.actualRevenue)}</div>
-                  <div className="text-sm text-green-700 font-medium">실제 입금</div>
+                <div>
+                  <div className="font-semibold text-orange-700 mb-1">한과2호</div>
+                  <div className="text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
                 </div>
                 
-                <div className="text-center p-4 bg-red-50 rounded-xl border border-red-200">
-                  <div className="text-xl font-bold text-red-700 mb-2">{formatPrice(filteredTotals.totalCost)}</div>
-                  <div className="text-sm text-red-700 font-medium">총 원가</div>
+                <div>
+                  <div className="font-semibold text-eden-brown mb-1">보자기</div>
+                  <div className="text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
                 </div>
                 
-                <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-200">
-                  <div className="text-xl font-bold text-blue-700 mb-2">
-                    {formatPrice(filteredTotals.totalDiscounts + filteredTotals.totalPartialUnpaid)}
-                  </div>
-                  <div className="text-sm text-blue-700 font-medium">할인/미입금</div>
+                <div>
+                  <div className="font-semibold text-green-700 mb-1">실제입금</div>
+                  <div className="text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                 </div>
                 
-                <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-200">
-                  <div className={`text-xl font-bold mb-2 ${filteredTotals.netProfit >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
+                <div>
+                  <div className="font-semibold text-red-700 mb-1">총원가</div>
+                  <div className="text-lg font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
+                </div>
+                
+                <div>
+                  <div className="font-semibold text-blue-700 mb-1">할인/미입금</div>
+                  <div className="text-lg font-bold text-blue-600">{formatPrice(filteredTotals.totalDiscounts + filteredTotals.totalPartialUnpaid)}</div>
+                </div>
+                
+                <div>
+                  <div className="font-semibold text-purple-700 mb-1">실제수익</div>
+                  <div className={`text-lg font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                     {formatPrice(filteredTotals.netProfit)}
                   </div>
-                  <div className={`text-sm font-medium ${filteredTotals.netProfit >= 0 ? 'text-purple-700' : 'text-red-700'}`}>실제 수익</div>
-                </div>
-              </div>
-            </div>
-            
-            {/* 상품별 상세 */}
-            <div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-4 text-center">상품별 상세</h4>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <div className="text-lg font-bold text-amber-600 mb-2">{filteredTotals.smallBoxQuantity}개</div>
-                  <div className="text-sm text-gray-600 font-medium">한과1호 건수</div>
-                </div>
-                
-                <div className="text-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <div className="text-lg font-bold text-orange-600 mb-2">{filteredTotals.largeBoxQuantity}개</div>
-                  <div className="text-sm text-gray-600 font-medium">한과2호 건수</div>
-                </div>
-                
-                <div className="text-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <div className="text-lg font-bold text-eden-brown mb-2">{filteredTotals.wrappingQuantity}개</div>
-                  <div className="text-sm text-gray-600 font-medium">보자기 건수</div>
-                </div>
-                
-                <div className="text-center p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <div className="text-lg font-bold text-indigo-600 mb-2">{filteredTotals.shippingOrders}건</div>
-                  <div className="text-sm text-gray-600 font-medium">배송비 건수</div>
                 </div>
               </div>
             </div>
