@@ -889,15 +889,22 @@ export default function Admin() {
                       <div className="text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </div>
-                      {(order.scheduledDate || order.status === 'scheduled') && (
+                      {order.scheduledDate && (
                         <div className="mt-1">
                           <div className="text-red-600 font-bold text-sm">
-                            예약발송 {order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                            고객 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
                               year: 'numeric',
                               month: '2-digit', 
                               day: '2-digit',
                               weekday: 'short'
-                            }) : '날짜 미설정'}
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      {order.status === 'scheduled' && !order.scheduledDate && (
+                        <div className="mt-1">
+                          <div className="text-orange-600 font-bold text-sm">
+                            발송예약 (날짜 미설정)
                           </div>
                         </div>
                       )}
@@ -907,15 +914,21 @@ export default function Admin() {
                     </td>
                     <td className="py-4 px-4 min-w-[120px]">
                       <div className="space-y-1">
-                        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                          소박스 × {order.smallBoxQuantity}개
-                        </div>
-                        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                          대박스 × {order.largeBoxQuantity}개
-                        </div>
-                        <div className={order.wrappingQuantity > 0 ? "text-sm font-medium text-eden-brown whitespace-nowrap" : "text-sm text-gray-500 whitespace-nowrap"}>
-                          {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
-                        </div>
+                        {order.smallBoxQuantity > 0 && (
+                          <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                            소박스 × {order.smallBoxQuantity}개
+                          </div>
+                        )}
+                        {order.largeBoxQuantity > 0 && (
+                          <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                            대박스 × {order.largeBoxQuantity}개
+                          </div>
+                        )}
+                        {order.wrappingQuantity > 0 && (
+                          <div className="text-sm font-medium text-eden-brown whitespace-nowrap">
+                            보자기 × {order.wrappingQuantity}개
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -1079,15 +1092,22 @@ export default function Admin() {
                         <div className="text-sm text-gray-500">
                           {new Date(order.createdAt).toLocaleDateString('ko-KR')}
                         </div>
-                        {(order.scheduledDate || order.status === 'scheduled') && (
+                        {order.scheduledDate && (
                           <div className="mt-1">
                             <div className="text-red-600 font-bold text-base">
-                              예약발송 {order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                              고객 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
                                 year: 'numeric',
                                 month: '2-digit', 
                                 day: '2-digit',
                                 weekday: 'short'
-                              }) : '날짜 미설정'}
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        {order.status === 'scheduled' && !order.scheduledDate && (
+                          <div className="mt-1">
+                            <div className="text-orange-600 font-bold text-base">
+                              발송예약 (날짜 미설정)
                             </div>
                           </div>
                         )}
