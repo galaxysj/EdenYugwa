@@ -225,10 +225,15 @@ export default function OrderLookup() {
                       <div className="flex justify-between items-start">
                         <div>
                           <CardTitle className="text-xl font-korean">주문번호 #{order.orderNumber}</CardTitle>
-                          <p className="text-gray-500 flex items-center mt-1">
-                            <Calendar className="mr-1 h-4 w-4" />
-                            {formatDate(order.createdAt)} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                          <div className="text-gray-500 mt-1">
+                            <div className="flex items-center">
+                              <Calendar className="mr-1 h-4 w-4" />
+                              {formatDate(order.createdAt)}
+                            </div>
+                            <div className="text-xs ml-5">
+                              {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
                         </div>
                         <div className="text-right space-y-2">
                           <Badge className={statusColors[order.status as keyof typeof statusColors]}>

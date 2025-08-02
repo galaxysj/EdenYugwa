@@ -1251,7 +1251,8 @@ export default function Admin() {
                           주문번호: {order.orderNumber}
                         </h3>
                         <div className="text-xs text-gray-500">
-                          주문일: {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          <div>주문일: {new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                          <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
                       </div>
                       <div className="text-sm text-gray-500">
@@ -1526,7 +1527,8 @@ export default function Admin() {
                     <td className="py-3 px-3">
                       <div className="font-medium text-gray-900 text-sm">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                        <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                        <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
                       {order.scheduledDate && (
                         <div className="mt-1">
@@ -1754,7 +1756,8 @@ export default function Admin() {
                         <div>
                           <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
                         <div className="text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                          <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                          <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                         </div>
                         {order.scheduledDate && (
                           <div className="mt-1">
