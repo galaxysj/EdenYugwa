@@ -11,6 +11,7 @@ import Manager from "@/pages/manager";
 import Login from "@/pages/login";
 import OrderLookup from "@/pages/order-lookup";
 import OrderEdit from "@/pages/order-edit";
+import PublicOrder from "@/pages/public-order";
 import { ProtectedRoute } from "@/components/protected-route";
 
 function Router() {
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/manager" component={Manager} />
       <Route path="/order-lookup" component={OrderLookup} />
       <Route path="/order-edit/:id" component={OrderEdit} />
+      <Route path="/order" component={PublicOrder} />
       <Route component={NotFound} />
     </Switch>
   );
