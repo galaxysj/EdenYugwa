@@ -681,7 +681,7 @@ export default function Admin() {
       // Oldest first
       return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     } else if (sortOrder === 'payment-status') {
-      // Sort by payment status: pending -> partial -> confirmed
+      // Sort by payment status: pending -> partial at top, confirmed at bottom
       const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3 };
       return sorted.sort((a, b) => {
         const aPriority = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 4;
@@ -695,18 +695,10 @@ export default function Admin() {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortOrder === 'order-status') {
-      // Sort by status priority: pending -> scheduled -> delivered
-      const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+      // Sort by actual order sequence (creation date order)
       return sorted.sort((a, b) => {
-        const aPriority = statusPriority[a.status as keyof typeof statusPriority] || 4;
-        const bPriority = statusPriority[b.status as keyof typeof statusPriority] || 4;
-        
-        if (aPriority !== bPriority) {
-          return aPriority - bPriority;
-        }
-        
-        // If same status, sort by date (latest first)
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        // Sort by creation date (earliest first - actual order sequence)
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       });
     } else if (sortOrder === 'delivery-date') {
       // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
