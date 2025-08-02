@@ -684,7 +684,10 @@ export default function Admin() {
 
   // Render revenue report function
   const renderRevenueReport = () => {
-    const paidOrders = orders.filter((order: Order) => order.paymentStatus === 'confirmed');
+    // Include both confirmed payments and scheduled orders in revenue calculations
+    const paidOrders = orders.filter((order: Order) => 
+      order.paymentStatus === 'confirmed' || order.status === 'scheduled'
+    );
     
     // Filter orders by date
     const getFilteredOrders = () => {
