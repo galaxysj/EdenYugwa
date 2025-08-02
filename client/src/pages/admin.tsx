@@ -696,20 +696,20 @@ export default function Admin() {
       
       if (dateFilter === 'today') {
         const today = new Date().toDateString();
-        filtered = paidOrders.filter(order => new Date(order.createdAt).toDateString() === today);
+        filtered = paidOrders.filter((order: Order) => new Date(order.createdAt).toDateString() === today);
       } else if (dateFilter === 'week') {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        filtered = paidOrders.filter(order => new Date(order.createdAt) >= weekAgo);
+        filtered = paidOrders.filter((order: Order) => new Date(order.createdAt) >= weekAgo);
       } else if (dateFilter === 'month') {
         const monthAgo = new Date();
         monthAgo.setMonth(monthAgo.getMonth() - 1);
-        filtered = paidOrders.filter(order => new Date(order.createdAt) >= monthAgo);
+        filtered = paidOrders.filter((order: Order) => new Date(order.createdAt) >= monthAgo);
       } else if (dateFilter === 'custom' && startDate && endDate) {
         const start = new Date(startDate);
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999); // Include the entire end date
-        filtered = paidOrders.filter(order => {
+        filtered = paidOrders.filter((order: Order) => {
           const orderDate = new Date(order.createdAt);
           return orderDate >= start && orderDate <= end;
         });
@@ -721,7 +721,7 @@ export default function Admin() {
     const filteredOrders = getFilteredOrders();
     
     // Calculate totals for filtered orders
-    const filteredTotals = filteredOrders.reduce((acc, order) => {
+    const filteredTotals = filteredOrders.reduce((acc: any, order: Order) => {
       acc.count++;
       acc.totalAmount += order.totalAmount;
       acc.actualRevenue += order.actualPaidAmount || order.totalAmount;
@@ -980,7 +980,7 @@ export default function Admin() {
                   </thead>
                   <tbody>
                     {filteredOrders
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
                       const smallBoxTotal = order.smallBoxQuantity * 19000;
                       const largeBoxTotal = order.largeBoxQuantity * 21000;
@@ -1426,7 +1426,7 @@ export default function Admin() {
                             미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
                           </div>
                         )}
-                        {order.netProfit > 0 && (
+                        {order.netProfit && order.netProfit > 0 && (
                           <div className="text-purple-600 font-medium">
                             수익: {formatPrice(order.netProfit)}
                           </div>
