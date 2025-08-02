@@ -18,22 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Order, Setting } from "@shared/schema";
 
-// 정렬 옵션 정의
-const sortOptions = [
-  { value: 'orderNumber', label: '주문번호' },
-  { value: 'customerName', label: '주문자' },
-  { value: 'depositorName', label: '예금자' },
-  { value: 'orderDetails', label: '주문내역' },
-  { value: 'customerPhone', label: '연락처' },
-  { value: 'address', label: '배송주소' },
-  { value: 'totalAmount', label: '매출' },
-  { value: 'actualPaidAmount', label: '입금정보' },
-  { value: 'paymentStatus', label: '입금상태' },
-  { value: 'status', label: '주문상태' },
-  { value: 'scheduledDate', label: '예약발송일' },
-  { value: 'deliveredDate', label: '발송일' },
-  { value: 'createdAt', label: '주문일자' }
-];
+
 
 const statusLabels = {
   pending: "주문접수",
@@ -487,12 +472,7 @@ export default function Admin() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
-  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'payment-status' | 'order-status' | 'delivery-date'>('latest');
-  const [sortCriteria, setSortCriteria] = useState([
-    { field: 'status', direction: 'asc' as 'asc' | 'desc' },
-    { field: 'deliveredDate', direction: 'desc' as 'asc' | 'desc' },
-    { field: 'orderNumber', direction: 'desc' as 'asc' | 'desc' }
-  ]);
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest'>('latest');
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -688,139 +668,18 @@ export default function Admin() {
   };
 
   // Helper function to get field value for sorting
-  const getFieldValue = (order: Order, field: string): any => {
-    switch (field) {
-      case 'orderNumber':
-        return parseInt(order.orderNumber.split('-')[1] || '0');
-      case 'customerName':
-        return order.customerName.toLowerCase();
-      case 'depositorName':
-        return (order.depositorName || order.customerName).toLowerCase();
-      case 'orderDetails':
-        return `한과1호×${order.smallBoxQuantity} 한과2호×${order.largeBoxQuantity} 보자기×${order.wrappingQuantity}`.toLowerCase();
-      case 'customerPhone':
-        return order.customerPhone;
-      case 'address':
-        return `${order.address1} ${order.address2}`.toLowerCase();
-      case 'totalAmount':
-        return order.totalAmount;
-      case 'actualPaidAmount':
-        return order.actualPaidAmount || 0;
-      case 'paymentStatus':
-        const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
-        return paymentPriority[order.paymentStatus as keyof typeof paymentPriority] || 999;
-      case 'status':
-        const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
-        return statusPriority[order.status as keyof typeof statusPriority] || 999;
-      case 'scheduledDate':
-        return order.scheduledDate ? new Date(order.scheduledDate).getTime() : 0;
-      case 'deliveredDate':
-        return order.deliveredDate ? new Date(order.deliveredDate).getTime() : 0;
-      case 'createdAt':
-        return new Date(order.createdAt).getTime();
-      default:
-        return 0;
-    }
-  };
 
-  // Multi-criteria sort function
-  const multiCriteriaSortOrders = (ordersList: Order[]) => {
-    const sorted = [...ordersList];
-    
-    return sorted.sort((a, b) => {
-      // Apply sorting criteria in order
-      for (const criterion of sortCriteria) {
-        if (!criterion.field || criterion.field === 'none') continue; // Skip empty criteria
-        
-        const aValue = getFieldValue(a, criterion.field);
-        const bValue = getFieldValue(b, criterion.field);
-        
-        let result = 0;
-        if (aValue < bValue) result = -1;
-        else if (aValue > bValue) result = 1;
-        
-        if (result !== 0) {
-          return criterion.direction === 'asc' ? result : -result;
-        }
-      }
-      
-      return 0; // If all criteria are equal
-    });
-  };
 
   // Sort orders function
   const sortOrders = (ordersList: Order[]) => {
-    // Use multi-criteria sort
-    return multiCriteriaSortOrders(ordersList);
-    
     const sorted = [...ordersList];
     
     if (sortOrder === 'latest') {
-      // Latest first, but delivered orders at the bottom
-      return sorted.sort((a, b) => {
-        // If one is delivered and the other isn't, delivered goes to bottom
-        if (a.status === 'delivered' && b.status !== 'delivered') return 1;
-        if (b.status === 'delivered' && a.status !== 'delivered') return -1;
-        
-        // If both have same delivery status, sort by date (latest first)
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
+      // Latest first
+      return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sortOrder === 'oldest') {
       // Oldest first
       return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    } else if (sortOrder === 'payment-status') {
-      // Sort by payment status: pending -> partial at top, confirmed at bottom
-      const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3 };
-      return sorted.sort((a, b) => {
-        const aPriority = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 4;
-        const bPriority = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 4;
-        
-        if (aPriority !== bPriority) {
-          return aPriority - bPriority;
-        }
-        
-        // If same payment status, sort by date (latest first)
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-    } else if (sortOrder === 'order-status') {
-      // Sort by order status: scheduled orders first, then by scheduled date (earliest first)
-      return sorted.sort((a, b) => {
-        // If one is scheduled and the other isn't, scheduled goes to top
-        if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
-        if (b.status === 'scheduled' && a.status !== 'scheduled') return 1;
-        
-        // Both are scheduled - sort by scheduled date (earliest first)
-        if (a.status === 'scheduled' && b.status === 'scheduled') {
-          // Orders with scheduled date first, then by scheduled date (earliest first)
-          if (a.scheduledDate && !b.scheduledDate) return -1;
-          if (!a.scheduledDate && b.scheduledDate) return 1;
-          
-          if (a.scheduledDate && b.scheduledDate) {
-            return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
-          }
-          
-          // Both don't have scheduled date - sort by creation date (latest first)
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-        
-        // Neither is scheduled - sort by creation date (latest first)
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
-    } else if (sortOrder === 'delivery-date') {
-      // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
-      return sorted.sort((a, b) => {
-        // Orders without delivery date go to top
-        if (!a.deliveredDate && b.deliveredDate) return -1;
-        if (a.deliveredDate && !b.deliveredDate) return 1;
-        
-        // Both have delivery dates - sort by delivery date (earliest first)
-        if (a.deliveredDate && b.deliveredDate) {
-          return new Date(a.deliveredDate).getTime() - new Date(b.deliveredDate).getTime();
-        }
-        
-        // Neither has delivery date - sort by creation date (latest first)
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      });
     }
     
     return sorted;
@@ -1445,11 +1304,6 @@ export default function Admin() {
     setPaymentStatusFilter('all');
     setOrderStatusFilter('all');
     setSortOrder('latest');
-    setSortCriteria([
-      { field: 'status', direction: 'asc' },
-      { field: 'deliveredDate', direction: 'desc' },
-      { field: 'orderNumber', direction: 'desc' }
-    ]);
   };
 
   // Render filter UI
@@ -1552,48 +1406,23 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">정렬:</span>
-            <div className="flex flex-wrap gap-4">
-              {sortCriteria.map((criterion, index) => (
-                <div key={index} className="flex gap-1 items-center">
-                  <span className="text-xs text-gray-500 whitespace-nowrap">{index + 1}순위</span>
-                  <Select 
-                    value={criterion.field} 
-                    onValueChange={(value) => {
-                      const newCriteria = [...sortCriteria];
-                      newCriteria[index].field = value;
-                      setSortCriteria(newCriteria);
-                    }}
-                  >
-                    <SelectTrigger className="w-24 h-7 text-xs">
-                      <SelectValue placeholder="선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">선택안함</SelectItem>
-                      {sortOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select 
-                    value={criterion.direction} 
-                    onValueChange={(value: 'asc' | 'desc') => {
-                      const newCriteria = [...sortCriteria];
-                      newCriteria[index].direction = value;
-                      setSortCriteria(newCriteria);
-                    }}
-                  >
-                    <SelectTrigger className="w-16 h-7 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="asc">↑</SelectItem>
-                      <SelectItem value="desc">↓</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              ))}
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={sortOrder === 'latest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('latest')}
+                className="h-7 text-xs"
+              >
+                최신순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'oldest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('oldest')}
+                className="h-7 text-xs"
+              >
+                오래된순
+              </Button>
             </div>
           </div>
           
