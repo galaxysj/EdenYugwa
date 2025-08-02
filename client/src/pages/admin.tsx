@@ -789,41 +789,40 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* 필터링된 매출 총합계 */}
-        <Card className="bg-gradient-to-r from-eden-red/5 to-eden-brown/5 border-2 border-eden-red/20">
-          <CardHeader>
-            <CardTitle className="text-center text-eden-red">
-              📊 매출 총합계 ({dateFilter === 'all' ? '전체 기간' : 
-                dateFilter === 'today' ? '오늘' :
-                dateFilter === 'week' ? '최근 7일' :
-                dateFilter === 'month' ? '최근 30일' :
-                dateFilter === 'custom' && startDate && endDate ? `${startDate} ~ ${endDate}` : '기간 설정'})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <div className="text-2xl font-bold text-gray-700">{filteredTotals.count}</div>
+        {/* 매출 총합계 - 간결한 버전 */}
+        <Card className="bg-gradient-to-r from-eden-red/10 to-eden-brown/10 border-eden-red/30">
+          <CardContent className="p-6">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-bold text-eden-red">
+                매출 총합계 ({dateFilter === 'all' ? '전체 기간' : 
+                  dateFilter === 'today' ? '오늘' :
+                  dateFilter === 'week' ? '최근 7일' :
+                  dateFilter === 'month' ? '최근 30일' :
+                  dateFilter === 'custom' && startDate && endDate ? `${startDate} ~ ${endDate}` : '기간 설정'})
+              </h3>
+            </div>
+            <div className="grid grid-cols-3 gap-6">
+              {/* 주문 현황 */}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-700 mb-1">{filteredTotals.count}건</div>
                 <div className="text-sm text-gray-600">주문 건수</div>
               </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <div className="text-2xl font-bold text-eden-red">{formatPrice(filteredTotals.totalAmount)}</div>
-                <div className="text-sm text-gray-600">주문 금액</div>
-              </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <div className="text-2xl font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+              
+              {/* 금액 현황 */}
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 mb-1">{formatPrice(filteredTotals.actualRevenue)}</div>
                 <div className="text-sm text-gray-600">실제 입금</div>
+                {filteredTotals.totalDiscounts > 0 && (
+                  <div className="text-xs text-blue-600 mt-1">할인: -{formatPrice(filteredTotals.totalDiscounts)}</div>
+                )}
+                {filteredTotals.totalPartialUnpaid > 0 && (
+                  <div className="text-xs text-red-600 mt-1">미입금: {formatPrice(filteredTotals.totalPartialUnpaid)}</div>
+                )}
               </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <div className="text-2xl font-bold text-blue-600">{formatPrice(filteredTotals.totalDiscounts)}</div>
-                <div className="text-sm text-gray-600">할인 금액</div>
-              </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <div className="text-2xl font-bold text-red-600">{formatPrice(filteredTotals.totalPartialUnpaid)}</div>
-                <div className="text-sm text-gray-600">부분 미입금</div>
-              </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <div className={`text-2xl font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+              
+              {/* 수익 현황 */}
+              <div className="text-center">
+                <div className={`text-2xl font-bold mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                   {formatPrice(filteredTotals.netProfit)}
                 </div>
                 <div className="text-sm text-gray-600">실제 수익</div>
@@ -832,124 +831,35 @@ export default function Admin() {
           </CardContent>
         </Card>
 
-        {/* 전체 매출 통계 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center bg-eden-red/5">
-              <div className="text-xl font-bold text-eden-red">
-                {formatPrice(stats.totalRevenue)}
-              </div>
-              <div className="text-xs text-gray-600">총 주문 금액</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-green-50">
-              <div className="text-xl font-bold text-green-600">
-                {formatPrice(stats.actualRevenue)}
-              </div>
-              <div className="text-xs text-gray-600">실제 입금 금액</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-blue-50">
-              <div className="text-xl font-bold text-blue-600">
-                {formatPrice(stats.totalDiscounts)}
-              </div>
-              <div className="text-xs text-gray-600">총 할인 금액</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-red-50">
-              <div className="text-xl font-bold text-red-600">
-                {formatPrice(stats.totalPartialUnpaid)}
-              </div>
-              <div className="text-xs text-gray-600">부분 미입금</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-purple-50">
-              <div className="text-xl font-bold text-purple-600">
-                {formatPrice(stats.totalNetProfit)}
-              </div>
-              <div className="text-xs text-gray-600">총 실제 수익</div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* 주문 현황 통계 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center bg-gray-50">
-              <div className="text-2xl font-bold text-gray-600">
-                {stats.total}
-              </div>
-              <div className="text-sm text-gray-600">총 주문 수</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-green-50">
-              <div className="text-2xl font-bold text-green-600">
-                {stats.paidOrders}
-              </div>
-              <div className="text-sm text-gray-600">입금완료 주문</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-orange-50">
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.partialOrders}
-              </div>
-              <div className="text-sm text-gray-600">부분결제 주문</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-blue-50">
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.unpaidOrders}
-              </div>
-              <div className="text-sm text-gray-600">입금대기 주문</div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* 입금완료 주문별 상세 매출 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              입금완료 주문 상세 
-              {dateFilter !== 'all' && (
-                <span className="text-sm font-normal text-gray-500 ml-2">
-                  ({dateFilter === 'today' ? '오늘' :
-                    dateFilter === 'week' ? '최근 7일' :
-                    dateFilter === 'month' ? '최근 30일' :
-                    dateFilter === 'custom' ? '선택 기간' : ''} - {filteredOrders.length}건)
+        {filteredOrders.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>주문 상세 내역</span>
+                <span className="text-sm font-normal text-gray-500">
+                  {filteredOrders.length}건
                 </span>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {filteredOrders.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {dateFilter === 'all' ? '입금완료된 주문이 없습니다.' : '해당 기간에 입금완료된 주문이 없습니다.'}
-              </div>
-            ) : (
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문일</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문내역</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문금액</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">실제입금</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">할인/부분미입금</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">실제수익</th>
+                    <tr className="border-b border-gray-200 text-sm">
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">주문번호</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">고객명</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">주문일</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">할인/미입금</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">실제수익</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredOrders
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort by date descending
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
                       const smallBoxTotal = order.smallBoxQuantity * 19000;
                       const largeBoxTotal = order.largeBoxQuantity * 21000;
@@ -977,55 +887,29 @@ export default function Admin() {
                               )}
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm">
-                            <div className="space-y-1">
-                              {order.smallBoxQuantity > 0 && (
-                                <div className="text-gray-600">소박스: {formatPrice(smallBoxTotal)}</div>
-                              )}
-                              {order.largeBoxQuantity > 0 && (
-                                <div className="text-gray-600">대박스: {formatPrice(largeBoxTotal)}</div>
-                              )}
-                              {order.wrappingQuantity > 0 && (
-                                <div className="text-gray-600">보자기: {formatPrice(wrappingTotal)}</div>
-                              )}
-                              {shippingFee > 0 && (
-                                <div className="text-gray-600">배송비: {formatPrice(shippingFee)}</div>
-                              )}
-                              <div className="font-medium text-eden-red border-t pt-1">
-                                합계: {formatPrice(order.totalAmount)}
-                              </div>
-                            </div>
+                          <td className="py-2 px-3 text-right text-sm font-medium text-green-600">
+                            {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="font-medium text-green-600">
-                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
+                          <td className="py-2 px-3 text-right text-sm">
                             {order.discountAmount && order.discountAmount > 0 ? (
-                              <div className="text-blue-600 font-medium">
-                                할인: -{formatPrice(order.discountAmount)}
-                                {order.discountReason && (
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    사유: {order.discountReason}
-                                  </div>
-                                )}
-                              </div>
+                              <span className="text-blue-600 font-medium">
+                                -{formatPrice(order.discountAmount)}
+                              </span>
                             ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount ? (
-                              <div className="text-red-600 font-medium">
-                                부분미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
-                              </div>
+                              <span className="text-red-600 font-medium">
+                                {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                              </span>
                             ) : (
-                              <span className="text-gray-500">-</span>
+                              <span className="text-gray-400">-</span>
                             )}
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-2 px-3 text-right text-sm">
                             {order.netProfit !== undefined && order.netProfit !== null ? (
-                              <span className={`font-medium ${order.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                              <span className={`font-medium ${order.netProfit >= 0 ? "text-purple-600" : "text-red-600"}`}>
                                 {formatPrice(order.netProfit)}
                               </span>
                             ) : (
-                              <span className="text-gray-500">-</span>
+                              <span className="text-gray-400">-</span>
                             )}
                           </td>
                         </tr>
@@ -1034,9 +918,9 @@ export default function Admin() {
                   </tbody>
                 </table>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   };
