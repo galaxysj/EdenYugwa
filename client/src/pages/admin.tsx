@@ -1346,7 +1346,7 @@ export default function Admin() {
 
   const updatePaymentMutation = useMutation({
     mutationFn: ({ id, paymentStatus, actualPaidAmount, discountReason }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountReason?: string }) => 
-      api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount),
+      api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountReason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({

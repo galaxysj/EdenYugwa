@@ -228,24 +228,15 @@ export class DatabaseStorage implements IStorage {
         // Calculate discount amount (주문금액 - 실입금액)
         const discountAmount = currentOrder.totalAmount - actualPaidAmount;
         
-        console.log(`Payment update for order ${id}:`, {
-          totalAmount: currentOrder.totalAmount,
-          actualPaidAmount,
-          discountAmount,
-          discountReason
-        });
-        
         if (discountAmount > 0) {
           // 부분미입금인지 할인인지 구분
           if (discountReason && discountReason.includes('할인')) {
             // 할인인 경우 - 입금완료로 처리
-            console.log('Processing as discount - setting to confirmed');
             updateData.discountAmount = discountAmount;
             updateData.discountReason = discountReason;
             updateData.paymentStatus = 'confirmed';
           } else {
             // 부분미입금인 경우 - 부분결제로 처리
-            console.log('Processing as partial payment - setting to partial');
             updateData.discountAmount = 0;
             updateData.discountReason = discountReason || `부분미입금 (미입금: ${discountAmount.toLocaleString()}원)`;
             updateData.paymentStatus = 'partial';
