@@ -1377,13 +1377,13 @@ export default function Admin() {
                             <SelectItem value="pending">
                               <div className="flex items-center space-x-2">
                                 <AlertCircle className="h-4 w-4 text-orange-500" />
-                                <span>입금 대기</span>
+                                <span>입금대기</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="confirmed">
                               <div className="flex items-center space-x-2">
                                 <DollarSign className="h-4 w-4 text-green-500" />
-                                <span>입금 완료</span>
+                                <span>입금완료</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="partial">
@@ -1611,13 +1611,13 @@ export default function Admin() {
                             <SelectItem value="pending">
                               <div className="flex items-center space-x-2">
                                 <AlertCircle className="h-4 w-4 text-orange-500" />
-                                <span>입금 대기</span>
+                                <span>입금대기</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="confirmed">
                               <div className="flex items-center space-x-2">
                                 <DollarSign className="h-4 w-4 text-green-500" />
-                                <span>입금 완료</span>
+                                <span>입금완료</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="partial">
