@@ -179,7 +179,8 @@ function FinancialDialog({ order }: { order: Order }) {
 
 
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined | null) => {
+    if (price === undefined || price === null || isNaN(price)) return '0원';
     return new Intl.NumberFormat('ko-KR').format(price) + '원';
   };
 
@@ -1220,7 +1221,10 @@ export default function Admin() {
     }
   };
 
-  const formatPrice = (price: number) => `${price.toLocaleString()}원`;
+  const formatPrice = (price: number | undefined | null) => {
+    if (price === undefined || price === null || isNaN(price)) return '0원';
+    return `${price.toLocaleString()}원`;
+  };
 
 
 
@@ -1343,50 +1347,7 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* Revenue Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <Card>
-            <CardContent className="p-4 text-center bg-eden-red/5">
-              <div className="text-xl sm:text-2xl font-bold text-eden-red">
-                {formatPrice(stats.totalRevenue)}
-              </div>
-              <div className="text-sm text-gray-600">총 주문 금액</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-green-50">
-              <div className="text-xl sm:text-2xl font-bold text-green-600">
-                {formatPrice(stats.actualRevenue)}
-              </div>
-              <div className="text-sm text-gray-600">실제 입금 금액</div>
-              <div className="text-xs text-gray-500 mt-1">
-                수입률: {stats.totalRevenue > 0 ? Math.round((stats.actualRevenue / stats.totalRevenue) * 100) : 0}%
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-blue-50">
-              <div className="text-xl sm:text-2xl font-bold text-blue-600">
-                {formatPrice(stats.totalDiscounts)}
-              </div>
-              <div className="text-sm text-gray-600">총 할인 금액</div>
-              <div className="text-xs text-gray-500 mt-1">
-                할인률: {stats.totalRevenue > 0 ? Math.round((stats.totalDiscounts / stats.totalRevenue) * 100) : 0}%
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-purple-50">
-              <div className={`text-xl sm:text-2xl font-bold ${stats.totalProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                {formatPrice(stats.totalProfit)}
-              </div>
-              <div className="text-sm text-gray-600">총 수익</div>
-              <div className="text-xs text-gray-500 mt-1">
-                수익률: {stats.actualRevenue > 0 ? Math.round((stats.totalProfit / stats.actualRevenue) * 100) : 0}%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
 
         {/* Orders List with Tabs */}
         <Card>
@@ -1469,69 +1430,7 @@ export default function Admin() {
         </Card>
       </div>
 
-      {/* 입금확인 다이얼로그 */}
-      <Dialog open={showPaymentConfirmDialog} onOpenChange={setShowPaymentConfirmDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>입금 확인</DialogTitle>
-            <DialogDescription>
-              실제 입금된 금액을 입력해주세요. 매출 관리에 자동으로 반영됩니다.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {paymentConfirmOrder && (
-            <div className="space-y-4">
-              <div className="p-4 bg-gray-50 rounded-md">
-                <div className="text-sm space-y-1">
-                  <div><strong>주문번호:</strong> {paymentConfirmOrder.orderNumber}</div>
-                  <div><strong>고객명:</strong> {paymentConfirmOrder.customerName}</div>
-                  <div><strong>주문금액:</strong> {formatPrice(paymentConfirmOrder.totalAmount)}</div>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="actualPaidAmount">실제 입금금액</Label>
-                <Input
-                  id="actualPaidAmount"
-                  type="number"
-                  placeholder="실제 입금된 금액을 입력하세요"
-                  value={paymentConfirmOrder ? (actualPaidAmounts[paymentConfirmOrder.id] || '') : ''}
-                  onChange={(e) => paymentConfirmOrder && setActualPaidAmounts(prev => ({
-                    ...prev,
-                    [paymentConfirmOrder.id]: e.target.value
-                  }))}
-                />
-              </div>
-              
-              <div className="text-xs text-gray-500">
-                <div>계좌: 농협 352-1701-3342-63 (예금주: 손*진)</div>
-                <div>입금금액이 주문금액과 다를 경우 할인금액이 자동 계산됩니다.</div>
-              </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setShowPaymentConfirmDialog(false);
-                    setPaymentConfirmOrder(null);
-                  }}
-                  className="flex-1"
-                >
-                  취소
-                </Button>
-                <Button 
-                  onClick={() => handlePaymentConfirm()}
-                  disabled={confirmPaymentMutation.isPending}
-                  className="flex-1"
-                >
-                  {confirmPaymentMutation.isPending ? "처리 중..." : "입금 확인"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
