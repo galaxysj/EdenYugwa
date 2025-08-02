@@ -1687,10 +1687,10 @@ export default function Admin() {
                         </div>
                         <div>
                           {order.discountAmount && order.discountAmount > 0 && (
-                            <span className="text-blue-600">할인: -{formatPrice(order.discountAmount)}</span>
+                            <span className="text-blue-600">할인: -{formatPrice(Math.abs(order.discountAmount))}</span>
                           )}
                           {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.totalAmount - order.actualPaidAmount > 0 && (
-                            <span className="text-red-600">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</span>
+                            <span className="text-red-600">미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}</span>
                           )}
                           {(!order.discountAmount || order.discountAmount === 0) && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount || order.totalAmount - order.actualPaidAmount === 0) && (
                             <span className="text-gray-400">-</span>
@@ -1973,12 +1973,12 @@ export default function Admin() {
                         <div className="text-xs space-y-1">
                           {order.discountAmount && order.discountAmount > 0 && (
                             <div className="text-blue-600 text-center">
-                              할인: -{formatPrice(order.discountAmount)}
+                              할인: -{formatPrice(Math.abs(order.discountAmount))}
                             </div>
                           )}
-                          {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
+                          {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.totalAmount - order.actualPaidAmount > 0 && (
                             <div className="text-red-600 text-center">
-                              미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                              미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
                             </div>
                           )}
                           {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
@@ -2238,8 +2238,8 @@ export default function Admin() {
   };
 
   const formatPrice = (price: number | undefined | null) => {
-    if (price === undefined || price === null || isNaN(price)) return '0원';
-    return `${price.toLocaleString()}원`;
+    if (price === undefined || price === null || isNaN(price) || price < 0) return '0원';
+    return `${Math.round(price).toLocaleString()}원`;
   };
 
 
