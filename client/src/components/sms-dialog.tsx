@@ -37,7 +37,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
     defaultValues: {
-      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 곧 발송예정입니다.`,
+      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다.`,
     },
   });
 
@@ -102,7 +102,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
       const shippingDate = order.scheduledDate ? 
         new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : 
         '곧';
-      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 ${shippingDate} 발송예정입니다.`);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다.`);
     } else {
       form.setValue('message', `[에덴한과] ${order.customerName}님께 개별 안내드립니다.`);
     }
