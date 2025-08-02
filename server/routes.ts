@@ -201,6 +201,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update order seller shipped status
+  app.patch("/api/orders/:id/seller-shipped", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { sellerShipped, sellerShippedDate } = req.body;
+      
+      const updatedOrder = await storage.updateOrderSellerShipped(
+        id, 
+        sellerShipped,
+        sellerShippedDate ? new Date(sellerShippedDate) : null
+      );
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update seller shipped status" });
+    }
+  });
+
   // Update payment status with actual paid amount
   app.patch("/api/orders/:id/payment", async (req, res) => {
     try {

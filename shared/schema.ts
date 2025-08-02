@@ -36,6 +36,8 @@ export const orders = pgTable("orders", {
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'scheduled', 'shipping', 'delivered'
   scheduledDate: timestamp("scheduled_date"),
   deliveredDate: timestamp("delivered_date"), // 발송완료 날짜
+  sellerShipped: boolean("seller_shipped").default(false),
+  sellerShippedDate: timestamp("seller_shipped_date"),
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
   paymentConfirmedAt: timestamp("payment_confirmed_at"),
   isDeleted: boolean("is_deleted").notNull().default(false),

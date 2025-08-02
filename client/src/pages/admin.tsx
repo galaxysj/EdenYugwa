@@ -1591,6 +1591,7 @@ export default function Admin() {
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
@@ -1828,6 +1829,20 @@ export default function Admin() {
                           title="클릭하여 발송완료일 수정"
                         >
                           {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      {order.sellerShipped ? (
+                        <div className="text-green-600 font-medium text-xs">
+                          판매자발송완료
+                          {order.sellerShippedDate && (
+                            <div className="text-gray-500 mt-1">
+                              {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <span className="text-xs text-gray-400">-</span>

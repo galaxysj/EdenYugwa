@@ -425,6 +425,28 @@ function Manager() {
     },
   });
 
+  const updateSellerShippedMutation = useMutation({
+    mutationFn: ({ id, sellerShipped }: { id: number; sellerShipped: boolean }) =>
+      api.patch(`/api/orders/${id}/seller-shipped`, { 
+        sellerShipped, 
+        sellerShippedDate: sellerShipped ? new Date().toISOString() : null 
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "판매자 발송 상태 변경 완료",
+        description: "판매자 발송 상태가 성공적으로 변경되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "판매자 발송 상태 변경 실패",
+        description: "판매자 발송 상태 변경에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Logout function
   const logout = () => {
     // Clear any stored authentication data
@@ -674,6 +696,7 @@ function Manager() {
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
@@ -807,6 +830,25 @@ function Manager() {
                           })
                         }
                       />
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <Button
+                        size="sm"
+                        variant={order.sellerShipped ? "default" : "outline"}
+                        className={`h-7 text-xs ${order.sellerShipped ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                        onClick={() => updateSellerShippedMutation.mutate({ 
+                          id: order.id, 
+                          sellerShipped: !order.sellerShipped 
+                        })}
+                        disabled={updateSellerShippedMutation.isPending}
+                      >
+                        {order.sellerShipped ? '발송완료' : '발송하기'}
+                      </Button>
+                      {order.sellerShippedDate && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </div>
+                      )}
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex gap-1">
