@@ -109,7 +109,7 @@ Using Drizzle ORM with PostgreSQL:
 
 **Monorepo Structure**: Shared schema definitions between client and server ensure type safety across the full stack.
 
-**Order Number System**: Implemented simplified date-based order number generation using format `[YYMMDD][순서]` where YY is the 2-digit year, MMDD is month and day, and 순서 is the daily sequence number (01, 02, 03...). Example: 25080211 for the 11th order on August 2, 2025. This provides clear chronological organization with compact format. Updated August 2, 2025.
+**Order Number System**: Implemented date-based order number generation using format `YYMMDD-순서` where YY is the 2-digit year, MMDD is month and day, and 순서 is the daily sequence number (1, 2, 3...). Example: 250802-11 for the 11th order on August 2, 2025. This provides clear chronological organization with readable hyphen separator. Updated August 2, 2025.
 
 **Depositor Information System**: Added functionality to separate orderer and depositor information when they differ. Order forms now include a "예금자가 다릅니다" checkbox that reveals a depositor name field when checked. The admin panel displays depositor information alongside order details but hides the checkbox interface for cleaner management views. This allows for better tracking when payment is made by someone other than the orderer. Updated August 2, 2025.
 

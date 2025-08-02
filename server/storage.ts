@@ -124,8 +124,7 @@ export class DatabaseStorage implements IStorage {
     
     // Keep trying until we find a unique order number
     while (!isUnique) {
-      const paddedSequence = sequenceNumber.toString().padStart(2, '0');
-      orderNumber = `${dateStr}${paddedSequence}`;
+      orderNumber = `${dateStr}-${sequenceNumber}`;
       
       // Check if this order number already exists
       const existingOrder = await db.select()
