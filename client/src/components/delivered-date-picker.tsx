@@ -75,7 +75,7 @@ export function DeliveredDatePicker({ order }: DeliveredDatePickerProps) {
         <Button 
           size="sm" 
           variant="outline" 
-          className="flex items-center gap-1 h-7 text-xs px-2 border-green-300 text-green-700 hover:bg-green-50"
+          className="delivered-date-trigger flex items-center gap-1 h-7 text-xs px-2 border-green-300 text-green-700 hover:bg-green-50"
         >
           <Calendar className="h-3 w-3" />
           발송완료일 수정

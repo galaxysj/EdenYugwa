@@ -1277,7 +1277,7 @@ export default function Admin() {
               {ordersList.map((order: Order) => {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50" data-order-id={order.id}>
                     <td className="py-3 px-3 text-center">
                       <input
                         type="checkbox"
@@ -1440,7 +1440,16 @@ export default function Admin() {
                           </SelectContent>
                         </Select>
                         {order.status === 'delivered' && order.deliveredDate && (
-                          <div className="text-xs text-green-600 font-medium mt-1">
+                          <div 
+                            className="text-xs text-green-600 font-medium mt-1 cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                            onClick={() => {
+                              const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
+                              if (deliveredDatePicker) {
+                                (deliveredDatePicker as HTMLElement).click();
+                              }
+                            }}
+                            title="클릭하여 발송완료일 수정"
+                          >
                             완료일: {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
                           </div>
                         )}
