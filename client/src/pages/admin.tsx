@@ -1499,7 +1499,7 @@ export default function Admin() {
                 </th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문번호</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">고객명</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">상품</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문내역</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">연락처</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
                 <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
