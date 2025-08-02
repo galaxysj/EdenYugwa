@@ -157,84 +157,27 @@ function CostSettingsDialog() {
 // Financial Dialog Component
 function FinancialDialog({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
-  const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || '');
-  const [discountReason, setDiscountReason] = useState(order.discountReason || '');
 
   const { data: settings } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
   });
   
-  // 할인금액 자동 계산
-  const calculatedDiscount = actualPaidAmount ? 
-    Math.max(0, order.totalAmount - parseInt(actualPaidAmount)) : 
-    (order.discountAmount || 0);
-    
   // 전역 설정에서 원가 가져오기
   const smallCostSetting = settings?.find(s => s.key === "smallBoxCost");
   const largeCostSetting = settings?.find(s => s.key === "largeBoxCost");
   const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
   const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
   
-  // 원가 및 수익 계산
+  // 원가 계산
   const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원 원가
   const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost) + wrappingCost;
-  const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
   const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
   const shippingFee = totalItems >= 6 ? 0 : 4000;
-  
-  // 실제 수익 = 실입금 - 원가 - 보자기 - 배송비 - 할인금액
-  const netProfit = paidAmount - totalCost - shippingFee - calculatedDiscount;
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const updateFinancialMutation = useMutation({
-    mutationFn: async (data: { 
-      actualPaidAmount?: number; 
-      discountAmount?: number; 
-      discountReason?: string;
-    }) => {
-      const response = await fetch(`/api/orders/${order.id}/financial`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to update financial info');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      toast({
-        title: "성공",
-        description: "매출 정보가 업데이트되었습니다.",
-      });
-      setOpen(false);
-    },
-    onError: () => {
-      toast({
-        title: "오류",
-        description: "매출 정보 업데이트에 실패했습니다.",
-        variant: "destructive",
-      });
-    }
-  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const data: any = {};
-    const paidAmount = actualPaidAmount ? parseInt(actualPaidAmount) : 0;
-    
-    if (actualPaidAmount) {
-      data.actualPaidAmount = paidAmount;
-      // 할인금액 자동 계산: 주문금액 - 실입금
-      const calculatedDiscount = order.totalAmount - paidAmount;
-      data.discountAmount = calculatedDiscount > 0 ? calculatedDiscount : 0;
-    }
-    if (discountReason) data.discountReason = discountReason;
-    
-    updateFinancialMutation.mutate(data);
-  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('ko-KR').format(price) + '원';
@@ -258,42 +201,7 @@ function FinancialDialog({ order }: { order: Order }) {
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="actualPaidAmount">실제 입금 금액</Label>
-            <Input
-              id="actualPaidAmount"
-              type="number"
-              placeholder="실제 입금된 금액을 입력하세요"
-              value={actualPaidAmount}
-              onChange={(e) => setActualPaidAmount(e.target.value)}
-            />
-            {actualPaidAmount && (
-              <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
-                <div className="text-sm font-medium text-blue-800">
-                  할인금액 자동 계산: <span className="text-blue-600">{formatPrice(calculatedDiscount)}</span>
-                </div>
-                <div className="text-xs text-blue-600 mt-1">
-                  주문금액 - 실입금 = 할인금액
-                </div>
-                <div className="text-xs text-blue-600">
-                  {formatPrice(order.totalAmount)} - {formatPrice(parseInt(actualPaidAmount))} = {formatPrice(calculatedDiscount)}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>할인 정보</Label>
-            <div className="p-3 bg-gray-50 rounded-md border">
-              <div className="text-sm text-gray-700">
-                할인금액: <span className="font-medium text-blue-600">{formatPrice(calculatedDiscount)}</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                실제 입금 금액을 입력하면 할인금액이 자동으로 계산됩니다.
-              </p>
-            </div>
-          </div>
+        <div className="space-y-4">
 
           <div className="space-y-4 border-t pt-4">
             <Label className="text-base font-semibold">원가 정보</Label>
@@ -336,15 +244,10 @@ function FinancialDialog({ order }: { order: Order }) {
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-600">수익 계산:</div>
-                      <div>실입금: {formatPrice(paidAmount)}</div>
-                      <div>원가: -{formatPrice(totalCost)}</div>
-                      <div>배송비: -{formatPrice(shippingFee)}</div>
-                      <div>할인: -{formatPrice(calculatedDiscount)}</div>
-                      <div className="font-semibold text-green-700 border-t pt-1 mt-1">
-                        실제수익: <span className={netProfit >= 0 ? "text-green-600" : "text-red-600"}>
-                          {formatPrice(netProfit)}
-                        </span>
+                      <div className="text-gray-600">원가 합계:</div>
+                      <div>총 원가: {formatPrice(totalCost)}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        실제 수익 계산을 위해서는 입금상태를 '입금완료'로 변경하세요.
                       </div>
                     </div>
                   </div>
@@ -353,35 +256,15 @@ function FinancialDialog({ order }: { order: Order }) {
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="discountReason">할인 사유</Label>
-            <Textarea
-              id="discountReason"
-              placeholder="할인 사유를 입력하세요 (선택사항)"
-              value={discountReason}
-              onChange={(e) => setDiscountReason(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          <div className="flex gap-2 pt-2">
+          <div className="flex justify-end pt-4">
             <Button 
               type="button" 
-              variant="outline" 
               onClick={() => setOpen(false)}
-              className="flex-1"
             >
-              취소
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={updateFinancialMutation.isPending}
-              className="flex-1"
-            >
-              {updateFinancialMutation.isPending ? "저장 중..." : "저장"}
+              닫기
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -392,9 +275,7 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
-  const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false);
-  const [paymentConfirmOrder, setPaymentConfirmOrder] = useState<Order | null>(null);
-  const [actualPaidAmounts, setActualPaidAmounts] = useState<{[key: number]: string}>({});
+
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
 
   const handleLogout = () => {
@@ -546,7 +427,7 @@ export default function Admin() {
 
   // Render revenue report function
   const renderRevenueReport = () => {
-    const paidOrders = orders.filter((order: Order) => order.paymentStatus === 'confirmed' && order.actualPaidAmount);
+    const paidOrders = orders.filter((order: Order) => order.paymentStatus === 'confirmed');
     
     const handleRevenueExcelDownload = async () => {
       try {
@@ -604,25 +485,25 @@ export default function Admin() {
           <Card>
             <CardContent className="p-4 text-center bg-green-50">
               <div className="text-2xl font-bold text-green-600">
-                {formatPrice(stats.actualRevenue)}
+                {stats.paidOrders}
               </div>
-              <div className="text-sm text-gray-600">실제 입금 금액</div>
+              <div className="text-sm text-gray-600">입금완료 주문</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center bg-blue-50">
               <div className="text-2xl font-bold text-blue-600">
-                {formatPrice(stats.totalDiscounts)}
+                {stats.unpaidOrders}
               </div>
-              <div className="text-sm text-gray-600">총 할인 금액</div>
+              <div className="text-sm text-gray-600">입금대기 주문</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4 text-center bg-purple-50">
-              <div className={`text-2xl font-bold ${stats.totalProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                {formatPrice(stats.totalProfit)}
+              <div className="text-2xl font-bold text-purple-600">
+                {stats.total}
               </div>
-              <div className="text-sm text-gray-600">총 수익</div>
+              <div className="text-sm text-gray-600">총 주문 수</div>
             </CardContent>
           </Card>
         </div>
@@ -647,9 +528,7 @@ export default function Admin() {
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문일</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문내역</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문금액</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">실입금</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">할인</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">수익</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -699,15 +578,13 @@ export default function Admin() {
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4 font-medium text-green-600">
-                            {formatPrice(order.actualPaidAmount || 0)}
-                          </td>
-                          <td className="py-3 px-4 font-medium text-blue-600">
-                            {formatPrice(order.discountAmount || 0)}
-                          </td>
-                          <td className="py-3 px-4 font-medium">
-                            <span className={order.netProfit && order.netProfit >= 0 ? "text-purple-600" : "text-red-600"}>
-                              {formatPrice(order.netProfit || 0)}
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              order.paymentStatus === 'confirmed' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {order.paymentStatus === 'confirmed' ? '입금완료' : '입금대기'}
                             </span>
                           </td>
                         </tr>
@@ -983,44 +860,7 @@ export default function Admin() {
                           </SelectContent>
                         </Select>
                         
-                        {order.paymentStatus === 'confirmed' && !order.actualPaidAmount && (
-                          <div className="space-y-1">
-                            <Input
-                              type="number"
-                              placeholder="실제 입금금액"
-                              value={actualPaidAmounts[order.id] || ''}
-                              onChange={(e) => setActualPaidAmounts(prev => ({
-                                ...prev,
-                                [order.id]: e.target.value
-                              }))}
-                              className="w-32 text-xs"
-                            />
-                            <Button
-                              size="sm"
-                              onClick={() => handlePaymentConfirm(order.id)}
-                              disabled={confirmPaymentMutation.isPending || !actualPaidAmounts[order.id]}
-                              className="w-32 h-6 text-xs"
-                            >
-                              {confirmPaymentMutation.isPending ? "처리중..." : "금액저장"}
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {order.paymentStatus === 'confirmed' && order.actualPaidAmount && (
-                          <div className="space-y-1 text-xs">
-                            <div className="text-red-600 font-medium">
-                              실입금: {formatPrice(order.actualPaidAmount)}
-                            </div>
-                            <div className="text-blue-600 font-medium">
-                              할인: {formatPrice(order.discountAmount || 0)}
-                            </div>
-                            {order.netProfit !== undefined && order.netProfit !== null && (
-                              <div className={order.netProfit >= 0 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
-                                수익: {formatPrice(order.netProfit)}
-                              </div>
-                            )}
-                          </div>
-                        )}
+
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -1335,58 +1175,12 @@ export default function Admin() {
     },
   });
 
-  // 입금확인 및 실제 입금금액 업데이트 뮤테이션
-  const confirmPaymentMutation = useMutation({
-    mutationFn: async ({ id, actualPaidAmount }: { id: number; actualPaidAmount: number }) => {
-      // 입금상태를 confirmed로 변경하고 실제 입금금액 업데이트
-      await api.orders.updatePaymentStatus(id, 'confirmed');
-      
-      // 실제 입금금액을 매출 관리에 업데이트
-      const response = await fetch(`/api/orders/${id}/financial`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ actualPaidAmount })
-      });
-      
-      if (!response.ok) throw new Error('Failed to update actual paid amount');
-      return response.json();
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      setShowPaymentConfirmDialog(false);
-      setPaymentConfirmOrder(null);
-      // 해당 주문의 입금금액 상태 제거
-      setActualPaidAmounts(prev => {
-        const newState = { ...prev };
-        delete newState[variables.id];
-        return newState;
-      });
-      toast({
-        title: "입금 확인 완료",
-        description: "입금이 확인되었고 실제 입금금액이 기록되었습니다.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "업데이트 실패",
-        description: "입금 확인 처리 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
   const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
-    if (newPaymentStatus === 'confirmed') {
-      // 입금완료로 변경할 때는 실제 입금금액 입력 다이얼로그 열기
-      setPaymentConfirmOrder(orders.find((o: Order) => o.id === orderId) || null);
-      setShowPaymentConfirmDialog(true);
-    } else {
-      updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
-    }
+    updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
   };
 
   const handleDeleteOrder = (orderId: number) => {
@@ -1428,38 +1222,9 @@ export default function Admin() {
 
   const formatPrice = (price: number) => `${price.toLocaleString()}원`;
 
-  // 입금확인 핸들러 (개별 주문용)
-  const handlePaymentConfirm = (orderId?: number) => {
-    const targetOrderId = orderId || paymentConfirmOrder?.id;
-    if (!targetOrderId) return;
-    
-    const paidAmountStr = actualPaidAmounts[targetOrderId];
-    if (!paidAmountStr) {
-      toast({
-        title: "입력 오류",
-        description: "실제 입금금액을 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    const paidAmount = parseInt(paidAmountStr);
-    if (paidAmount <= 0) {
-      toast({
-        title: "입력 오류", 
-        description: "올바른 금액을 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    confirmPaymentMutation.mutate({ 
-      id: targetOrderId, 
-      actualPaidAmount: paidAmount 
-    });
-  };
-
-  // Calculate stats including financial data
+  // Calculate stats
   const stats = orders.reduce(
     (acc: any, order: Order) => {
       acc.total++;
@@ -1469,13 +1234,6 @@ export default function Admin() {
       
       // Financial calculations
       acc.totalRevenue += order.totalAmount;
-      acc.actualRevenue += order.actualPaidAmount || 0;
-      acc.totalDiscounts += order.discountAmount || 0;
-      
-      // Total profit calculation
-      if (order.netProfit !== undefined && order.netProfit !== null) {
-        acc.totalProfit += order.netProfit;
-      }
       
       return acc;
     },
@@ -1486,10 +1244,7 @@ export default function Admin() {
       delivered: 0, 
       paidOrders: 0, 
       unpaidOrders: 0,
-      totalRevenue: 0,
-      actualRevenue: 0,
-      totalDiscounts: 0,
-      totalProfit: 0
+      totalRevenue: 0
     }
   );
 
