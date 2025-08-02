@@ -996,7 +996,7 @@ export default function Admin() {
                       const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
                       
                       // Calculate actual costs
-                      const wrappingCost = order.wrappingQuantity * 2000; // 보자기 원가 2,000원
+                      const wrappingCost = order.wrappingQuantity * 1000; // 보자기 원가 1,000원
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
                       const largeBoxesCost = order.largeBoxQuantity * largeCost;
                       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
