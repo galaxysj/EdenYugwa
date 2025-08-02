@@ -429,6 +429,13 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
+  const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
+  const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -436,11 +443,6 @@ export default function Admin() {
     setSelectedOrderItems(new Set());
     setSelectedTrashItems(new Set());
   };
-
-  const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
-  const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
 
   const handleLogout = () => {
     toast({
@@ -632,6 +634,55 @@ export default function Admin() {
   const renderRevenueReport = () => {
     const paidOrders = orders.filter((order: Order) => order.paymentStatus === 'confirmed');
     
+    // Filter orders by date
+    const getFilteredOrders = () => {
+      let filtered = paidOrders;
+      
+      if (dateFilter === 'today') {
+        const today = new Date().toDateString();
+        filtered = paidOrders.filter(order => new Date(order.createdAt).toDateString() === today);
+      } else if (dateFilter === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        filtered = paidOrders.filter(order => new Date(order.createdAt) >= weekAgo);
+      } else if (dateFilter === 'month') {
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        filtered = paidOrders.filter(order => new Date(order.createdAt) >= monthAgo);
+      } else if (dateFilter === 'custom' && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include the entire end date
+        filtered = paidOrders.filter(order => {
+          const orderDate = new Date(order.createdAt);
+          return orderDate >= start && orderDate <= end;
+        });
+      }
+      
+      return filtered;
+    };
+    
+    const filteredOrders = getFilteredOrders();
+    
+    // Calculate totals for filtered orders
+    const filteredTotals = filteredOrders.reduce((acc, order) => {
+      acc.count++;
+      acc.totalAmount += order.totalAmount;
+      acc.actualRevenue += order.actualPaidAmount || order.totalAmount;
+      acc.totalDiscounts += order.discountAmount || 0;
+      acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
+        ? (order.totalAmount - order.actualPaidAmount) : 0;
+      acc.netProfit += order.netProfit || 0;
+      return acc;
+    }, {
+      count: 0,
+      totalAmount: 0,
+      actualRevenue: 0,
+      totalDiscounts: 0,
+      totalPartialUnpaid: 0,
+      netProfit: 0
+    });
+    
     const handleRevenueExcelDownload = async () => {
       try {
         const response = await fetch('/api/export/revenue');
@@ -674,6 +725,112 @@ export default function Admin() {
             매출 엑셀 다운로드
           </Button>
         </div>
+
+        {/* 날짜 필터 */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={dateFilter === 'all' ? 'default' : 'outline'}
+                  onClick={() => setDateFilter('all')}
+                >
+                  전체
+                </Button>
+                <Button
+                  size="sm"
+                  variant={dateFilter === 'today' ? 'default' : 'outline'}
+                  onClick={() => setDateFilter('today')}
+                >
+                  오늘
+                </Button>
+                <Button
+                  size="sm"
+                  variant={dateFilter === 'week' ? 'default' : 'outline'}
+                  onClick={() => setDateFilter('week')}
+                >
+                  최근 7일
+                </Button>
+                <Button
+                  size="sm"
+                  variant={dateFilter === 'month' ? 'default' : 'outline'}
+                  onClick={() => setDateFilter('month')}
+                >
+                  최근 30일
+                </Button>
+                <Button
+                  size="sm"
+                  variant={dateFilter === 'custom' ? 'default' : 'outline'}
+                  onClick={() => setDateFilter('custom')}
+                >
+                  기간 설정
+                </Button>
+              </div>
+              
+              {dateFilter === 'custom' && (
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+                  />
+                  <span className="text-gray-500">~</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+                  />
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 필터링된 매출 총합계 */}
+        <Card className="bg-gradient-to-r from-eden-red/5 to-eden-brown/5 border-2 border-eden-red/20">
+          <CardHeader>
+            <CardTitle className="text-center text-eden-red">
+              📊 매출 총합계 ({dateFilter === 'all' ? '전체 기간' : 
+                dateFilter === 'today' ? '오늘' :
+                dateFilter === 'week' ? '최근 7일' :
+                dateFilter === 'month' ? '최근 30일' :
+                dateFilter === 'custom' && startDate && endDate ? `${startDate} ~ ${endDate}` : '기간 설정'})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-gray-700">{filteredTotals.count}</div>
+                <div className="text-sm text-gray-600">주문 건수</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-eden-red">{formatPrice(filteredTotals.totalAmount)}</div>
+                <div className="text-sm text-gray-600">주문 금액</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                <div className="text-sm text-gray-600">실제 입금</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-blue-600">{formatPrice(filteredTotals.totalDiscounts)}</div>
+                <div className="text-sm text-gray-600">할인 금액</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className="text-2xl font-bold text-red-600">{formatPrice(filteredTotals.totalPartialUnpaid)}</div>
+                <div className="text-sm text-gray-600">부분 미입금</div>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <div className={`text-2xl font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                  {formatPrice(filteredTotals.netProfit)}
+                </div>
+                <div className="text-sm text-gray-600">실제 수익</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 전체 매출 통계 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -758,12 +915,22 @@ export default function Admin() {
         {/* 입금완료 주문별 상세 매출 */}
         <Card>
           <CardHeader>
-            <CardTitle>입금완료 주문 상세</CardTitle>
+            <CardTitle>
+              입금완료 주문 상세 
+              {dateFilter !== 'all' && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  ({dateFilter === 'today' ? '오늘' :
+                    dateFilter === 'week' ? '최근 7일' :
+                    dateFilter === 'month' ? '최근 30일' :
+                    dateFilter === 'custom' ? '선택 기간' : ''} - {filteredOrders.length}건)
+                </span>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {paidOrders.length === 0 ? (
+            {filteredOrders.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                입금완료된 주문이 없습니다.
+                {dateFilter === 'all' ? '입금완료된 주문이 없습니다.' : '해당 기간에 입금완료된 주문이 없습니다.'}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -781,7 +948,9 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paidOrders.map((order: Order) => {
+                    {filteredOrders
+                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sort by date descending
+                      .map((order: Order) => {
                       const smallBoxTotal = order.smallBoxQuantity * 19000;
                       const largeBoxTotal = order.largeBoxQuantity * 21000;
                       const wrappingTotal = order.wrappingQuantity * 1000;
