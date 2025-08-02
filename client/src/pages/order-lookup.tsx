@@ -304,7 +304,7 @@ export default function OrderLookup() {
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  보자기 포장 × {order.wrappingQuantity}개 (+{(order.wrappingQuantity * 1000).toLocaleString()}원)
+                                  보자기 수량 × {order.wrappingQuantity}개 (+{(order.wrappingQuantity * 1000).toLocaleString()}원)
                                 </div>
                               )}
                               {order.shippingFee > 0 && (
