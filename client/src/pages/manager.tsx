@@ -1,512 +1,1087 @@
 import { useState, useEffect } from "react";
+import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users } from "lucide-react";
+import { SmsDialog } from "@/components/sms-dialog";
+import ScheduledDatePicker from "@/components/scheduled-date-picker";
+import { DeliveredDatePicker } from "@/components/delivered-date-picker";
+import { CustomerManagement } from "@/components/customer-management";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
-import { Package, Calendar, User, Phone, MapPin, MessageSquare, FileText, Download, LogOut } from "lucide-react";
+import type { Order } from "@shared/schema";
 
-interface Order {
-  id: number;
-  orderNumber: string;
-  customerName: string;
-  customerPhone: string;
-  zipCode: string;
-  address1: string;
-  address2?: string;
-  smallBoxQuantity: number;
-  largeBoxQuantity: number;
-  wrappingQuantity: number;
-  totalAmount: number;
-  paymentStatus: 'pending' | 'confirmed' | 'refunded';
-  status: 'pending' | 'scheduled' | 'delivered';
-  scheduledDate?: string;
-  specialRequests?: string;
-  createdAt: string;
-}
+const statusLabels = {
+  pending: "주문접수",
+  scheduled: "발송예약",
+  delivered: "발송완료",
+};
 
-const statusOptions = [
-  { value: "pending", label: "배송 준비중", variant: "secondary" as const },
-  { value: "scheduled", label: "배송 예정", variant: "outline" as const },
-  { value: "delivered", label: "배송 완료", variant: "default" as const }
-];
+const statusIcons = {
+  pending: Clock,
+  scheduled: Calendar,
+  delivered: CheckCircle,
+};
 
-const paymentStatusOptions = [
-  { value: "pending", label: "입금 대기", variant: "destructive" as const },
-  { value: "confirmed", label: "입금 완료", variant: "default" as const },
-  { value: "refunded", label: "환불", variant: "secondary" as const }
-];
-
-export default function Manager() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editFormData, setEditFormData] = useState({
-    status: "",
-    paymentStatus: "",
-    scheduledDate: "",
-    specialRequests: ""
-  });
-
+function AdminSettingsDialog() {
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Check authentication on mount
+  
+  const { data: settings } = useQuery({
+    queryKey: ["/api/admin-settings"],
+  });
+  
+  const [adminName, setAdminName] = useState("");
+  const [adminPhone, setAdminPhone] = useState("");
+  const [bankInfo, setBankInfo] = useState("");
+  
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/manager/check");
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch {
-        setIsAuthenticated(false);
-      }
-    };
-    checkAuth();
-  }, []);
-
-  // Login mutation
-  const loginMutation = useMutation({
-    mutationFn: async ({ username, password }: { username: string; password: string }) => {
-      const response = await fetch("/api/manager/login", {
-        method: "POST",
-        body: JSON.stringify({ username, password }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "로그인에 실패했습니다");
-      }
-      
-      return response.json();
+    if (settings) {
+      setAdminName(settings?.adminName || "");
+      setAdminPhone(settings?.adminPhone || "");
+      setBankInfo(settings?.bankInfo || "");
+    }
+  }, [settings]);
+  
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data: { adminName: string; adminPhone: string; bankInfo: string }) => {
+      return await api.patch("/api/admin-settings", data);
     },
     onSuccess: () => {
-      setIsAuthenticated(true);
-      setLoginError("");
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-settings"] });
       toast({
-        title: "로그인 성공",
-        description: "매니저 페이지에 접속했습니다.",
+        title: "설정 저장 완료",
+        description: "관리자 설정이 업데이트되었습니다.",
+      });
+      setOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "설정 저장 실패",
+        description: "설정 업데이트에 실패했습니다.",
+        variant: "destructive",
       });
     },
-    onError: (error: any) => {
-      setLoginError(error.message || "로그인에 실패했습니다.");
-    },
   });
+  
+  const handleSave = () => {
+    updateSettingsMutation.mutate({
+      adminName,
+      adminPhone,
+      bankInfo,
+    });
+  };
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-2">
+          <Settings className="h-4 w-4" />
+          관리자 설정
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>관리자 설정</DialogTitle>
+          <DialogDescription>
+            관리자 정보와 계좌 정보를 설정합니다.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="admin-name">관리자명</Label>
+            <Input
+              id="admin-name"
+              value={adminName}
+              onChange={(e) => setAdminName(e.target.value)}
+              placeholder="관리자 이름"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="admin-phone">연락처</Label>
+            <Input
+              id="admin-phone"
+              value={adminPhone}
+              onChange={(e) => setAdminPhone(e.target.value)}
+              placeholder="010-0000-0000"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="bank-info">계좌 정보</Label>
+            <Textarea
+              id="bank-info"
+              value={bankInfo}
+              onChange={(e) => setBankInfo(e.target.value)}
+              placeholder="예: 농협 123-456-789012 홍길동"
+              rows={3}
+            />
+          </div>
+        </div>
+        
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            취소
+          </Button>
+          <Button onClick={handleSave} disabled={updateSettingsMutation.isPending}>
+            {updateSettingsMutation.isPending ? "저장 중..." : "저장"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
-  // Fetch orders
+function Manager() {
+  const [activeTab, setActiveTab] = useState("orders");
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Filter states
+  const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
+  const [orderStartDate, setOrderStartDate] = useState<string>('');
+  const [orderEndDate, setOrderEndDate] = useState<string>('');
+  const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
+
+  // Clear selections when switching tabs
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    setSelectedOrderItems(new Set());
+    setSelectedTrashItems(new Set());
+  };
+
+  // Bulk selection states
+  const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
+  const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
+
+  // Bulk action states
+  const [showBulkActionsDialog, setShowBulkActionsDialog] = useState(false);
+  const [showBulkSMSDialog, setShowBulkSMSDialog] = useState(false);
+  const [bulkSMSMessage, setBulkSMSMessage] = useState("");
+
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
-    enabled: isAuthenticated,
+    refetchInterval: 5000,
   });
 
-  // Update order mutation
-  const updateOrderMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: number; updates: any }) => {
-      const response = await fetch(`/api/orders/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates),
-        headers: {
-          "Content-Type": "application/json",
-        },
+  const { data: deletedOrders = [] } = useQuery<Order[]>({
+    queryKey: ["/api/orders/trash"],
+  });
+
+  // Filter orders for main list with multiple criteria
+  const getFilteredOrdersList = (ordersList: Order[]) => {
+    let filtered = ordersList;
+
+    // Date filter
+    if (orderDateFilter === 'today') {
+      const today = new Date().toDateString();
+      filtered = filtered.filter(order => new Date(order.createdAt).toDateString() === today);
+    } else if (orderDateFilter === 'week') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      filtered = filtered.filter(order => new Date(order.createdAt) >= weekAgo);
+    } else if (orderDateFilter === 'month') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      filtered = filtered.filter(order => new Date(order.createdAt) >= monthAgo);
+    } else if (orderDateFilter === 'custom' && orderStartDate && orderEndDate) {
+      const start = new Date(orderStartDate);
+      const end = new Date(orderEndDate);
+      end.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= start && orderDate <= end;
       });
-      
-      if (!response.ok) {
-        throw new Error("주문 업데이트에 실패했습니다");
-      }
-      
-      return response.json();
+    }
+
+    // Customer name filter
+    if (customerNameFilter.trim()) {
+      filtered = filtered.filter(order => 
+        order.customerName.toLowerCase().includes(customerNameFilter.toLowerCase().trim())
+      );
+    }
+
+    // Payment status filter
+    if (paymentStatusFilter !== 'all') {
+      filtered = filtered.filter(order => order.paymentStatus === paymentStatusFilter);
+    }
+
+    // Order status filter
+    if (orderStatusFilter !== 'all') {
+      filtered = filtered.filter(order => order.status === orderStatusFilter);
+    }
+
+    return filtered;
+  };
+
+  // Sort orders function
+  const sortOrders = (ordersList: Order[]) => {
+    const sorted = [...ordersList];
+    
+    if (sortOrder === 'latest') {
+      // Latest first
+      return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortOrder === 'oldest') {
+      // Oldest first
+      return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortOrder === 'delivery-date') {
+      // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
+      return sorted.sort((a, b) => {
+        // Orders without delivery date go to top
+        if (!a.deliveredDate && b.deliveredDate) return -1;
+        if (a.deliveredDate && !b.deliveredDate) return 1;
+        
+        // Both have delivery dates - sort by delivery date (earliest first)
+        if (a.deliveredDate && b.deliveredDate) {
+          return new Date(a.deliveredDate).getTime() - new Date(b.deliveredDate).getTime();
+        }
+        
+        // Neither has delivery date - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'scheduled-date') {
+      // Sort by scheduled date: orders without scheduled date first, then by scheduled date (earliest first)
+      return sorted.sort((a, b) => {
+        // Orders without scheduled date go to top
+        if (!a.scheduledDate && b.scheduledDate) return -1;
+        if (a.scheduledDate && !b.scheduledDate) return 1;
+        
+        // Both have scheduled dates - sort by scheduled date (earliest first)
+        if (a.scheduledDate && b.scheduledDate) {
+          return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+        }
+        
+        // Neither has scheduled date - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'order-status') {
+      // Sort by order status: pending -> scheduled -> delivered
+      return sorted.sort((a, b) => {
+        const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+        const aPriority = statusPriority[a.status as keyof typeof statusPriority] || 999;
+        const bPriority = statusPriority[b.status as keyof typeof statusPriority] || 999;
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // Same status - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'payment-status') {
+      // Sort by payment status: pending -> partial -> confirmed -> refunded
+      return sorted.sort((a, b) => {
+        const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
+        const aPriority = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 999;
+        const bPriority = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 999;
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // Same payment status - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'order-number') {
+      // Sort by order number (earliest first)
+      return sorted.sort((a, b) => {
+        const aNum = parseInt(a.orderNumber.split('-')[1] || '0');
+        const bNum = parseInt(b.orderNumber.split('-')[1] || '0');
+        return aNum - bNum;
+      });
+    }
+    
+    return sorted;
+  };
+
+  // Apply filters and sorting
+  const filteredOrders = getFilteredOrdersList(orders);
+  const allOrders = sortOrders(filteredOrders);
+
+  // SMS mutation
+  const sendSMSMutation = useMutation({
+    mutationFn: ({ phone, message }: { phone: string; message: string }) =>
+      api.post("/api/sms/send", { phone, message }),
+    onSuccess: () => {
+      toast({
+        title: "SMS 발송 완료",
+        description: "메시지가 성공적으로 발송되었습니다.",
+      });
     },
+    onError: () => {
+      toast({
+        title: "SMS 발송 실패",
+        description: "메시지 발송에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk SMS mutation
+  const sendBulkSMSMutation = useMutation({
+    mutationFn: ({ phones, message }: { phones: string[]; message: string }) =>
+      api.post("/api/sms/bulk-send", { phones, message }),
+    onSuccess: () => {
+      toast({
+        title: "일괄 SMS 발송 완료",
+        description: "선택된 고객들에게 메시지가 발송되었습니다.",
+      });
+      setShowBulkSMSDialog(false);
+      setBulkSMSMessage("");
+      setSelectedOrderItems(new Set());
+    },
+    onError: () => {
+      toast({
+        title: "일괄 SMS 발송 실패",
+        description: "메시지 발송에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Order status mutations
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      api.patch(`/api/orders/${id}/status`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      setIsEditDialogOpen(false);
       toast({
-        title: "주문 정보 업데이트",
-        description: "주문 정보가 성공적으로 업데이트되었습니다.",
+        title: "주문 상태 변경 완료",
+        description: "주문 상태가 성공적으로 변경되었습니다.",
       });
     },
     onError: () => {
       toast({
-        title: "업데이트 실패",
-        description: "주문 정보 업데이트에 실패했습니다.",
+        title: "주문 상태 변경 실패",
+        description: "주문 상태 변경에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
 
-  // SMS notification mutation
-  const sendSmsNotificationMutation = useMutation({
-    mutationFn: async ({ orderId, message, recipient }: { orderId: number; message: string; recipient: string }) => {
-      const response = await fetch("/api/sms-notifications", {
-        method: "POST",
-        body: JSON.stringify({ orderId, message, recipient }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error("SMS 전송에 실패했습니다");
-      }
-      
-      return response.json();
-    },
+  const updateScheduledDateMutation = useMutation({
+    mutationFn: ({ id, scheduledDate }: { id: number; scheduledDate: string | null }) =>
+      api.patch(`/api/orders/${id}/scheduled-date`, { scheduledDate }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       toast({
-        title: "SMS 알림 전송",
-        description: "SMS 알림이 성공적으로 전송되었습니다.",
+        title: "예약 발송일 변경 완료",
+        description: "예약 발송일이 성공적으로 변경되었습니다.",
       });
     },
     onError: () => {
       toast({
-        title: "SMS 전송 실패",
-        description: "SMS 알림 전송에 실패했습니다.",
+        title: "예약 발송일 변경 실패",
+        description: "예약 발송일 변경에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
 
-  // Excel export
-  const handleExcelExport = () => {
-    const url = "/api/orders/export/excel";
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `한과주문관리_${format(new Date(), "yyyy-MM-dd")}.xlsx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const updateDeliveredDateMutation = useMutation({
+    mutationFn: ({ id, deliveredDate }: { id: number; deliveredDate: string | null }) =>
+      api.patch(`/api/orders/${id}/delivered-date`, { deliveredDate }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "발송일 변경 완료",
+        description: "발송일이 성공적으로 변경되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "발송일 변경 실패",
+        description: "발송일 변경에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Logout function
+  const logout = () => {
+    // Clear any stored authentication data
+    localStorage.removeItem('manager-auth');
+    // Redirect to login
+    setLocation('/manager-login');
   };
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setLoginError("아이디와 비밀번호를 입력해주세요.");
-      return;
+  // Bulk selection functions
+  const toggleOrderSelection = (orderId: number) => {
+    const newSelected = new Set(selectedOrderItems);
+    if (newSelected.has(orderId)) {
+      newSelected.delete(orderId);
+    } else {
+      newSelected.add(orderId);
     }
-    loginMutation.mutate({ username, password });
+    setSelectedOrderItems(newSelected);
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setUsername("");
-    setPassword("");
-    toast({
-      title: "로그아웃",
-      description: "성공적으로 로그아웃되었습니다.",
-    });
+  const selectAllOrders = (ordersList: Order[]) => {
+    const allIds = new Set(ordersList.map(order => order.id));
+    setSelectedOrderItems(allIds);
   };
 
-  const openEditDialog = (order: Order) => {
-    setSelectedOrder(order);
-    setEditFormData({
-      status: order.status,
-      paymentStatus: order.paymentStatus,
-      scheduledDate: order.scheduledDate ? format(new Date(order.scheduledDate), "yyyy-MM-dd") : "",
-      specialRequests: order.specialRequests || ""
-    });
-    setIsEditDialogOpen(true);
+  // Clear all filters
+  const clearAllFilters = () => {
+    setOrderDateFilter('all');
+    setOrderStartDate('');
+    setOrderEndDate('');
+    setCustomerNameFilter('');
+    setPaymentStatusFilter('all');
+    setOrderStatusFilter('all');
+    setSortOrder('latest');
   };
 
-  const handleUpdateOrder = () => {
-    if (!selectedOrder) return;
+  // Render filter UI
+  const renderOrderFilters = () => (
+    <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+        {/* Date Filter - Simplified */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'all' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('all')}
+              className="flex-1 h-8 text-xs"
+            >
+              전체
+            </Button>
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'today' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('today')}
+              className="flex-1 h-8 text-xs"
+            >
+              오늘
+            </Button>
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'week' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('week')}
+              className="flex-1 h-8 text-xs"
+            >
+              7일
+            </Button>
+          </div>
+          {orderDateFilter === 'custom' && (
+            <div className="flex gap-1 mt-2">
+              <input
+                type="date"
+                value={orderStartDate}
+                onChange={(e) => setOrderStartDate(e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-xs"
+              />
+              <input
+                type="date"
+                value={orderEndDate}
+                onChange={(e) => setOrderEndDate(e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-xs"
+              />
+            </div>
+          )}
+        </div>
 
-    const updates: any = {
-      status: editFormData.status,
-      paymentStatus: editFormData.paymentStatus,
-      specialRequests: editFormData.specialRequests || null,
-    };
+        {/* Customer Name Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">고객명</label>
+          <input
+            type="text"
+            placeholder="고객명 검색"
+            value={customerNameFilter}
+            onChange={(e) => setCustomerNameFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          />
+        </div>
 
-    if (editFormData.scheduledDate) {
-      updates.scheduledDate = new Date(editFormData.scheduledDate).toISOString();
-    }
+        {/* Payment Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">입금상태</label>
+          <select
+            value={paymentStatusFilter}
+            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          >
+            <option value="all">전체</option>
+            <option value="pending">입금대기</option>
+            <option value="confirmed">입금완료</option>
+            <option value="partial">부분결제</option>
+            <option value="refunded">환불</option>
+          </select>
+        </div>
 
-    updateOrderMutation.mutate({
-      id: selectedOrder.id,
-      updates,
-    });
-  };
-
-  const handleSendStatusUpdate = (order: Order) => {
-    const statusText = statusOptions.find(opt => opt.value === order.status)?.label || order.status;
-    const message = `[에덴한과] ${order.customerName}님의 주문 상태가 "${statusText}"로 변경되었습니다. 주문번호: ${order.orderNumber}`;
-    
-    sendSmsNotificationMutation.mutate({
-      orderId: order.id,
-      message,
-      recipient: order.customerPhone,
-    });
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-amber-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-amber-800">매니저 로그인</CardTitle>
-            <CardDescription>주문 관리 시스템에 접속하세요</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">아이디</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="아이디를 입력하세요"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">비밀번호</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="비밀번호를 입력하세요"
-                  required
-                />
-              </div>
-              {loginError && (
-                <div className="text-red-600 text-sm text-center">{loginError}</div>
-              )}
-              <Button
-                type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-700"
-                disabled={loginMutation.isPending}
-              >
-                {loginMutation.isPending ? "로그인 중..." : "로그인"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        {/* Order Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
+          <select
+            value={orderStatusFilter}
+            onChange={(e) => setOrderStatusFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          >
+            <option value="all">전체</option>
+            <option value="pending">접수대기</option>
+            <option value="scheduled">발송예약</option>
+            <option value="delivered">발송완료</option>
+          </select>
+        </div>
       </div>
+      
+      {/* Sort Options */}
+      <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">정렬:</span>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant={sortOrder === 'latest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('latest')}
+                className="h-7 text-xs"
+              >
+                최신순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'oldest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('oldest')}
+                className="h-7 text-xs"
+              >
+                오래된순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'delivery-date' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('delivery-date')}
+                className="h-7 text-xs"
+              >
+                발송일순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'scheduled-date' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('scheduled-date')}
+                className="h-7 text-xs"
+              >
+                예약발송일순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'order-status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('order-status')}
+                className="h-7 text-xs"
+              >
+                주문상태순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'payment-status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('payment-status')}
+                className="h-7 text-xs"
+              >
+                입금상태순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'order-number' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('order-number')}
+                className="h-7 text-xs"
+              >
+                주문접수순
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="text-xs text-gray-600">
+              검색결과: <span className="font-medium text-gray-900">{allOrders.length}건</span>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={clearAllFilters}
+              className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
+            >
+              초기화
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render orders function
+  const renderOrdersList = (ordersList: Order[]) => {
+    if (ordersList.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          해당하는 주문이 없습니다.
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {/* Desktop Table */}
+        <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr className="border-b border-gray-200">
+                <th className="w-8 py-2 px-2 text-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrderItems.size === ordersList.length && ordersList.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        selectAllOrders(ordersList);
+                      } else {
+                        setSelectedOrderItems(new Set());
+                      }
+                    }}
+                    className="rounded border-gray-300"
+                  />
+                </th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">예금자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ordersList.map((order: Order) => {
+                const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+                return (
+                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50" data-order-id={order.id}>
+                    <td className="py-2 px-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderItems.has(order.id)}
+                        onChange={() => toggleOrderSelection(order.id)}
+                        className="rounded border-gray-300"
+                      />
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
+                      <div className="text-xs text-gray-500">
+                        <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                        <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
+                      {order.scheduledDate && (
+                        <div className="text-red-600 font-bold text-xs">
+                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </div>
+                      )}
+                      {order.status === 'scheduled' && !order.scheduledDate && (
+                        <div className="text-orange-600 font-bold text-xs">예약 대기</div>
+                      )}
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                      {order.recipientName && order.recipientName !== order.customerName && (
+                        <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                      )}
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-xs">
+                        {order.isDifferentDepositor && order.depositorName ? (
+                          <span className="text-red-600">{order.depositorName}</span>
+                        ) : (
+                          <span className="text-gray-500">{order.customerName}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-2 px-2 min-w-[80px]">
+                      <div className="text-xs space-y-1">
+                        {order.smallBoxQuantity > 0 && (
+                          <div>한과1호×{order.smallBoxQuantity}개</div>
+                        )}
+                        {order.largeBoxQuantity > 0 && (
+                          <div>한과2호×{order.largeBoxQuantity}개</div>
+                        )}
+                        {order.wrappingQuantity > 0 && (
+                          <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="text-xs text-gray-900">{order.customerPhone}</div>
+                    </td>
+                    <td className="py-2 px-2 max-w-xs">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="p-0 h-auto text-xs text-left justify-start max-w-[150px] truncate">
+                            {order.address1} {order.address2}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>주문 #{order.orderNumber} 배송 주소</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-2">
+                            <div>
+                              <strong>우편번호:</strong> {order.zipCode}
+                            </div>
+                            <div>
+                              <strong>주소:</strong> {order.address1}
+                            </div>
+                            <div>
+                              <strong>상세주소:</strong> {order.address2}
+                            </div>
+
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        order.paymentStatus === 'confirmed' 
+                          ? 'bg-green-100 text-green-800' 
+                          : order.paymentStatus === 'partial'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : order.paymentStatus === 'refunded'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {order.paymentStatus === 'confirmed' ? '입금완료' :
+                         order.paymentStatus === 'partial' ? '부분결제' :
+                         order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <Select
+                        value={order.status}
+                        onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                      >
+                        <SelectTrigger className="w-24 h-7 text-xs">
+                          <div className="flex items-center gap-1">
+                            <StatusIcon className="h-3 w-3" />
+                            <SelectValue />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="scheduled">발송예약</SelectItem>
+                          <SelectItem value="delivered">발송완료</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <ScheduledDatePicker
+                        order={order}
+                        onDateChange={(date: string | null) => 
+                          updateScheduledDateMutation.mutate({ 
+                            id: order.id, 
+                            scheduledDate: date 
+                          })
+                        }
+                      />
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <DeliveredDatePicker
+                        order={order}
+                        onDateChange={(date: string | null) => 
+                          updateDeliveredDateMutation.mutate({ 
+                            id: order.id, 
+                            deliveredDate: date 
+                          })
+                        }
+                      />
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <div className="flex gap-1">
+                        <SmsDialog
+                          customerPhone={order.customerPhone}
+                          customerName={order.customerName}
+                          onSendSMS={(phone: string, message: string) => sendSMSMutation.mutate({ phone, message })}
+                        >
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <span className="text-xs">SMS</span>
+                          </Button>
+                        </SmsDialog>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden space-y-4">
+          {ordersList.map((order: Order) => {
+            const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+            return (
+              <Card key={order.id} className="relative">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="font-semibold text-gray-900">#{order.orderNumber}</div>
+                      <div className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={selectedOrderItems.has(order.id)}
+                      onChange={() => toggleOrderSelection(order.id)}
+                      className="rounded border-gray-300"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 mb-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">주문자: </span>
+                      <span className="text-sm">{order.customerName}</span>
+                    </div>
+                    
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">연락처: </span>
+                      <span className="text-sm">{order.customerPhone}</span>
+                    </div>
+                    
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">주문내역: </span>
+                      <div className="text-sm">
+                        {order.smallBoxQuantity > 0 && <div>한과1호×{order.smallBoxQuantity}개</div>}
+                        {order.largeBoxQuantity > 0 && <div>한과2호×{order.largeBoxQuantity}개</div>}
+                        {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">배송주소: </span>
+                      <span className="text-sm">{order.address1} {order.address2}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      order.paymentStatus === 'confirmed' 
+                        ? 'bg-green-100 text-green-800' 
+                        : order.paymentStatus === 'partial'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : order.paymentStatus === 'refunded'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {order.paymentStatus === 'confirmed' ? '입금완료' :
+                       order.paymentStatus === 'partial' ? '부분결제' :
+                       order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
+                    </span>
+                    
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      order.status === 'delivered' 
+                        ? 'bg-green-100 text-green-800' 
+                        : order.status === 'scheduled'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      <StatusIcon className="h-3 w-3 mr-1" />
+                      {statusLabels[order.status as keyof typeof statusLabels]}
+                    </span>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Select
+                      value={order.status}
+                      onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                    >
+                      <SelectTrigger className="flex-1 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">주문접수</SelectItem>
+                        <SelectItem value="scheduled">발송예약</SelectItem>
+                        <SelectItem value="delivered">발송완료</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <SmsDialog
+                      customerPhone={order.customerPhone}
+                      customerName={order.customerName}
+                      onSendSMS={(phone: string, message: string) => sendSMSMutation.mutate({ phone, message })}
+                    >
+                      <Button variant="outline" size="sm" className="h-8 text-xs">
+                        SMS
+                      </Button>
+                    </SmsDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </>
     );
-  }
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-amber-50 flex items-center justify-center">
-        <div className="text-amber-800">주문 정보를 불러오는 중...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-primary mx-auto"></div>
+          <p className="mt-2 text-gray-600">로딩 중...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-amber-800">매니저 페이지</h1>
-            <p className="text-amber-600 mt-1">주문 관리 및 상태 업데이트</p>
-          </div>
-          <div className="flex gap-3">
-            <Button onClick={handleExcelExport} variant="outline" className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              엑셀 다운로드
-            </Button>
-            <Button onClick={handleLogout} variant="outline" className="flex items-center gap-2">
-              <LogOut className="h-4 w-4" />
-              로그아웃
-            </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-gray-900">에덴한과 매니저</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <AdminSettingsDialog />
+              <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
+                <LogOut className="h-4 w-4" />
+                로그아웃
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Orders List */}
-        <div className="grid gap-4">
-          {orders.length === 0 ? (
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              주문 관리
+            </TabsTrigger>
+            <TabsTrigger value="customers" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              고객 관리
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="orders" className="space-y-6">
+            {/* Bulk Actions */}
+            {selectedOrderItems.size > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-900">
+                    {selectedOrderItems.size}개 주문이 선택되었습니다
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowBulkSMSDialog(true)}
+                      className="bg-white"
+                    >
+                      일괄 SMS 발송
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedOrderItems(new Set())}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filters */}
+            {renderOrderFilters()}
+
+            {/* Orders List */}
             <Card>
-              <CardContent className="p-8 text-center">
-                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">등록된 주문이 없습니다.</p>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  주문 목록 ({allOrders.length}건)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {renderOrdersList(allOrders)}
               </CardContent>
             </Card>
-          ) : (
-            orders.map((order: Order) => (
-              <Card key={order.id} className="border-l-4 border-l-amber-400">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* Order Info */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-amber-600" />
-                        <span className="font-semibold text-amber-800">주문번호: {order.orderNumber}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-amber-600" />
-                        <span>{order.customerName}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-amber-600" />
-                        <span>{order.customerPhone}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-amber-600" />
-                        <span className="text-sm text-gray-600">
-                          {format(new Date(order.createdAt), "MM/dd HH:mm", { locale: ko })}
-                        </span>
-                      </div>
-                    </div>
+          </TabsContent>
 
-                    {/* Address & Items */}
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-amber-600 mt-0.5" />
-                        <div className="text-sm">
-                          <div>({order.zipCode})</div>
-                          <div>{order.address1}</div>
-                          {order.address2 && <div>{order.address2}</div>}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="text-sm">소박스: {order.smallBoxQuantity}개</div>
-                        <div className="text-sm">대박스: {order.largeBoxQuantity}개</div>
-                        {order.wrappingQuantity > 0 && (
-                          <div className="text-sm text-amber-700">보자기포장: {order.wrappingQuantity}개</div>
-                        )}
-                      </div>
-                    </div>
+          <TabsContent value="customers">
+            <CustomerManagement />
+          </TabsContent>
+        </Tabs>
+      </div>
 
-                    {/* Status & Special Requests */}
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant={statusOptions.find(opt => opt.value === order.status)?.variant}>
-                          {statusOptions.find(opt => opt.value === order.status)?.label}
-                        </Badge>
-                        <Badge variant={paymentStatusOptions.find(opt => opt.value === order.paymentStatus)?.variant}>
-                          {paymentStatusOptions.find(opt => opt.value === order.paymentStatus)?.label}
-                        </Badge>
-                      </div>
-                      {order.scheduledDate && (
-                        <div className="text-sm text-amber-700">
-                          예약발송: {format(new Date(order.scheduledDate), "MM/dd", { locale: ko })}
-                        </div>
-                      )}
-                      {order.specialRequests && (
-                        <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-amber-600 mt-0.5" />
-                          <div className="text-sm text-gray-600 line-clamp-2">{order.specialRequests}</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        onClick={() => openEditDialog(order)}
-                        className="bg-amber-600 hover:bg-amber-700"
-                        size="sm"
-                      >
-                        상태 수정
-                      </Button>
-                      <Button
-                        onClick={() => handleSendStatusUpdate(order)}
-                        variant="outline"
-                        size="sm"
-                        disabled={sendSmsNotificationMutation.isPending}
-                      >
-                        상태 알림
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-
-        {/* Edit Order Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>주문 정보 수정</DialogTitle>
-              <DialogDescription>
-                {selectedOrder && `주문번호: ${selectedOrder.orderNumber}`}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>배송 상태</Label>
-                <Select value={editFormData.status} onValueChange={(value) => setEditFormData({...editFormData, status: value})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>결제 상태</Label>
-                <Select value={editFormData.paymentStatus} onValueChange={(value) => setEditFormData({...editFormData, paymentStatus: value})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {paymentStatusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>예약 발송일</Label>
-                <Input
-                  type="date"
-                  value={editFormData.scheduledDate}
-                  onChange={(e) => setEditFormData({...editFormData, scheduledDate: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>특별 요청사항</Label>
-                <Textarea
-                  value={editFormData.specialRequests}
-                  onChange={(e) => setEditFormData({...editFormData, specialRequests: e.target.value})}
-                  placeholder="특별 요청사항을 입력하세요"
-                  rows={3}
-                />
+      {/* Bulk SMS Dialog */}
+      <Dialog open={showBulkSMSDialog} onOpenChange={setShowBulkSMSDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>일괄 SMS 발송</DialogTitle>
+            <DialogDescription>
+              선택된 {selectedOrderItems.size}명의 고객에게 SMS를 발송합니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="bulk-sms-message">메시지</Label>
+              <Textarea
+                id="bulk-sms-message"
+                value={bulkSMSMessage}
+                onChange={(e) => setBulkSMSMessage(e.target.value)}
+                placeholder="발송할 메시지를 입력하세요..."
+                rows={4}
+                maxLength={1000}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {bulkSMSMessage.length}/1000자
               </div>
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                취소
-              </Button>
-              <Button
-                onClick={handleUpdateOrder}
-                className="bg-amber-600 hover:bg-amber-700"
-                disabled={updateOrderMutation.isPending}
-              >
-                {updateOrderMutation.isPending ? "업데이트 중..." : "업데이트"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+          </div>
+          
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setShowBulkSMSDialog(false)}>
+              취소
+            </Button>
+            <Button 
+              onClick={() => {
+                const selectedOrders = allOrders.filter(order => selectedOrderItems.has(order.id));
+                const phones = selectedOrders.map(order => order.customerPhone);
+                sendBulkSMSMutation.mutate({ phones, message: bulkSMSMessage });
+              }}
+              disabled={!bulkSMSMessage.trim() || sendBulkSMSMutation.isPending}
+            >
+              {sendBulkSMSMutation.isPending ? "발송 중..." : "발송"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+export default Manager;

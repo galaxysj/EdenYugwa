@@ -29,7 +29,11 @@ function Router() {
           <AdminSettings />
         </ProtectedRoute>
       </Route>
-      <Route path="/manager" component={Manager} />
+      <Route path="/manager">
+        <ProtectedRoute>
+          <Manager />
+        </ProtectedRoute>
+      </Route>
       <Route path="/order-lookup" component={OrderLookup} />
       <Route path="/order-edit/:id" component={OrderEdit} />
       <Route path="/order" component={PublicOrder} />
