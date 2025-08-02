@@ -896,28 +896,34 @@ export default function Admin() {
             </div>
             
             {/* 주요 지표 */}
-            <div className="grid grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-5 gap-4 mb-6">
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-700 mb-1">{filteredTotals.count}건</div>
-                <div className="text-sm text-gray-600">주문 건수</div>
+                <div className="text-xl font-bold text-gray-700 mb-1">{filteredTotals.count}건</div>
+                <div className="text-sm text-gray-600">총주문건수</div>
               </div>
               
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">{formatPrice(filteredTotals.actualRevenue)}</div>
-                <div className="text-sm text-gray-600">실제 입금</div>
-                {filteredTotals.totalDiscounts > 0 && (
-                  <div className="text-xs text-blue-600 mt-1">할인: -{formatPrice(filteredTotals.totalDiscounts)}</div>
-                )}
-                {filteredTotals.totalPartialUnpaid > 0 && (
-                  <div className="text-xs text-red-600 mt-1">미입금: {formatPrice(filteredTotals.totalPartialUnpaid)}</div>
-                )}
+                <div className="text-xl font-bold text-green-600 mb-1">{formatPrice(filteredTotals.actualRevenue)}</div>
+                <div className="text-sm text-gray-600">실제입금</div>
               </div>
               
               <div className="text-center">
-                <div className={`text-2xl font-bold mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                <div className="text-xl font-bold text-red-600 mb-1">{formatPrice(filteredTotals.totalCost)}</div>
+                <div className="text-sm text-gray-600">원가</div>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-xl font-bold text-blue-600 mb-1">
+                  {formatPrice(filteredTotals.totalDiscounts + filteredTotals.totalPartialUnpaid)}
+                </div>
+                <div className="text-sm text-gray-600">할인/미입금</div>
+              </div>
+              
+              <div className="text-center">
+                <div className={`text-xl font-bold mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                   {formatPrice(filteredTotals.netProfit)}
                 </div>
-                <div className="text-sm text-gray-600">실제 수익</div>
+                <div className="text-sm text-gray-600">실제수익</div>
               </div>
             </div>
             
@@ -945,19 +951,7 @@ export default function Admin() {
                 </div>
               </div>
               
-              {/* 원가 및 이익 분석 */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-white rounded-lg border border-red-100">
-                  <div className="text-lg font-bold text-red-600 mb-1">{formatPrice(filteredTotals.totalCost)}</div>
-                  <div className="text-sm text-gray-600">총 원가</div>
-                </div>
-                <div className="text-center p-3 bg-white rounded-lg border border-green-100">
-                  <div className="text-lg font-bold text-green-600 mb-1">
-                    {formatPrice(filteredTotals.actualRevenue - filteredTotals.totalCost)}
-                  </div>
-                  <div className="text-sm text-gray-600">총 이익</div>
-                </div>
-              </div>
+
             </div>
           </CardContent>
         </Card>
