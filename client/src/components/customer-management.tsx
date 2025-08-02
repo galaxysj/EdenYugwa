@@ -233,7 +233,7 @@ export function CustomerManagement() {
                 <DialogDescription>
                   엑셀 파일을 업로드하여 여러 고객을 한번에 등록할 수 있습니다.
                   <br />
-                  필수 컬럼: 고객명, 연락처 | 선택 컬럼: 우편번호, 주소1, 주소2, 메모
+                  필수 컬럼: 고객명, 연락처 | 선택 컬럼: 우편번호, 주소1, 주소2, 발송주소, 메모
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">

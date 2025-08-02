@@ -988,12 +988,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const rowNumber = i + 2; // Excel row number (starting from 2, accounting for header)
 
         try {
-          // Expected columns: 고객명, 연락처, 우편번호, 주소1, 주소2, 메모
+          // Expected columns: 고객명, 연락처, 우편번호, 주소1, 주소2, 발송주소, 메모
           const customerData: InsertCustomer = {
             customerName: row['고객명'] || row['이름'] || row['성명'] || '',
             customerPhone: String(row['연락처'] || row['전화번호'] || row['핸드폰'] || '').replace(/[^0-9]/g, ''),
             zipCode: row['우편번호'] || '',
-            address1: row['주소1'] || row['주소'] || '',
+            address1: row['주소1'] || row['주소'] || row['발송주소'] || '',
             address2: row['주소2'] || '',
             orderCount: 0,
             totalSpent: 0,
