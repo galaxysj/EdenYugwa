@@ -1412,8 +1412,8 @@ export default function Admin() {
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">연락처</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
                 <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">실제입금</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">발송일</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">관리</th>
@@ -1493,6 +1493,25 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
+                      {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                        <div
+                          className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const currentAmount = order.actualPaidAmount || order.totalAmount;
+                            const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                            if (newAmount && !isNaN(Number(newAmount))) {
+                              handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                            }
+                          }}
+                          title="클릭하여 실제 입금금액 수정"
+                        >
+                          {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-3 text-center">
                       <Select
                         value={
                           order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
@@ -1532,25 +1551,6 @@ export default function Admin() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                        <div
-                          className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
-                          onClick={() => {
-                            const currentAmount = order.actualPaidAmount || order.totalAmount;
-                            const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                            if (newAmount && !isNaN(Number(newAmount))) {
-                              handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                            }
-                          }}
-                          title="클릭하여 실제 입금금액 수정"
-                        >
-                          {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
                     </td>
                     <td className="py-3 px-3 text-center">
                       <Select
@@ -1733,6 +1733,26 @@ export default function Admin() {
 
                     <div className="grid grid-cols-4 gap-3">
                       <div>
+                        <div className="text-gray-500 mb-2">실제입금</div>
+                        {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                          <div
+                            className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200 text-center"
+                            onClick={() => {
+                              const currentAmount = order.actualPaidAmount || order.totalAmount;
+                              const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                              if (newAmount && !isNaN(Number(newAmount))) {
+                                handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                              }
+                            }}
+                            title="클릭하여 실제 입금금액 수정"
+                          >
+                            {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-400 text-center py-1">-</div>
+                        )}
+                      </div>
+                      <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
                         <Select
                           value={
@@ -1773,26 +1793,6 @@ export default function Admin() {
                             </SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 mb-2">실제입금</div>
-                        {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                          <div
-                            className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200 text-center"
-                            onClick={() => {
-                              const currentAmount = order.actualPaidAmount || order.totalAmount;
-                              const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                              if (newAmount && !isNaN(Number(newAmount))) {
-                                handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                              }
-                            }}
-                            title="클릭하여 실제 입금금액 수정"
-                          >
-                            {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-gray-400 text-center py-1">-</div>
-                        )}
                       </div>
                       <div>
                         <div className="text-gray-500 mb-2">주문상태</div>
