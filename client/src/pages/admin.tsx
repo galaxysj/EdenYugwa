@@ -1537,7 +1537,7 @@ export default function Admin() {
                   />
                 </th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문번호</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">고객명</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문자/예금자</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문내역</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">연락처</th>
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
@@ -1594,14 +1594,18 @@ export default function Admin() {
                         <div className="font-medium text-gray-900 text-sm">
                           주문자: {order.customerName}
                         </div>
+                        {order.isDifferentDepositor && order.depositorName ? (
+                          <div className="text-xs text-green-600">
+                            예금자: {order.depositorName}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-500">
+                            예금자: {order.customerName}
+                          </div>
+                        )}
                         {order.recipientName && order.recipientName !== order.customerName && (
                           <div className="text-xs text-blue-600">
                             받는분: {order.recipientName}
-                          </div>
-                        )}
-                        {order.isDifferentDepositor && order.depositorName && (
-                          <div className="text-xs text-green-600">
-                            예금자: {order.depositorName}
                           </div>
                         )}
                       </div>
@@ -1857,16 +1861,18 @@ export default function Admin() {
                       <div>
                         <div className="text-gray-500 mb-1">주문자</div>
                         <div className="font-medium">{order.customerName}</div>
+                        
+                        <div className="text-gray-500 mb-1 mt-2">예금자</div>
+                        {order.isDifferentDepositor && order.depositorName ? (
+                          <div className="font-medium text-green-600">{order.depositorName}</div>
+                        ) : (
+                          <div className="font-medium text-gray-500">{order.customerName}</div>
+                        )}
+                        
                         {order.recipientName && order.recipientName !== order.customerName && (
                           <>
                             <div className="text-gray-500 mb-1 mt-2">받는분</div>
                             <div className="font-medium text-blue-600">{order.recipientName}</div>
-                          </>
-                        )}
-                        {order.isDifferentDepositor && order.depositorName && (
-                          <>
-                            <div className="text-gray-500 mb-1 mt-2">예금자</div>
-                            <div className="font-medium text-green-600">{order.depositorName}</div>
                           </>
                         )}
                       </div>
