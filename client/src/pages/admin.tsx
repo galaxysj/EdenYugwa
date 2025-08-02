@@ -468,6 +468,7 @@ export default function Admin() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'status'>('latest');
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -662,6 +663,42 @@ export default function Admin() {
     return orders.filter((order: Order) => order.status === status);
   };
 
+  // Sort orders function
+  const sortOrders = (ordersList: Order[]) => {
+    const sorted = [...ordersList];
+    
+    if (sortOrder === 'latest') {
+      // Latest first, but delivered orders at the bottom
+      return sorted.sort((a, b) => {
+        // If one is delivered and the other isn't, delivered goes to bottom
+        if (a.status === 'delivered' && b.status !== 'delivered') return 1;
+        if (b.status === 'delivered' && a.status !== 'delivered') return -1;
+        
+        // If both have same delivery status, sort by date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'oldest') {
+      // Oldest first
+      return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortOrder === 'status') {
+      // Sort by status priority: pending -> scheduled -> delivered
+      const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+      return sorted.sort((a, b) => {
+        const aPriority = statusPriority[a.status as keyof typeof statusPriority] || 4;
+        const bPriority = statusPriority[b.status as keyof typeof statusPriority] || 4;
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // If same status, sort by date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    }
+    
+    return sorted;
+  };
+
   // Filter orders for main list with multiple criteria
   const getFilteredOrdersList = (ordersList: Order[]) => {
     let filtered = ordersList;
@@ -705,7 +742,8 @@ export default function Admin() {
       filtered = filtered.filter(order => order.status === orderStatusFilter);
     }
 
-    return filtered;
+    // Apply sorting
+    return sortOrders(filtered);
   };
 
   const allOrders = getFilteredOrdersList(orders);
@@ -1272,6 +1310,7 @@ export default function Admin() {
     setCustomerNameFilter('');
     setPaymentStatusFilter('all');
     setOrderStatusFilter('all');
+    setSortOrder('latest');
   };
 
   // Render filter UI
@@ -1369,19 +1408,53 @@ export default function Admin() {
         </div>
       </div>
       
-      {/* Filter Summary and Clear - Compact */}
-      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
-        <div className="text-xs text-gray-600">
-          검색결과: <span className="font-medium text-gray-900">{allOrders.length}건</span>
+      {/* Sort Options */}
+      <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">정렬:</span>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant={sortOrder === 'latest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('latest')}
+                className="h-7 text-xs px-2"
+              >
+                최신순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'oldest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('oldest')}
+                className="h-7 text-xs px-2"
+              >
+                오래된순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('status')}
+                className="h-7 text-xs px-2"
+              >
+                상태순
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="text-xs text-gray-600">
+              검색결과: <span className="font-medium text-gray-900">{allOrders.length}건</span>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={clearAllFilters}
+              className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
+            >
+              초기화
+            </Button>
+          </div>
         </div>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={clearAllFilters}
-          className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
-        >
-          초기화
-        </Button>
       </div>
     </div>
   );
