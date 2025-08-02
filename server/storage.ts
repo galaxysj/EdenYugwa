@@ -229,16 +229,28 @@ export class DatabaseStorage implements IStorage {
         const discountAmount = currentOrder.totalAmount - actualPaidAmount;
         
         if (discountAmount > 0) {
-          updateData.discountAmount = discountAmount;
-          updateData.discountReason = discountReason || `할인 (주문금액 ${currentOrder.totalAmount.toLocaleString()}원 - 실입금 ${actualPaidAmount.toLocaleString()}원)`;
+          // 부분미입금인지 할인인지 구분
+          if (discountReason && discountReason.includes('할인')) {
+            // 할인인 경우
+            updateData.discountAmount = discountAmount;
+            updateData.discountReason = discountReason;
+            updateData.paymentStatus = 'confirmed';
+          } else {
+            // 부분미입금인 경우
+            updateData.discountAmount = 0;
+            updateData.discountReason = discountReason || `부분미입금 (미입금: ${discountAmount.toLocaleString()}원)`;
+            updateData.paymentStatus = 'partial';
+          }
         } else if (discountAmount < 0) {
           // 과납입의 경우
           updateData.discountAmount = 0;
           updateData.discountReason = discountReason || `과납입 (${Math.abs(discountAmount).toLocaleString()}원 추가 입금)`;
+          updateData.paymentStatus = 'confirmed';
         } else {
           // 정확한 금액 입금
           updateData.discountAmount = 0;
           updateData.discountReason = null;
+          updateData.paymentStatus = 'confirmed';
         }
       }
     }

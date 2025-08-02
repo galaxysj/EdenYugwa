@@ -989,7 +989,7 @@ export default function Admin() {
                         )}
                         {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
                           <div className="text-red-600">
-                            미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                            부분미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
                           </div>
                         )}
                       </div>
@@ -1204,7 +1204,7 @@ export default function Admin() {
                             )}
                             {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
                               <div className="mt-1 pt-1 border-t border-gray-200">
-                                <span className="text-red-600 font-medium">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</span>
+                                <span className="text-red-600 font-medium">부분미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</span>
                               </div>
                             )}
                           </div>
