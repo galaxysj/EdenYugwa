@@ -709,15 +709,15 @@ export default function Admin() {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortOrder === 'delivery-date') {
-      // Sort by delivery date: orders with delivery date first, then by delivery date
+      // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
       return sorted.sort((a, b) => {
-        // Orders without delivery date go to bottom
-        if (!a.deliveredDate && b.deliveredDate) return 1;
-        if (a.deliveredDate && !b.deliveredDate) return -1;
+        // Orders without delivery date go to top
+        if (!a.deliveredDate && b.deliveredDate) return -1;
+        if (a.deliveredDate && !b.deliveredDate) return 1;
         
-        // Both have delivery dates - sort by delivery date (latest first)
+        // Both have delivery dates - sort by delivery date (earliest first)
         if (a.deliveredDate && b.deliveredDate) {
-          return new Date(b.deliveredDate).getTime() - new Date(a.deliveredDate).getTime();
+          return new Date(a.deliveredDate).getTime() - new Date(b.deliveredDate).getTime();
         }
         
         // Neither has delivery date - sort by creation date (latest first)
