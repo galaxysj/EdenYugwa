@@ -992,7 +992,7 @@ export default function Admin() {
                       const discountAmount = order.discountAmount || 0;
                       const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
                         ? (order.totalAmount - order.actualPaidAmount) : 0;
-                      const totalCostAnalysis = totalCost + shippingFee + discountAmount + unpaidAmount;
+                      const totalCostAnalysis = totalCost + shippingFee + unpaidAmount;
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
