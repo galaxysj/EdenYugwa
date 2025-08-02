@@ -466,6 +466,11 @@ export default function Admin() {
     refetchIntervalInBackground: true,
   });
 
+  // Fetch settings for cost calculations
+  const { data: settings } = useQuery<Setting[]>({
+    queryKey: ["/api/settings"],
+  });
+
   // Fetch deleted orders (trash)
   const { data: deletedOrders = [], isLoading: isLoadingTrash, error: trashError } = useQuery({
     queryKey: ['/api/orders/trash'],
@@ -990,8 +995,8 @@ export default function Admin() {
                       const shippingFee = totalItems >= 6 ? 0 : 4000;
                       
                       // Get global cost settings
-                      const smallCostSetting = settings?.find(s => s.key === "smallBoxCost");
-                      const largeCostSetting = settings?.find(s => s.key === "largeBoxCost");
+                      const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
+                      const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
                       const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
                       const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
                       
