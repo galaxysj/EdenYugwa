@@ -100,16 +100,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async generateOrderNumber(): Promise<string> {
-    // Get current date in YYYYMMDD format
+    // Get current date in YYMMDD format (2-digit year)
     const now = new Date();
-    const year = now.getFullYear();
+    const year = now.getFullYear().toString().slice(-2); // Last 2 digits of year
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const day = now.getDate().toString().padStart(2, '0');
     const dateStr = `${year}${month}${day}`;
     
     // Get all orders created today to determine the sequence number
-    const todayStart = new Date(year, now.getMonth(), now.getDate(), 0, 0, 0);
-    const todayEnd = new Date(year, now.getMonth(), now.getDate(), 23, 59, 59);
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
     
     const todayOrders = await db.select()
       .from(orders)
@@ -123,7 +123,7 @@ export class DatabaseStorage implements IStorage {
     // Sequence number is the count of today's orders + 1
     const sequenceNumber = (todayOrders.length + 1).toString().padStart(2, '0');
     
-    return `ED${dateStr}${sequenceNumber}`;
+    return `${dateStr}${sequenceNumber}`;
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
