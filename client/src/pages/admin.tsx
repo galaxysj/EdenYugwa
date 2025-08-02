@@ -997,7 +997,11 @@ export default function Admin() {
                     <td className="py-4 px-4">
                       <div className="space-y-2">
                         <Select
-                          value={order.paymentStatus || 'pending'}
+                          value={
+                            order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                              ? 'partial'
+                              : order.paymentStatus || 'pending'
+                          }
                           onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                           disabled={updatePaymentMutation.isPending}
                         >
@@ -1015,6 +1019,12 @@ export default function Admin() {
                               <div className="flex items-center space-x-2">
                                 <DollarSign className="h-4 w-4 text-green-500" />
                                 <span>입금 완료</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="partial">
+                              <div className="flex items-center space-x-2">
+                                <AlertCircle className="h-4 w-4 text-red-500" />
+                                <span className="text-red-500">부분결제</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="refunded">
@@ -1213,7 +1223,11 @@ export default function Admin() {
                       <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
                         <Select
-                          value={order.paymentStatus || 'pending'}
+                          value={
+                            order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                              ? 'partial'
+                              : order.paymentStatus || 'pending'
+                          }
                           onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                           disabled={updatePaymentMutation.isPending}
                         >
@@ -1231,6 +1245,12 @@ export default function Admin() {
                               <div className="flex items-center space-x-2">
                                 <DollarSign className="h-4 w-4 text-green-500" />
                                 <span>입금 완료</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="partial">
+                              <div className="flex items-center space-x-2">
+                                <AlertCircle className="h-4 w-4 text-red-500" />
+                                <span className="text-red-500">부분결제</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="refunded">
@@ -1369,6 +1389,12 @@ export default function Admin() {
   const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
     if (newPaymentStatus === 'confirmed') {
       // 입금완료 선택시 실제 입금금액 입력 다이얼로그 열기
+      const order = orders.find((o: Order) => o.id === orderId);
+      if (order) {
+        openPaymentDialog(order);
+      }
+    } else if (newPaymentStatus === 'partial') {
+      // 부분결제 선택시도 실제 입금금액 입력 다이얼로그 열기
       const order = orders.find((o: Order) => o.id === orderId);
       if (order) {
         openPaymentDialog(order);
