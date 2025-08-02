@@ -31,7 +31,7 @@ export function DeliveredDatePicker({ order }: DeliveredDatePickerProps) {
 
   const updateDeliveredDateMutation = useMutation({
     mutationFn: async ({ id, deliveredDate }: { id: number; deliveredDate: string | null }) => {
-      return await apiRequest(`/api/orders/${id}/delivered-date`, "PATCH", { deliveredDate });
+      return await apiRequest("PATCH", `/api/orders/${id}/delivered-date`, { deliveredDate });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
