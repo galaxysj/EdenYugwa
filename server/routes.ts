@@ -386,6 +386,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ authenticated: true });
   });
 
+  // Manager management endpoints
+  // Get all managers
+  app.get("/api/managers", async (req, res) => {
+    try {
+      const managers = await storage.getAllManagers();
+      res.json(managers);
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+      res.status(500).json({ message: "매니저 목록을 가져오는데 실패했습니다" });
+    }
+  });
+
+  // Create new manager
+  app.post("/api/managers", async (req, res) => {
+    try {
+      const result = insertManagerSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: "입력 데이터가 올바르지 않습니다",
+          errors: result.error.errors 
+        });
+      }
+
+      // Check if username already exists
+      const existingManager = await storage.getManagerByUsername(result.data.username);
+      if (existingManager) {
+        return res.status(400).json({ message: "이미 존재하는 아이디입니다" });
+      }
+
+      const manager = await storage.createManager(result.data);
+      res.status(201).json(manager);
+    } catch (error) {
+      console.error('Error creating manager:', error);
+      res.status(500).json({ message: "매니저 생성에 실패했습니다" });
+    }
+  });
+
+  // Update manager
+  app.patch("/api/managers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 매니저 ID입니다" });
+      }
+
+      // Check if manager exists
+      const existingManager = await storage.getManagerById(id);
+      if (!existingManager) {
+        return res.status(404).json({ message: "매니저를 찾을 수 없습니다" });
+      }
+
+      // Validate update data
+      const updateData: any = {};
+      if (req.body.username && req.body.username !== existingManager.username) {
+        // Check if new username already exists
+        const usernameExists = await storage.getManagerByUsername(req.body.username);
+        if (usernameExists) {
+          return res.status(400).json({ message: "이미 존재하는 아이디입니다" });
+        }
+        updateData.username = req.body.username;
+      }
+      
+      if (req.body.password && req.body.password.trim()) {
+        updateData.password = req.body.password;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ message: "수정할 데이터가 없습니다" });
+      }
+
+      const updatedManager = await storage.updateManager(id, updateData);
+      res.json(updatedManager);
+    } catch (error) {
+      console.error('Error updating manager:', error);
+      res.status(500).json({ message: "매니저 수정에 실패했습니다" });
+    }
+  });
+
+  // Delete manager
+  app.delete("/api/managers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 매니저 ID입니다" });
+      }
+
+      // Check if manager exists
+      const existingManager = await storage.getManagerById(id);
+      if (!existingManager) {
+        return res.status(404).json({ message: "매니저를 찾을 수 없습니다" });
+      }
+
+      await storage.deleteManager(id);
+      res.json({ message: "매니저가 성공적으로 삭제되었습니다" });
+    } catch (error) {
+      console.error('Error deleting manager:', error);
+      res.status(500).json({ message: "매니저 삭제에 실패했습니다" });
+    }
+  });
+
   // Export orders to Excel
   app.get("/api/orders/export/excel", async (req, res) => {
     try {
@@ -665,6 +765,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating admin settings:", error);
       res.status(500).json({ error: "관리자 설정 업데이트에 실패했습니다" });
+    }
+  });
+
+  // Manager management API endpoints
+  app.get("/api/managers", async (req, res) => {
+    try {
+      const managers = await storage.getAllManagers();
+      // Remove password from response for security
+      const safeManagers = managers.map(({ password, ...manager }) => manager);
+      res.json(safeManagers);
+    } catch (error) {
+      console.error("Error fetching managers:", error);
+      res.status(500).json({ error: "매니저 목록을 불러오는데 실패했습니다" });
+    }
+  });
+
+  app.post("/api/managers", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "아이디와 비밀번호는 필수 항목입니다" });
+      }
+
+      if (password.length < 4) {
+        return res.status(400).json({ error: "비밀번호는 최소 4자 이상이어야 합니다" });
+      }
+
+      const manager = await storage.createManager({ username, password });
+      // Remove password from response
+      const { password: _, ...safeManager } = manager;
+      res.json(safeManager);
+    } catch (error) {
+      console.error("Error creating manager:", error);
+      if (error.message?.includes("unique")) {
+        return res.status(400).json({ error: "이미 존재하는 아이디입니다" });
+      }
+      res.status(500).json({ error: "매니저 생성에 실패했습니다" });
+    }
+  });
+
+  app.patch("/api/managers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      if (updates.password && updates.password.length < 4) {
+        return res.status(400).json({ error: "비밀번호는 최소 4자 이상이어야 합니다" });
+      }
+
+      const updatedManager = await storage.updateManager(id, updates);
+      if (!updatedManager) {
+        return res.status(404).json({ error: "매니저를 찾을 수 없습니다" });
+      }
+
+      // Remove password from response
+      const { password: _, ...safeManager } = updatedManager;
+      res.json(safeManager);
+    } catch (error) {
+      console.error("Error updating manager:", error);
+      if (error.message?.includes("unique")) {
+        return res.status(400).json({ error: "이미 존재하는 아이디입니다" });
+      }
+      res.status(500).json({ error: "매니저 업데이트에 실패했습니다" });
+    }
+  });
+
+  app.delete("/api/managers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteManager(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting manager:", error);
+      res.status(500).json({ error: "매니저 삭제에 실패했습니다" });
     }
   });
 

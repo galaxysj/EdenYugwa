@@ -23,9 +23,13 @@ export interface IStorage {
   getAdminByUsername(username: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
   
-  // Manager authentication
+  // Manager authentication and management
   getManagerByUsername(username: string): Promise<Manager | undefined>;
   createManager(manager: InsertManager): Promise<Manager>;
+  getAllManagers(): Promise<Manager[]>;
+  getManagerById(id: number): Promise<Manager | undefined>;
+  updateManager(id: number, manager: Partial<InsertManager>): Promise<Manager | undefined>;
+  deleteManager(id: number): Promise<void>;
   
   // Settings management
   getSetting(key: string): Promise<Setting | undefined>;
@@ -317,6 +321,28 @@ export class DatabaseStorage implements IStorage {
     return manager;
   }
 
+  async getAllManagers(): Promise<Manager[]> {
+    return await db.select().from(managers).orderBy(desc(managers.createdAt));
+  }
+
+  async getManagerById(id: number): Promise<Manager | undefined> {
+    const [manager] = await db.select().from(managers).where(eq(managers.id, id));
+    return manager || undefined;
+  }
+
+  async updateManager(id: number, manager: Partial<InsertManager>): Promise<Manager | undefined> {
+    const [updatedManager] = await db
+      .update(managers)
+      .set(manager)
+      .where(eq(managers.id, id))
+      .returning();
+    return updatedManager || undefined;
+  }
+
+  async deleteManager(id: number): Promise<void> {
+    await db.delete(managers).where(eq(managers.id, id));
+  }
+
   async updateFinancialInfo(id: number, data: {
     actualPaidAmount?: number;
     discountAmount?: number;
@@ -431,6 +457,28 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  // Manager management functions
+  async getAllManagers(): Promise<Manager[]> {
+    return await db.select().from(managers).orderBy(managers.createdAt);
+  }
+
+  async getManagerById(id: number): Promise<Manager | undefined> {
+    const [manager] = await db.select().from(managers).where(eq(managers.id, id));
+    return manager || undefined;
+  }
+
+  async updateManager(id: number, manager: Partial<InsertManager>): Promise<Manager | undefined> {
+    const [updated] = await db.update(managers)
+      .set(manager)
+      .where(eq(managers.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteManager(id: number): Promise<void> {
+    await db.delete(managers).where(eq(managers.id, id));
   }
 }
 
