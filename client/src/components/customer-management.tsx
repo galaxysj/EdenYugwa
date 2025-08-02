@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { Plus, Edit, Trash2, User, Phone, MapPin, Package, Upload, FileSpreadsheet } from "lucide-react";
+import { Plus, Edit, Trash2, User, Phone, MapPin, Package, Upload, FileSpreadsheet, Eye } from "lucide-react";
 import type { Customer, InsertCustomer } from "@shared/schema";
 
 interface CustomerFormData {
@@ -21,6 +22,11 @@ interface CustomerFormData {
   notes: string;
 }
 
+interface CustomerAddress {
+  address: string;
+  orderCount: number;
+}
+
 export function CustomerManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -28,6 +34,8 @@ export function CustomerManagement() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [selectedCustomerPhone, setSelectedCustomerPhone] = useState<string | null>(null);
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
   const [formData, setFormData] = useState<CustomerFormData>({
     customerName: "",
     customerPhone: "",
@@ -39,6 +47,12 @@ export function CustomerManagement() {
 
   const { data: customers = [], isLoading } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
+  });
+
+  const { data: customerAddresses = [] } = useQuery<CustomerAddress[]>({
+    queryKey: ["/api/customers", selectedCustomerPhone, "addresses"],
+    queryFn: () => fetch(`/api/customers/${selectedCustomerPhone}/addresses`).then(res => res.json()),
+    enabled: !!selectedCustomerPhone,
   });
 
   const createCustomerMutation = useMutation({
@@ -142,6 +156,16 @@ export function CustomerManagement() {
     });
     setEditingCustomer(null);
     setIsDialogOpen(false);
+  };
+
+  const openAddressDialog = (customerPhone: string) => {
+    setSelectedCustomerPhone(customerPhone);
+    setIsAddressDialogOpen(true);
+  };
+
+  const getFullAddress = (customer: Customer) => {
+    const parts = [customer.zipCode, customer.address1, customer.address2].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : '주소 없음';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -416,15 +440,28 @@ export function CustomerManagement() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-500" />
-                        <span className="max-w-xs truncate" title={formatAddress(customer)}>
-                          {formatAddress(customer)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="max-w-xs truncate" title={getFullAddress(customer)}>
+                            {getFullAddress(customer)}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openAddressDialog(customer.customerPhone)}
+                            className="h-6 px-2 text-xs"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            주소목록
+                          </Button>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Package className="h-4 w-4 text-gray-500" />
-                        {customer.orderCount}회
+                        <Badge variant="secondary">
+                          {customer.orderCount}회 (2년)
+                        </Badge>
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-medium">
@@ -459,6 +496,65 @@ export function CustomerManagement() {
           </div>
         )}
       </CardContent>
+
+      {/* Address Dialog */}
+      <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>고객 주소 목록</DialogTitle>
+            <DialogDescription>
+              이 고객이 주문할 때 사용한 모든 주소입니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {customerAddresses.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                주소 정보가 없습니다.
+              </div>
+            ) : (
+              customerAddresses.map((addressInfo, index) => (
+                <div key={index} className="p-3 border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {addressInfo.address}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {addressInfo.orderCount}개의 주문에서 사용
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="ml-2">
+                      {addressInfo.orderCount}회
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
+}
+
+// Helper functions
+function formatPhoneNumber(phone: string): string {
+  const cleaned = phone.replace(/\D/g, '');
+  if (cleaned.length === 11) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+  }
+  return phone;
+}
+
+function formatAmount(amount: number): string {
+  return `${amount.toLocaleString()}원`;
+}
+
+function formatLastOrderDate(date: string | null): string {
+  if (!date) return '-';
+  return new Date(date).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 }

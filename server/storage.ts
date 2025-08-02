@@ -545,14 +545,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCustomerStats(phoneNumber: string): Promise<void> {
-    // Get all orders for this phone number
+    // Get orders from the last 2 years
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    
     const customerOrders = await db.select()
       .from(orders)
-      .where(eq(orders.customerPhone, phoneNumber));
+      .where(
+        and(
+          eq(orders.customerPhone, phoneNumber),
+          gte(orders.createdAt, twoYearsAgo)
+        )
+      );
 
     if (customerOrders.length === 0) return;
 
-    // Calculate statistics
+    // Calculate statistics for recent 2 years
     const orderCount = customerOrders.length;
     const totalSpent = customerOrders
       .filter(order => order.paymentStatus === 'confirmed')
@@ -641,6 +649,34 @@ export class DatabaseStorage implements IStorage {
       console.error('Bulk create customers error:', error);
       throw error;
     }
+  }
+
+  async getCustomerAddresses(phoneNumber: string): Promise<{address: string, orderCount: number}[]> {
+    const customerOrders = await db.select({
+      address1: orders.address1,
+      address2: orders.address2,
+      zipCode: orders.zipCode
+    })
+    .from(orders)
+    .where(eq(orders.customerPhone, phoneNumber));
+
+    // Group addresses and count orders
+    const addressMap = new Map<string, number>();
+    
+    customerOrders.forEach(order => {
+      const fullAddress = [order.zipCode, order.address1, order.address2]
+        .filter(Boolean)
+        .join(' ');
+      
+      if (fullAddress) {
+        addressMap.set(fullAddress, (addressMap.get(fullAddress) || 0) + 1);
+      }
+    });
+
+    return Array.from(addressMap.entries()).map(([address, count]) => ({
+      address,
+      orderCount: count
+    })).sort((a, b) => b.orderCount - a.orderCount);
   }
 }
 

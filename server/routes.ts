@@ -948,6 +948,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get customer addresses
+  app.get("/api/customers/:phone/addresses", async (req, res) => {
+    try {
+      const phone = req.params.phone;
+      const addresses = await storage.getCustomerAddresses(phone);
+      res.json(addresses);
+    } catch (error) {
+      console.error("Error fetching customer addresses:", error);
+      res.status(500).json({ error: "고객 주소 목록을 불러오는데 실패했습니다" });
+    }
+  });
+
   // Update customer statistics (called when orders are created/updated)
   app.post("/api/customers/sync/:phone", async (req, res) => {
     try {
