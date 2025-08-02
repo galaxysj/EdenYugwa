@@ -1433,12 +1433,12 @@ export default function Admin() {
                       <div className="space-y-1">
                         {order.smallBoxQuantity > 0 && (
                           <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                            소박스 × {order.smallBoxQuantity}
+                            한과1호 × {order.smallBoxQuantity}
                           </div>
                         )}
                         {order.largeBoxQuantity > 0 && (
                           <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                            대박스 × {order.largeBoxQuantity}
+                            한과2호 × {order.largeBoxQuantity}
                           </div>
                         )}
                         {order.wrappingQuantity > 0 && (

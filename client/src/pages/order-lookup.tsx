@@ -291,16 +291,27 @@ export default function OrderLookup() {
                         </h3>
                         <div className="bg-gray-50 p-4 rounded border text-sm">
                           <div className="flex justify-between items-start">
-                            <div>
-                              <div className="font-medium">
-                                에덴한과 유과 {order.boxSize === 'small' ? '소박스' : '대박스'}
-                              </div>
-                              <div className="text-gray-600 mt-1">
-                                수량: {order.quantity}개
-                              </div>
-                              <div className="text-gray-600">
-                                포장: {order.wrappingQuantity > 0 ? `보자기 포장 ${order.wrappingQuantity}개 (+${(order.wrappingQuantity * 1000).toLocaleString()}원)` : '일반 포장'}
-                              </div>
+                            <div className="space-y-2">
+                              {order.smallBoxQuantity > 0 && (
+                                <div className="font-medium">
+                                  한과1호 × {order.smallBoxQuantity}개
+                                </div>
+                              )}
+                              {order.largeBoxQuantity > 0 && (
+                                <div className="font-medium">
+                                  한과2호 × {order.largeBoxQuantity}개
+                                </div>
+                              )}
+                              {order.wrappingQuantity > 0 && (
+                                <div className="text-gray-600">
+                                  보자기 포장 × {order.wrappingQuantity}개 (+{(order.wrappingQuantity * 1000).toLocaleString()}원)
+                                </div>
+                              )}
+                              {order.shippingFee > 0 && (
+                                <div className="text-gray-600">
+                                  배송비: +{order.shippingFee.toLocaleString()}원
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-eden-brown">
