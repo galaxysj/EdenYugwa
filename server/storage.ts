@@ -603,34 +603,47 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCustomerStats(phoneNumber: string): Promise<void> {
-    // Get orders from the last 2 years
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    console.log(`고객 통계 업데이트 시작: ${phoneNumber}`);
     
+    // Get all orders for this customer (excluding deleted ones)
     const customerOrders = await db.select()
       .from(orders)
       .where(
         and(
           eq(orders.customerPhone, phoneNumber),
-          eq(orders.isDeleted, false), // 삭제된 주문 제외
-          gte(orders.createdAt, twoYearsAgo)
+          eq(orders.isDeleted, false) // 삭제된 주문만 제외
         )
-      );
+      )
+      .orderBy(desc(orders.createdAt));
 
-    if (customerOrders.length === 0) return;
+    console.log(`${phoneNumber} 고객의 주문 개수: ${customerOrders.length}`);
 
-    // Calculate statistics for recent 2 years
+    // If no orders found, set count to 0 but keep customer record
+    const existingCustomer = await this.getCustomerByPhone(phoneNumber);
+    
+    if (customerOrders.length === 0) {
+      if (existingCustomer) {
+        await db.update(customers)
+          .set({
+            orderCount: 0,
+            totalSpent: 0,
+            lastOrderDate: null,
+            updatedAt: new Date()
+          })
+          .where(eq(customers.id, existingCustomer.id));
+      }
+      return;
+    }
+
+    // Calculate statistics for all non-deleted orders
     const orderCount = customerOrders.length;
     const totalSpent = customerOrders
       .filter(order => order.paymentStatus === 'confirmed')
       .reduce((sum, order) => sum + (order.actualPaidAmount || order.totalAmount), 0);
     
-    const lastOrderDate = customerOrders
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-      .createdAt;
+    const lastOrderDate = customerOrders[0].createdAt; // First in descending order
 
-    // Update or create customer record
-    const existingCustomer = await this.getCustomerByPhone(phoneNumber);
+    console.log(`${phoneNumber} 통계: 주문횟수=${orderCount}, 총구매금액=${totalSpent}, 마지막주문일=${lastOrderDate}`);
     
     if (existingCustomer) {
       await db.update(customers)
@@ -643,7 +656,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(customers.id, existingCustomer.id));
     } else {
       // Create new customer record from first order
-      const firstOrder = customerOrders[0];
+      const firstOrder = customerOrders[customerOrders.length - 1]; // Last in descending order = first chronologically
       await db.insert(customers).values({
         customerName: firstOrder.customerName,
         customerPhone: phoneNumber,
