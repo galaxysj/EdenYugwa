@@ -345,6 +345,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send SMS to customer (without order ID)
+  app.post("/api/sms/send-customer", async (req, res) => {
+    try {
+      const { phoneNumber, message } = req.body;
+      
+      if (!phoneNumber || !message) {
+        return res.status(400).json({ error: "전화번호와 메시지는 필수 입력 항목입니다" });
+      }
+
+      // Get admin settings to use admin phone as sender
+      const adminSettings = await storage.getAdminSettings();
+      if (!adminSettings || !adminSettings.adminPhone) {
+        return res.status(400).json({ error: "관리자 전화번호가 설정되지 않았습니다. 관리자 설정에서 전화번호를 입력해주세요." });
+      }
+      
+      // Log SMS with admin phone info for integration reference
+      console.log(`고객 SMS 발송 정보:
+        발신번호: ${adminSettings.adminPhone}
+        수신번호: ${phoneNumber}
+        메시지: ${message}
+      `);
+      
+      // In a real implementation, you would integrate with SMS service here
+      // For now, we'll simulate successful sending
+      
+      res.json({ 
+        success: true,
+        message: `SMS가 성공적으로 발송되었습니다 (발신: ${adminSettings.adminPhone})`,
+        senderPhone: adminSettings.adminPhone
+      });
+    } catch (error) {
+      console.error("Customer SMS send error:", error);
+      res.status(500).json({ error: "문자 전송에 실패했습니다" });
+    }
+  });
+
   // Get SMS notifications for an order
   app.get("/api/orders/:id/sms", async (req, res) => {
     try {

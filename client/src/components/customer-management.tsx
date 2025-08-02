@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { Plus, Edit, Trash2, User, Phone, MapPin, Package, Upload, FileSpreadsheet, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, User, Phone, MapPin, Package, Upload, FileSpreadsheet, Eye, MessageSquare } from "lucide-react";
 import type { Customer, InsertCustomer } from "@shared/schema";
 
 interface CustomerFormData {
@@ -36,6 +36,9 @@ export function CustomerManagement() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [selectedCustomerPhone, setSelectedCustomerPhone] = useState<string | null>(null);
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+  const [isSmsDialogOpen, setIsSmsDialogOpen] = useState(false);
+  const [selectedCustomerForSms, setSelectedCustomerForSms] = useState<Customer | null>(null);
+  const [smsMessage, setSmsMessage] = useState("");
   const [formData, setFormData] = useState<CustomerFormData>({
     customerName: "",
     customerPhone: "",
@@ -232,6 +235,33 @@ export function CustomerManagement() {
       deleteCustomerMutation.mutate(customer.id);
     }
   };
+
+  const openSmsDialog = (customer: Customer) => {
+    setSelectedCustomerForSms(customer);
+    setSmsMessage("");
+    setIsSmsDialogOpen(true);
+  };
+
+  const sendSmsMutation = useMutation({
+    mutationFn: ({ phoneNumber, message }: { phoneNumber: string; message: string }) => 
+      api.post("/api/sms/send-customer", { phoneNumber, message }),
+    onSuccess: () => {
+      toast({
+        title: "문자 전송 완료",
+        description: "고객에게 문자가 성공적으로 전송되었습니다.",
+      });
+      setIsSmsDialogOpen(false);
+      setSmsMessage("");
+      setSelectedCustomerForSms(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "문자 전송 실패",
+        description: error.response?.data?.error || "문자 전송 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const formatPhoneNumber = (phone: string) => {
     return phone.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
@@ -500,6 +530,14 @@ export function CustomerManagement() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => openSmsDialog(customer)}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleEdit(customer)}
                         >
                           <Edit className="h-4 w-4" />
@@ -555,6 +593,59 @@ export function CustomerManagement() {
                 </div>
               ))
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* SMS Dialog */}
+      <Dialog open={isSmsDialogOpen} onOpenChange={setIsSmsDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>문자 메시지 전송</DialogTitle>
+            <DialogDescription>
+              {selectedCustomerForSms && `${selectedCustomerForSms.customerName} (${formatPhoneNumber(selectedCustomerForSms.customerPhone)})님에게 문자를 전송합니다.`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="sms-message">메시지 내용</Label>
+              <textarea
+                id="sms-message"
+                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="전송할 메시지를 입력하세요..."
+                value={smsMessage}
+                onChange={(e) => setSmsMessage(e.target.value)}
+                maxLength={1000}
+              />
+              <div className="text-right text-sm text-gray-500 mt-1">
+                {smsMessage.length}/1000자
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsSmsDialogOpen(false);
+                  setSmsMessage("");
+                  setSelectedCustomerForSms(null);
+                }}
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedCustomerForSms && smsMessage.trim()) {
+                    sendSmsMutation.mutate({ 
+                      phoneNumber: selectedCustomerForSms.customerPhone, 
+                      message: smsMessage.trim() 
+                    });
+                  }
+                }}
+                disabled={!smsMessage.trim() || sendSmsMutation.isPending}
+              >
+                {sendSmsMutation.isPending ? "전송 중..." : "전송"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
