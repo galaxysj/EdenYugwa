@@ -1361,6 +1361,11 @@ export default function Admin() {
                             미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
                           </div>
                         )}
+                        {order.netProfit > 0 && (
+                          <div className="text-purple-600 font-medium">
+                            수익: {formatPrice(order.netProfit)}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
@@ -1459,8 +1464,10 @@ export default function Admin() {
                       <div className="flex flex-col gap-1">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
-                        <DeliveredDatePicker order={order} />
                         <FinancialDialog order={order} />
+                        <div className="hidden">
+                          <DeliveredDatePicker order={order} />
+                        </div>
                         <Button
                           size="sm"
                           variant="destructive"
@@ -1706,8 +1713,10 @@ export default function Admin() {
                       <div className="flex flex-col gap-3">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
-                        <DeliveredDatePicker order={order} />
                         <FinancialDialog order={order} />
+                        <div className="hidden">
+                          <DeliveredDatePicker order={order} />
+                        </div>
                         <Button
                           size="sm"
                           variant="destructive"
