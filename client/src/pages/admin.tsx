@@ -690,6 +690,13 @@ export default function Admin() {
 
   // Render revenue report function
   const renderRevenueReport = () => {
+    // Get cost values from settings
+    const smallBoxCostValue = settings?.find(s => s.key === "smallBoxCost")?.value ? 
+      parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
+    const largeBoxCostValue = settings?.find(s => s.key === "largeBoxCost")?.value ? 
+      parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
+    const wrappingCostValue = 1000; // Fixed cost for wrapping
+    
     // Include all orders with confirmed payment status (including scheduled and delivered orders)
     const paidOrders = orders.filter((order: Order) => 
       order.paymentStatus === 'confirmed'
@@ -735,8 +742,14 @@ export default function Admin() {
         ? (order.totalAmount - order.actualPaidAmount) : 0;
       acc.netProfit += order.netProfit || 0;
       
-      // Calculate product costs and fees
-      acc.totalCost += order.totalCost || 0;
+      // Calculate product costs and fees - only core costs
+      const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || 15000);
+      const largeBoxCost = order.largeBoxQuantity * (largeBoxCostValue || 16000);
+      const wrappingCost = order.wrappingQuantity * (wrappingCostValue || 1000);
+      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+      const shippingCost = totalItems >= 6 ? 0 : 4000;
+      
+      acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
       acc.smallBoxAmount += order.smallBoxQuantity * 19000;
       acc.largeBoxAmount += order.largeBoxQuantity * 21000;
       acc.wrappingAmount += order.wrappingQuantity * 1000;
@@ -747,10 +760,8 @@ export default function Admin() {
       acc.wrappingQuantity += order.wrappingQuantity;
       
       // Calculate shipping fees and count orders with shipping
-      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-      const shippingFee = totalItems >= 6 ? 0 : 4000;
-      acc.shippingAmount += shippingFee;
-      if (shippingFee > 0) acc.shippingOrders++;
+      if (shippingCost > 0) acc.shippingOrders++;
+      acc.shippingAmount += shippingCost;
       
       return acc;
     }, {
@@ -923,9 +934,9 @@ export default function Admin() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-red-700 mb-1">원가분석</div>
+                  <div className="font-semibold text-red-700 mb-1">총원가</div>
                   <div className="text-lg font-bold text-red-600">
-                    {formatPrice(filteredTotals.totalCost + filteredTotals.totalDiscounts + filteredTotals.totalPartialUnpaid)}
+                    {formatPrice(filteredTotals.totalCost)}
                   </div>
                 </div>
                 
