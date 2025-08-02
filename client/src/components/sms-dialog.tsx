@@ -70,20 +70,34 @@ export function SmsDialog({ order }: SmsDialogProps) {
     });
   };
 
-  const getStatusMessage = (status: string) => {
+  const getStatusMessage = (status: string, paymentStatus?: string) => {
+    const now = new Date();
+    const timeStr = now.toLocaleString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    if (paymentStatus === 'confirmed') {
+      return `입금이 확인되었습니다. (확인시간: ${timeStr})`;
+    }
+    
     const messages = {
-      pending: "주문이 접수되었습니다.",
-      preparing: "상품을 준비 중입니다.",
-      shipping: "상품이 배송 중입니다.",
-      delivered: "상품이 배송 완료되었습니다.",
+      pending: `주문이 접수되었습니다. (접수시간: ${timeStr})`,
+      scheduled: `발송이 예약되었습니다. (예약시간: ${timeStr})`,
+      delivered: `상품이 발송완료되었습니다. (발송시간: ${timeStr})`,
     };
-    return messages[status as keyof typeof messages] || "상태가 업데이트되었습니다.";
+    return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
   };
 
-  const handlePresetMessage = (type: 'status' | 'custom') => {
+  const handlePresetMessage = (type: 'status' | 'payment' | 'custom') => {
     if (type === 'status') {
       const statusMessage = getStatusMessage(order.status);
       form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${statusMessage}`);
+    } else if (type === 'payment') {
+      const paymentMessage = getStatusMessage(order.status, order.paymentStatus);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${paymentMessage}`);
     } else {
       form.setValue('message', `[에덴한과] ${order.customerName}님께 개별 안내드립니다.`);
     }
@@ -107,7 +121,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="flex space-x-2 mb-4">
+            <div className="grid grid-cols-2 gap-2 mb-4">
               <Button
                 type="button"
                 size="sm"
@@ -115,8 +129,19 @@ export function SmsDialog({ order }: SmsDialogProps) {
                 onClick={() => handlePresetMessage('status')}
                 className="text-xs"
               >
-                현재 상태 알림
+                주문상태 알림
               </Button>
+              {order.paymentStatus === 'confirmed' && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handlePresetMessage('payment')}
+                  className="text-xs bg-green-50 border-green-200"
+                >
+                  입금확인 알림
+                </Button>
+              )}
               <Button
                 type="button"
                 size="sm"
