@@ -896,7 +896,7 @@ export default function Admin() {
             </div>
             
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center">
                 <div>
                   <div className="font-semibold text-gray-700 mb-1">주문건수</div>
                   <div className="text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
@@ -923,19 +923,16 @@ export default function Admin() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-red-700 mb-1">총원가</div>
-                  <div className="text-lg font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
-                </div>
-                
-                <div>
-                  <div className="font-semibold text-blue-700 mb-1">할인/미입금</div>
-                  <div className="text-lg font-bold text-blue-600">{formatPrice(filteredTotals.totalDiscounts + filteredTotals.totalPartialUnpaid)}</div>
+                  <div className="font-semibold text-red-700 mb-1">원가분석</div>
+                  <div className="text-lg font-bold text-red-600">
+                    {formatPrice(filteredTotals.totalCost + filteredTotals.totalDiscounts + filteredTotals.totalPartialUnpaid)}
+                  </div>
                 </div>
                 
                 <div>
                   <div className="font-semibold text-purple-700 mb-1">실제수익</div>
-                  <div className={`text-lg font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                    {formatPrice(filteredTotals.netProfit)}
+                  <div className={`text-lg font-bold ${(filteredTotals.actualRevenue - filteredTotals.totalCost - filteredTotals.totalDiscounts - filteredTotals.totalPartialUnpaid) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                    {formatPrice(filteredTotals.actualRevenue - filteredTotals.totalCost - filteredTotals.totalDiscounts - filteredTotals.totalPartialUnpaid)}
                   </div>
                 </div>
               </div>
