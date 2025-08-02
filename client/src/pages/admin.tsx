@@ -697,9 +697,27 @@ export default function Admin() {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortOrder === 'order-status') {
-      // Sort by creation date (latest first)
+      // Sort by order status: scheduled orders first, then by scheduled date (earliest first)
       return sorted.sort((a, b) => {
-        // Sort by creation date (latest first)
+        // If one is scheduled and the other isn't, scheduled goes to top
+        if (a.status === 'scheduled' && b.status !== 'scheduled') return -1;
+        if (b.status === 'scheduled' && a.status !== 'scheduled') return 1;
+        
+        // Both are scheduled - sort by scheduled date (earliest first)
+        if (a.status === 'scheduled' && b.status === 'scheduled') {
+          // Orders with scheduled date first, then by scheduled date (earliest first)
+          if (a.scheduledDate && !b.scheduledDate) return -1;
+          if (!a.scheduledDate && b.scheduledDate) return 1;
+          
+          if (a.scheduledDate && b.scheduledDate) {
+            return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+          }
+          
+          // Both don't have scheduled date - sort by creation date (latest first)
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        
+        // Neither is scheduled - sort by creation date (latest first)
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortOrder === 'delivery-date') {
