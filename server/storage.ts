@@ -213,7 +213,7 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
-  async updatePaymentStatus(id: number, paymentStatus: string, actualPaidAmount?: number): Promise<Order | undefined> {
+  async updatePaymentStatus(id: number, paymentStatus: string, actualPaidAmount?: number, discountReason?: string): Promise<Order | undefined> {
     const updateData: any = { 
       paymentStatus,
       paymentConfirmedAt: paymentStatus === 'confirmed' ? new Date() : null
@@ -230,11 +230,11 @@ export class DatabaseStorage implements IStorage {
         
         if (discountAmount > 0) {
           updateData.discountAmount = discountAmount;
-          updateData.discountReason = `할인 (주문금액 ${currentOrder.totalAmount.toLocaleString()}원 - 실입금 ${actualPaidAmount.toLocaleString()}원)`;
+          updateData.discountReason = discountReason || `할인 (주문금액 ${currentOrder.totalAmount.toLocaleString()}원 - 실입금 ${actualPaidAmount.toLocaleString()}원)`;
         } else if (discountAmount < 0) {
           // 과납입의 경우
           updateData.discountAmount = 0;
-          updateData.discountReason = `과납입 (${Math.abs(discountAmount).toLocaleString()}원 추가 입금)`;
+          updateData.discountReason = discountReason || `과납입 (${Math.abs(discountAmount).toLocaleString()}원 추가 입금)`;
         } else {
           // 정확한 금액 입금
           updateData.discountAmount = 0;

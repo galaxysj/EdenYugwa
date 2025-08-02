@@ -164,17 +164,34 @@ function PaymentConfirmDialog({
   order: Order | null; 
   open: boolean; 
   setOpen: (open: boolean) => void;
-  onConfirm: (actualPaidAmount: number) => void;
+  onConfirm: (actualPaidAmount: number, discountReason: string) => void;
 }) {
   const [actualPaidAmount, setActualPaidAmount] = useState("");
+  const [discountType, setDiscountType] = useState("partial"); // "partial" or "discount"
   
   const handleConfirm = () => {
     const amount = parseInt(actualPaidAmount);
     if (isNaN(amount) || amount < 0) {
       return;
     }
-    onConfirm(amount);
+
+    const expectedAmount = order?.totalAmount || 0;
+    const difference = expectedAmount - amount;
+    
+    let discountReason = "";
+    if (difference > 0) {
+      if (discountType === "partial") {
+        discountReason = `부분미입금 (미입금: ${difference.toLocaleString()}원)`;
+      } else {
+        discountReason = `할인 (할인금액: ${difference.toLocaleString()}원)`;
+      }
+    } else if (difference < 0) {
+      discountReason = `과납입 (${Math.abs(difference).toLocaleString()}원 추가 입금)`;
+    }
+
+    onConfirm(amount, discountReason);
     setActualPaidAmount("");
+    setDiscountType("partial");
     setOpen(false);
   };
 
@@ -214,24 +231,47 @@ function PaymentConfirmDialog({
             />
           </div>
           
-          {actualPaidAmount && (
-            <div className="p-3 bg-blue-50 rounded-md border">
+          {actualPaidAmount && difference > 0 && (
+            <div className="space-y-3">
+              <div className="p-3 bg-blue-50 rounded-md border">
+                <div className="text-sm">
+                  <div className="text-orange-600 font-medium">
+                    미입금: {difference.toLocaleString()}원
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>미입금 사유 선택</Label>
+                <Select value={discountType} onValueChange={setDiscountType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="partial">부분미입금 (고객이 부분적으로만 입금)</SelectItem>
+                    <SelectItem value="discount">할인 (의도적인 할인 적용)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          
+          {actualPaidAmount && difference < 0 && (
+            <div className="p-3 bg-green-50 rounded-md border">
               <div className="text-sm">
-                {difference > 0 && (
-                  <div className="text-orange-600">
-                    <strong>할인:</strong> {difference.toLocaleString()}원
-                  </div>
-                )}
-                {difference < 0 && (
-                  <div className="text-green-600">
-                    <strong>과납입:</strong> {Math.abs(difference).toLocaleString()}원
-                  </div>
-                )}
-                {difference === 0 && (
-                  <div className="text-green-600">
-                    <strong>정확한 금액 입금</strong>
-                  </div>
-                )}
+                <div className="text-green-600 font-medium">
+                  과납입: {Math.abs(difference).toLocaleString()}원
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {actualPaidAmount && difference === 0 && (
+            <div className="p-3 bg-green-50 rounded-md border">
+              <div className="text-sm">
+                <div className="text-green-600 font-medium">
+                  정확한 금액 입금
+                </div>
               </div>
             </div>
           )}
@@ -247,6 +287,7 @@ function PaymentConfirmDialog({
               onClick={() => {
                 setOpen(false);
                 setActualPaidAmount("");
+                setDiscountType("partial");
               }}
               className="flex-1"
             >
@@ -1282,7 +1323,7 @@ export default function Admin() {
   });
 
   const updatePaymentMutation = useMutation({
-    mutationFn: ({ id, paymentStatus, actualPaidAmount }: { id: number; paymentStatus: string; actualPaidAmount?: number }) => 
+    mutationFn: ({ id, paymentStatus, actualPaidAmount, discountReason }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountReason?: string }) => 
       api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -1300,13 +1341,14 @@ export default function Admin() {
     },
   });
 
-  // Handle payment confirmation with actual amount
-  const handlePaymentConfirmation = (actualPaidAmount: number) => {
+  // Handle payment confirmation with actual amount and discount reason
+  const handlePaymentConfirmation = (actualPaidAmount: number, discountReason: string) => {
     if (selectedOrderForPayment) {
       updatePaymentMutation.mutate({
         id: selectedOrderForPayment.id,
         paymentStatus: 'confirmed',
-        actualPaidAmount
+        actualPaidAmount,
+        discountReason
       });
       setSelectedOrderForPayment(null);
     }
