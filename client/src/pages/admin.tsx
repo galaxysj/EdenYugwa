@@ -772,7 +772,7 @@ export default function Admin() {
       acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
       acc.smallBoxAmount += order.smallBoxQuantity * 19000;
       acc.largeBoxAmount += order.largeBoxQuantity * 21000;
-      acc.wrappingAmount += order.wrappingQuantity * 1000;
+      acc.wrappingAmount += order.wrappingQuantity * 1000; // 보자기 판매가격
       
       // Calculate quantities
       acc.smallBoxQuantity += order.smallBoxQuantity;
