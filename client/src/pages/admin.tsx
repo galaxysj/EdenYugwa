@@ -1592,7 +1592,7 @@ export default function Admin() {
                     <td className="py-3 px-3">
                       <div className="space-y-1">
                         <div className="font-medium text-gray-900 text-sm">
-                          주문: {order.customerName}
+                          주문자: {order.customerName}
                         </div>
                         {order.recipientName && order.recipientName !== order.customerName && (
                           <div className="text-xs text-blue-600">
@@ -1601,7 +1601,7 @@ export default function Admin() {
                         )}
                         {order.isDifferentDepositor && order.depositorName && (
                           <div className="text-xs text-green-600">
-                            입금자: {order.depositorName}
+                            예금자: {order.depositorName}
                           </div>
                         )}
                       </div>
@@ -1865,7 +1865,7 @@ export default function Admin() {
                         )}
                         {order.isDifferentDepositor && order.depositorName && (
                           <>
-                            <div className="text-gray-500 mb-1 mt-2">입금자</div>
+                            <div className="text-gray-500 mb-1 mt-2">예금자</div>
                             <div className="font-medium text-green-600">{order.depositorName}</div>
                           </>
                         )}

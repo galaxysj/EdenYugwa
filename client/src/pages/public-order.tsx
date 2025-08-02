@@ -234,7 +234,7 @@ export default function PublicOrder() {
                       name="customerName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>주문자명 *</FormLabel>
+                          <FormLabel>주문자 이름 *</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="홍길동" />
                           </FormControl>
@@ -303,6 +303,45 @@ export default function PublicOrder() {
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isDifferentDepositor"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            예금자가 다릅니다
+                          </FormLabel>
+                          <p className="text-sm text-gray-500">
+                            체크하시면 예금자 이름을 별도로 입력할 수 있습니다
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {form.watch("isDifferentDepositor") && (
+                    <FormField
+                      control={form.control}
+                      name="depositorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>예금자 이름 *</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="박입금자" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
 
                 {/* Recipient Information */}
@@ -389,52 +428,7 @@ export default function PublicOrder() {
                   />
                 </div>
 
-                {/* Depositor Information */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                    <User className="h-5 w-5 text-eden-brown" />
-                    <h3 className="text-lg font-semibold text-gray-900">입금자 정보</h3>
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="isDifferentDepositor"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            주문자와 입금자가 다릅니다
-                          </FormLabel>
-                          <p className="text-sm text-gray-500">
-                            체크하시면 입금자 이름을 별도로 입력할 수 있습니다
-                          </p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {form.watch("isDifferentDepositor") && (
-                    <FormField
-                      control={form.control}
-                      name="depositorName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>입금자 이름 *</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="박입금자" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
+
 
                 {/* Product Selection */}
                 <div className="space-y-6">
