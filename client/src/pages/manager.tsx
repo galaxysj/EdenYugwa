@@ -153,7 +153,7 @@ function Manager() {
   const [orderStartDate, setOrderStartDate] = useState<string>('');
   const [orderEndDate, setOrderEndDate] = useState<string>('');
   const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('confirmed'); // Manager always sees confirmed payments only
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
@@ -175,10 +175,13 @@ function Manager() {
   const [showBulkSMSDialog, setShowBulkSMSDialog] = useState(false);
   const [bulkSMSMessage, setBulkSMSMessage] = useState("");
 
-  const { data: orders = [], isLoading } = useQuery<Order[]>({
+  const { data: allOrders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
     refetchInterval: 5000,
   });
+
+  // Filter orders to show only confirmed payments for manager
+  const orders = allOrders.filter(order => order.paymentStatus === 'confirmed');
 
   const { data: deletedOrders = [] } = useQuery<Order[]>({
     queryKey: ["/api/orders/trash"],
@@ -217,7 +220,7 @@ function Manager() {
       );
     }
 
-    // Payment status filter
+    // Payment status filter - Manager only sees confirmed payments, but we still apply filter for consistency
     if (paymentStatusFilter !== 'all') {
       filtered = filtered.filter(order => order.paymentStatus === paymentStatusFilter);
     }
@@ -312,7 +315,7 @@ function Manager() {
 
   // Apply filters and sorting
   const filteredOrders = getFilteredOrdersList(orders);
-  const allOrders = sortOrders(filteredOrders);
+  const sortedOrders = sortOrders(filteredOrders);
 
   // SMS mutation
   const sendSMSMutation = useMutation({
@@ -443,7 +446,7 @@ function Manager() {
     setOrderStartDate('');
     setOrderEndDate('');
     setCustomerNameFilter('');
-    setPaymentStatusFilter('all');
+    setPaymentStatusFilter('confirmed'); // Manager always sees confirmed payments only
     setOrderStatusFilter('all');
     setSortOrder('latest');
   };
@@ -451,7 +454,7 @@ function Manager() {
   // Render filter UI
   const renderOrderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
         {/* Date Filter - Simplified */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
@@ -511,19 +514,15 @@ function Manager() {
           />
         </div>
 
-        {/* Payment Status */}
-        <div>
+        {/* Payment Status - Hidden for Manager */}
+        <div style={{ display: 'none' }}>
           <label className="block text-sm font-medium text-gray-700 mb-1">입금상태</label>
           <select
-            value={paymentStatusFilter}
-            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+            value="confirmed"
+            disabled
             className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
-            <option value="all">전체</option>
-            <option value="pending">입금대기</option>
             <option value="confirmed">입금완료</option>
-            <option value="partial">부분결제</option>
-            <option value="refunded">환불</option>
           </select>
         </div>
 
@@ -610,7 +609,7 @@ function Manager() {
           
           <div className="flex items-center gap-3">
             <div className="text-xs text-gray-600">
-              검색결과: <span className="font-medium text-gray-900">{allOrders.length}건</span>
+              입금완료 주문: <span className="font-medium text-gray-900">{sortedOrders.length}건</span>
             </div>
             <Button
               size="sm"
@@ -1013,11 +1012,11 @@ function Manager() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  주문 목록 ({allOrders.length}건)
+                  주문 목록 ({sortedOrders.length}건)
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                {renderOrdersList(allOrders)}
+                {renderOrdersList(sortedOrders)}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1061,7 +1060,7 @@ function Manager() {
             </Button>
             <Button 
               onClick={() => {
-                const selectedOrders = allOrders.filter(order => selectedOrderItems.has(order.id));
+                const selectedOrders = sortedOrders.filter(order => selectedOrderItems.has(order.id));
                 const phones = selectedOrders.map(order => order.customerPhone);
                 sendBulkSMSMutation.mutate({ phones, message: bulkSMSMessage });
               }}
