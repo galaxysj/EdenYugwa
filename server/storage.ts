@@ -1,6 +1,6 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // Order management
@@ -99,14 +99,35 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  private generateOrderNumber(): string {
-    const number = this.orderCounter.toString().padStart(3, '0');
-    this.orderCounter++;
-    return `ED${number}`;
+  private async generateOrderNumber(): Promise<string> {
+    // Get current date in YYYYMMDD format
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const dateStr = `${year}${month}${day}`;
+    
+    // Get all orders created today to determine the sequence number
+    const todayStart = new Date(year, now.getMonth(), now.getDate(), 0, 0, 0);
+    const todayEnd = new Date(year, now.getMonth(), now.getDate(), 23, 59, 59);
+    
+    const todayOrders = await db.select()
+      .from(orders)
+      .where(
+        and(
+          gte(orders.createdAt, todayStart),
+          lte(orders.createdAt, todayEnd)
+        )
+      );
+    
+    // Sequence number is the count of today's orders + 1
+    const sequenceNumber = (todayOrders.length + 1).toString().padStart(2, '0');
+    
+    return `ED${dateStr}${sequenceNumber}`;
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const orderNumber = this.generateOrderNumber();
+    const orderNumber = await this.generateOrderNumber();
     const orderData = {
       customerName: insertOrder.customerName,
       customerPhone: insertOrder.customerPhone,

@@ -109,4 +109,6 @@ Using Drizzle ORM with PostgreSQL:
 
 **Monorepo Structure**: Shared schema definitions between client and server ensure type safety across the full stack.
 
+**Order Number System**: Implemented date-based order number generation using format `ED[YYYYMMDD][순서]` where YYYYMMDD is the order date and 순서 is the daily sequence number (01, 02, 03...). This provides clear chronological organization and allows easy identification of order dates. Updated August 2, 2025.
+
 The application is designed for scalability with clear separation of concerns and ready for production deployment with database persistence and SMS integration.
