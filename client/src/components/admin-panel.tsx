@@ -84,7 +84,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     sendSMSMutation.mutate({
       orderId: order.id,
       phoneNumber: order.customerPhone,
-      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${statusMessage}`,
+      message: `[에덴한과] ${order.customerName}님, ${statusMessage}`,
     });
   };
 

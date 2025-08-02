@@ -44,7 +44,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
     defaultValues: {
-      message: `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`,
+      message: `[에덴한과] ${order.customerName}님, 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`,
     },
   });
 
@@ -101,15 +101,15 @@ export function SmsDialog({ order }: SmsDialogProps) {
   const handlePresetMessage = (type: 'status' | 'payment' | 'shipping' | 'custom') => {
     if (type === 'status') {
       const statusMessage = getStatusMessage(order.status);
-      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${statusMessage}`);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, ${statusMessage}`);
     } else if (type === 'payment') {
       const paymentMessage = getStatusMessage(order.status, order.paymentStatus);
-      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} ${paymentMessage}`);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, ${paymentMessage}`);
     } else if (type === 'shipping') {
       const shippingDate = order.scheduledDate ? 
         new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : 
         '곧';
-      form.setValue('message', `[에덴한과] ${order.customerName}님, 주문번호 ${order.orderNumber} 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`);
     } else {
       form.setValue('message', `[에덴한과] ${order.customerName}님께 개별 안내드립니다.`);
     }
