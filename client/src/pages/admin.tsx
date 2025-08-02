@@ -933,7 +933,7 @@ export default function Admin() {
             </div>
             
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
                 <div>
                   <div className="font-semibold text-gray-700 mb-1">주문건수</div>
                   <div className="text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
@@ -952,6 +952,11 @@ export default function Admin() {
                 <div>
                   <div className="font-semibold text-eden-brown mb-1">보자기</div>
                   <div className="text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
+                </div>
+                
+                <div>
+                  <div className="font-semibold text-blue-700 mb-1">택배발송</div>
+                  <div className="text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                 </div>
                 
                 <div>
