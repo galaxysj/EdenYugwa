@@ -1592,10 +1592,16 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-2 px-2 min-w-[80px]">
-                      <div className="text-xs">
-                        {order.smallBoxQuantity > 0 && <div>1호×{order.smallBoxQuantity}</div>}
-                        {order.largeBoxQuantity > 0 && <div>2호×{order.largeBoxQuantity}</div>}
-                        {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}</div>}
+                      <div className="text-xs space-y-1">
+                        {order.smallBoxQuantity > 0 && (
+                          <div>한과1호×{order.smallBoxQuantity}개</div>
+                        )}
+                        {order.largeBoxQuantity > 0 && (
+                          <div>한과2호×{order.largeBoxQuantity}개</div>
+                        )}
+                        {order.wrappingQuantity > 0 && (
+                          <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>
+                        )}
                       </div>
                     </td>
                     <td className="py-2 px-2">
