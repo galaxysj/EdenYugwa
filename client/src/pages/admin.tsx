@@ -1465,17 +1465,17 @@ export default function Admin() {
                       <div className="space-y-1">
                         {order.smallBoxQuantity > 0 && (
                           <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                            한과1호(약 1.1kg) × {order.smallBoxQuantity}
+                            한과1호*{order.smallBoxQuantity}개
                           </div>
                         )}
                         {order.largeBoxQuantity > 0 && (
                           <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                            한과2호(약 1.3kg) × {order.largeBoxQuantity}
+                            한과2호*{order.largeBoxQuantity}개
                           </div>
                         )}
                         {order.wrappingQuantity > 0 && (
                           <div className="text-xs font-medium text-eden-brown whitespace-nowrap">
-                            보자기 × {order.wrappingQuantity}
+                            보자기*{order.wrappingQuantity}개
                           </div>
                         )}
                       </div>
@@ -1730,13 +1730,13 @@ export default function Admin() {
                         <div className="text-gray-500 mb-2">주문상품</div>
                         <div className="space-y-1">
                           {order.smallBoxQuantity > 0 && (
-                            <div className="font-medium">소박스 × {order.smallBoxQuantity}개</div>
+                            <div className="font-medium">한과1호*{order.smallBoxQuantity}개</div>
                           )}
                           {order.largeBoxQuantity > 0 && (
-                            <div className="font-medium">대박스 × {order.largeBoxQuantity}개</div>
+                            <div className="font-medium">한과2호*{order.largeBoxQuantity}개</div>
                           )}
                           {order.wrappingQuantity > 0 && (
-                            <div className="font-medium text-eden-brown">보자기 × {order.wrappingQuantity}개</div>
+                            <div className="font-medium text-eden-brown">보자기*{order.wrappingQuantity}개</div>
                           )}
                         </div>
                       </div>
