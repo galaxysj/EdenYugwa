@@ -1487,30 +1487,8 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <div className="space-y-1 text-xs">
-                        <div className="font-medium text-gray-900">
-                          {formatPrice(order.totalAmount)}
-                        </div>
-                        {order.actualPaidAmount && order.actualPaidAmount > 0 && (
-                          <div className="text-green-600">
-                            실입금: {formatPrice(order.actualPaidAmount)}
-                          </div>
-                        )}
-                        {order.discountAmount && order.discountAmount > 0 && (
-                          <div className="text-blue-600">
-                            할인: -{formatPrice(order.discountAmount)}
-                          </div>
-                        )}
-                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
-                          <div className="text-red-600">
-                            미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
-                          </div>
-                        )}
-                        {order.netProfit && order.netProfit > 0 && (
-                          <div className="text-purple-600 font-medium">
-                            수익: {formatPrice(order.netProfit)}
-                          </div>
-                        )}
+                      <div className="font-medium text-gray-900 text-sm">
+                        {formatPrice(order.totalAmount)}
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
@@ -1731,50 +1709,8 @@ export default function Admin() {
                       </div>
                       <div>
                         <div className="text-gray-500 mb-2">매출현황</div>
-                        <div className="space-y-2">
-                          {/* 주문 구성 요소별 금액 */}
-                          <div className="text-xs text-gray-500 space-y-1">
-                            {order.smallBoxQuantity > 0 && (
-                              <div>소박스: {formatPrice(order.smallBoxQuantity * 19000)}</div>
-                            )}
-                            {order.largeBoxQuantity > 0 && (
-                              <div>대박스: {formatPrice(order.largeBoxQuantity * 21000)}</div>
-                            )}
-                            {order.wrappingQuantity > 0 && (
-                              <div>보자기: {formatPrice(order.wrappingQuantity * 1000)}</div>
-                            )}
-                            {(() => {
-                              const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                              const shippingFee = totalItems >= 6 ? 0 : 4000;
-                              return shippingFee > 0 && <div>배송비: {formatPrice(shippingFee)}</div>;
-                            })()}
-                          </div>
-                          
-                          <div className="text-sm text-gray-600 border-t pt-2">
-                            주문금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            실제입금: <span className="font-medium text-red-600">
-                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
-                            </span>
-                            {order.discountAmount && order.discountAmount > 0 && (
-                              <div className="mt-1 pt-1 border-t border-gray-200">
-                                <span className="text-blue-600 font-medium">할인: -{formatPrice(order.discountAmount)}</span>
-                              </div>
-                            )}
-                            {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
-                              <div className="mt-1 pt-1 border-t border-gray-200">
-                                <span className="text-red-600 font-medium">부분미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</span>
-                              </div>
-                            )}
-                          </div>
-                          {order.netProfit !== undefined && order.netProfit !== null && (
-                            <div className="text-sm text-gray-600">
-                              실제수익: <span className={`font-medium ${order.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
-                                {formatPrice(order.netProfit)}
-                              </span>
-                            </div>
-                          )}
+                        <div className="text-sm text-gray-600">
+                          주문금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
                         </div>
                       </div>
                     </div>
