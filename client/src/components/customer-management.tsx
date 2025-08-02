@@ -50,6 +50,7 @@ export function CustomerManagement() {
 
   const { data: customers = [], isLoading } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
+    refetchInterval: 10000, // 10초마다 자동 새로고침
   });
 
   const { data: customerAddresses = [] } = useQuery<CustomerAddress[]>({

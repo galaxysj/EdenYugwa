@@ -216,6 +216,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!updatedOrder) {
         return res.status(404).json({ message: "Order not found" });
       }
+
+      // Update customer statistics when payment status changes
+      await storage.updateCustomerStats(updatedOrder.customerPhone);
       
       res.json(updatedOrder);
     } catch (error) {
