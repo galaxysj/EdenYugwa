@@ -676,13 +676,57 @@ export default function Admin() {
         </div>
 
         {/* 전체 매출 통계 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardContent className="p-4 text-center bg-eden-red/5">
-              <div className="text-2xl font-bold text-eden-red">
+              <div className="text-xl font-bold text-eden-red">
                 {formatPrice(stats.totalRevenue)}
               </div>
-              <div className="text-sm text-gray-600">총 주문 금액</div>
+              <div className="text-xs text-gray-600">총 주문 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-green-50">
+              <div className="text-xl font-bold text-green-600">
+                {formatPrice(stats.actualRevenue)}
+              </div>
+              <div className="text-xs text-gray-600">실제 입금 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-blue-50">
+              <div className="text-xl font-bold text-blue-600">
+                {formatPrice(stats.totalDiscounts)}
+              </div>
+              <div className="text-xs text-gray-600">총 할인 금액</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-red-50">
+              <div className="text-xl font-bold text-red-600">
+                {formatPrice(stats.totalPartialUnpaid)}
+              </div>
+              <div className="text-xs text-gray-600">부분 미입금</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center bg-purple-50">
+              <div className="text-xl font-bold text-purple-600">
+                {formatPrice(stats.totalNetProfit)}
+              </div>
+              <div className="text-xs text-gray-600">총 실제 수익</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 주문 현황 통계 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center bg-gray-50">
+              <div className="text-2xl font-bold text-gray-600">
+                {stats.total}
+              </div>
+              <div className="text-sm text-gray-600">총 주문 수</div>
             </CardContent>
           </Card>
           <Card>
@@ -694,19 +738,19 @@ export default function Admin() {
             </CardContent>
           </Card>
           <Card>
+            <CardContent className="p-4 text-center bg-orange-50">
+              <div className="text-2xl font-bold text-orange-600">
+                {stats.partialOrders}
+              </div>
+              <div className="text-sm text-gray-600">부분결제 주문</div>
+            </CardContent>
+          </Card>
+          <Card>
             <CardContent className="p-4 text-center bg-blue-50">
               <div className="text-2xl font-bold text-blue-600">
                 {stats.unpaidOrders}
               </div>
               <div className="text-sm text-gray-600">입금대기 주문</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4 text-center bg-purple-50">
-              <div className="text-2xl font-bold text-purple-600">
-                {stats.total}
-              </div>
-              <div className="text-sm text-gray-600">총 주문 수</div>
             </CardContent>
           </Card>
         </div>
@@ -731,7 +775,9 @@ export default function Admin() {
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문일</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문내역</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문금액</th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">실제입금</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">할인/부분미입금</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">실제수익</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -782,13 +828,36 @@ export default function Admin() {
                             </div>
                           </td>
                           <td className="py-3 px-4">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              order.paymentStatus === 'confirmed' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {order.paymentStatus === 'confirmed' ? '입금완료' : '입금대기'}
+                            <span className="font-medium text-green-600">
+                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
                             </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            {order.discountAmount && order.discountAmount > 0 ? (
+                              <div className="text-blue-600 font-medium">
+                                할인: -{formatPrice(order.discountAmount)}
+                                {order.discountReason && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    사유: {order.discountReason}
+                                  </div>
+                                )}
+                              </div>
+                            ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount ? (
+                              <div className="text-red-600 font-medium">
+                                부분미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            {order.netProfit !== undefined && order.netProfit !== null ? (
+                              <span className={`font-medium ${order.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                                {formatPrice(order.netProfit)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-500">-</span>
+                            )}
                           </td>
                         </tr>
                       );
@@ -1526,16 +1595,38 @@ export default function Admin() {
 
 
 
-  // Calculate stats
+  // Calculate stats with actual payment information
   const stats = orders.reduce(
     (acc: any, order: Order) => {
       acc.total++;
       acc[order.status as keyof typeof acc]++;
       if (order.paymentStatus === 'confirmed') acc.paidOrders++;
       if (order.paymentStatus === 'pending') acc.unpaidOrders++;
+      if (order.paymentStatus === 'partial') acc.partialOrders++;
       
-      // Financial calculations
+      // Financial calculations based on actual payment data
       acc.totalRevenue += order.totalAmount;
+      
+      // Add actual revenue calculations
+      if (order.actualPaidAmount) {
+        acc.actualRevenue += order.actualPaidAmount;
+      } else if (order.paymentStatus === 'confirmed') {
+        acc.actualRevenue += order.totalAmount;
+      }
+      
+      // Track discounts and partial payments
+      if (order.discountAmount && order.discountAmount > 0) {
+        acc.totalDiscounts += order.discountAmount;
+      }
+      
+      if (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) {
+        acc.totalPartialUnpaid += (order.totalAmount - order.actualPaidAmount);
+      }
+      
+      // Track net profit
+      if (order.netProfit !== undefined && order.netProfit !== null) {
+        acc.totalNetProfit += order.netProfit;
+      }
       
       return acc;
     },
@@ -1546,7 +1637,12 @@ export default function Admin() {
       delivered: 0, 
       paidOrders: 0, 
       unpaidOrders: 0,
-      totalRevenue: 0
+      partialOrders: 0,
+      totalRevenue: 0,
+      actualRevenue: 0,
+      totalDiscounts: 0,
+      totalPartialUnpaid: 0,
+      totalNetProfit: 0
     }
   );
 
