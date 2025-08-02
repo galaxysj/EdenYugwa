@@ -24,10 +24,10 @@ const publicOrderSchema = z.object({
   address1: z.string().min(1, "주소를 입력해주세요"),
   address2: z.string().optional(),
   // 받는 분 정보
-  recipientName: z.string().min(1, "받는 분 이름을 입력해주세요"),
-  recipientPhone: z.string().min(1, "받는 분 연락처를 입력해주세요"),
+  recipientName: z.string().optional(),
+  recipientPhone: z.string().optional(),
   recipientZipCode: z.string().optional(),
-  recipientAddress1: z.string().min(1, "받는 분 주소를 입력해주세요"),
+  recipientAddress1: z.string().optional(),
   recipientAddress2: z.string().optional(),
   // 예금자 정보
   isDifferentDepositor: z.boolean().default(false),
@@ -355,7 +355,7 @@ export default function PublicOrder() {
                       name="recipientName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>받는 분 이름 *</FormLabel>
+                          <FormLabel>받는 분 이름</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="김받는분" />
                           </FormControl>
@@ -369,7 +369,7 @@ export default function PublicOrder() {
                       name="recipientPhone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>받는 분 연락처 *</FormLabel>
+                          <FormLabel>받는 분 연락처</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="010-9876-5432" />
                           </FormControl>
@@ -400,7 +400,7 @@ export default function PublicOrder() {
                         name="recipientAddress1"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>받는 분 주소 *</FormLabel>
+                            <FormLabel>받는 분 주소</FormLabel>
                             <FormControl>
                               <Input {...field} placeholder="부산시 해운대구 센텀시티로 456" />
                             </FormControl>
