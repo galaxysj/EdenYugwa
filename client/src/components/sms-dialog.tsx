@@ -13,11 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { MessageSquare, Send } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { MessageSquare, Send, AlertCircle } from "lucide-react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import type { Order } from "@shared/schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { Order, AdminSettings } from "@shared/schema";
 
 const smsSchema = z.object({
   message: z.string().min(1, "메시지를 입력해주세요").max(200, "SMS는 200자 이내로 입력해주세요"),
@@ -33,6 +34,12 @@ export function SmsDialog({ order }: SmsDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check admin settings
+  const { data: adminSettings } = useQuery<AdminSettings>({
+    queryKey: ['/api/admin-settings'],
+    retry: false,
+  });
 
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
@@ -121,8 +128,26 @@ export function SmsDialog({ order }: SmsDialogProps) {
           <DialogTitle>SMS 발송</DialogTitle>
           <DialogDescription>
             {order.customerName}님 ({order.customerPhone})에게 SMS를 발송합니다.
+            {adminSettings?.adminPhone && (
+              <div className="text-sm text-gray-600 mt-1">
+                발신번호: {adminSettings.adminPhone}
+              </div>
+            )}
           </DialogDescription>
         </DialogHeader>
+
+        {/* Admin Settings Check */}
+        {!adminSettings?.adminPhone && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              SMS 발송을 위해 관리자 설정에서 전화번호를 입력해주세요. 
+              <a href="/admin-settings" className="text-blue-600 hover:underline ml-1">
+                관리자 설정 페이지로 이동
+              </a>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -199,7 +224,7 @@ export function SmsDialog({ order }: SmsDialogProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={sendSMSMutation.isPending}
+                disabled={sendSMSMutation.isPending || !adminSettings?.adminPhone}
                 className="bg-eden-brown hover:bg-eden-dark"
               >
                 {sendSMSMutation.isPending ? (

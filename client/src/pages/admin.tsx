@@ -1911,6 +1911,15 @@ export default function Admin() {
                 <DollarSign className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">매출관리</span>
               </Button>
+              <Link href="/admin-settings">
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+                >
+                  <Cog className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">관리자 설정</span>
+                </Button>
+              </Link>
               <CostSettingsDialog />
               <Button 
                 onClick={handleExcelDownload}

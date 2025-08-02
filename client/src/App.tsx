@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Admin from "@/pages/admin";
+import AdminSettings from "@/pages/admin-settings";
 import Manager from "@/pages/manager";
 import Login from "@/pages/login";
 import OrderLookup from "@/pages/order-lookup";
@@ -20,6 +21,11 @@ function Router() {
       <Route path="/admin">
         <ProtectedRoute>
           <Admin />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin-settings">
+        <ProtectedRoute>
+          <AdminSettings />
         </ProtectedRoute>
       </Route>
       <Route path="/manager" component={Manager} />

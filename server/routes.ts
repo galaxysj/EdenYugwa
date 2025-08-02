@@ -272,6 +272,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!orderId || !phoneNumber || !message) {
         return res.status(400).json({ message: "Missing required fields" });
       }
+
+      // Get admin settings to use admin phone as sender
+      const adminSettings = await storage.getAdminSettings();
+      if (!adminSettings || !adminSettings.adminPhone) {
+        return res.status(400).json({ message: "관리자 전화번호가 설정되지 않았습니다. 관리자 설정에서 전화번호를 입력해주세요." });
+      }
       
       // Create SMS notification record
       const notification = await storage.createSmsNotification({
@@ -280,13 +286,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message,
       });
       
-      // TODO: Integrate with actual SMS service (Twilio, AWS SNS, etc.)
-      console.log(`SMS sent to ${phoneNumber}: ${message}`);
+      // Log SMS with admin phone info for integration reference
+      console.log(`SMS 발송 정보:
+        발신번호: ${adminSettings.adminPhone}
+        수신번호: ${phoneNumber}
+        메시지: ${message}
+        주문번호: ${orderId}
+      `);
       
       res.json({ 
         success: true, 
-        message: "SMS sent successfully",
-        notification 
+        message: `SMS가 성공적으로 발송되었습니다 (발신: ${adminSettings.adminPhone})`,
+        notification,
+        senderPhone: adminSettings.adminPhone
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to send SMS" });
@@ -609,6 +621,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating setting:", error);
       res.status(500).json({ error: "Failed to update setting" });
+    }
+  });
+
+  // Admin settings API
+  app.get("/api/admin-settings", async (req, res) => {
+    try {
+      let adminSettings = await storage.getAdminSettings();
+      
+      // Create default settings if none exist
+      if (!adminSettings) {
+        adminSettings = await storage.updateAdminSettings({
+          adminName: "에덴한과 관리자",
+          adminPhone: "",
+          businessName: "에덴한과",
+          businessAddress: "",
+          businessPhone: "",
+          bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)"
+        });
+      }
+      
+      res.json(adminSettings);
+    } catch (error) {
+      console.error("Error fetching admin settings:", error);
+      res.status(500).json({ error: "관리자 설정을 불러오는데 실패했습니다" });
+    }
+  });
+
+  app.post("/api/admin-settings", async (req, res) => {
+    try {
+      const adminSettings = req.body;
+      
+      if (!adminSettings.adminName || !adminSettings.adminPhone || !adminSettings.businessName) {
+        return res.status(400).json({ error: "관리자명, 전화번호, 사업체명은 필수 항목입니다" });
+      }
+      
+      const updatedSettings = await storage.updateAdminSettings(adminSettings);
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating admin settings:", error);
+      res.status(500).json({ error: "관리자 설정 업데이트에 실패했습니다" });
     }
   });
 

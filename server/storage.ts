@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, managers, settings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, adminSettings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -31,6 +31,10 @@ export interface IStorage {
   getSetting(key: string): Promise<Setting | undefined>;
   setSetting(key: string, value: string, description?: string): Promise<Setting>;
   getAllSettings(): Promise<Setting[]>;
+  
+  // Admin settings management
+  getAdminSettings(): Promise<AdminSettings | undefined>;
+  updateAdminSettings(settings: InsertAdminSettings): Promise<AdminSettings>;
   
   // Trash/Delete operations
   softDeleteOrder(id: number): Promise<Order | undefined>;
@@ -398,6 +402,35 @@ export class DatabaseStorage implements IStorage {
 
   async permanentDeleteOrder(id: number): Promise<void> {
     await db.delete(orders).where(eq(orders.id, id));
+  }
+
+  // Admin settings management
+  async getAdminSettings(): Promise<AdminSettings | undefined> {
+    const [adminSetting] = await db.select().from(adminSettings).limit(1);
+    return adminSetting || undefined;
+  }
+
+  async updateAdminSettings(settings: InsertAdminSettings): Promise<AdminSettings> {
+    // Check if admin settings exist
+    const existing = await this.getAdminSettings();
+    
+    if (existing) {
+      // Update existing settings
+      const [updated] = await db.update(adminSettings)
+        .set({
+          ...settings,
+          updatedAt: new Date()
+        })
+        .where(eq(adminSettings.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new settings
+      const [created] = await db.insert(adminSettings)
+        .values(settings)
+        .returning();
+      return created;
+    }
   }
 }
 

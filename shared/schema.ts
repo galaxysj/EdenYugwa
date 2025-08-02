@@ -114,3 +114,25 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
 
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type Setting = typeof settings.$inferSelect;
+
+// Admin settings schema for business information
+export const adminSettings = pgTable("admin_settings", {
+  id: serial("id").primaryKey(),
+  adminName: text("admin_name").notNull(),
+  adminPhone: text("admin_phone").notNull(),
+  businessName: text("business_name").notNull(),
+  businessAddress: text("business_address"),
+  businessPhone: text("business_phone"),
+  bankAccount: text("bank_account"), // 계좌번호 정보
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAdminSettingsSchema = createInsertSchema(adminSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAdminSettings = z.infer<typeof insertAdminSettingsSchema>;
+export type AdminSettings = typeof adminSettings.$inferSelect;
