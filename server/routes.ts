@@ -691,6 +691,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "주문을 찾을 수 없습니다" });
       }
 
+      // Update customer stats after deleting order
+      await storage.updateCustomerStats(deletedOrder.customerPhone);
+
       res.json({ message: "주문이 휴지통으로 이동되었습니다", order: deletedOrder });
     } catch (error) {
       res.status(500).json({ message: "주문 삭제에 실패했습니다" });
@@ -711,6 +714,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!restoredOrder) {
         return res.status(404).json({ message: "주문을 찾을 수 없습니다" });
       }
+
+      // Update customer stats after restoring order
+      await storage.updateCustomerStats(restoredOrder.customerPhone);
 
       res.json({ message: "주문이 복구되었습니다", order: restoredOrder });
     } catch (error) {
@@ -945,6 +951,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting customer:", error);
       res.status(500).json({ error: "고객 삭제에 실패했습니다" });
+    }
+  });
+
+  // Customer stats refresh endpoint
+  app.post("/api/customers/refresh-stats", async (req, res) => {
+    try {
+      // Get all customers and refresh their stats
+      const customers = await storage.getAllCustomers();
+      for (const customer of customers) {
+        await storage.updateCustomerStats(customer.customerPhone);
+      }
+      res.json({ success: true, message: "모든 고객 통계가 업데이트되었습니다" });
+    } catch (error) {
+      console.error("Error refreshing customer stats:", error);
+      res.status(500).json({ error: "고객 통계 업데이트에 실패했습니다" });
     }
   });
 

@@ -112,6 +112,24 @@ export function CustomerManagement() {
     },
   });
 
+  const refreshStatsMutation = useMutation({
+    mutationFn: () => api.post("/api/customers/refresh-stats", {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      toast({
+        title: "통계 업데이트 완료",
+        description: "모든 고객의 주문횟수와 통계가 업데이트되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "통계 업데이트 실패",
+        description: error.response?.data?.error || "통계 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const uploadCustomersMutation = useMutation({
     mutationFn: (file: File) => {
       const formData = new FormData();
@@ -227,7 +245,7 @@ export function CustomerManagement() {
     return parts.join(" ") || "-";
   };
 
-  const formatLastOrderDate = (date: string | null) => {
+  const formatLastOrderDate = (date: string | Date | null) => {
     if (!date) return "-";
     return new Date(date).toLocaleDateString("ko-KR");
   };
@@ -244,6 +262,13 @@ export function CustomerManagement() {
           고객관리
         </CardTitle>
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => refreshStatsMutation.mutate()}
+            disabled={refreshStatsMutation.isPending}
+          >
+            {refreshStatsMutation.isPending ? "업데이트중..." : "통계 새로고침"}
+          </Button>
           <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">

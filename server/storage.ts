@@ -635,6 +635,7 @@ export class DatabaseStorage implements IStorage {
     if (existingCustomer) {
       await db.update(customers)
         .set({
+          orderCount,
           totalSpent,
           lastOrderDate,
           updatedAt: new Date()
