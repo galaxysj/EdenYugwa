@@ -1139,15 +1139,15 @@ export default function Admin() {
                             실제입금: <span className="font-medium text-red-600">
                               {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : '미입력'}
                             </span>
+                            {order.discountAmount && order.discountAmount > 0 && (
+                              <div className="mt-1 pt-1 border-t border-gray-200">
+                                <span className="text-blue-600 font-medium">할인: -{formatPrice(order.discountAmount)}</span>
+                                {order.discountReason && (
+                                  <span className="text-xs text-gray-500 ml-2">({order.discountReason})</span>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          {order.discountAmount && order.discountAmount > 0 && (
-                            <div className="text-sm text-gray-600">
-                              할인금액: <span className="font-medium text-blue-600">-{formatPrice(order.discountAmount)}</span>
-                              {order.discountReason && (
-                                <span className="text-xs text-gray-500 block">({order.discountReason})</span>
-                              )}
-                            </div>
-                          )}
                           {order.netProfit !== undefined && order.netProfit !== null && (
                             <div className="text-sm text-gray-600">
                               실제수익: <span className={`font-medium ${order.netProfit >= 0 ? "text-green-600" : "text-red-600"}`}>
