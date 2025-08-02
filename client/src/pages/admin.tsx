@@ -472,7 +472,7 @@ export default function Admin() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
-  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest'>('latest');
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -680,6 +680,71 @@ export default function Admin() {
     } else if (sortOrder === 'oldest') {
       // Oldest first
       return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    } else if (sortOrder === 'delivery-date') {
+      // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
+      return sorted.sort((a, b) => {
+        // Orders without delivery date go to top
+        if (!a.deliveredDate && b.deliveredDate) return -1;
+        if (a.deliveredDate && !b.deliveredDate) return 1;
+        
+        // Both have delivery dates - sort by delivery date (earliest first)
+        if (a.deliveredDate && b.deliveredDate) {
+          return new Date(a.deliveredDate).getTime() - new Date(b.deliveredDate).getTime();
+        }
+        
+        // Neither has delivery date - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'scheduled-date') {
+      // Sort by scheduled date: orders without scheduled date first, then by scheduled date (earliest first)
+      return sorted.sort((a, b) => {
+        // Orders without scheduled date go to top
+        if (!a.scheduledDate && b.scheduledDate) return -1;
+        if (a.scheduledDate && !b.scheduledDate) return 1;
+        
+        // Both have scheduled dates - sort by scheduled date (earliest first)
+        if (a.scheduledDate && b.scheduledDate) {
+          return new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime();
+        }
+        
+        // Neither has scheduled date - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'order-status') {
+      // Sort by order status: pending -> scheduled -> delivered
+      return sorted.sort((a, b) => {
+        const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+        const aPriority = statusPriority[a.status as keyof typeof statusPriority] || 999;
+        const bPriority = statusPriority[b.status as keyof typeof statusPriority] || 999;
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // Same status - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'payment-status') {
+      // Sort by payment status: pending -> partial -> confirmed -> refunded
+      return sorted.sort((a, b) => {
+        const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
+        const aPriority = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 999;
+        const bPriority = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 999;
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // Same payment status - sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'order-number') {
+      // Sort by order number (earliest first)
+      return sorted.sort((a, b) => {
+        const aNum = parseInt(a.orderNumber.split('-')[1] || '0');
+        const bNum = parseInt(b.orderNumber.split('-')[1] || '0');
+        return aNum - bNum;
+      });
     }
     
     return sorted;
@@ -1406,7 +1471,7 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">정렬:</span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
                 variant={sortOrder === 'latest' ? 'default' : 'outline'}
@@ -1422,6 +1487,46 @@ export default function Admin() {
                 className="h-7 text-xs"
               >
                 오래된순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'delivery-date' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('delivery-date')}
+                className="h-7 text-xs"
+              >
+                발송일순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'scheduled-date' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('scheduled-date')}
+                className="h-7 text-xs"
+              >
+                예약발송일순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'order-status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('order-status')}
+                className="h-7 text-xs"
+              >
+                주문상태순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'payment-status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('payment-status')}
+                className="h-7 text-xs"
+              >
+                입금상태순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'order-number' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('order-number')}
+                className="h-7 text-xs"
+              >
+                주문접수순
               </Button>
             </div>
           </div>
