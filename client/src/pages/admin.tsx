@@ -1122,17 +1122,39 @@ export default function Admin() {
                       <div>
                         <div className="text-gray-500 mb-2">주문상품</div>
                         <div className="space-y-1">
-                          <div className="font-medium">소박스 × {order.smallBoxQuantity}개</div>
-                          <div className="font-medium">대박스 × {order.largeBoxQuantity}개</div>
-                          <div className={order.wrappingQuantity > 0 ? "font-medium text-eden-brown" : "text-gray-500"}>
-                            {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}개` : '보자기 × 0개'}
-                          </div>
+                          {order.smallBoxQuantity > 0 && (
+                            <div className="font-medium">소박스 × {order.smallBoxQuantity}개</div>
+                          )}
+                          {order.largeBoxQuantity > 0 && (
+                            <div className="font-medium">대박스 × {order.largeBoxQuantity}개</div>
+                          )}
+                          {order.wrappingQuantity > 0 && (
+                            <div className="font-medium text-eden-brown">보자기 × {order.wrappingQuantity}개</div>
+                          )}
                         </div>
                       </div>
                       <div>
                         <div className="text-gray-500 mb-2">매출현황</div>
                         <div className="space-y-2">
-                          <div className="text-sm text-gray-600">
+                          {/* 주문 구성 요소별 금액 */}
+                          <div className="text-xs text-gray-500 space-y-1">
+                            {order.smallBoxQuantity > 0 && (
+                              <div>소박스: {formatPrice(order.smallBoxQuantity * 19000)}</div>
+                            )}
+                            {order.largeBoxQuantity > 0 && (
+                              <div>대박스: {formatPrice(order.largeBoxQuantity * 21000)}</div>
+                            )}
+                            {order.wrappingQuantity > 0 && (
+                              <div>보자기: {formatPrice(order.wrappingQuantity * 1000)}</div>
+                            )}
+                            {(() => {
+                              const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+                              const shippingFee = totalItems >= 6 ? 0 : 4000;
+                              return shippingFee > 0 && <div>배송비: {formatPrice(shippingFee)}</div>;
+                            })()}
+                          </div>
+                          
+                          <div className="text-sm text-gray-600 border-t pt-2">
                             주문금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
                           </div>
                           <div className="text-sm text-gray-600">
