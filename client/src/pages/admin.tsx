@@ -987,6 +987,11 @@ export default function Admin() {
                             할인: -{formatPrice(order.discountAmount)}
                           </div>
                         )}
+                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
+                          <div className="text-red-600">
+                            미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -1185,6 +1190,11 @@ export default function Admin() {
                             {order.discountAmount && order.discountAmount > 0 && (
                               <div className="mt-1 pt-1 border-t border-gray-200">
                                 <span className="text-blue-600 font-medium">할인: -{formatPrice(order.discountAmount)}</span>
+                              </div>
+                            )}
+                            {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
+                              <div className="mt-1 pt-1 border-t border-gray-200">
+                                <span className="text-red-600 font-medium">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</span>
                               </div>
                             )}
                           </div>
