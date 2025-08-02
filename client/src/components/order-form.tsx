@@ -520,9 +520,7 @@ export default function OrderForm() {
                             <FormLabel>
                               예금자가 다릅니다
                             </FormLabel>
-                            <p className="text-sm text-gray-500">
-                              체크하시면 예금자 이름을 별도로 입력할 수 있습니다
-                            </p>
+                            <p className="text-sm text-gray-500">예금자가 다를 경우 체크하세요.</p>
                           </div>
                         </FormItem>
                       )}
