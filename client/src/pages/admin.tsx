@@ -404,15 +404,21 @@ function FinancialDialog({ order }: { order: Order }) {
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
                       <div className="text-gray-600">총 원가:</div>
-                      <div className="font-medium">
-                        소박스: {order.smallBoxQuantity}개 × {formatPrice(smallCost)} = {formatPrice(order.smallBoxQuantity * smallCost)}
-                      </div>
-                      <div className="font-medium">
-                        대박스: {order.largeBoxQuantity}개 × {formatPrice(largeCost)} = {formatPrice(order.largeBoxQuantity * largeCost)}
-                      </div>
-                      <div className="font-medium">
-                        보자기: {order.wrappingQuantity}개 × {formatPrice(2000)} = {formatPrice(wrappingCost)}
-                      </div>
+                      {order.smallBoxQuantity > 0 && (
+                        <div className="font-medium">
+                          한과1호×{order.smallBoxQuantity}개: {formatPrice(smallCost)} × {order.smallBoxQuantity} = {formatPrice(order.smallBoxQuantity * smallCost)}
+                        </div>
+                      )}
+                      {order.largeBoxQuantity > 0 && (
+                        <div className="font-medium">
+                          한과2호×{order.largeBoxQuantity}개: {formatPrice(largeCost)} × {order.largeBoxQuantity} = {formatPrice(order.largeBoxQuantity * largeCost)}
+                        </div>
+                      )}
+                      {order.wrappingQuantity > 0 && (
+                        <div className="font-medium">
+                          보자기×{order.wrappingQuantity}개: {formatPrice(2000)} × {order.wrappingQuantity} = {formatPrice(wrappingCost)}
+                        </div>
+                      )}
                       <div className="font-semibold text-green-700 border-t pt-1 mt-1">
                         합계: {formatPrice(totalCost)}
                       </div>
