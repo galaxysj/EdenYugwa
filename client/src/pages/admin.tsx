@@ -1413,6 +1413,7 @@ export default function Admin() {
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
                 <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">실제입금</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">발송일</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">관리</th>
@@ -1492,49 +1493,64 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <div className="space-y-2">
-                        <Select
-                          value={
-                            order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
-                              ? 'partial'
-                              : order.paymentStatus || 'pending'
-                          }
-                          onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
-                          disabled={updatePaymentMutation.isPending}
+                      <Select
+                        value={
+                          order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                            ? 'partial'
+                            : order.paymentStatus || 'pending'
+                        }
+                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                        disabled={updatePaymentMutation.isPending}
+                      >
+                        <SelectTrigger className="w-28 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center space-x-2">
+                              <AlertCircle className="h-4 w-4 text-orange-500" />
+                              <span>입금대기</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="confirmed">
+                            <div className="flex items-center space-x-2">
+                              <DollarSign className="h-4 w-4 text-green-500" />
+                              <span>입금완료</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="partial">
+                            <div className="flex items-center space-x-2">
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <span className="text-red-500">부분결제</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="refunded">
+                            <div className="flex items-center space-x-2">
+                              <AlertCircle className="h-4 w-4 text-red-500" />
+                              <span>환불</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                        <div
+                          className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const currentAmount = order.actualPaidAmount || order.totalAmount;
+                            const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                            if (newAmount && !isNaN(Number(newAmount))) {
+                              handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                            }
+                          }}
+                          title="클릭하여 실제 입금금액 수정"
                         >
-                          <SelectTrigger className="w-28 h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">
-                              <div className="flex items-center space-x-2">
-                                <AlertCircle className="h-4 w-4 text-orange-500" />
-                                <span>입금대기</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="confirmed">
-                              <div className="flex items-center space-x-2">
-                                <DollarSign className="h-4 w-4 text-green-500" />
-                                <span>입금완료</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="partial">
-                              <div className="flex items-center space-x-2">
-                                <AlertCircle className="h-4 w-4 text-red-500" />
-                                <span className="text-red-500">부분결제</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="refunded">
-                              <div className="flex items-center space-x-2">
-                                <AlertCircle className="h-4 w-4 text-red-500" />
-                                <span>환불</span>
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        
-
-                      </div>
+                          {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="py-3 px-3 text-center">
                       <Select
@@ -1715,7 +1731,7 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-4 gap-3">
                       <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
                         <Select
@@ -1727,7 +1743,7 @@ export default function Admin() {
                           onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                           disabled={updatePaymentMutation.isPending}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1757,6 +1773,26 @@ export default function Admin() {
                             </SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 mb-2">실제입금</div>
+                        {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                          <div
+                            className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200 text-center"
+                            onClick={() => {
+                              const currentAmount = order.actualPaidAmount || order.totalAmount;
+                              const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                              if (newAmount && !isNaN(Number(newAmount))) {
+                                handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                              }
+                            }}
+                            title="클릭하여 실제 입금금액 수정"
+                          >
+                            {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-400 text-center py-1">-</div>
+                        )}
                       </div>
                       <div>
                         <div className="text-gray-500 mb-2">주문상태</div>
@@ -1904,8 +1940,15 @@ export default function Admin() {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
-  const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
-    if (newPaymentStatus === 'confirmed') {
+  const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string, actualAmount?: number) => {
+    if (actualAmount !== undefined) {
+      // 실제 입금 금액이 제공된 경우 바로 업데이트
+      updatePaymentMutation.mutate({ 
+        id: orderId, 
+        paymentStatus: newPaymentStatus,
+        actualPaidAmount: actualAmount
+      });
+    } else if (newPaymentStatus === 'confirmed') {
       // 입금완료 선택시 실제 입금금액 입력 다이얼로그 열기
       const order = orders.find((o: Order) => o.id === orderId);
       if (order) {
