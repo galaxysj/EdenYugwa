@@ -1746,7 +1746,9 @@ export default function Admin() {
                         disabled={updateStatusMutation.isPending}
                       >
                         <SelectTrigger className="w-20 h-6 text-xs">
-                          <SelectValue />
+                          <SelectValue>
+                            {order.scheduledDate && order.status === 'pending' ? "주문접수" : statusLabels[order.status as keyof typeof statusLabels]}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">
@@ -1871,7 +1873,7 @@ export default function Admin() {
                       <div className="flex items-center space-x-1">
                         {StatusIcon && <StatusIcon className="h-5 w-5 text-blue-500" />}
                         <span className="text-sm font-medium text-blue-600">
-                          {statusLabels[order.status as keyof typeof statusLabels]}
+                          {order.scheduledDate && order.status === 'pending' ? "주문접수" : statusLabels[order.status as keyof typeof statusLabels]}
                         </span>
                       </div>
                     </div>
