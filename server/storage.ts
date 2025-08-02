@@ -226,35 +226,52 @@ export class DatabaseStorage implements IStorage {
       };
     });
 
-    // 복합 정렬: 1) 예약발송건 우선, 2) 배송완료 최하단, 3) 나머지는 생성일 역순
+    // 복합 정렬: 1) 주문상태 우선 (접수>예약>완료), 2) 각 상태 내에서 날짜 순, 3) 주문번호 순
     return ordersWithCalculations.sort((a, b) => {
-      // 1. 배송완료 상태 확인 - 배송완료는 맨 아래로
-      if (a.status === 'delivered' && b.status !== 'delivered') return 1;
-      if (b.status === 'delivered' && a.status !== 'delivered') return -1;
+      // 1. 주문상태별 우선순위 설정 (pending > scheduled > delivered)
+      const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+      const aStatusPriority = statusPriority[a.status as keyof typeof statusPriority] || 999;
+      const bStatusPriority = statusPriority[b.status as keyof typeof statusPriority] || 999;
       
-      // 2. 둘 다 배송완료인 경우 발송완료일 기준으로 정렬 (최신순)
-      if (a.status === 'delivered' && b.status === 'delivered') {
-        const aDeliveredDate = a.deliveredDate ? new Date(a.deliveredDate).getTime() : 0;
-        const bDeliveredDate = b.deliveredDate ? new Date(b.deliveredDate).getTime() : 0;
-        return bDeliveredDate - aDeliveredDate;
+      if (aStatusPriority !== bStatusPriority) {
+        return aStatusPriority - bStatusPriority;
       }
       
-      // 3. 예약발송건 확인 - 예약발송건을 최상단으로
-      const aHasScheduled = a.scheduledDate !== null;
-      const bHasScheduled = b.scheduledDate !== null;
-      
-      if (aHasScheduled && !bHasScheduled) return -1;
-      if (bHasScheduled && !aHasScheduled) return 1;
-      
-      // 4. 둘 다 예약발송건인 경우 예약날짜 기준으로 정렬 (빠른 날짜 우선)
-      if (aHasScheduled && bHasScheduled) {
-        const aScheduledTime = new Date(a.scheduledDate!).getTime();
-        const bScheduledTime = new Date(b.scheduledDate!).getTime();
-        return aScheduledTime - bScheduledTime;
+      // 2. 같은 상태 내에서의 세부 정렬
+      if (a.status === 'pending' || a.status === 'scheduled') {
+        // 예약발송일이 있는 경우 예약발송일 기준으로 정렬 (빠른 날짜 우선)
+        if (a.scheduledDate && b.scheduledDate) {
+          const aScheduledTime = new Date(a.scheduledDate).getTime();
+          const bScheduledTime = new Date(b.scheduledDate).getTime();
+          if (aScheduledTime !== bScheduledTime) {
+            return aScheduledTime - bScheduledTime;
+          }
+        }
+        
+        // 예약발송일이 있는 주문을 우선 배치
+        if (a.scheduledDate && !b.scheduledDate) return -1;
+        if (!a.scheduledDate && b.scheduledDate) return 1;
       }
       
-      // 5. 나머지는 생성일 역순
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (a.status === 'delivered') {
+        // 발송완료 상태에서는 발송완료일 기준으로 정렬 (빠른 날짜 우선)
+        if (a.deliveredDate && b.deliveredDate) {
+          const aDeliveredTime = new Date(a.deliveredDate).getTime();
+          const bDeliveredTime = new Date(b.deliveredDate).getTime();
+          if (aDeliveredTime !== bDeliveredTime) {
+            return aDeliveredTime - bDeliveredTime;
+          }
+        }
+        
+        // 발송완료일이 있는 주문을 우선 배치
+        if (a.deliveredDate && !b.deliveredDate) return -1;
+        if (!a.deliveredDate && b.deliveredDate) return 1;
+      }
+      
+      // 3. 마지막으로 주문번호 기준으로 정렬 (빠른 번호가 아래로)
+      const aOrderNum = parseInt(a.orderNumber.split('-')[1] || '0');
+      const bOrderNum = parseInt(b.orderNumber.split('-')[1] || '0');
+      return bOrderNum - aOrderNum; // 큰 번호가 위로 (최신이 위로)
     });
   }
 
