@@ -616,12 +616,13 @@ export class DatabaseStorage implements IStorage {
       )
       .orderBy(desc(orders.createdAt));
 
-    console.log(`${phoneNumber} 고객의 주문 개수: ${customerOrders.length}`);
+    console.log(`${phoneNumber} 고객의 실제 주문 개수: ${customerOrders.length}`);
 
-    // If no orders found, set count to 0 but keep customer record
+    // Get existing customer record
     const existingCustomer = await this.getCustomerByPhone(phoneNumber);
     
     if (customerOrders.length === 0) {
+      // No orders found, set count to 0
       if (existingCustomer) {
         await db.update(customers)
           .set({
@@ -631,21 +632,25 @@ export class DatabaseStorage implements IStorage {
             updatedAt: new Date()
           })
           .where(eq(customers.id, existingCustomer.id));
+        console.log(`${phoneNumber} 고객 통계를 0으로 초기화`);
       }
       return;
     }
 
     // Calculate statistics for all non-deleted orders
     const orderCount = customerOrders.length;
+    
+    // Calculate total spent (confirmed payments only)
     const totalSpent = customerOrders
-      .filter(order => order.paymentStatus === 'confirmed')
+      .filter(order => order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial')
       .reduce((sum, order) => sum + (order.actualPaidAmount || order.totalAmount), 0);
     
     const lastOrderDate = customerOrders[0].createdAt; // First in descending order
 
-    console.log(`${phoneNumber} 통계: 주문횟수=${orderCount}, 총구매금액=${totalSpent}, 마지막주문일=${lastOrderDate}`);
+    console.log(`${phoneNumber} 새로운 통계: 주문횟수=${orderCount}, 총구매금액=${totalSpent}, 마지막주문일=${lastOrderDate}`);
     
     if (existingCustomer) {
+      // Update existing customer
       await db.update(customers)
         .set({
           orderCount,
@@ -654,6 +659,7 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date()
         })
         .where(eq(customers.id, existingCustomer.id));
+      console.log(`${phoneNumber} 고객 통계 업데이트 완료`);
     } else {
       // Create new customer record from first order
       const firstOrder = customerOrders[customerOrders.length - 1]; // Last in descending order = first chronologically
@@ -668,6 +674,7 @@ export class DatabaseStorage implements IStorage {
         lastOrderDate,
         notes: null
       });
+      console.log(`${phoneNumber} 새로운 고객 생성 완료`);
     }
   }
 
