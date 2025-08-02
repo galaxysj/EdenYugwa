@@ -137,8 +137,9 @@ export default function OrderForm() {
       shippingFee,
       totalAmount,
       scheduledDate: data.scheduledDate ? data.scheduledDate.toISOString() : null,
-      status: data.scheduledDate ? 'scheduled' : 'pending', // 예약발송일이 있으면 자동으로 발송예약 상태로 설정
+      status: data.scheduledDate ? 'scheduled' : 'pending',
     };
+    
     createOrderMutation.mutate(orderData);
   };
 

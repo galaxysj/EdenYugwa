@@ -41,7 +41,7 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
 }).extend({
   scheduledDate: z.union([
     z.date(), 
-    z.string(), 
+    z.string().transform((str) => new Date(str)), 
     z.null()
   ]).optional().nullable(),
 });
