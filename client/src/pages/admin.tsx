@@ -974,6 +974,7 @@ export default function Admin() {
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문일</th>
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">원가분석</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">할인/미입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제수익</th>
                     </tr>
@@ -987,6 +988,18 @@ export default function Admin() {
                       const wrappingTotal = order.wrappingQuantity * 1000;
                       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
                       const shippingFee = totalItems >= 6 ? 0 : 4000;
+                      
+                      // Get global cost settings
+                      const smallCostSetting = settings?.find(s => s.key === "smallBoxCost");
+                      const largeCostSetting = settings?.find(s => s.key === "largeBoxCost");
+                      const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
+                      const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
+                      
+                      // Calculate actual costs
+                      const wrappingCost = order.wrappingQuantity * 2000; // 보자기 원가 2,000원
+                      const smallBoxesCost = order.smallBoxQuantity * smallCost;
+                      const largeBoxesCost = order.largeBoxQuantity * largeCost;
+                      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -1010,6 +1023,33 @@ export default function Admin() {
                           </td>
                           <td className="py-2 px-3 text-right text-sm font-medium text-green-600">
                             {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                          </td>
+                          <td className="py-2 px-3 text-right text-xs">
+                            <div className="space-y-1">
+                              {order.smallBoxQuantity > 0 && (
+                                <div className="text-gray-600">
+                                  소박스원가: {formatPrice(smallBoxesCost)}
+                                </div>
+                              )}
+                              {order.largeBoxQuantity > 0 && (
+                                <div className="text-gray-600">
+                                  대박스원가: {formatPrice(largeBoxesCost)}
+                                </div>
+                              )}
+                              {order.wrappingQuantity > 0 && (
+                                <div className="text-gray-600">
+                                  보자기원가: {formatPrice(wrappingCost)}
+                                </div>
+                              )}
+                              {shippingFee > 0 && (
+                                <div className="text-gray-600">
+                                  배송비: {formatPrice(shippingFee)}
+                                </div>
+                              )}
+                              <div className="font-medium text-red-600 border-t pt-1">
+                                총원가: {formatPrice(totalCost + shippingFee)}
+                              </div>
+                            </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm">
                             {order.discountAmount && order.discountAmount > 0 ? (
