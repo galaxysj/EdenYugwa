@@ -395,6 +395,7 @@ export default function Admin() {
   const [showPaymentConfirmDialog, setShowPaymentConfirmDialog] = useState(false);
   const [paymentConfirmOrder, setPaymentConfirmOrder] = useState<Order | null>(null);
   const [actualPaidAmounts, setActualPaidAmounts] = useState<{[key: number]: string}>({});
+  const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
 
   const handleLogout = () => {
     toast({
@@ -477,6 +478,60 @@ export default function Admin() {
       });
     },
   });
+
+  // Bulk permanent delete mutation
+  const bulkPermanentDeleteMutation = useMutation({
+    mutationFn: async (orderIds: number[]) => {
+      const deletePromises = orderIds.map(id => api.orders.permanentDelete(id));
+      await Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders/trash'] });
+      setSelectedTrashItems(new Set());
+      toast({
+        title: "영구 삭제 완료",
+        description: `선택된 ${selectedTrashItems.size}개 주문이 영구적으로 삭제되었습니다.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "삭제 실패",
+        description: "일괄 영구 삭제에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle selection for trash items
+  const toggleTrashSelection = (orderId: number) => {
+    const newSelection = new Set(selectedTrashItems);
+    if (newSelection.has(orderId)) {
+      newSelection.delete(orderId);
+    } else {
+      newSelection.add(orderId);
+    }
+    setSelectedTrashItems(newSelection);
+  };
+
+  // Select all trash items
+  const selectAllTrash = () => {
+    const allIds = new Set(deletedOrders.map((order: Order) => order.id));
+    setSelectedTrashItems(allIds);
+  };
+
+  // Clear all selections
+  const clearAllSelections = () => {
+    setSelectedTrashItems(new Set());
+  };
+
+  // Handle bulk permanent delete
+  const handleBulkPermanentDelete = () => {
+    if (selectedTrashItems.size === 0) return;
+    
+    if (confirm(`선택된 ${selectedTrashItems.size}개 주문을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+      bulkPermanentDeleteMutation.mutate(Array.from(selectedTrashItems));
+    }
+  };
 
   // Filter orders by status
   const filterOrdersByStatus = (status: string) => {
@@ -643,32 +698,85 @@ export default function Admin() {
 
     return (
       <div className="space-y-4">
+        {/* Bulk Actions Header */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectedTrashItems.size === ordersList.length && ordersList.length > 0}
+                onChange={() => {
+                  if (selectedTrashItems.size === ordersList.length) {
+                    clearAllSelections();
+                  } else {
+                    selectAllTrash();
+                  }
+                }}
+                className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                전체 선택 ({selectedTrashItems.size}/{ordersList.length})
+              </span>
+            </div>
+            {selectedTrashItems.size > 0 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleBulkPermanentDelete}
+                disabled={bulkPermanentDeleteMutation.isPending}
+                className="flex items-center gap-1"
+              >
+                <X className="h-3 w-3" />
+                선택항목 영구삭제 ({selectedTrashItems.size}개)
+              </Button>
+            )}
+          </div>
+          {selectedTrashItems.size > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={clearAllSelections}
+              className="text-gray-600"
+            >
+              선택 해제
+            </Button>
+          )}
+        </div>
+
         {ordersList.map((order: Order) => (
-          <Card key={order.id} className="border-red-200 bg-red-50">
+          <Card key={order.id} className={`border-red-200 ${selectedTrashItems.has(order.id) ? 'bg-red-100 border-red-300' : 'bg-red-50'}`}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900">
-                      주문번호: {order.orderNumber}
-                    </h3>
-                    <div className="text-sm text-gray-500">
-                      삭제일: {order.deletedAt ? new Date(order.deletedAt).toLocaleDateString('ko-KR') : '-'}
+                <div className="flex items-center gap-3 flex-1">
+                  <input
+                    type="checkbox"
+                    checked={selectedTrashItems.has(order.id)}
+                    onChange={() => toggleTrashSelection(order.id)}
+                    className="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-gray-900">
+                        주문번호: {order.orderNumber}
+                      </h3>
+                      <div className="text-sm text-gray-500">
+                        삭제일: {order.deletedAt ? new Date(order.deletedAt).toLocaleDateString('ko-KR') : '-'}
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">고객명:</span> {order.customerName}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="font-medium">고객명:</span> {order.customerName}
+                      </div>
+                      <div>
+                        <span className="font-medium">연락처:</span> {order.customerPhone}
+                      </div>
+                      <div>
+                        <span className="font-medium">총 금액:</span> {order.totalAmount.toLocaleString()}원
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-medium">연락처:</span> {order.customerPhone}
+                    <div className="mt-2 text-sm text-gray-600">
+                      <span className="font-medium">주소:</span> ({order.zipCode}) {order.address1} {order.address2}
                     </div>
-                    <div>
-                      <span className="font-medium">총 금액:</span> {order.totalAmount.toLocaleString()}원
-                    </div>
-                  </div>
-                  <div className="mt-2 text-sm text-gray-600">
-                    <span className="font-medium">주소:</span> ({order.zipCode}) {order.address1} {order.address2}
                   </div>
                 </div>
                 <div className="flex gap-2 ml-4">
