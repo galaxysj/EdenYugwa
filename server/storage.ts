@@ -118,23 +118,29 @@ export class DatabaseStorage implements IStorage {
     const day = now.getDate().toString().padStart(2, '0');
     const dateStr = `${year}${month}${day}`;
     
-    // Get all orders created today to determine the sequence number
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    let sequenceNumber = 1;
+    let orderNumber = '';
+    let isUnique = false;
     
-    const todayOrders = await db.select()
-      .from(orders)
-      .where(
-        and(
-          gte(orders.createdAt, todayStart),
-          lte(orders.createdAt, todayEnd)
-        )
-      );
+    // Keep trying until we find a unique order number
+    while (!isUnique) {
+      const paddedSequence = sequenceNumber.toString().padStart(2, '0');
+      orderNumber = `${dateStr}${paddedSequence}`;
+      
+      // Check if this order number already exists
+      const existingOrder = await db.select()
+        .from(orders)
+        .where(eq(orders.orderNumber, orderNumber))
+        .limit(1);
+      
+      if (existingOrder.length === 0) {
+        isUnique = true;
+      } else {
+        sequenceNumber++;
+      }
+    }
     
-    // Sequence number is the count of today's orders + 1
-    const sequenceNumber = (todayOrders.length + 1).toString().padStart(2, '0');
-    
-    return `${dateStr}${sequenceNumber}`;
+    return orderNumber;
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
@@ -145,6 +151,15 @@ export class DatabaseStorage implements IStorage {
       zipCode: insertOrder.zipCode,
       address1: insertOrder.address1,
       address2: insertOrder.address2,
+      // 받는 분 정보
+      recipientName: insertOrder.recipientName,
+      recipientPhone: insertOrder.recipientPhone,
+      recipientZipCode: insertOrder.recipientZipCode,
+      recipientAddress1: insertOrder.recipientAddress1,
+      recipientAddress2: insertOrder.recipientAddress2,
+      // 예금자 정보
+      isDifferentDepositor: insertOrder.isDifferentDepositor || false,
+      depositorName: insertOrder.depositorName,
       smallBoxQuantity: insertOrder.smallBoxQuantity,
       largeBoxQuantity: insertOrder.largeBoxQuantity,
       wrappingQuantity: insertOrder.wrappingQuantity,
@@ -574,15 +589,17 @@ export class DatabaseStorage implements IStorage {
     const existingCustomer = await this.getCustomerByPhone(phoneNumber);
     
     if (existingCustomer) {
-      await this.updateCustomer(existingCustomer.id, {
-        orderCount,
-        totalSpent,
-        lastOrderDate
-      });
+      await db.update(customers)
+        .set({
+          totalSpent,
+          lastOrderDate,
+          updatedAt: new Date()
+        })
+        .where(eq(customers.id, existingCustomer.id));
     } else {
       // Create new customer record from first order
       const firstOrder = customerOrders[0];
-      await this.createCustomer({
+      await db.insert(customers).values({
         customerName: firstOrder.customerName,
         customerPhone: phoneNumber,
         zipCode: firstOrder.zipCode,
@@ -594,16 +611,6 @@ export class DatabaseStorage implements IStorage {
         notes: null
       });
     }
-  }
-
-  async deleteCustomer(id: number): Promise<void> {
-    await db.delete(customers).where(eq(customers.id, id));
-  }
-
-
-
-  async deleteManager(id: number): Promise<void> {
-    await db.delete(managers).where(eq(managers.id, id));
   }
 
   async autoRegisterCustomer(customerData: {name: string, phone: string, address?: string, zipCode?: string}): Promise<Customer | null> {
@@ -622,7 +629,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Create new customer
-      const newCustomer = await this.createCustomer({
+      const [newCustomer] = await db.insert(customers).values({
         customerName: customerData.name,
         customerPhone: customerData.phone,
         address1: customerData.address || '',
@@ -632,7 +639,7 @@ export class DatabaseStorage implements IStorage {
         totalSpent: 0,
         lastOrderDate: null,
         notes: null
-      });
+      }).returning();
 
       return newCustomer;
     } catch (error) {
@@ -641,9 +648,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async bulkCreateCustomers(customers: InsertCustomer[]): Promise<Customer[]> {
+  async bulkCreateCustomers(customersData: InsertCustomer[]): Promise<Customer[]> {
     try {
-      const result = await db.insert(customersTable).values(customers).returning();
+      const result = await db.insert(customers).values(customersData).returning();
       return result;
     } catch (error) {
       console.error('Bulk create customers error:', error);
