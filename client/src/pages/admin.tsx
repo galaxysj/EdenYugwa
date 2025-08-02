@@ -1057,11 +1057,7 @@ export default function Admin() {
                                   배송비: {formatPrice(shippingFee)}
                                 </div>
                               )}
-                              {discountAmount > 0 && (
-                                <div className="text-blue-600">
-                                  할인: {formatPrice(discountAmount)}
-                                </div>
-                              )}
+
                               {unpaidAmount > 0 && (
                                 <div className="text-red-600">
                                   미입금: {formatPrice(unpaidAmount)}
@@ -1075,7 +1071,7 @@ export default function Admin() {
                           <td className="py-2 px-3 text-right text-sm">
                             {(() => {
                               const actualRevenue = order.actualPaidAmount || order.totalAmount;
-                              const actualProfit = actualRevenue - totalCostAnalysis;
+                              const actualProfit = actualRevenue - totalCostAnalysis - discountAmount;
                               return (
                                 <span className={`font-medium ${actualProfit >= 0 ? "text-purple-600" : "text-red-600"}`}>
                                   {formatPrice(actualProfit)}
