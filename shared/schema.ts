@@ -26,6 +26,7 @@ export const orders = pgTable("orders", {
   netProfit: integer("net_profit").default(0), // 실제 수익 (실입금 - 원가 - 배송비)
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'scheduled', 'shipping', 'delivered'
   scheduledDate: timestamp("scheduled_date"),
+  deliveredDate: timestamp("delivered_date"), // 발송완료 날짜
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
   paymentConfirmedAt: timestamp("payment_confirmed_at"),
   isDeleted: boolean("is_deleted").notNull().default(false),

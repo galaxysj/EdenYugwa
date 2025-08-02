@@ -10,6 +10,7 @@ import { api } from "@/lib/api";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
+import { DeliveredDatePicker } from "@/components/delivered-date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1408,40 +1409,48 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <Select
-                        value={order.status}
-                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        <SelectTrigger className="w-28 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-yellow-500" />
-                              <span>주문접수</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="scheduled">
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="h-4 w-4 text-blue-500" />
-                              <span>발송예약</span>
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="delivered">
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                              <span>발송완료</span>
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex flex-col items-center gap-1">
+                        <Select
+                          value={order.status}
+                          onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <SelectTrigger className="w-28 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4 text-yellow-500" />
+                                <span>주문접수</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="scheduled">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-blue-500" />
+                                <span>발송예약</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="delivered">
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>발송완료</span>
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {order.status === 'delivered' && order.deliveredDate && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-3 text-center">
                       <div className="flex flex-col gap-1">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
+                        <DeliveredDatePicker order={order} />
                         <FinancialDialog order={order} />
                         <Button
                           size="sm"
@@ -1499,6 +1508,18 @@ export default function Admin() {
                           <div className="mt-1">
                             <div className="text-orange-600 font-bold text-base">
                               발송예약 (날짜 미설정)
+                            </div>
+                          </div>
+                        )}
+                        {order.status === 'delivered' && order.deliveredDate && (
+                          <div className="mt-1">
+                            <div className="text-green-600 font-bold text-base">
+                              발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
+                                year: 'numeric',
+                                month: '2-digit', 
+                                day: '2-digit',
+                                weekday: 'short'
+                              })}
                             </div>
                           </div>
                         )}
@@ -1676,6 +1697,7 @@ export default function Admin() {
                       <div className="flex flex-col gap-3">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
+                        <DeliveredDatePicker order={order} />
                         <FinancialDialog order={order} />
                         <Button
                           size="sm"

@@ -213,9 +213,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
+    const updateData: any = { status };
+    
+    // 발송완료 상태로 변경하는 경우 현재 날짜를 설정
+    if (status === 'delivered') {
+      updateData.deliveredDate = new Date();
+    }
+    
     const [order] = await db
       .update(orders)
-      .set({ status })
+      .set(updateData)
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;
@@ -275,6 +282,15 @@ export class DatabaseStorage implements IStorage {
     const [order] = await db
       .update(orders)
       .set({ scheduledDate })
+      .where(eq(orders.id, id))
+      .returning();
+    return order || undefined;
+  }
+
+  async updateOrderDeliveredDate(id: number, deliveredDate: Date | null): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set({ deliveredDate })
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;
