@@ -1028,7 +1028,6 @@ export default function Admin() {
                       const discountAmount = order.discountAmount || 0;
                       const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
                         ? (order.totalAmount - order.actualPaidAmount) : 0;
-                      const totalCostAnalysis = totalCost + shippingFee + unpaidAmount;
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -1098,14 +1097,14 @@ export default function Admin() {
                                 </div>
                               )}
                               <div className="font-medium text-red-600 border-t pt-1">
-                                총원가분석: {formatPrice(totalCostAnalysis)}
+                                총원가: {formatPrice(totalCost)}
                               </div>
                             </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm">
                             {(() => {
-                              const actualRevenue = order.actualPaidAmount || order.totalAmount;
-                              const actualProfit = actualRevenue - totalCostAnalysis - discountAmount;
+                              // 실제수익 = 주문가격 - 원가 - 배송비 - 할인/미입금
+                              const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                               return (
                                 <span className={`font-medium ${actualProfit >= 0 ? "text-purple-600" : "text-red-600"}`}>
                                   {formatPrice(actualProfit)}
