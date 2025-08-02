@@ -1083,7 +1083,8 @@ export default function Admin() {
                           <td className="py-3 px-4 font-medium">#{order.orderNumber}</td>
                           <td className="py-3 px-4">{order.customerName}</td>
                           <td className="py-3 px-4 text-sm text-gray-600">
-                            {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                            <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                            <div className="text-xs">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                           </td>
                           <td className="py-3 px-4 text-sm">
                             <div className="space-y-1">
@@ -1245,9 +1246,14 @@ export default function Admin() {
                   />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">
-                        주문번호: {order.orderNumber}
-                      </h3>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          주문번호: {order.orderNumber}
+                        </h3>
+                        <div className="text-xs text-gray-500">
+                          주문일: {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
                       <div className="text-sm text-gray-500">
                         삭제일: {order.deletedAt ? new Date(order.deletedAt).toLocaleDateString('ko-KR') : '-'}
                       </div>
@@ -1520,7 +1526,7 @@ export default function Admin() {
                     <td className="py-3 px-3">
                       <div className="font-medium text-gray-900 text-sm">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                       {order.scheduledDate && (
                         <div className="mt-1">
@@ -1748,7 +1754,7 @@ export default function Admin() {
                         <div>
                           <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
                         <div className="text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                          {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                         {order.scheduledDate && (
                           <div className="mt-1">

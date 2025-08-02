@@ -227,7 +227,7 @@ export default function OrderLookup() {
                           <CardTitle className="text-xl font-korean">주문번호 #{order.orderNumber}</CardTitle>
                           <p className="text-gray-500 flex items-center mt-1">
                             <Calendar className="mr-1 h-4 w-4" />
-                            {formatDate(order.createdAt)}
+                            {formatDate(order.createdAt)} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                         <div className="text-right space-y-2">
