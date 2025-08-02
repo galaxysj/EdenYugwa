@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -456,6 +456,7 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
+  const [showCustomerManagement, setShowCustomerManagement] = useState(false);
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
   const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [dateFilter, setDateFilter] = useState<string>('all');
@@ -2265,6 +2266,14 @@ export default function Admin() {
                 <DollarSign className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">매출관리</span>
               </Button>
+              <Button 
+                onClick={() => setShowCustomerManagement(true)}
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${showCustomerManagement ? 'bg-white/20' : ''}`}
+              >
+                <Users className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">고객관리</span>
+              </Button>
               <Link href="/admin-settings">
                 <Button 
                   variant="ghost" 
@@ -2297,6 +2306,23 @@ export default function Admin() {
       </div>
 
       <div className="container mx-auto p-4 sm:p-6">
+        {showCustomerManagement ? (
+          <div className="bg-white rounded-lg p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">고객 관리</h3>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCustomerManagement(false)}
+              >
+                <X className="h-4 w-4 mr-2" />
+                닫기
+              </Button>
+            </div>
+            <CustomerManagement />
+          </div>
+        ) : (
+          <>
+
         {/* Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
@@ -2358,7 +2384,7 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-7">
+                <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
@@ -2367,18 +2393,13 @@ export default function Admin() {
                     <DollarSign className="h-4 w-4 mr-1" />
                     매출관리
                   </TabsTrigger>
-                  <TabsTrigger value="customers" className="text-blue-600">
-                    고객관리
-                  </TabsTrigger>
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
                     휴지통 ({deletedOrders.length})
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="customers" className="mt-6">
-                  <CustomerManagement />
-                </TabsContent>
+
 
                 <TabsContent value="all" className="mt-6">
                   {renderOrderFilters()}
@@ -2547,6 +2568,8 @@ export default function Admin() {
             )}
           </CardContent>
         </Card>
+          </>
+        )}
       </div>
 
       {/* Payment Confirmation Dialog */}
