@@ -2359,9 +2359,6 @@ export default function Admin() {
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <TabsList className="grid w-full grid-cols-7">
-                  <TabsTrigger value="customers" className="text-blue-600">
-                    고객관리
-                  </TabsTrigger>
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
@@ -2369,6 +2366,9 @@ export default function Admin() {
                   <TabsTrigger value="revenue" className="text-purple-600">
                     <DollarSign className="h-4 w-4 mr-1" />
                     매출관리
+                  </TabsTrigger>
+                  <TabsTrigger value="customers" className="text-blue-600">
+                    고객관리
                   </TabsTrigger>
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
