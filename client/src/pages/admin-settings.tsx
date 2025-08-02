@@ -60,9 +60,12 @@ export default function AdminSettingsPage() {
   }, [adminSettings, form]);
 
   const updateMutation = useMutation({
-    mutationFn: (data: AdminSettingsFormData) => 
-      apiRequest('/api/admin-settings', 'POST', data),
-    onSuccess: () => {
+    mutationFn: (data: AdminSettingsFormData) => {
+      console.log("Sending admin settings data:", data);
+      return apiRequest('/api/admin-settings', 'POST', data);
+    },
+    onSuccess: (response) => {
+      console.log("Admin settings update successful:", response);
       queryClient.invalidateQueries({ queryKey: ['/api/admin-settings'] });
       toast({
         title: "설정 업데이트 완료",
@@ -70,6 +73,7 @@ export default function AdminSettingsPage() {
       });
     },
     onError: (error: any) => {
+      console.error("Admin settings update error:", error);
       toast({
         title: "설정 업데이트 실패",
         description: error.message || "설정 업데이트 중 오류가 발생했습니다.",

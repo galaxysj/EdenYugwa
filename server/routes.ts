@@ -651,12 +651,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin-settings", async (req, res) => {
     try {
       const adminSettings = req.body;
+      console.log("Admin settings update request:", adminSettings);
       
       if (!adminSettings.adminName || !adminSettings.adminPhone || !adminSettings.businessName) {
+        console.log("Validation failed - missing required fields");
         return res.status(400).json({ error: "관리자명, 전화번호, 사업체명은 필수 항목입니다" });
       }
       
+      console.log("Calling storage.updateAdminSettings with:", adminSettings);
       const updatedSettings = await storage.updateAdminSettings(adminSettings);
+      console.log("Successfully updated admin settings:", updatedSettings);
       res.json(updatedSettings);
     } catch (error) {
       console.error("Error updating admin settings:", error);
