@@ -895,13 +895,26 @@ export default function Admin() {
               </h3>
             </div>
             
-            {/* 주요 지표 */}
-            <div className="grid grid-cols-5 gap-4 mb-6">
+            {/* 주문 건수 세분화 */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="text-center">
                 <div className="text-xl font-bold text-gray-700 mb-1">{filteredTotals.count}건</div>
-                <div className="text-sm text-gray-600">총주문건수</div>
+                <div className="text-sm text-gray-600">주문건수</div>
               </div>
               
+              <div className="text-center">
+                <div className="text-xl font-bold text-amber-600 mb-1">{filteredTotals.smallBoxQuantity}개</div>
+                <div className="text-sm text-gray-600">한과1호</div>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-xl font-bold text-orange-600 mb-1">{filteredTotals.largeBoxQuantity}개</div>
+                <div className="text-sm text-gray-600">한과2호</div>
+              </div>
+            </div>
+
+            {/* 주요 재무 지표 */}
+            <div className="grid grid-cols-4 gap-4 mb-6 pt-4 border-t">
               <div className="text-center">
                 <div className="text-xl font-bold text-green-600 mb-1">{formatPrice(filteredTotals.actualRevenue)}</div>
                 <div className="text-sm text-gray-600">실제입금</div>
