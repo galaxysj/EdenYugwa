@@ -167,7 +167,7 @@ export class DatabaseStorage implements IStorage {
       scheduledDate: insertOrder.scheduledDate,
       shippingFee: insertOrder.shippingFee || 0,
       orderNumber,
-      status: insertOrder.status || "pending",
+      status: "pending", // 예약날짜와 상관없이 항상 pending으로 시작
       paymentStatus: "pending",
     };
     

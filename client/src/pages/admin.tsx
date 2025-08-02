@@ -1686,7 +1686,7 @@ export default function Admin() {
                           )}
                         </div>
                         <div>
-                          {order.discountAmount > 0 ? (
+                          {order.discountAmount && order.discountAmount > 0 ? (
                             <span className="text-blue-600">할인: -{formatPrice(Math.abs(order.discountAmount))}</span>
                           ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
                             <span className="text-red-600">미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}</span>
