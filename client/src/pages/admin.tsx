@@ -468,7 +468,7 @@ export default function Admin() {
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
-  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'status'>('latest');
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'payment-status' | 'order-status' | 'delivery-date'>('latest');
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -680,7 +680,21 @@ export default function Admin() {
     } else if (sortOrder === 'oldest') {
       // Oldest first
       return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    } else if (sortOrder === 'status') {
+    } else if (sortOrder === 'payment-status') {
+      // Sort by payment status: pending -> partial -> confirmed
+      const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3 };
+      return sorted.sort((a, b) => {
+        const aPriority = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 4;
+        const bPriority = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 4;
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // If same payment status, sort by date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'order-status') {
       // Sort by status priority: pending -> scheduled -> delivered
       const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
       return sorted.sort((a, b) => {
@@ -692,6 +706,21 @@ export default function Admin() {
         }
         
         // If same status, sort by date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (sortOrder === 'delivery-date') {
+      // Sort by delivery date: orders with delivery date first, then by delivery date
+      return sorted.sort((a, b) => {
+        // Orders without delivery date go to bottom
+        if (!a.deliveredDate && b.deliveredDate) return 1;
+        if (a.deliveredDate && !b.deliveredDate) return -1;
+        
+        // Both have delivery dates - sort by delivery date (latest first)
+        if (a.deliveredDate && b.deliveredDate) {
+          return new Date(b.deliveredDate).getTime() - new Date(a.deliveredDate).getTime();
+        }
+        
+        // Neither has delivery date - sort by creation date (latest first)
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     }
@@ -1439,11 +1468,27 @@ export default function Admin() {
               </Button>
               <Button
                 size="sm"
-                variant={sortOrder === 'status' ? 'default' : 'outline'}
-                onClick={() => setSortOrder('status')}
+                variant={sortOrder === 'payment-status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('payment-status')}
                 className="h-7 text-xs px-2"
               >
-                상태순
+                입금상태순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'order-status' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('order-status')}
+                className="h-7 text-xs px-2"
+              >
+                주문상태순
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'delivery-date' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('delivery-date')}
+                className="h-7 text-xs px-2"
+              >
+                발송일순
               </Button>
             </div>
           </div>
