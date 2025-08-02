@@ -573,10 +573,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/export/revenue", async (req, res) => {
     try {
       const orders = await storage.getAllOrders();
-      // Include both confirmed payments and scheduled orders in revenue calculations
+      // Include all orders with confirmed payment status (regardless of order status)
       const paidOrders = orders.filter(order => 
-        (order.paymentStatus === 'confirmed' && order.actualPaidAmount) || 
-        order.status === 'scheduled'
+        order.paymentStatus === 'confirmed'
       );
       
       // Format revenue data
