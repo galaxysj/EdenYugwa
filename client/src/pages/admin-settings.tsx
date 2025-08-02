@@ -208,7 +208,7 @@ export default function AdminSettingsPage() {
     if (editingManager) {
       updateManagerMutation.mutate({ 
         id: editingManager.id, 
-        data: data.password ? data : { username: data.username } 
+        data: data 
       });
     } else {
       createManagerMutation.mutate(data);
@@ -499,13 +499,12 @@ export default function AdminSettingsPage() {
                       <Input 
                         placeholder="매니저 아이디를 입력하세요" 
                         {...field}
-                        disabled={editingManager !== null}
                       />
                     </FormControl>
                     <FormMessage />
                     {editingManager && (
-                      <p className="text-xs text-gray-500">
-                        아이디는 수정할 수 없습니다.
+                      <p className="text-xs text-amber-600">
+                        아이디를 변경하면 기존 로그인 정보가 무효화됩니다.
                       </p>
                     )}
                   </FormItem>
@@ -517,17 +516,20 @@ export default function AdminSettingsPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      비밀번호 {editingManager ? "" : "*"}
-                    </FormLabel>
+                    <FormLabel>비밀번호 *</FormLabel>
                     <FormControl>
                       <Input 
                         type="password"
-                        placeholder={editingManager ? "변경하지 않으려면 비워두세요" : "비밀번호를 입력하세요"}
+                        placeholder={editingManager ? "새 비밀번호를 입력하세요" : "비밀번호를 입력하세요"}
                         {...field}
                       />
                     </FormControl>
                     <FormMessage />
+                    {editingManager && (
+                      <p className="text-xs text-gray-500">
+                        보안을 위해 새 비밀번호를 입력해주세요.
+                      </p>
+                    )}
                   </FormItem>
                 )}
               />

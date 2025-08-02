@@ -439,6 +439,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate update data
       const updateData: any = {};
+      
+      // Check username change
       if (req.body.username && req.body.username !== existingManager.username) {
         // Check if new username already exists
         const usernameExists = await storage.getManagerByUsername(req.body.username);
@@ -446,10 +448,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "이미 존재하는 아이디입니다" });
         }
         updateData.username = req.body.username;
+      } else if (req.body.username) {
+        // Same username, but include it in update data for consistency
+        updateData.username = req.body.username;
       }
       
+      // Check password change
       if (req.body.password && req.body.password.trim()) {
-        updateData.password = req.body.password;
+        updateData.password = req.body.password.trim();
       }
 
       if (Object.keys(updateData).length === 0) {
