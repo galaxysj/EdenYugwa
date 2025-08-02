@@ -1565,7 +1565,8 @@ export default function Admin() {
                     <td className="py-2 px-2">
                       <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
-                        {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                        <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                        <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
                       {order.scheduledDate && (
                         <div className="text-red-600 font-bold text-xs">
