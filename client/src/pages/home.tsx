@@ -144,7 +144,7 @@ export default function Home() {
               진안에서 온 <span className="text-eden-red">정성 가득</span> 유과
             </h2>
             <p className="text-base sm:text-lg text-eden-dark mb-8 leading-relaxed max-w-2xl mx-auto">
-              부모님이 직접 만드시는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
+              에덴한과에서 직접 만드는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
               달지 않고 고소한 맛이 일품으로 선물로도 완벽한 에덴한과입니다.
             </p>
           </div>
