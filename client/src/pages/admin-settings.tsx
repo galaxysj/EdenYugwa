@@ -62,7 +62,7 @@ export default function AdminSettingsPage() {
   const updateMutation = useMutation({
     mutationFn: (data: AdminSettingsFormData) => {
       console.log("Sending admin settings data:", data);
-      return apiRequest('/api/admin-settings', 'POST', data);
+      return apiRequest('POST', '/api/admin-settings', data);
     },
     onSuccess: (response) => {
       console.log("Admin settings update successful:", response);
