@@ -729,6 +729,18 @@ export default function Admin() {
       acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
         ? (order.totalAmount - order.actualPaidAmount) : 0;
       acc.netProfit += order.netProfit || 0;
+      
+      // Calculate product costs and fees
+      acc.totalCost += order.totalCost || 0;
+      acc.smallBoxAmount += order.smallBoxQuantity * 19000;
+      acc.largeBoxAmount += order.largeBoxQuantity * 21000;
+      acc.wrappingAmount += order.wrappingQuantity * 1000;
+      
+      // Calculate shipping fees
+      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+      const shippingFee = totalItems >= 6 ? 0 : 4000;
+      acc.shippingAmount += shippingFee;
+      
       return acc;
     }, {
       count: 0,
@@ -736,7 +748,12 @@ export default function Admin() {
       actualRevenue: 0,
       totalDiscounts: 0,
       totalPartialUnpaid: 0,
-      netProfit: 0
+      netProfit: 0,
+      totalCost: 0,
+      smallBoxAmount: 0,
+      largeBoxAmount: 0,
+      wrappingAmount: 0,
+      shippingAmount: 0
     });
     
     const handleRevenueExcelDownload = async () => {
@@ -882,6 +899,54 @@ export default function Admin() {
                   {formatPrice(filteredTotals.netProfit)}
                 </div>
                 <div className="text-sm text-gray-600">실제 수익</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 상세 매출 분석 */}
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-bold text-blue-700 mb-4 text-center">상세 매출 분석</h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 소박스 매출 */}
+              <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
+                <div className="text-lg font-bold text-amber-600 mb-1">{formatPrice(filteredTotals.smallBoxAmount)}</div>
+                <div className="text-sm text-gray-600">소박스 매출</div>
+              </div>
+              
+              {/* 대박스 매출 */}
+              <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
+                <div className="text-lg font-bold text-orange-600 mb-1">{formatPrice(filteredTotals.largeBoxAmount)}</div>
+                <div className="text-sm text-gray-600">대박스 매출</div>
+              </div>
+              
+              {/* 보자기 매출 */}
+              <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
+                <div className="text-lg font-bold text-eden-brown mb-1">{formatPrice(filteredTotals.wrappingAmount)}</div>
+                <div className="text-sm text-gray-600">보자기 매출</div>
+              </div>
+              
+              {/* 배송비 수입 */}
+              <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
+                <div className="text-lg font-bold text-indigo-600 mb-1">{formatPrice(filteredTotals.shippingAmount)}</div>
+                <div className="text-sm text-gray-600">배송비 수입</div>
+              </div>
+            </div>
+            
+            {/* 원가 정보 */}
+            <div className="mt-4 pt-4 border-t border-blue-200">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-3 bg-white rounded-lg border border-red-100">
+                  <div className="text-lg font-bold text-red-600 mb-1">{formatPrice(filteredTotals.totalCost)}</div>
+                  <div className="text-sm text-gray-600">총 원가</div>
+                </div>
+                <div className="text-center p-3 bg-white rounded-lg border border-green-100">
+                  <div className="text-lg font-bold text-green-600 mb-1">
+                    {formatPrice(filteredTotals.actualRevenue - filteredTotals.totalCost)}
+                  </div>
+                  <div className="text-sm text-gray-600">총 이익</div>
+                </div>
               </div>
             </div>
           </CardContent>
