@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ShoppingCart, Box, Calculator, Search, Calendar } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";  
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -36,12 +37,17 @@ const orderSchema = z.object({
   largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
   wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
   scheduledDate: z.date().optional(),
+  isDifferentDepositor: z.boolean().default(false),
+  depositorName: z.string().optional(),
 }).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
   message: "최소 1개 이상의 상품을 선택해주세요",
   path: ["smallBoxQuantity"],
 }).refine((data) => data.wrappingQuantity <= data.smallBoxQuantity + data.largeBoxQuantity, {
   message: "보자기 포장 수량은 전체 수량보다 클 수 없습니다",
   path: ["wrappingQuantity"],
+}).refine((data) => !data.isDifferentDepositor || data.depositorName, {
+  message: "예금자 이름을 입력해주세요",
+  path: ["depositorName"],
 });
 
 type OrderFormData = z.infer<typeof orderSchema>;
@@ -89,6 +95,8 @@ export default function OrderForm() {
       largeBoxQuantity: 0,
       wrappingQuantity: 0,
       scheduledDate: undefined,
+      isDifferentDepositor: false,
+      depositorName: "",
     },
   });
 
@@ -485,7 +493,7 @@ export default function OrderForm() {
                       name="customerName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>이름 *</FormLabel>
+                          <FormLabel>주문자 이름 *</FormLabel>
                           <FormControl>
                             <Input 
                               placeholder="성함을 입력해주세요"
@@ -576,6 +584,45 @@ export default function OrderForm() {
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="isDifferentDepositor"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              예금자가 다릅니다
+                            </FormLabel>
+                            <p className="text-sm text-gray-500">
+                              체크하시면 예금자 이름을 별도로 입력할 수 있습니다
+                            </p>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {form.watch("isDifferentDepositor") && (
+                      <FormField
+                        control={form.control}
+                        name="depositorName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>예금자 이름 *</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="박입금자" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     <FormField
                       control={form.control}
