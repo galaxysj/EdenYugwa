@@ -1537,14 +1537,11 @@ export default function Admin() {
                   />
                 </th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">예금자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자/예금자</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
-                <th className="text-right py-2 px-2 font-medium text-gray-700 text-xs">매출정보</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">실제입금</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">할인/미입금</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
@@ -1579,19 +1576,23 @@ export default function Admin() {
                       )}
                     </td>
                     <td className="py-2 px-2">
-                      <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
-                      {order.recipientName && order.recipientName !== order.customerName && (
-                        <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
-                      )}
-                    </td>
-                    <td className="py-2 px-2">
-                      <div className="font-medium text-xs">
-                        {order.isDifferentDepositor && order.depositorName ? (
-                          <span className="text-red-600">{order.depositorName}</span>
-                        ) : (
-                          <span className="text-gray-500">{order.customerName}</span>
-                        )}
+                      <div className="flex items-center space-x-2 text-xs">
+                        <div>
+                          <span className="text-gray-500">주문:</span>
+                          <span className="font-medium text-gray-900 ml-1">{order.customerName}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">예금:</span>
+                          {order.isDifferentDepositor && order.depositorName ? (
+                            <span className="text-red-600 font-medium ml-1">{order.depositorName}</span>
+                          ) : (
+                            <span className="text-gray-500 ml-1">{order.customerName}</span>
+                          )}
+                        </div>
                       </div>
+                      {order.recipientName && order.recipientName !== order.customerName && (
+                        <div className="text-xs text-blue-600 mt-1">받는분: {order.recipientName}</div>
+                      )}
                     </td>
                     <td className="py-2 px-2 min-w-[80px]">
                       <div className="text-xs">
@@ -1636,41 +1637,43 @@ export default function Admin() {
                         </DialogContent>
                       </Dialog>
                     </td>
-                    <td className="py-2 px-2 text-right">
-                      <div className="font-medium text-gray-900 text-xs">
-                        {formatPrice(order.totalAmount)}
-                      </div>
-                    </td>
-                    <td className="py-2 px-2 text-center">
-                      {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                        <div
-                          className="text-xs cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
-                          onClick={() => {
-                            const currentAmount = order.actualPaidAmount || order.totalAmount;
-                            const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                            if (newAmount && !isNaN(Number(newAmount))) {
-                              handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                            }
-                          }}
-                          title="클릭하여 실제 입금금액 수정"
-                        >
-                          {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                    <td className="py-2 px-2">
+                      <div className="flex items-center space-x-3 text-xs">
+                        <div>
+                          <span className="text-gray-500">매출:</span>
+                          <span className="font-medium text-gray-900 ml-1">{formatPrice(order.totalAmount)}</span>
                         </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-2 text-center">
-                      <div className="text-xs">
-                        {order.discountAmount && order.discountAmount > 0 && (
-                          <div className="text-blue-600">할인: -{formatPrice(order.discountAmount)}</div>
-                        )}
-                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
-                          <div className="text-red-600">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</div>
-                        )}
-                        {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        <div>
+                          <span className="text-gray-500">실입금:</span>
+                          {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                            <span
+                              className="cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 ml-1 font-medium"
+                              onClick={() => {
+                                const currentAmount = order.actualPaidAmount || order.totalAmount;
+                                const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                                if (newAmount && !isNaN(Number(newAmount))) {
+                                  handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                                }
+                              }}
+                              title="클릭하여 실제 입금금액 수정"
+                            >
+                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 ml-1">-</span>
+                          )}
+                        </div>
+                        <div>
+                          {order.discountAmount && order.discountAmount > 0 && (
+                            <span className="text-blue-600">할인: -{formatPrice(order.discountAmount)}</span>
+                          )}
+                          {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
+                            <span className="text-red-600">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</span>
+                          )}
+                          {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="py-2 px-2 text-center">
@@ -1764,7 +1767,7 @@ export default function Admin() {
                       )}
                     </td>
                     <td className="py-2 px-2 text-center">
-                      <div className="flex items-center gap-1">
+                      <div className="flex flex-col gap-1">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
