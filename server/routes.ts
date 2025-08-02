@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, type Order } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, type Order } from "@shared/schema";
 import * as XLSX from "xlsx";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -870,6 +870,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting manager:", error);
       res.status(500).json({ error: "매니저 삭제에 실패했습니다" });
+    }
+  });
+
+  // Customer management API endpoints
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await storage.getAllCustomers();
+      res.json(customers);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      res.status(500).json({ error: "고객 목록을 불러오는데 실패했습니다" });
+    }
+  });
+
+  app.post("/api/customers", async (req, res) => {
+    try {
+      const customerData = insertCustomerSchema.parse(req.body);
+      const customer = await storage.createCustomer(customerData);
+      res.json(customer);
+    } catch (error) {
+      console.error("Error creating customer:", error);
+      if (error.message?.includes("unique")) {
+        return res.status(400).json({ error: "이미 등록된 연락처입니다" });
+      }
+      res.status(500).json({ error: "고객 등록에 실패했습니다" });
+    }
+  });
+
+  app.patch("/api/customers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      const updatedCustomer = await storage.updateCustomer(id, updates);
+      if (!updatedCustomer) {
+        return res.status(404).json({ error: "고객을 찾을 수 없습니다" });
+      }
+
+      res.json(updatedCustomer);
+    } catch (error) {
+      console.error("Error updating customer:", error);
+      if (error.message?.includes("unique")) {
+        return res.status(400).json({ error: "이미 등록된 연락처입니다" });
+      }
+      res.status(500).json({ error: "고객 정보 업데이트에 실패했습니다" });
+    }
+  });
+
+  app.delete("/api/customers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCustomer(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      res.status(500).json({ error: "고객 삭제에 실패했습니다" });
+    }
+  });
+
+  // Update customer statistics (called when orders are created/updated)
+  app.post("/api/customers/sync/:phone", async (req, res) => {
+    try {
+      const phone = req.params.phone;
+      await storage.updateCustomerStats(phone);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error syncing customer stats:", error);
+      res.status(500).json({ error: "고객 통계 업데이트에 실패했습니다" });
     }
   });
 

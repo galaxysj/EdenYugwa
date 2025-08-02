@@ -137,3 +137,31 @@ export const insertAdminSettingsSchema = createInsertSchema(adminSettings).omit(
 
 export type InsertAdminSettings = z.infer<typeof insertAdminSettingsSchema>;
 export type AdminSettings = typeof adminSettings.$inferSelect;
+
+// Customers schema for customer management
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone").notNull().unique(),
+  zipCode: text("zip_code"),
+  address1: text("address1"),
+  address2: text("address2"),
+  orderCount: integer("order_count").notNull().default(0), // 주문횟수
+  totalSpent: integer("total_spent").notNull().default(0), // 총 주문금액
+  lastOrderDate: timestamp("last_order_date"), // 마지막 주문일
+  notes: text("notes"), // 메모
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCustomerSchema = createInsertSchema(customers).omit({
+  id: true,
+  orderCount: true,
+  totalSpent: true,
+  lastOrderDate: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+export type Customer = typeof customers.$inferSelect;

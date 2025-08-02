@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, managers, settings, adminSettings, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 
@@ -45,6 +45,15 @@ export interface IStorage {
   restoreOrder(id: number): Promise<Order | undefined>;
   getDeletedOrders(): Promise<Order[]>;
   permanentDeleteOrder(id: number): Promise<void>;
+  
+  // Customer management
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getCustomerById(id: number): Promise<Customer | undefined>;
+  getCustomerByPhone(phone: string): Promise<Customer | undefined>;
+  getAllCustomers(): Promise<Customer[]>;
+  updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined>;
+  deleteCustomer(id: number): Promise<void>;
+  updateCustomerStats(customerPhone: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -496,23 +505,92 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  // Manager management functions
-  async getAllManagers(): Promise<Manager[]> {
-    return await db.select().from(managers).orderBy(managers.createdAt);
+
+
+  // Customer management functions
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    return newCustomer;
   }
 
-  async getManagerById(id: number): Promise<Manager | undefined> {
-    const [manager] = await db.select().from(managers).where(eq(managers.id, id));
-    return manager || undefined;
+  async getCustomerById(id: number): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    return customer || undefined;
   }
 
-  async updateManager(id: number, manager: Partial<InsertManager>): Promise<Manager | undefined> {
-    const [updated] = await db.update(managers)
-      .set(manager)
-      .where(eq(managers.id, id))
+  async getCustomerByPhone(phone: string): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.customerPhone, phone));
+    return customer || undefined;
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers).orderBy(desc(customers.createdAt));
+  }
+
+  async updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    const [updated] = await db.update(customers)
+      .set({
+        ...customer,
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id))
       .returning();
     return updated || undefined;
   }
+
+  async deleteCustomer(id: number): Promise<void> {
+    await db.delete(customers).where(eq(customers.id, id));
+  }
+
+  async updateCustomerStats(phoneNumber: string): Promise<void> {
+    // Get all orders for this phone number
+    const customerOrders = await db.select()
+      .from(orders)
+      .where(eq(orders.customerPhone, phoneNumber));
+
+    if (customerOrders.length === 0) return;
+
+    // Calculate statistics
+    const orderCount = customerOrders.length;
+    const totalSpent = customerOrders
+      .filter(order => order.paymentStatus === 'confirmed')
+      .reduce((sum, order) => sum + (order.actualPaidAmount || order.totalAmount), 0);
+    
+    const lastOrderDate = customerOrders
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+      .createdAt;
+
+    // Update or create customer record
+    const existingCustomer = await this.getCustomerByPhone(phoneNumber);
+    
+    if (existingCustomer) {
+      await this.updateCustomer(existingCustomer.id, {
+        orderCount,
+        totalSpent,
+        lastOrderDate
+      });
+    } else {
+      // Create new customer record from first order
+      const firstOrder = customerOrders[0];
+      await this.createCustomer({
+        customerName: firstOrder.customerName,
+        customerPhone: phoneNumber,
+        zipCode: firstOrder.zipCode,
+        address1: firstOrder.address1,
+        address2: firstOrder.address2,
+        orderCount,
+        totalSpent,
+        lastOrderDate,
+        notes: null
+      });
+    }
+  }
+
+  async deleteCustomer(id: number): Promise<void> {
+    await db.delete(customers).where(eq(customers.id, id));
+  }
+
+
 
   async deleteManager(id: number): Promise<void> {
     await db.delete(managers).where(eq(managers.id, id));

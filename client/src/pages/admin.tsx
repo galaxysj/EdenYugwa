@@ -11,6 +11,7 @@ import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, D
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
+import { CustomerManagement } from "@/components/customer-management";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -2357,7 +2358,10 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-7">
+                  <TabsTrigger value="customers" className="text-blue-600">
+                    고객관리
+                  </TabsTrigger>
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
@@ -2372,6 +2376,10 @@ export default function Admin() {
                   </TabsTrigger>
                 </TabsList>
                 
+                <TabsContent value="customers" className="mt-6">
+                  <CustomerManagement />
+                </TabsContent>
+
                 <TabsContent value="all" className="mt-6">
                   {renderOrderFilters()}
                   {selectedOrderItems.size > 0 && (
