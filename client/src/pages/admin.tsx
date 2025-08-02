@@ -690,7 +690,7 @@ export default function Admin() {
 
   // Render revenue report function
   const renderRevenueReport = () => {
-    // Include all orders with confirmed payment status (regardless of order status)
+    // Include all orders with confirmed payment status (including scheduled and delivered orders)
     const paidOrders = orders.filter((order: Order) => 
       order.paymentStatus === 'confirmed'
     );
@@ -797,7 +797,12 @@ export default function Admin() {
       <div className="space-y-6">
         {/* 매출 요약 */}
         <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold">매출 관리 리포트</h3>
+          <div>
+            <h3 className="text-lg font-semibold">매출 관리 리포트</h3>
+            <p className="text-sm text-gray-600 mt-1">
+              입금완료된 모든 주문 (발송예약, 발송완료 포함)
+            </p>
+          </div>
           <Button onClick={handleRevenueExcelDownload} className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             매출 엑셀 다운로드
