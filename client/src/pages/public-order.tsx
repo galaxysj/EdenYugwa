@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
@@ -22,6 +23,15 @@ const publicOrderSchema = z.object({
   zipCode: z.string().optional(),
   address1: z.string().min(1, "주소를 입력해주세요"),
   address2: z.string().optional(),
+  // 받는 분 정보
+  recipientName: z.string().min(1, "받는 분 이름을 입력해주세요"),
+  recipientPhone: z.string().min(1, "받는 분 연락처를 입력해주세요"),
+  recipientZipCode: z.string().optional(),
+  recipientAddress1: z.string().min(1, "받는 분 주소를 입력해주세요"),
+  recipientAddress2: z.string().optional(),
+  // 예금자 정보
+  isDifferentDepositor: z.boolean().default(false),
+  depositorName: z.string().optional(),
   smallBoxQuantity: z.number().min(0).default(0),
   largeBoxQuantity: z.number().min(0).default(0),
   wrappingQuantity: z.number().min(0).default(0),
@@ -44,6 +54,13 @@ export default function PublicOrder() {
       zipCode: "",
       address1: "",
       address2: "",
+      recipientName: "",
+      recipientPhone: "",
+      recipientZipCode: "",
+      recipientAddress1: "",
+      recipientAddress2: "",
+      isDifferentDepositor: false,
+      depositorName: "",
       smallBoxQuantity: 0,
       largeBoxQuantity: 0,
       wrappingQuantity: 0,
@@ -92,6 +109,15 @@ export default function PublicOrder() {
       zipCode: data.zipCode || null,
       address1: data.address1,
       address2: data.address2 || null,
+      // 받는 분 정보
+      recipientName: data.recipientName || null,
+      recipientPhone: data.recipientPhone || null,
+      recipientZipCode: data.recipientZipCode || null,
+      recipientAddress1: data.recipientAddress1 || null,
+      recipientAddress2: data.recipientAddress2 || null,
+      // 예금자 정보
+      isDifferentDepositor: data.isDifferentDepositor,
+      depositorName: data.isDifferentDepositor ? data.depositorName || null : null,
       smallBoxQuantity: data.smallBoxQuantity,
       largeBoxQuantity: data.largeBoxQuantity,
       wrappingQuantity: data.wrappingQuantity,
@@ -208,7 +234,7 @@ export default function PublicOrder() {
                       name="customerName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>고객명 *</FormLabel>
+                          <FormLabel>주문자명 *</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="홍길동" />
                           </FormControl>
@@ -222,7 +248,7 @@ export default function PublicOrder() {
                       name="customerPhone"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>연락처 *</FormLabel>
+                          <FormLabel>주문자 연락처 *</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="010-1234-5678" />
                           </FormControl>
@@ -231,24 +257,16 @@ export default function PublicOrder() {
                       )}
                     />
                   </div>
-                </div>
 
-                {/* Delivery Information */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                    <MapPin className="h-5 w-5 text-eden-brown" />
-                    <h3 className="text-lg font-semibold text-gray-900">배송 정보</h3>
-                  </div>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
                       name="zipCode"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>우편번호</FormLabel>
+                          <FormLabel>주문자 우편번호</FormLabel>
                           <FormControl>
-                            <Input {...field} value={field.value || ""} placeholder="12345" />
+                            <Input {...field} placeholder="12345" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -261,9 +279,93 @@ export default function PublicOrder() {
                         name="address1"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>주소 *</FormLabel>
+                            <FormLabel>주문자 주소 *</FormLabel>
                             <FormControl>
                               <Input {...field} placeholder="서울시 강남구 테헤란로 123" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="address2"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문자 상세주소</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="101동 502호" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Recipient Information */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                    <MapPin className="h-5 w-5 text-eden-brown" />
+                    <h3 className="text-lg font-semibold text-gray-900">받는 분 정보</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="recipientName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>받는 분 이름 *</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="김받는분" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="recipientPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>받는 분 연락처 *</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="010-9876-5432" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="recipientZipCode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>받는 분 우편번호</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="12345" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="md:col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="recipientAddress1"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>받는 분 주소 *</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="부산시 해운대구 센텀시티로 456" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -274,17 +376,64 @@ export default function PublicOrder() {
                   
                   <FormField
                     control={form.control}
-                    name="address2"
+                    name="recipientAddress2"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>상세주소</FormLabel>
+                        <FormLabel>받는 분 상세주소</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value || ""} placeholder="101동 502호" />
+                          <Input {...field} placeholder="202동 1005호" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                </div>
+
+                {/* Depositor Information */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                    <User className="h-5 w-5 text-eden-brown" />
+                    <h3 className="text-lg font-semibold text-gray-900">입금자 정보</h3>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name="isDifferentDepositor"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            주문자와 입금자가 다릅니다
+                          </FormLabel>
+                          <p className="text-sm text-gray-500">
+                            체크하시면 입금자 이름을 별도로 입력할 수 있습니다
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {form.watch("isDifferentDepositor") && (
+                    <FormField
+                      control={form.control}
+                      name="depositorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>입금자 이름 *</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="박입금자" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
 
                 {/* Product Selection */}
