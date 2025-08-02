@@ -231,12 +231,12 @@ export class DatabaseStorage implements IStorage {
         if (discountAmount > 0) {
           // 부분미입금인지 할인인지 구분
           if (discountReason && discountReason.includes('할인')) {
-            // 할인인 경우
+            // 할인인 경우 - 입금완료로 처리
             updateData.discountAmount = discountAmount;
             updateData.discountReason = discountReason;
             updateData.paymentStatus = 'confirmed';
           } else {
-            // 부분미입금인 경우
+            // 부분미입금인 경우 - 부분결제로 처리
             updateData.discountAmount = 0;
             updateData.discountReason = discountReason || `부분미입금 (미입금: ${discountAmount.toLocaleString()}원)`;
             updateData.paymentStatus = 'partial';
