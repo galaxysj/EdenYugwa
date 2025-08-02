@@ -741,10 +741,16 @@ export default function Admin() {
       acc.largeBoxAmount += order.largeBoxQuantity * 21000;
       acc.wrappingAmount += order.wrappingQuantity * 1000;
       
-      // Calculate shipping fees
+      // Calculate quantities
+      acc.smallBoxQuantity += order.smallBoxQuantity;
+      acc.largeBoxQuantity += order.largeBoxQuantity;
+      acc.wrappingQuantity += order.wrappingQuantity;
+      
+      // Calculate shipping fees and count orders with shipping
       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
       const shippingFee = totalItems >= 6 ? 0 : 4000;
       acc.shippingAmount += shippingFee;
+      if (shippingFee > 0) acc.shippingOrders++;
       
       return acc;
     }, {
@@ -758,7 +764,11 @@ export default function Admin() {
       smallBoxAmount: 0,
       largeBoxAmount: 0,
       wrappingAmount: 0,
-      shippingAmount: 0
+      shippingAmount: 0,
+      smallBoxQuantity: 0,
+      largeBoxQuantity: 0,
+      wrappingQuantity: 0,
+      shippingOrders: 0
     });
     
     const handleRevenueExcelDownload = async () => {
@@ -911,27 +921,27 @@ export default function Admin() {
               </div>
             </div>
             
-            {/* 매출 세부 분석 */}
+            {/* 상품별 건수 분석 */}
             <div className="border-t pt-4">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                  <div className="text-lg font-bold text-amber-600 mb-1">{formatPrice(filteredTotals.smallBoxAmount)}</div>
-                  <div className="text-sm text-gray-600">한과1호 매출</div>
+                  <div className="text-lg font-bold text-amber-600 mb-1">{filteredTotals.smallBoxQuantity}개</div>
+                  <div className="text-sm text-gray-600">한과1호 건수</div>
                 </div>
                 
                 <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                  <div className="text-lg font-bold text-orange-600 mb-1">{formatPrice(filteredTotals.largeBoxAmount)}</div>
-                  <div className="text-sm text-gray-600">한과2호 매출</div>
+                  <div className="text-lg font-bold text-orange-600 mb-1">{filteredTotals.largeBoxQuantity}개</div>
+                  <div className="text-sm text-gray-600">한과2호 건수</div>
                 </div>
                 
                 <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                  <div className="text-lg font-bold text-eden-brown mb-1">{formatPrice(filteredTotals.wrappingAmount)}</div>
-                  <div className="text-sm text-gray-600">보자기 매출</div>
+                  <div className="text-lg font-bold text-eden-brown mb-1">{filteredTotals.wrappingQuantity}개</div>
+                  <div className="text-sm text-gray-600">보자기 건수</div>
                 </div>
                 
                 <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                  <div className="text-lg font-bold text-indigo-600 mb-1">{formatPrice(filteredTotals.shippingAmount)}</div>
-                  <div className="text-sm text-gray-600">배송비 수입</div>
+                  <div className="text-lg font-bold text-indigo-600 mb-1">{filteredTotals.shippingOrders}건</div>
+                  <div className="text-sm text-gray-600">배송비 건수</div>
                 </div>
               </div>
               
