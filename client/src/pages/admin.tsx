@@ -434,6 +434,12 @@ export default function Admin() {
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
+  const [orderStartDate, setOrderStartDate] = useState<string>('');
+  const [orderEndDate, setOrderEndDate] = useState<string>('');
+  const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
+  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
 
@@ -625,10 +631,56 @@ export default function Admin() {
     return orders.filter((order: Order) => order.status === status);
   };
 
-  const allOrders = orders;
-  const pendingOrders = filterOrdersByStatus("pending");
-  const scheduledOrders = filterOrdersByStatus("scheduled");
-  const deliveredOrders = filterOrdersByStatus("delivered");
+  // Filter orders for main list with multiple criteria
+  const getFilteredOrdersList = (ordersList: Order[]) => {
+    let filtered = ordersList;
+
+    // Date filter
+    if (orderDateFilter === 'today') {
+      const today = new Date().toDateString();
+      filtered = filtered.filter(order => new Date(order.createdAt).toDateString() === today);
+    } else if (orderDateFilter === 'week') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      filtered = filtered.filter(order => new Date(order.createdAt) >= weekAgo);
+    } else if (orderDateFilter === 'month') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      filtered = filtered.filter(order => new Date(order.createdAt) >= monthAgo);
+    } else if (orderDateFilter === 'custom' && orderStartDate && orderEndDate) {
+      const start = new Date(orderStartDate);
+      const end = new Date(orderEndDate);
+      end.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(order => {
+        const orderDate = new Date(order.createdAt);
+        return orderDate >= start && orderDate <= end;
+      });
+    }
+
+    // Customer name filter
+    if (customerNameFilter.trim()) {
+      filtered = filtered.filter(order => 
+        order.customerName.toLowerCase().includes(customerNameFilter.toLowerCase().trim())
+      );
+    }
+
+    // Payment status filter
+    if (paymentStatusFilter !== 'all') {
+      filtered = filtered.filter(order => order.paymentStatus === paymentStatusFilter);
+    }
+
+    // Order status filter
+    if (orderStatusFilter !== 'all') {
+      filtered = filtered.filter(order => order.status === orderStatusFilter);
+    }
+
+    return filtered;
+  };
+
+  const allOrders = getFilteredOrdersList(orders);
+  const pendingOrders = getFilteredOrdersList(filterOrdersByStatus("pending"));
+  const scheduledOrders = getFilteredOrdersList(filterOrdersByStatus("scheduled"));
+  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered"));
 
   // Render revenue report function
   const renderRevenueReport = () => {
@@ -1052,6 +1104,135 @@ export default function Admin() {
       </div>
     );
   };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setOrderDateFilter('all');
+    setOrderStartDate('');
+    setOrderEndDate('');
+    setCustomerNameFilter('');
+    setPaymentStatusFilter('all');
+    setOrderStatusFilter('all');
+  };
+
+  // Render filter UI
+  const renderOrderFilters = () => (
+    <Card className="mb-4">
+      <CardContent className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Date Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">주문일 필터</label>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={orderDateFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setOrderDateFilter('all')}
+              >
+                전체
+              </Button>
+              <Button
+                size="sm"
+                variant={orderDateFilter === 'today' ? 'default' : 'outline'}
+                onClick={() => setOrderDateFilter('today')}
+              >
+                오늘
+              </Button>
+              <Button
+                size="sm"
+                variant={orderDateFilter === 'week' ? 'default' : 'outline'}
+                onClick={() => setOrderDateFilter('week')}
+              >
+                7일
+              </Button>
+              <Button
+                size="sm"
+                variant={orderDateFilter === 'custom' ? 'default' : 'outline'}
+                onClick={() => setOrderDateFilter('custom')}
+              >
+                기간설정
+              </Button>
+            </div>
+            {orderDateFilter === 'custom' && (
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="date"
+                  value={orderStartDate}
+                  onChange={(e) => setOrderStartDate(e.target.value)}
+                  className="px-2 py-1 border rounded text-sm"
+                />
+                <span className="text-gray-500 self-center">~</span>
+                <input
+                  type="date"
+                  value={orderEndDate}
+                  onChange={(e) => setOrderEndDate(e.target.value)}
+                  className="px-2 py-1 border rounded text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Customer Name Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">고객명 검색</label>
+            <input
+              type="text"
+              placeholder="고객명을 입력하세요"
+              value={customerNameFilter}
+              onChange={(e) => setCustomerNameFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            />
+          </div>
+
+          {/* Status Filters */}
+          <div className="space-y-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">입금상태</label>
+              <select
+                value={paymentStatusFilter}
+                onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">전체</option>
+                <option value="pending">입금대기</option>
+                <option value="confirmed">입금완료</option>
+                <option value="partial">부분결제</option>
+                <option value="refunded">환불</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">주문상태</label>
+              <select
+                value={orderStatusFilter}
+                onChange={(e) => setOrderStatusFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              >
+                <option value="all">전체</option>
+                <option value="pending">접수대기</option>
+                <option value="scheduled">발송예약</option>
+                <option value="delivered">발송완료</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        {/* Filter Summary and Clear */}
+        <div className="flex justify-between items-center mt-4 pt-4 border-t">
+          <div className="text-sm text-gray-600">
+            총 {allOrders.length}건의 주문이 검색되었습니다.
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={clearAllFilters}
+            className="text-gray-600"
+          >
+            필터 초기화
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   // Render orders function
   const renderOrdersList = (ordersList: Order[]) => {
@@ -1837,6 +2018,7 @@ export default function Admin() {
                 </TabsList>
                 
                 <TabsContent value="all" className="mt-6">
+                  {renderOrderFilters()}
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -1872,6 +2054,7 @@ export default function Admin() {
                 </TabsContent>
                 
                 <TabsContent value="pending" className="mt-6">
+                  {renderOrderFilters()}
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -1907,6 +2090,7 @@ export default function Admin() {
                 </TabsContent>
                 
                 <TabsContent value="scheduled" className="mt-6">
+                  {renderOrderFilters()}
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -1942,6 +2126,7 @@ export default function Admin() {
                 </TabsContent>
                 
                 <TabsContent value="delivered" className="mt-6">
+                  {renderOrderFilters()}
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
