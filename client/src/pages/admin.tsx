@@ -961,6 +961,7 @@ export default function Admin() {
                       <th className="text-left py-2 px-3 font-medium text-gray-600">고객명</th>
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문일</th>
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">주문가격</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">원가분석</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제수익</th>
@@ -1013,6 +1014,9 @@ export default function Admin() {
                                 <div>보자기 {order.wrappingQuantity}개</div>
                               )}
                             </div>
+                          </td>
+                          <td className="py-2 px-3 text-right text-sm font-medium text-gray-700">
+                            {formatPrice(order.totalAmount)}
                           </td>
                           <td className="py-2 px-3 text-right text-sm font-medium text-green-600">
                             {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
