@@ -496,7 +496,7 @@ export default function OrderForm() {
                           <FormLabel>주문자 이름 *</FormLabel>
                           <FormControl>
                             <Input 
-                              placeholder="성함을 입력해주세요"
+                              placeholder="홍길동"
                               {...field}
                             />
                           </FormControl>
@@ -504,6 +504,45 @@ export default function OrderForm() {
                         </FormItem>
                       )}
                     />
+
+                    <FormField
+                      control={form.control}
+                      name="isDifferentDepositor"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              예금자가 다릅니다
+                            </FormLabel>
+                            <p className="text-sm text-gray-500">
+                              체크하시면 예금자 이름을 별도로 입력할 수 있습니다
+                            </p>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {form.watch("isDifferentDepositor") && (
+                      <FormField
+                        control={form.control}
+                        name="depositorName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>예금자 이름 *</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="홍길동" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     <FormField
                       control={form.control}
@@ -584,45 +623,6 @@ export default function OrderForm() {
                         </FormItem>
                       )}
                     />
-
-                    <FormField
-                      control={form.control}
-                      name="isDifferentDepositor"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>
-                              예금자가 다릅니다
-                            </FormLabel>
-                            <p className="text-sm text-gray-500">
-                              체크하시면 예금자 이름을 별도로 입력할 수 있습니다
-                            </p>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    
-                    {form.watch("isDifferentDepositor") && (
-                      <FormField
-                        control={form.control}
-                        name="depositorName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>예금자 이름 *</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="박입금자" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
 
                     <FormField
                       control={form.control}

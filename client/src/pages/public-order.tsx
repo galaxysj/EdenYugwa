@@ -228,13 +228,50 @@ export default function PublicOrder() {
                     <h3 className="text-lg font-semibold text-gray-900">주문자 정보</h3>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="customerName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문자 이름 *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="홍길동" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isDifferentDepositor"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>
+                            예금자가 다릅니다
+                          </FormLabel>
+                          <p className="text-sm text-gray-500">
+                            체크하시면 예금자 이름을 별도로 입력할 수 있습니다
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {form.watch("isDifferentDepositor") && (
                     <FormField
                       control={form.control}
-                      name="customerName"
+                      name="depositorName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>주문자 이름 *</FormLabel>
+                          <FormLabel>예금자 이름 *</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="홍길동" />
                           </FormControl>
@@ -242,21 +279,21 @@ export default function PublicOrder() {
                         </FormItem>
                       )}
                     />
-                    
-                    <FormField
-                      control={form.control}
-                      name="customerPhone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>주문자 연락처 *</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="010-1234-5678" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  )}
+
+                  <FormField
+                    control={form.control}
+                    name="customerPhone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문자 연락처 *</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="010-1234-5678" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
@@ -303,45 +340,6 @@ export default function PublicOrder() {
                       </FormItem>
                     )}
                   />
-                  
-                  <FormField
-                    control={form.control}
-                    name="isDifferentDepositor"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            예금자가 다릅니다
-                          </FormLabel>
-                          <p className="text-sm text-gray-500">
-                            체크하시면 예금자 이름을 별도로 입력할 수 있습니다
-                          </p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {form.watch("isDifferentDepositor") && (
-                    <FormField
-                      control={form.control}
-                      name="depositorName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>예금자 이름 *</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="박입금자" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
 
                 {/* Recipient Information */}
