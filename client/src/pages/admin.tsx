@@ -1413,7 +1413,7 @@ export default function Admin() {
                 <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
                 <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">실제입금</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">할인/부분입금</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">할인/미입금</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
                 <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">발송일</th>
@@ -1645,7 +1645,6 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
-
         {/* Mobile Cards */}
         <div className="lg:hidden space-y-4">
           {ordersList.map((order: Order) => {
