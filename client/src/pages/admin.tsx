@@ -490,8 +490,8 @@ export default function Admin() {
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'payment-status' | 'order-status' | 'delivery-date'>('latest');
   const [sortCriteria, setSortCriteria] = useState([
     { field: 'status', direction: 'asc' as 'asc' | 'desc' },
-    { field: 'none', direction: 'asc' as 'asc' | 'desc' },
-    { field: 'none', direction: 'asc' as 'asc' | 'desc' }
+    { field: 'deliveredDate', direction: 'desc' as 'asc' | 'desc' },
+    { field: 'orderNumber', direction: 'desc' as 'asc' | 'desc' }
   ]);
 
   // Clear selections when switching tabs
@@ -1447,8 +1447,8 @@ export default function Admin() {
     setSortOrder('latest');
     setSortCriteria([
       { field: 'status', direction: 'asc' },
-      { field: 'none', direction: 'asc' },
-      { field: 'none', direction: 'asc' }
+      { field: 'deliveredDate', direction: 'desc' },
+      { field: 'orderNumber', direction: 'desc' }
     ]);
   };
 
