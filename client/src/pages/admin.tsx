@@ -645,6 +645,7 @@ export default function Admin() {
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문일</th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-600">주문내역</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">주문금액</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">실입금</th>
                       <th className="text-left py-3 px-4 font-medium text-gray-600">할인</th>
@@ -652,29 +653,66 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paidOrders.map((order: Order) => (
-                      <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="py-3 px-4 font-medium">#{order.orderNumber}</td>
-                        <td className="py-3 px-4">{order.customerName}</td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
-                          {new Date(order.createdAt).toLocaleDateString('ko-KR')}
-                        </td>
-                        <td className="py-3 px-4 font-medium text-eden-red">
-                          {formatPrice(order.totalAmount)}
-                        </td>
-                        <td className="py-3 px-4 font-medium text-green-600">
-                          {formatPrice(order.actualPaidAmount || 0)}
-                        </td>
-                        <td className="py-3 px-4 font-medium text-blue-600">
-                          {formatPrice(order.discountAmount || 0)}
-                        </td>
-                        <td className="py-3 px-4 font-medium">
-                          <span className={order.netProfit && order.netProfit >= 0 ? "text-purple-600" : "text-red-600"}>
-                            {formatPrice(order.netProfit || 0)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {paidOrders.map((order: Order) => {
+                      const smallBoxTotal = order.smallBoxQuantity * 19000;
+                      const largeBoxTotal = order.largeBoxQuantity * 21000;
+                      const wrappingTotal = order.wrappingQuantity * 1000;
+                      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+                      const shippingFee = totalItems >= 6 ? 0 : 4000;
+                      
+                      return (
+                        <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-4 font-medium">#{order.orderNumber}</td>
+                          <td className="py-3 px-4">{order.customerName}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="space-y-1">
+                              {order.smallBoxQuantity > 0 && (
+                                <div>소박스 {order.smallBoxQuantity}개</div>
+                              )}
+                              {order.largeBoxQuantity > 0 && (
+                                <div>대박스 {order.largeBoxQuantity}개</div>
+                              )}
+                              {order.wrappingQuantity > 0 && (
+                                <div>보자기 {order.wrappingQuantity}개</div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm">
+                            <div className="space-y-1">
+                              {order.smallBoxQuantity > 0 && (
+                                <div className="text-gray-600">소박스: {formatPrice(smallBoxTotal)}</div>
+                              )}
+                              {order.largeBoxQuantity > 0 && (
+                                <div className="text-gray-600">대박스: {formatPrice(largeBoxTotal)}</div>
+                              )}
+                              {order.wrappingQuantity > 0 && (
+                                <div className="text-gray-600">보자기: {formatPrice(wrappingTotal)}</div>
+                              )}
+                              {shippingFee > 0 && (
+                                <div className="text-gray-600">배송비: {formatPrice(shippingFee)}</div>
+                              )}
+                              <div className="font-medium text-eden-red border-t pt-1">
+                                합계: {formatPrice(order.totalAmount)}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-green-600">
+                            {formatPrice(order.actualPaidAmount || 0)}
+                          </td>
+                          <td className="py-3 px-4 font-medium text-blue-600">
+                            {formatPrice(order.discountAmount || 0)}
+                          </td>
+                          <td className="py-3 px-4 font-medium">
+                            <span className={order.netProfit && order.netProfit >= 0 ? "text-purple-600" : "text-red-600"}>
+                              {formatPrice(order.netProfit || 0)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
