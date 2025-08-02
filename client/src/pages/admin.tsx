@@ -1799,7 +1799,7 @@ export default function Admin() {
                         onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                         disabled={updatePaymentMutation.isPending}
                       >
-                        <SelectTrigger className="w-20 h-6 text-xs">
+                        <SelectTrigger className="w-24 h-6 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -1836,7 +1836,7 @@ export default function Admin() {
                         onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
                         disabled={updateStatusMutation.isPending}
                       >
-                        <SelectTrigger className="w-20 h-6 text-xs">
+                        <SelectTrigger className="w-24 h-6 text-xs">
                           <SelectValue>
                             {order.scheduledDate && order.status === 'pending' ? "주문접수" : statusLabels[order.status as keyof typeof statusLabels]}
                           </SelectValue>
