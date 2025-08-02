@@ -697,10 +697,10 @@ export default function Admin() {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortOrder === 'order-status') {
-      // Sort by actual order sequence (creation date order)
+      // Sort by creation date (latest first)
       return sorted.sort((a, b) => {
-        // Sort by creation date (earliest first - actual order sequence)
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        // Sort by creation date (latest first)
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     } else if (sortOrder === 'delivery-date') {
       // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
