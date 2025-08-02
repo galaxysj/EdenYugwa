@@ -1605,7 +1605,7 @@ export default function Admin() {
                     <td className="py-3 px-3">
                       <div className="font-medium text-gray-900 text-sm">
                         {order.isDifferentDepositor && order.depositorName ? (
-                          <span className="text-green-600">{order.depositorName}</span>
+                          <span className="text-red-600">{order.depositorName}</span>
                         ) : (
                           <span className="text-gray-500">{order.customerName}</span>
                         )}
@@ -1865,7 +1865,7 @@ export default function Admin() {
                         
                         <div className="text-gray-500 mb-1 mt-2">예금자</div>
                         {order.isDifferentDepositor && order.depositorName ? (
-                          <div className="font-medium text-green-600">{order.depositorName}</div>
+                          <div className="font-medium text-red-600">{order.depositorName}</div>
                         ) : (
                           <div className="font-medium text-gray-500">{order.customerName}</div>
                         )}
