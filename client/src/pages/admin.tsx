@@ -1522,7 +1522,7 @@ export default function Admin() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="w-12 py-3 px-3 text-center">
+                <th className="w-8 py-2 px-2 text-center">
                   <input
                     type="checkbox"
                     checked={selectedOrderItems.size === ordersList.length && ordersList.length > 0}
@@ -1536,19 +1536,19 @@ export default function Admin() {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문번호</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문자</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">예금자</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문내역</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">연락처</th>
-                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
-                <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">실제입금</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">할인/미입금</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">발송일</th>
-                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">관리</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">예금자</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
+                <th className="text-right py-2 px-2 font-medium text-gray-700 text-xs">매출정보</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">실제입금</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">할인/미입금</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -1556,7 +1556,7 @@ export default function Admin() {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
                   <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50" data-order-id={order.id}>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2 text-center">
                       <input
                         type="checkbox"
                         checked={selectedOrderItems.has(order.id)}
@@ -1564,46 +1564,28 @@ export default function Admin() {
                         className="rounded border-gray-300"
                       />
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="font-medium text-gray-900 text-sm">#{order.orderNumber}</div>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
-                        <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                        <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                       {order.scheduledDate && (
-                        <div className="mt-1">
-                          <div className="text-red-600 font-bold text-sm">
-                            고객 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                              year: 'numeric',
-                              month: '2-digit', 
-                              day: '2-digit',
-                              weekday: 'short'
-                            })}
-                          </div>
+                        <div className="text-red-600 font-bold text-xs">
+                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
                       )}
                       {order.status === 'scheduled' && !order.scheduledDate && (
-                        <div className="mt-1">
-                          <div className="text-orange-600 font-bold text-sm">
-                            발송예약 (날짜 미설정)
-                          </div>
-                        </div>
+                        <div className="text-orange-600 font-bold text-xs">예약 대기</div>
                       )}
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="space-y-1">
-                        <div className="font-medium text-gray-900 text-sm">
-                          {order.customerName}
-                        </div>
-                        {order.recipientName && order.recipientName !== order.customerName && (
-                          <div className="text-xs text-blue-600">
-                            받는분: {order.recipientName}
-                          </div>
-                        )}
-                      </div>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                      {order.recipientName && order.recipientName !== order.customerName && (
+                        <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                      )}
                     </td>
-                    <td className="py-3 px-3">
-                      <div className="font-medium text-gray-900 text-sm">
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-xs">
                         {order.isDifferentDepositor && order.depositorName ? (
                           <span className="text-red-600">{order.depositorName}</span>
                         ) : (
@@ -1611,42 +1593,30 @@ export default function Admin() {
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-3 min-w-[100px]">
-                      <div className="space-y-1">
-                        {order.smallBoxQuantity > 0 && (
-                          <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                            한과1호×{order.smallBoxQuantity}개
-                          </div>
-                        )}
-                        {order.largeBoxQuantity > 0 && (
-                          <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
-                            한과2호×{order.largeBoxQuantity}개
-                          </div>
-                        )}
-                        {order.wrappingQuantity > 0 && (
-                          <div className="text-xs font-medium text-eden-brown whitespace-nowrap">
-                            보자기×{order.wrappingQuantity}개
-                          </div>
-                        )}
+                    <td className="py-2 px-2 min-w-[80px]">
+                      <div className="text-xs">
+                        {order.smallBoxQuantity > 0 && <div>1호×{order.smallBoxQuantity}</div>}
+                        {order.largeBoxQuantity > 0 && <div>2호×{order.largeBoxQuantity}</div>}
+                        {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}</div>}
                       </div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-2 px-2">
                       <div className="text-xs text-gray-900">{order.customerPhone}</div>
                     </td>
-                    <td className="py-3 px-3 max-w-xs">
+                    <td className="py-2 px-2 max-w-xs">
                       <div className="text-xs text-gray-900 truncate">
                         [{order.zipCode}] {order.address1} {order.address2}
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-right">
-                      <div className="font-medium text-gray-900 text-sm">
+                    <td className="py-2 px-2 text-right">
+                      <div className="font-medium text-gray-900 text-xs">
                         {formatPrice(order.totalAmount)}
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2 text-center">
                       {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
                         <div
-                          className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
+                          className="text-xs cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
                           onClick={() => {
                             const currentAmount = order.actualPaidAmount || order.totalAmount;
                             const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
@@ -1662,24 +1632,20 @@ export default function Admin() {
                         <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-center">
-                      <div className="text-xs space-y-1">
+                    <td className="py-2 px-2 text-center">
+                      <div className="text-xs">
                         {order.discountAmount && order.discountAmount > 0 && (
-                          <div className="text-blue-600">
-                            할인: -{formatPrice(order.discountAmount)}
-                          </div>
+                          <div className="text-blue-600">할인: -{formatPrice(order.discountAmount)}</div>
                         )}
                         {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
-                          <div className="text-red-600">
-                            미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
-                          </div>
+                          <div className="text-red-600">미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}</div>
                         )}
                         {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
                           <span className="text-gray-400">-</span>
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2 text-center">
                       <Select
                         value={
                           order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
@@ -1689,72 +1655,72 @@ export default function Admin() {
                         onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                         disabled={updatePaymentMutation.isPending}
                       >
-                        <SelectTrigger className="w-28 h-8 text-xs">
+                        <SelectTrigger className="w-20 h-6 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">
-                            <div className="flex items-center space-x-2">
-                              <AlertCircle className="h-4 w-4 text-orange-500" />
+                            <div className="flex items-center space-x-1">
+                              <AlertCircle className="h-3 w-3 text-orange-500" />
                               <span>입금대기</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="confirmed">
-                            <div className="flex items-center space-x-2">
-                              <DollarSign className="h-4 w-4 text-green-500" />
+                            <div className="flex items-center space-x-1">
+                              <DollarSign className="h-3 w-3 text-green-500" />
                               <span>입금완료</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="partial">
-                            <div className="flex items-center space-x-2">
-                              <AlertCircle className="h-4 w-4 text-red-500" />
+                            <div className="flex items-center space-x-1">
+                              <AlertCircle className="h-3 w-3 text-red-500" />
                               <span className="text-red-500">부분결제</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="refunded">
-                            <div className="flex items-center space-x-2">
-                              <AlertCircle className="h-4 w-4 text-red-500" />
+                            <div className="flex items-center space-x-1">
+                              <AlertCircle className="h-3 w-3 text-red-500" />
                               <span>환불</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2 text-center">
                       <Select
                         value={order.status}
                         onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
                         disabled={updateStatusMutation.isPending}
                       >
-                        <SelectTrigger className="w-28 h-8 text-xs">
+                        <SelectTrigger className="w-20 h-6 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">
-                            <div className="flex items-center space-x-2">
-                              <Clock className="h-4 w-4 text-yellow-500" />
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3 text-yellow-500" />
                               <span>주문접수</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="scheduled">
-                            <div className="flex items-center space-x-2">
-                              <Calendar className="h-4 w-4 text-blue-500" />
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3 text-blue-500" />
                               <span>발송예약</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="delivered">
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            <div className="flex items-center space-x-1">
+                              <CheckCircle className="h-3 w-3 text-green-500" />
                               <span>발송완료</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-2 px-2 text-center">
                       {order.status === 'delivered' && order.deliveredDate ? (
                         <div 
-                          className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                          className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200"
                           onClick={() => {
                             const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
                             if (deliveredDatePicker) {
@@ -1769,8 +1735,8 @@ export default function Admin() {
                         <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-center">
-                      <div className="flex flex-col gap-1">
+                    <td className="py-2 px-2 text-center">
+                      <div className="flex items-center gap-1">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
@@ -1782,10 +1748,9 @@ export default function Admin() {
                           variant="destructive"
                           onClick={() => handleDeleteOrder(order.id)}
                           disabled={deleteOrderMutation.isPending}
-                          className="flex items-center gap-1 h-7 text-xs px-2"
+                          className="flex items-center gap-1 h-6 text-xs px-1"
                         >
                           <Trash2 className="h-3 w-3" />
-                          삭제
                         </Button>
                       </div>
                     </td>
