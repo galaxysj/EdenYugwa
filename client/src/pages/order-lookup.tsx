@@ -294,12 +294,12 @@ export default function OrderLookup() {
                             <div className="space-y-2">
                               {order.smallBoxQuantity > 0 && (
                                 <div className="font-medium">
-                                  한과1호 × {order.smallBoxQuantity}개
+                                  한과1호(약 1.1kg) × {order.smallBoxQuantity}개
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
                                 <div className="font-medium">
-                                  한과2호 × {order.largeBoxQuantity}개
+                                  한과2호(약 1.3kg) × {order.largeBoxQuantity}개
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
