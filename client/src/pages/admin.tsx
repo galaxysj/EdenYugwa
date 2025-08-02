@@ -1552,10 +1552,10 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">정렬:</span>
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-4">
               {sortCriteria.map((criterion, index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <span className="text-xs text-gray-500 w-8">{index + 1}순위</span>
+                <div key={index} className="flex gap-1 items-center">
+                  <span className="text-xs text-gray-500 whitespace-nowrap">{index + 1}순위</span>
                   <Select 
                     value={criterion.field} 
                     onValueChange={(value) => {
@@ -1564,7 +1564,7 @@ export default function Admin() {
                       setSortCriteria(newCriteria);
                     }}
                   >
-                    <SelectTrigger className="w-28 h-7 text-xs">
+                    <SelectTrigger className="w-24 h-7 text-xs">
                       <SelectValue placeholder="선택" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1584,12 +1584,12 @@ export default function Admin() {
                       setSortCriteria(newCriteria);
                     }}
                   >
-                    <SelectTrigger className="w-20 h-7 text-xs">
+                    <SelectTrigger className="w-16 h-7 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="asc">오름차순</SelectItem>
-                      <SelectItem value="desc">내림차순</SelectItem>
+                      <SelectItem value="asc">↑</SelectItem>
+                      <SelectItem value="desc">↓</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
