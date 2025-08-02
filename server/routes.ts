@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.autoRegisterCustomer({
         name: validatedData.customerName,
         phone: validatedData.customerPhone,
-        address: validatedData.address || undefined,
+        address: validatedData.address1 || undefined,
         zipCode: validatedData.zipCode || undefined
       });
       

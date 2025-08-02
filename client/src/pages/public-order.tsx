@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
 import { type InsertOrder } from "@shared/schema";
 import { Loader2, Package, MapPin, User, Phone, Calendar, Gift } from "lucide-react";
 
@@ -54,6 +55,9 @@ export default function PublicOrder() {
   const createOrderMutation = useMutation({
     mutationFn: (data: InsertOrder) => api.orders.create(data),
     onSuccess: (newOrder) => {
+      // Invalidate customers cache to refresh the customer management
+      queryClient.invalidateQueries({ queryKey: ['/api/customers'] });
+      
       setOrderNumber(newOrder.orderNumber);
       setOrderComplete(true);
       toast({
