@@ -161,17 +161,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update payment status
+  // Update payment status with actual paid amount
   app.patch("/api/orders/:id/payment", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { paymentStatus } = req.body;
+      const { paymentStatus, actualPaidAmount } = req.body;
       
       if (!paymentStatus) {
         return res.status(400).json({ message: "Payment status is required" });
       }
       
-      const updatedOrder = await storage.updatePaymentStatus(id, paymentStatus);
+      const updatedOrder = await storage.updatePaymentStatus(id, paymentStatus, actualPaidAmount);
       
       if (!updatedOrder) {
         return res.status(404).json({ message: "Order not found" });

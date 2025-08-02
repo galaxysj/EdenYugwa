@@ -41,13 +41,13 @@ export const api = {
       
       return response.json();
     },
-    updatePaymentStatus: async (id: number, paymentStatus: string) => {
+    updatePaymentStatus: async (id: number, paymentStatus: string, actualPaidAmount?: number) => {
       const response = await fetch(`/api/orders/${id}/payment`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ paymentStatus }),
+        body: JSON.stringify({ paymentStatus, actualPaidAmount }),
       });
       
       if (!response.ok) {

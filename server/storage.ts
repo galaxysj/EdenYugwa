@@ -213,13 +213,39 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
-  async updatePaymentStatus(id: number, paymentStatus: string): Promise<Order | undefined> {
+  async updatePaymentStatus(id: number, paymentStatus: string, actualPaidAmount?: number): Promise<Order | undefined> {
+    const updateData: any = { 
+      paymentStatus,
+      paymentConfirmedAt: paymentStatus === 'confirmed' ? new Date() : null
+    };
+
+    // If actual paid amount is provided and payment is confirmed, calculate discount
+    if (paymentStatus === 'confirmed' && actualPaidAmount !== undefined) {
+      const currentOrder = await this.getOrder(id);
+      if (currentOrder) {
+        updateData.actualPaidAmount = actualPaidAmount;
+        
+        // Calculate discount amount (주문금액 - 실입금액)
+        const discountAmount = currentOrder.totalAmount - actualPaidAmount;
+        
+        if (discountAmount > 0) {
+          updateData.discountAmount = discountAmount;
+          updateData.discountReason = `할인 (주문금액 ${currentOrder.totalAmount.toLocaleString()}원 - 실입금 ${actualPaidAmount.toLocaleString()}원)`;
+        } else if (discountAmount < 0) {
+          // 과납입의 경우
+          updateData.discountAmount = 0;
+          updateData.discountReason = `과납입 (${Math.abs(discountAmount).toLocaleString()}원 추가 입금)`;
+        } else {
+          // 정확한 금액 입금
+          updateData.discountAmount = 0;
+          updateData.discountReason = null;
+        }
+      }
+    }
+
     const [order] = await db
       .update(orders)
-      .set({ 
-        paymentStatus,
-        paymentConfirmedAt: paymentStatus === 'confirmed' ? new Date() : null
-      })
+      .set(updateData)
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;

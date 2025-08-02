@@ -154,6 +154,118 @@ function CostSettingsDialog() {
   );
 }
 
+// Payment Confirmation Dialog Component
+function PaymentConfirmDialog({ 
+  order, 
+  open, 
+  setOpen, 
+  onConfirm 
+}: { 
+  order: Order | null; 
+  open: boolean; 
+  setOpen: (open: boolean) => void;
+  onConfirm: (actualPaidAmount: number) => void;
+}) {
+  const [actualPaidAmount, setActualPaidAmount] = useState("");
+  
+  const handleConfirm = () => {
+    const amount = parseInt(actualPaidAmount);
+    if (isNaN(amount) || amount < 0) {
+      return;
+    }
+    onConfirm(amount);
+    setActualPaidAmount("");
+    setOpen(false);
+  };
+
+  if (!order) return null;
+
+  const expectedAmount = order.totalAmount;
+  const paidAmount = parseInt(actualPaidAmount) || 0;
+  const difference = expectedAmount - paidAmount;
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>입금 확인</DialogTitle>
+          <DialogDescription>
+            실제 입금된 금액을 입력해주세요.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div className="p-4 bg-gray-50 rounded-md">
+            <div className="text-sm space-y-1">
+              <div><strong>주문번호:</strong> {order.orderNumber}</div>
+              <div><strong>고객명:</strong> {order.customerName}</div>
+              <div><strong>주문금액:</strong> {order.totalAmount.toLocaleString()}원</div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="actualPaidAmount">실제 입금금액</Label>
+            <Input
+              id="actualPaidAmount"
+              type="number"
+              placeholder="실제 입금된 금액을 입력하세요"
+              value={actualPaidAmount}
+              onChange={(e) => setActualPaidAmount(e.target.value)}
+            />
+          </div>
+          
+          {actualPaidAmount && (
+            <div className="p-3 bg-blue-50 rounded-md border">
+              <div className="text-sm">
+                {difference > 0 && (
+                  <div className="text-orange-600">
+                    <strong>할인:</strong> {difference.toLocaleString()}원
+                  </div>
+                )}
+                {difference < 0 && (
+                  <div className="text-green-600">
+                    <strong>과납입:</strong> {Math.abs(difference).toLocaleString()}원
+                  </div>
+                )}
+                {difference === 0 && (
+                  <div className="text-green-600">
+                    <strong>정확한 금액 입금</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <div className="text-xs text-gray-500">
+            <div>계좌: 농협 352-1701-3342-63 (예금주: 손*진)</div>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                setOpen(false);
+                setActualPaidAmount("");
+              }}
+              className="flex-1"
+            >
+              취소
+            </Button>
+            <Button 
+              onClick={handleConfirm}
+              disabled={!actualPaidAmount || paidAmount < 0}
+              className="flex-1"
+            >
+              입금 확인
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Financial Dialog Component
 function FinancialDialog({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
@@ -278,6 +390,8 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("all");
 
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
 
   const handleLogout = () => {
     toast({
@@ -822,9 +936,19 @@ export default function Admin() {
                         <div className="font-medium text-gray-900">
                           주문: {formatPrice(order.totalAmount)}
                         </div>
+                        {order.actualPaidAmount && order.actualPaidAmount > 0 && (
+                          <div className="text-green-600">
+                            실입금: {formatPrice(order.actualPaidAmount)}
+                          </div>
+                        )}
                         {order.discountAmount && order.discountAmount > 0 && (
                           <div className="text-blue-600">
                             할인: -{formatPrice(order.discountAmount)}
+                          </div>
+                        )}
+                        {order.discountReason && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {order.discountReason}
                           </div>
                         )}
                       </div>
@@ -1158,8 +1282,8 @@ export default function Admin() {
   });
 
   const updatePaymentMutation = useMutation({
-    mutationFn: ({ id, paymentStatus }: { id: number; paymentStatus: string }) => 
-      api.orders.updatePaymentStatus(id, paymentStatus),
+    mutationFn: ({ id, paymentStatus, actualPaidAmount }: { id: number; paymentStatus: string; actualPaidAmount?: number }) => 
+      api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({
@@ -1176,12 +1300,39 @@ export default function Admin() {
     },
   });
 
+  // Handle payment confirmation with actual amount
+  const handlePaymentConfirmation = (actualPaidAmount: number) => {
+    if (selectedOrderForPayment) {
+      updatePaymentMutation.mutate({
+        id: selectedOrderForPayment.id,
+        paymentStatus: 'confirmed',
+        actualPaidAmount
+      });
+      setSelectedOrderForPayment(null);
+    }
+  };
+
+  // Open payment confirmation dialog
+  const openPaymentDialog = (order: Order) => {
+    setSelectedOrderForPayment(order);
+    setShowPaymentDialog(true);
+  };
+
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
   const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
-    updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+    if (newPaymentStatus === 'confirmed') {
+      // 입금완료 선택시 실제 입금금액 입력 다이얼로그 열기
+      const order = orders.find((o: Order) => o.id === orderId);
+      if (order) {
+        openPaymentDialog(order);
+      }
+    } else {
+      // 다른 상태는 바로 업데이트
+      updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+    }
   };
 
   const handleDeleteOrder = (orderId: number) => {
@@ -1430,7 +1581,13 @@ export default function Admin() {
         </Card>
       </div>
 
-
+      {/* Payment Confirmation Dialog */}
+      <PaymentConfirmDialog
+        order={selectedOrderForPayment}
+        open={showPaymentDialog}
+        setOpen={setShowPaymentDialog}
+        onConfirm={handlePaymentConfirmation}
+      />
     </div>
   );
 }
