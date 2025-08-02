@@ -316,6 +316,15 @@ function Manager() {
   // Apply filters and sorting
   const filteredOrders = getFilteredOrdersList(orders);
   const sortedOrders = sortOrders(filteredOrders);
+  
+  // Manager-specific sorting: move scheduled orders to bottom
+  const managerSortedOrders = [...sortedOrders].sort((a, b) => {
+    // If one is scheduled and the other is not, put scheduled at bottom
+    if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
+    if (a.status !== 'scheduled' && b.status === 'scheduled') return -1;
+    // If both have same status priority, maintain original sort order
+    return 0;
+  });
 
   // SMS mutation
   const sendSMSMutation = useMutation({
@@ -609,7 +618,7 @@ function Manager() {
           
           <div className="flex items-center gap-3">
             <div className="text-xs text-gray-600">
-              입금완료 주문: <span className="font-medium text-gray-900">{sortedOrders.length}건</span>
+              입금완료 주문: <span className="font-medium text-gray-900">{managerSortedOrders.length}건</span>
             </div>
             <Button
               size="sm"
@@ -1002,11 +1011,11 @@ function Manager() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  주문 목록 ({sortedOrders.length}건)
+                  주문 목록 ({managerSortedOrders.length}건)
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                {renderOrdersList(sortedOrders)}
+                {renderOrdersList(managerSortedOrders)}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1050,7 +1059,7 @@ function Manager() {
             </Button>
             <Button 
               onClick={() => {
-                const selectedOrders = sortedOrders.filter(order => selectedOrderItems.has(order.id));
+                const selectedOrders = managerSortedOrders.filter(order => selectedOrderItems.has(order.id));
                 const phones = selectedOrders.map(order => order.customerPhone);
                 sendBulkSMSMutation.mutate({ phones, message: bulkSMSMessage });
               }}
