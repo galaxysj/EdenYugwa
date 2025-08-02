@@ -488,8 +488,11 @@ export default function Admin() {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'payment-status' | 'order-status' | 'delivery-date'>('latest');
-  const [customSortField, setCustomSortField] = useState<string>('status');
-  const [customSortDirection, setCustomSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortCriteria, setSortCriteria] = useState([
+    { field: 'status', direction: 'asc' as 'asc' | 'desc' },
+    { field: 'none', direction: 'asc' as 'asc' | 'desc' },
+    { field: 'none', direction: 'asc' as 'asc' | 'desc' }
+  ]);
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -684,95 +687,71 @@ export default function Admin() {
     return orders.filter((order: Order) => order.status === status);
   };
 
-  // Custom sort function for user-defined sorting
-  const customSortOrders = (ordersList: Order[]) => {
+  // Helper function to get field value for sorting
+  const getFieldValue = (order: Order, field: string): any => {
+    switch (field) {
+      case 'orderNumber':
+        return parseInt(order.orderNumber.split('-')[1] || '0');
+      case 'customerName':
+        return order.customerName.toLowerCase();
+      case 'depositorName':
+        return (order.depositorName || order.customerName).toLowerCase();
+      case 'orderDetails':
+        return `한과1호×${order.smallBoxQuantity} 한과2호×${order.largeBoxQuantity} 보자기×${order.wrappingQuantity}`.toLowerCase();
+      case 'customerPhone':
+        return order.customerPhone;
+      case 'address':
+        return `${order.address1} ${order.address2}`.toLowerCase();
+      case 'totalAmount':
+        return order.totalAmount;
+      case 'actualPaidAmount':
+        return order.actualPaidAmount || 0;
+      case 'paymentStatus':
+        const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
+        return paymentPriority[order.paymentStatus as keyof typeof paymentPriority] || 999;
+      case 'status':
+        const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
+        return statusPriority[order.status as keyof typeof statusPriority] || 999;
+      case 'scheduledDate':
+        return order.scheduledDate ? new Date(order.scheduledDate).getTime() : 0;
+      case 'deliveredDate':
+        return order.deliveredDate ? new Date(order.deliveredDate).getTime() : 0;
+      case 'createdAt':
+        return new Date(order.createdAt).getTime();
+      default:
+        return 0;
+    }
+  };
+
+  // Multi-criteria sort function
+  const multiCriteriaSortOrders = (ordersList: Order[]) => {
     const sorted = [...ordersList];
     
     return sorted.sort((a, b) => {
-      let aValue: any, bValue: any;
-      
-      switch (customSortField) {
-        case 'orderNumber':
-          // Extract number part from order number for proper numeric sorting
-          const aNum = parseInt(a.orderNumber.split('-')[1] || '0');
-          const bNum = parseInt(b.orderNumber.split('-')[1] || '0');
-          aValue = aNum;
-          bValue = bNum;
-          break;
-        case 'customerName':
-          aValue = a.customerName.toLowerCase();
-          bValue = b.customerName.toLowerCase();
-          break;
-        case 'depositorName':
-          aValue = (a.depositorName || a.customerName).toLowerCase();
-          bValue = (b.depositorName || b.customerName).toLowerCase();
-          break;
-        case 'orderDetails':
-          const aDetails = `한과1호×${a.smallBoxQuantity} 한과2호×${a.largeBoxQuantity} 보자기×${a.wrappingQuantity}`;
-          const bDetails = `한과1호×${b.smallBoxQuantity} 한과2호×${b.largeBoxQuantity} 보자기×${b.wrappingQuantity}`;
-          aValue = aDetails.toLowerCase();
-          bValue = bDetails.toLowerCase();
-          break;
-        case 'customerPhone':
-          aValue = a.customerPhone;
-          bValue = b.customerPhone;
-          break;
-        case 'address':
-          aValue = `${a.address1} ${a.address2}`.toLowerCase();
-          bValue = `${b.address1} ${b.address2}`.toLowerCase();
-          break;
-        case 'totalAmount':
-          aValue = a.totalAmount;
-          bValue = b.totalAmount;
-          break;
-        case 'actualPaidAmount':
-          aValue = a.actualPaidAmount || 0;
-          bValue = b.actualPaidAmount || 0;
-          break;
-        case 'paymentStatus':
-          const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
-          aValue = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 999;
-          bValue = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 999;
-          break;
-        case 'status':
-          const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
-          aValue = statusPriority[a.status as keyof typeof statusPriority] || 999;
-          bValue = statusPriority[b.status as keyof typeof statusPriority] || 999;
-          break;
-        case 'scheduledDate':
-          aValue = a.scheduledDate ? new Date(a.scheduledDate).getTime() : 0;
-          bValue = b.scheduledDate ? new Date(b.scheduledDate).getTime() : 0;
-          break;
-        case 'deliveredDate':
-          aValue = a.deliveredDate ? new Date(a.deliveredDate).getTime() : 0;
-          bValue = b.deliveredDate ? new Date(b.deliveredDate).getTime() : 0;
-          break;
-        case 'createdAt':
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
-          break;
-        default:
-          aValue = 0;
-          bValue = 0;
+      // Apply sorting criteria in order
+      for (const criterion of sortCriteria) {
+        if (!criterion.field || criterion.field === 'none') continue; // Skip empty criteria
+        
+        const aValue = getFieldValue(a, criterion.field);
+        const bValue = getFieldValue(b, criterion.field);
+        
+        let result = 0;
+        if (aValue < bValue) result = -1;
+        else if (aValue > bValue) result = 1;
+        
+        if (result !== 0) {
+          return criterion.direction === 'asc' ? result : -result;
+        }
       }
       
-      // Apply sort direction
-      if (customSortDirection === 'asc') {
-        if (aValue < bValue) return -1;
-        if (aValue > bValue) return 1;
-        return 0;
-      } else {
-        if (aValue > bValue) return -1;
-        if (aValue < bValue) return 1;
-        return 0;
-      }
+      return 0; // If all criteria are equal
     });
   };
 
   // Sort orders function
   const sortOrders = (ordersList: Order[]) => {
-    // Always use custom sort with the selected field and direction
-    return customSortOrders(ordersList);
+    // Use multi-criteria sort
+    return multiCriteriaSortOrders(ordersList);
     
     const sorted = [...ordersList];
     
@@ -1466,8 +1445,11 @@ export default function Admin() {
     setPaymentStatusFilter('all');
     setOrderStatusFilter('all');
     setSortOrder('latest');
-    setCustomSortField('status');
-    setCustomSortDirection('asc');
+    setSortCriteria([
+      { field: 'status', direction: 'asc' },
+      { field: 'none', direction: 'asc' },
+      { field: 'none', direction: 'asc' }
+    ]);
   };
 
   // Render filter UI
@@ -1570,28 +1552,48 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">정렬:</span>
-            <div className="flex gap-2">
-              <Select value={customSortField} onValueChange={setCustomSortField}>
-                <SelectTrigger className="w-32 h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {sortOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={customSortDirection} onValueChange={setCustomSortDirection}>
-                <SelectTrigger className="w-20 h-7 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">오름차순</SelectItem>
-                  <SelectItem value="desc">내림차순</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-2">
+              {sortCriteria.map((criterion, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <span className="text-xs text-gray-500 w-8">{index + 1}순위</span>
+                  <Select 
+                    value={criterion.field} 
+                    onValueChange={(value) => {
+                      const newCriteria = [...sortCriteria];
+                      newCriteria[index].field = value;
+                      setSortCriteria(newCriteria);
+                    }}
+                  >
+                    <SelectTrigger className="w-28 h-7 text-xs">
+                      <SelectValue placeholder="선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">선택안함</SelectItem>
+                      {sortOptions.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={criterion.direction} 
+                    onValueChange={(value: 'asc' | 'desc') => {
+                      const newCriteria = [...sortCriteria];
+                      newCriteria[index].direction = value;
+                      setSortCriteria(newCriteria);
+                    }}
+                  >
+                    <SelectTrigger className="w-20 h-7 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">오름차순</SelectItem>
+                      <SelectItem value="desc">내림차순</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
             </div>
           </div>
           
