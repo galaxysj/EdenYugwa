@@ -1117,121 +1117,114 @@ export default function Admin() {
 
   // Render filter UI
   const renderOrderFilters = () => (
-    <Card className="mb-4">
-      <CardContent className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Date Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">주문일 필터</label>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant={orderDateFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setOrderDateFilter('all')}
-              >
-                전체
-              </Button>
-              <Button
-                size="sm"
-                variant={orderDateFilter === 'today' ? 'default' : 'outline'}
-                onClick={() => setOrderDateFilter('today')}
-              >
-                오늘
-              </Button>
-              <Button
-                size="sm"
-                variant={orderDateFilter === 'week' ? 'default' : 'outline'}
-                onClick={() => setOrderDateFilter('week')}
-              >
-                7일
-              </Button>
-              <Button
-                size="sm"
-                variant={orderDateFilter === 'custom' ? 'default' : 'outline'}
-                onClick={() => setOrderDateFilter('custom')}
-              >
-                기간설정
-              </Button>
-            </div>
-            {orderDateFilter === 'custom' && (
-              <div className="flex gap-2 mt-2">
-                <input
-                  type="date"
-                  value={orderStartDate}
-                  onChange={(e) => setOrderStartDate(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
-                />
-                <span className="text-gray-500 self-center">~</span>
-                <input
-                  type="date"
-                  value={orderEndDate}
-                  onChange={(e) => setOrderEndDate(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
-                />
-              </div>
-            )}
+    <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+        {/* Date Filter - Simplified */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'all' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('all')}
+              className="flex-1 h-8 text-xs"
+            >
+              전체
+            </Button>
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'today' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('today')}
+              className="flex-1 h-8 text-xs"
+            >
+              오늘
+            </Button>
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'week' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('week')}
+              className="flex-1 h-8 text-xs"
+            >
+              7일
+            </Button>
           </div>
-
-          {/* Customer Name Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">고객명 검색</label>
-            <input
-              type="text"
-              placeholder="고객명을 입력하세요"
-              value={customerNameFilter}
-              onChange={(e) => setCustomerNameFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-            />
-          </div>
-
-          {/* Status Filters */}
-          <div className="space-y-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">입금상태</label>
-              <select
-                value={paymentStatusFilter}
-                onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="all">전체</option>
-                <option value="pending">입금대기</option>
-                <option value="confirmed">입금완료</option>
-                <option value="partial">부분결제</option>
-                <option value="refunded">환불</option>
-              </select>
+          {orderDateFilter === 'custom' && (
+            <div className="flex gap-1 mt-2">
+              <input
+                type="date"
+                value={orderStartDate}
+                onChange={(e) => setOrderStartDate(e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-xs"
+              />
+              <input
+                type="date"
+                value={orderEndDate}
+                onChange={(e) => setOrderEndDate(e.target.value)}
+                className="flex-1 px-2 py-1 border rounded text-xs"
+              />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">주문상태</label>
-              <select
-                value={orderStatusFilter}
-                onChange={(e) => setOrderStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="all">전체</option>
-                <option value="pending">접수대기</option>
-                <option value="scheduled">발송예약</option>
-                <option value="delivered">발송완료</option>
-              </select>
-            </div>
-          </div>
+          )}
         </div>
-        
-        {/* Filter Summary and Clear */}
-        <div className="flex justify-between items-center mt-4 pt-4 border-t">
-          <div className="text-sm text-gray-600">
-            총 {allOrders.length}건의 주문이 검색되었습니다.
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={clearAllFilters}
-            className="text-gray-600"
+
+        {/* Customer Name Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">고객명</label>
+          <input
+            type="text"
+            placeholder="고객명 검색"
+            value={customerNameFilter}
+            onChange={(e) => setCustomerNameFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          />
+        </div>
+
+        {/* Payment Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">입금상태</label>
+          <select
+            value={paymentStatusFilter}
+            onChange={(e) => setPaymentStatusFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
-            필터 초기화
-          </Button>
+            <option value="all">전체</option>
+            <option value="pending">입금대기</option>
+            <option value="confirmed">입금완료</option>
+            <option value="partial">부분결제</option>
+            <option value="refunded">환불</option>
+          </select>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Order Status */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
+          <select
+            value={orderStatusFilter}
+            onChange={(e) => setOrderStatusFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          >
+            <option value="all">전체</option>
+            <option value="pending">접수대기</option>
+            <option value="scheduled">발송예약</option>
+            <option value="delivered">발송완료</option>
+          </select>
+        </div>
+      </div>
+      
+      {/* Filter Summary and Clear - Compact */}
+      <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-200">
+        <div className="text-xs text-gray-600">
+          검색결과: <span className="font-medium text-gray-900">{allOrders.length}건</span>
+        </div>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={clearAllFilters}
+          className="text-xs text-gray-500 hover:text-gray-700 h-6 px-2"
+        >
+          초기화
+        </Button>
+      </div>
+    </div>
   );
 
   // Render orders function
@@ -1247,11 +1240,11 @@ export default function Admin() {
     return (
       <>
         {/* Desktop Table */}
-        <div className="hidden lg:block overflow-x-auto">
+        <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
           <table className="w-full">
-            <thead>
+            <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="w-8 py-3 px-4">
+                <th className="w-12 py-3 px-3 text-center">
                   <input
                     type="checkbox"
                     checked={selectedOrderItems.size === ordersList.length && ordersList.length > 0}
@@ -1265,15 +1258,15 @@ export default function Admin() {
                     className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">주문번호</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">고객명</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">상품</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">연락처</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">배송주소</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">매출정보</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">입금상태</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">주문상태</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-600">관리</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">주문번호</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">고객명</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">상품</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">연락처</th>
+                <th className="text-left py-3 px-3 font-medium text-gray-700 text-sm">배송주소</th>
+                <th className="text-right py-3 px-3 font-medium text-gray-700 text-sm">매출정보</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">입금상태</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">주문상태</th>
+                <th className="text-center py-3 px-3 font-medium text-gray-700 text-sm">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -1281,7 +1274,7 @@ export default function Admin() {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
                   <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-3 text-center">
                       <input
                         type="checkbox"
                         checked={selectedOrderItems.has(order.id)}
@@ -1289,8 +1282,8 @@ export default function Admin() {
                         className="rounded border-gray-300"
                       />
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-gray-900">#{order.orderNumber}</div>
+                    <td className="py-3 px-3">
+                      <div className="font-medium text-gray-900 text-sm">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </div>
@@ -1314,40 +1307,40 @@ export default function Admin() {
                         </div>
                       )}
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-gray-900">{order.customerName}</div>
+                    <td className="py-3 px-3">
+                      <div className="font-medium text-gray-900 text-sm">{order.customerName}</div>
                     </td>
-                    <td className="py-4 px-4 min-w-[120px]">
+                    <td className="py-3 px-3 min-w-[100px]">
                       <div className="space-y-1">
                         {order.smallBoxQuantity > 0 && (
-                          <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                            소박스 × {order.smallBoxQuantity}개
+                          <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
+                            소박스 × {order.smallBoxQuantity}
                           </div>
                         )}
                         {order.largeBoxQuantity > 0 && (
-                          <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-                            대박스 × {order.largeBoxQuantity}개
+                          <div className="text-xs font-medium text-gray-900 whitespace-nowrap">
+                            대박스 × {order.largeBoxQuantity}
                           </div>
                         )}
                         {order.wrappingQuantity > 0 && (
-                          <div className="text-sm font-medium text-eden-brown whitespace-nowrap">
-                            보자기 × {order.wrappingQuantity}개
+                          <div className="text-xs font-medium text-eden-brown whitespace-nowrap">
+                            보자기 × {order.wrappingQuantity}
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="text-sm text-gray-900">{order.customerPhone}</div>
+                    <td className="py-3 px-3">
+                      <div className="text-xs text-gray-900">{order.customerPhone}</div>
                     </td>
-                    <td className="py-4 px-4 max-w-xs">
-                      <div className="text-sm text-gray-900">
+                    <td className="py-3 px-3 max-w-xs">
+                      <div className="text-xs text-gray-900 truncate">
                         [{order.zipCode}] {order.address1} {order.address2}
                       </div>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="space-y-1 text-sm">
+                    <td className="py-3 px-3 text-right">
+                      <div className="space-y-1 text-xs">
                         <div className="font-medium text-gray-900">
-                          주문: {formatPrice(order.totalAmount)}
+                          {formatPrice(order.totalAmount)}
                         </div>
                         {order.actualPaidAmount && order.actualPaidAmount > 0 && (
                           <div className="text-green-600">
@@ -1361,12 +1354,12 @@ export default function Admin() {
                         )}
                         {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
                           <div className="text-red-600">
-                            부분미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
+                            미입금: {formatPrice(order.totalAmount - order.actualPaidAmount)}
                           </div>
                         )}
                       </div>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-3 text-center">
                       <div className="space-y-2">
                         <Select
                           value={
@@ -1377,7 +1370,7 @@ export default function Admin() {
                           onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                           disabled={updatePaymentMutation.isPending}
                         >
-                          <SelectTrigger className="w-32">
+                          <SelectTrigger className="w-28 h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -1411,13 +1404,13 @@ export default function Admin() {
 
                       </div>
                     </td>
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-3 text-center">
                       <Select
                         value={order.status}
                         onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
                         disabled={updateStatusMutation.isPending}
                       >
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-28 h-8 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -1442,8 +1435,8 @@ export default function Admin() {
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="py-4 px-4">
-                      <div className="flex flex-col gap-2">
+                    <td className="py-3 px-3 text-center">
+                      <div className="flex flex-col gap-1">
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
@@ -1452,7 +1445,7 @@ export default function Admin() {
                           variant="destructive"
                           onClick={() => handleDeleteOrder(order.id)}
                           disabled={deleteOrderMutation.isPending}
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-1 h-7 text-xs px-2"
                         >
                           <Trash2 className="h-3 w-3" />
                           삭제
