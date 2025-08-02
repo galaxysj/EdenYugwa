@@ -995,9 +995,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             zipCode: row['우편번호'] || '',
             address1: row['주소1'] || row['주소'] || row['발송주소'] || '',
             address2: row['주소2'] || '',
-            orderCount: 0,
-            totalSpent: 0,
-            lastOrderDate: null,
             notes: row['메모'] || row['비고'] || null
           };
 
