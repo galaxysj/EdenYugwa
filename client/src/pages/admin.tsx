@@ -515,7 +515,7 @@ export default function Admin() {
 
   // Select all trash items
   const selectAllTrash = () => {
-    const allIds = new Set(deletedOrders.map((order: Order) => order.id));
+    const allIds = new Set<number>(deletedOrders.map((order: Order) => order.id));
     setSelectedTrashItems(allIds);
   };
 
@@ -1340,7 +1340,7 @@ export default function Admin() {
   const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string) => {
     if (newPaymentStatus === 'confirmed') {
       // 입금완료로 변경할 때는 실제 입금금액 입력 다이얼로그 열기
-      setPaymentConfirmOrder(orders.find(o => o.id === orderId) || null);
+      setPaymentConfirmOrder(orders.find((o: Order) => o.id === orderId) || null);
       setShowPaymentConfirmDialog(true);
     } else {
       updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
@@ -1724,7 +1724,7 @@ export default function Admin() {
                   취소
                 </Button>
                 <Button 
-                  onClick={handlePaymentConfirm}
+                  onClick={() => handlePaymentConfirm()}
                   disabled={confirmPaymentMutation.isPending}
                   className="flex-1"
                 >
