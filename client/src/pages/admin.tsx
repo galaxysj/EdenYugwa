@@ -1897,6 +1897,12 @@ export default function Admin() {
                               <span>발송주문</span>
                             </div>
                           </SelectItem>
+                          <SelectItem value="seller_shipped">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3 text-orange-500" />
+                              <span>발송대기</span>
+                            </div>
+                          </SelectItem>
                           <SelectItem value="delivered">
                             <div className="flex items-center space-x-1">
                               <CheckCircle className="h-3 w-3 text-green-500" />
@@ -2195,6 +2201,12 @@ export default function Admin() {
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4 text-blue-500" />
                                 <span>발송주문</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="seller_shipped">
+                              <div className="flex items-center space-x-2">
+                                <Clock className="h-4 w-4 text-orange-500" />
+                                <span>발송대기</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="delivered">
