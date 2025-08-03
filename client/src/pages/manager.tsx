@@ -364,7 +364,7 @@ function Manager() {
       ].filter(Boolean).join(', '),
       '배송주소': `${order.address1} ${order.address2 || ''}`.trim(),
       '주문상태': statusLabels[order.status as keyof typeof statusLabels],
-      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '-',
+
       '발송일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '-',
       '판매자발송': order.sellerShipped ? '발송완료' : '미발송',
       '판매자발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '-',
@@ -755,7 +755,6 @@ function Manager() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
@@ -868,17 +867,7 @@ function Manager() {
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="py-2 px-2 text-center">
-                      <ScheduledDatePicker
-                        order={order}
-                        onDateChange={(date: string | null) => 
-                          updateScheduledDateMutation.mutate({ 
-                            id: order.id, 
-                            scheduledDate: date 
-                          })
-                        }
-                      />
-                    </td>
+
                     <td className="py-2 px-2 text-center">
                       <DeliveredDatePicker
                         order={order}
