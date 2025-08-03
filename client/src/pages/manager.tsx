@@ -145,6 +145,7 @@ function AdminSettingsDialog() {
 
 function Manager() {
   const [activeTab, setActiveTab] = useState("orders");
+  const [orderViewTab, setOrderViewTab] = useState("all"); // all, scheduled, delivered
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -181,8 +182,10 @@ function Manager() {
     refetchInterval: 5000,
   });
 
-  // Filter orders to show only confirmed payments for manager
-  const orders = allOrders.filter(order => order.paymentStatus === 'confirmed');
+  // Filter orders to show only confirmed payments with scheduled status for manager
+  const orders = allOrders.filter(order => 
+    order.paymentStatus === 'confirmed' && order.status === 'scheduled'
+  );
 
   const { data: deletedOrders = [] } = useQuery<Order[]>({
     queryKey: ["/api/orders/trash"],
@@ -318,14 +321,33 @@ function Manager() {
   const filteredOrders = getFilteredOrdersList(orders);
   const sortedOrders = sortOrders(filteredOrders);
   
-  // Manager-specific sorting: move scheduled orders to bottom
-  const managerSortedOrders = [...sortedOrders].sort((a, b) => {
-    // If one is scheduled and the other is not, put scheduled at bottom
-    if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
-    if (a.status !== 'scheduled' && b.status === 'scheduled') return -1;
-    // If both have same status priority, maintain original sort order
-    return 0;
-  });
+  // Get all confirmed payment orders for tab filtering
+  const allConfirmedOrders = allOrders.filter(order => order.paymentStatus === 'confirmed');
+  
+  // Filter by tab selection
+  const getOrdersByTab = () => {
+    switch (orderViewTab) {
+      case 'scheduled':
+        return allConfirmedOrders.filter(order => order.status === 'scheduled');
+      case 'delivered':
+        return allConfirmedOrders.filter(order => order.status === 'delivered');
+      default:
+        return allConfirmedOrders;
+    }
+  };
+  
+  const tabFilteredOrders = getOrdersByTab();
+  const tabFilteredAndSorted = getFilteredOrdersList(tabFilteredOrders);
+  const tabSortedOrders = sortOrders(tabFilteredAndSorted);
+  
+  // Manager-specific sorting: move scheduled orders to bottom for 'all' tab
+  const managerSortedOrders = orderViewTab === 'all' 
+    ? [...tabSortedOrders].sort((a, b) => {
+        if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
+        if (a.status !== 'scheduled' && b.status === 'scheduled') return -1;
+        return 0;
+      })
+    : tabSortedOrders;
 
   // Excel export function
   const exportToExcel = () => {
@@ -591,20 +613,7 @@ function Manager() {
           </select>
         </div>
 
-        {/* Order Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
-          <select
-            value={orderStatusFilter}
-            onChange={(e) => setOrderStatusFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
-          >
-            <option value="all">전체</option>
-            <option value="pending">접수대기</option>
-            <option value="scheduled">발송주문</option>
-            <option value="delivered">발송완료</option>
-          </select>
-        </div>
+
       </div>
       
       {/* Sort Options */}
@@ -674,7 +683,8 @@ function Manager() {
           
           <div className="flex items-center gap-3">
             <div className="text-xs text-gray-600">
-              입금완료 주문: <span className="font-medium text-gray-900">{managerSortedOrders.length}건</span>
+              {orderViewTab === 'all' ? '전체' : 
+               orderViewTab === 'scheduled' ? '발송주문' : '발송완료'}: <span className="font-medium text-gray-900">{managerSortedOrders.length}건</span>
             </div>
             <Button
               size="sm"
@@ -1092,17 +1102,48 @@ function Manager() {
             {renderOrderFilters()}
 
             {/* Orders List */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  주문 목록 ({managerSortedOrders.length}건)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                {renderOrdersList(managerSortedOrders)}
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              {/* Order View Tabs */}
+              <div className="flex items-center gap-2 border-b pb-2">
+                <Button
+                  variant={orderViewTab === 'all' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setOrderViewTab('all')}
+                  className="h-8 text-xs"
+                >
+                  전체보기 ({allConfirmedOrders.length})
+                </Button>
+                <Button
+                  variant={orderViewTab === 'scheduled' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setOrderViewTab('scheduled')}
+                  className="h-8 text-xs"
+                >
+                  발송주문 ({allConfirmedOrders.filter(o => o.status === 'scheduled').length})
+                </Button>
+                <Button
+                  variant={orderViewTab === 'delivered' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setOrderViewTab('delivered')}
+                  className="h-8 text-xs"
+                >
+                  발송완료 ({allConfirmedOrders.filter(o => o.status === 'delivered').length})
+                </Button>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5" />
+                    {orderViewTab === 'all' ? '전체 주문 목록' : 
+                     orderViewTab === 'scheduled' ? '발송주문 목록' : '발송완료 목록'} ({managerSortedOrders.length}건)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {renderOrdersList(managerSortedOrders)}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="customers">

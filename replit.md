@@ -113,4 +113,6 @@ Using Drizzle ORM with PostgreSQL:
 
 **Depositor Information System**: Added functionality to separate orderer and depositor information when they differ. Order forms now include a "예금자가 다릅니다" checkbox that reveals a depositor name field when checked. The admin panel displays depositor information alongside order details but hides the checkbox interface for cleaner management views. This allows for better tracking when payment is made by someone other than the orderer. Updated August 2, 2025.
 
+**Manager Interface Enhancements**: Implemented comprehensive manager interface improvements including restricted access to confirmed payment orders only, removal of depositor information from manager view for cleaner interface, custom sorting with scheduled orders at bottom, seller shipping functionality with database tracking, Excel export capability for order management, and tabbed view system (전체보기/발송주문/발송완료) for better order organization. Manager now sees orders with "발송주문" status terminology instead of "발송예약". Updated August 2, 2025.
+
 The application is designed for scalability with clear separation of concerns and ready for production deployment with database persistence and SMS integration.
