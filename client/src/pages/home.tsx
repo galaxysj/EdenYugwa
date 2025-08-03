@@ -131,14 +131,6 @@ export default function Home() {
                     매니저
                   </button>
                 </Link>
-                <Link href="/manager">
-                  <button 
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
-                  >
-                    매니저
-                  </button>
-                </Link>
               </div>
             </nav>
           )}
@@ -146,25 +138,25 @@ export default function Home() {
       </header>
       {/* Order Section - Main Content */}
       <section id="home" className="relative overflow-hidden bg-white">
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-eden-brown mb-6 leading-tight font-korean max-w-4xl mx-auto">
+        <div className="container mx-auto px-4 py-6 md:py-12">
+          <div className="text-center mb-6 md:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto">
               진안에서 온 <span className="text-eden-red">정성 가득</span> 유과
             </h2>
-            <p className="text-base sm:text-lg text-eden-dark mb-8 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2">
               에덴한과에서 직접 만드는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
               달지 않고 고소한 맛이 일품으로 선물로도 완벽한 에덴한과입니다.
             </p>
           </div>
 
           {/* Product Images */}
-          <div className="max-w-4xl mx-auto mb-16">
-            <div className="grid md:grid-cols-2 gap-6">
+          <div className="max-w-4xl mx-auto mb-8 md:mb-16">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
               <div className="flex justify-center">
                 <img 
                   src={edenHangwaImage} 
                   alt="에덴한과 유과 상품" 
-                  className="rounded-xl shadow-md w-full max-w-sm"
+                  className="rounded-xl shadow-md w-full max-w-xs md:max-w-sm"
                 />
               </div>
               <div className="hidden md:flex justify-center">
@@ -178,22 +170,23 @@ export default function Home() {
           </div>
 
           {/* Bank Account Information */}
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-6 border border-eden-brown/20">
+          <div className="max-w-4xl mx-auto mb-6 md:mb-8">
+            <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-4 md:p-6 border border-eden-brown/20 mx-2 md:mx-0">
               <div className="text-center">
-                <h4 className="text-3xl font-bold text-eden-red mb-3 font-korean">입금계좌</h4>
-                <div className="text-2xl font-bold text-eden-red">농협 352-1701-3342-63 
-                (예금주: 손*진)</div>
-                <p className="text-sm text-gray-600 mt-2">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
+                <h4 className="text-xl md:text-2xl lg:text-3xl font-bold text-eden-red mb-2 md:mb-3 font-korean">입금계좌</h4>
+                <div className="text-lg md:text-xl lg:text-2xl font-bold text-eden-red break-keep">
+                  농협 352-1701-3342-63 (예금주: 손*진)
+                </div>
+                <p className="text-xs md:text-sm text-gray-600 mt-2 px-2">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
               </div>
             </div>
           </div>
 
           {/* Order Form Section */}
-          <div id="order" className="mb-16">
+          <div id="order" className="mb-8 md:mb-16">
             <div className="max-w-4xl mx-auto">
-              <div className="bg-eden-cream rounded-2xl p-8 shadow-lg">
-                <h3 className="text-2xl font-bold text-eden-brown mb-6 text-center font-korean">
+              <div className="bg-eden-cream rounded-2xl p-4 md:p-8 shadow-lg mx-2 md:mx-0">
+                <h3 className="text-xl md:text-2xl font-bold text-eden-brown mb-4 md:mb-6 text-center font-korean">
                   주문하기
                 </h3>
                 <OrderForm />

@@ -260,28 +260,27 @@ export default function OrderForm() {
     <div className="max-w-4xl mx-auto">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
             {/* Product Selection */}
             <Card className="shadow-lg">
-              <CardContent className="p-8">
-                <h4 className="text-xl font-semibold text-eden-brown mb-6 font-korean">
-                  <Box className="inline mr-2 h-5 w-5" />
+              <CardContent className="p-4 md:p-6 lg:p-8">
+                <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-4 md:mb-6 font-korean">
+                  <Box className="inline mr-2 h-4 w-4 md:h-5 md:w-5" />
                   상품 선택
                 </h4>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   {/* Product Selection - All in One Interface */}
-                  <div className="border-2 border-eden-beige rounded-lg p-6">
-                    <div className="space-y-6">
+                  <div className="border-2 border-eden-beige rounded-lg p-4 md:p-6">
+                    <div className="space-y-4 md:space-y-6">
                       {/* 한과1호 Selection */}
                       <div>
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h5 className="font-semibold text-eden-brown text-[16px]">한과1호
-                            (약 1.1kg)</h5>
+                            <h5 className="font-semibold text-eden-brown text-sm md:text-base">한과1호(약 1.1kg)</h5>
                             <p className="text-xs text-eden-dark mt-1">약 35.5×21×11.2cm</p>
                           </div>
-                          <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.small)}</span>
+                          <span className="text-lg md:text-xl font-bold text-eden-brown whitespace-nowrap">{formatPrice(prices.small)}</span>
                         </div>
                         <FormField
                           control={form.control}
@@ -331,10 +330,10 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h5 className="text-lg font-semibold text-eden-brown">한과2호(약 1.3kg)</h5>
+                            <h5 className="font-semibold text-eden-brown text-sm md:text-base">한과2호(약 1.3kg)</h5>
                             <p className="text-xs text-eden-dark mt-1">약 37×23×11.5cm</p>
                           </div>
-                          <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.large)}</span>
+                          <span className="text-lg md:text-xl font-bold text-eden-brown whitespace-nowrap">{formatPrice(prices.large)}</span>
                         </div>
                         <FormField
                           control={form.control}
@@ -384,10 +383,10 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h5 className="text-lg font-semibold text-eden-brown">보자기</h5>
+                            <h5 className="font-semibold text-eden-brown text-sm md:text-base">보자기</h5>
                             <p className="text-xs text-eden-dark mt-1">개당 +1,000원</p>
                           </div>
-                          <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.wrapping)}</span>
+                          <span className="text-lg md:text-xl font-bold text-eden-brown whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
                         </div>
                         <FormField
                           control={form.control}
@@ -522,8 +521,8 @@ export default function OrderForm() {
             <div className="space-y-6">
               {/* Customer Info */}
               <Card className="shadow-lg">
-                <CardContent className="p-8">
-                  <h4 className="text-xl font-semibold text-eden-brown mb-6 font-korean">
+                <CardContent className="p-4 md:p-6 lg:p-8">
+                  <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-4 md:mb-6 font-korean">
                     고객 정보
                   </h4>
                   
@@ -684,42 +683,42 @@ export default function OrderForm() {
 
               {/* Order Summary */}
               <Card>
-                <CardContent className="p-8">
-                  <h4 className="text-xl font-semibold text-eden-brown mb-6 font-korean">
-                    <Calculator className="inline mr-2 h-5 w-5" />
+                <CardContent className="p-4 md:p-6 lg:p-8">
+                  <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-4 md:mb-6 font-korean">
+                    <Calculator className="inline mr-2 h-4 w-4 md:h-5 md:w-5" />
                     주문 요약
                   </h4>
 
                   <div className="space-y-4">
                     {/* Price Summary */}
-                    <div className="bg-eden-cream p-4 rounded-lg">
+                    <div className="bg-eden-cream p-3 md:p-4 rounded-lg">
                       <div className="space-y-2 text-sm">
                         {smallBoxQuantity > 0 && (
                           <div className="flex justify-between">
-                            <span>소박스 × {smallBoxQuantity}:</span>
-                            <span>{formatPrice(smallBoxTotal)}</span>
+                            <span>한과1호 × {smallBoxQuantity}:</span>
+                            <span className="whitespace-nowrap">{formatPrice(smallBoxTotal)}</span>
                           </div>
                         )}
                         {largeBoxQuantity > 0 && (
                           <div className="flex justify-between">
-                            <span>대박스 × {largeBoxQuantity}:</span>
-                            <span>{formatPrice(largeBoxTotal)}</span>
+                            <span>한과2호 × {largeBoxQuantity}:</span>
+                            <span className="whitespace-nowrap">{formatPrice(largeBoxTotal)}</span>
                           </div>
                         )}
                         {wrappingTotal > 0 && (
                           <div className="flex justify-between">
                             <span>보자기 × {wrappingQuantity}:</span>
-                            <span>{formatPrice(wrappingTotal)}</span>
+                            <span className="whitespace-nowrap">{formatPrice(wrappingTotal)}</span>
                           </div>
                         )}
                         <div className="flex justify-between">
                           <span>배송비:</span>
-                          <span>{shippingFee === 0 ? "무료" : formatPrice(shippingFee)}</span>
+                          <span className="whitespace-nowrap">{shippingFee === 0 ? "무료" : formatPrice(shippingFee)}</span>
                         </div>
                         <div className="border-t border-eden-sage pt-2 mt-2">
-                          <div className="flex justify-between font-bold text-lg text-eden-brown">
+                          <div className="flex justify-between font-bold text-base md:text-lg text-eden-brown">
                             <span>총 주문금액:</span>
-                            <span>{formatPrice(totalAmount)}</span>
+                            <span className="whitespace-nowrap">{formatPrice(totalAmount)}</span>
                           </div>
                         </div>
                       </div>
@@ -749,8 +748,8 @@ export default function OrderForm() {
 
                     {/* Bank Account Info */}
                     <div className="text-center py-2">
-                      <p className="text-sm text-gray-600">
-                        입금계좌: <span className="font-medium text-eden-brown">농협 352-1701-3342-63 (손*진)</span>
+                      <p className="text-xs md:text-sm text-gray-600 break-keep">
+                        입금계좌: <span className="font-medium text-eden-brown whitespace-nowrap">농협 352-1701-3342-63 (손*진)</span>
                       </p>
                     </div>
 
