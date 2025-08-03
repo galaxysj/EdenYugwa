@@ -39,6 +39,7 @@ const checkRemoteArea = (address: string) => {
   
   const remoteAreaKeywords = [
     '제주', '제주도', '제주시', '서귀포', '서귀포시',
+    '울릉도',
     '독도',
     '강화', '강화도', '강화군',
     '백령', '백령도',
