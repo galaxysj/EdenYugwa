@@ -347,9 +347,7 @@ function Manager() {
   const sortedOrders = sortOrders(filteredOrders);
   
   // Get all confirmed payment orders with scheduled or delivered status for tab filtering
-  const allConfirmedOrders = allOrders.filter(order => 
-    order.paymentStatus === 'confirmed' && (order.status === 'scheduled' || order.status === 'delivered')
-  );
+  const allConfirmedOrders = orders; // Use the already filtered orders (scheduled or delivered regardless of payment status)
   
   // Filter by tab selection
   const getOrdersByTab = () => {
