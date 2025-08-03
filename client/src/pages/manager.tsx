@@ -863,7 +863,7 @@ function Manager() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">주문접수</SelectItem>
-                          <SelectItem value="scheduled">발송예약</SelectItem>
+                          <SelectItem value="scheduled">발송주문</SelectItem>
                           <SelectItem value="delivered">발송완료</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1010,7 +1010,7 @@ function Manager() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pending">주문접수</SelectItem>
-                        <SelectItem value="scheduled">발송예약</SelectItem>
+                        <SelectItem value="scheduled">발송주문</SelectItem>
                         <SelectItem value="delivered">발송완료</SelectItem>
                       </SelectContent>
                     </Select>
