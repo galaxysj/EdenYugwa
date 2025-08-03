@@ -1085,7 +1085,7 @@ export default function Admin() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-blue-700 mb-1">택배발송</div>
+                  <div className="font-semibold text-blue-700 mb-1">택배비건수</div>
                   <div className="text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                 </div>
                 
