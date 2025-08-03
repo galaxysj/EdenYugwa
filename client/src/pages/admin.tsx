@@ -1906,11 +1906,11 @@ export default function Admin() {
                     <td className="py-2 px-2 text-center">
                       <div className="flex flex-col gap-1">
                         <SmsDialog order={order} />
-                        <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
                         <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
                           <SellerShippedDatePicker order={order} />
+                          <ScheduledDatePicker order={order} />
                         </div>
                         <Button
                           size="sm"

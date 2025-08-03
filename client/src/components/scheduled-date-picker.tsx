@@ -54,15 +54,14 @@ export function ScheduledDatePicker({ order }: ScheduledDatePickerProps) {
     setSelectedDate('');
   };
 
-  // Only show the picker if the order status is 'scheduled'
-  if (order.status !== 'scheduled') {
-    return null;
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="ml-2">
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="ml-2 scheduled-date-trigger"
+        >
           <Calendar className="h-4 w-4 mr-1" />
           {order.scheduledDate 
             ? new Date(order.scheduledDate).toLocaleDateString('ko-KR')
