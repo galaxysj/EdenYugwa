@@ -1652,7 +1652,7 @@ export default function Admin() {
                         {order.isDifferentDepositor && order.depositorName ? (
                           <span className="text-red-600">{order.depositorName}</span>
                         ) : (
-                          <span className="text-gray-500">{order.customerName}</span>
+                          <span className="text-gray-400">-</span>
                         )}
                       </div>
                     </td>
