@@ -255,10 +255,10 @@ export default function PublicOrder() {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                           <FormLabel>
-                            예금자가 다릅니다
+                            입금자가 다릅니다
                           </FormLabel>
                           <p className="text-sm text-gray-500">
-                            체크하시면 예금자 이름을 별도로 입력할 수 있습니다
+                            체크하시면 입금자 이름을 별도로 입력할 수 있습니다
                           </p>
                         </div>
                       </FormItem>
@@ -271,7 +271,7 @@ export default function PublicOrder() {
                       name="depositorName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>예금자 이름 *</FormLabel>
+                          <FormLabel>입금자 이름 *</FormLabel>
                           <FormControl>
                             <Input {...field} placeholder="홍길동" />
                           </FormControl>

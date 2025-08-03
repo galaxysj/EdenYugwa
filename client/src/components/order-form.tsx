@@ -563,7 +563,7 @@ export default function OrderForm() {
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel>
-                              예금자가 다릅니다
+                              입금자가 다릅니다
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -576,7 +576,7 @@ export default function OrderForm() {
                         name="depositorName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>예금자 이름 *</FormLabel>
+                            <FormLabel>입금자 이름 *</FormLabel>
                             <FormControl>
                               <Input {...field} placeholder="홍길동" />
                             </FormControl>
