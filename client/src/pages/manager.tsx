@@ -32,6 +32,24 @@ const statusIcons = {
   delivered: CheckCircle,
 };
 
+// 제주도 및 도서산간지역 감지 함수
+const checkRemoteArea = (address: string) => {
+  if (!address) return false;
+  
+  const remoteAreaKeywords = [
+    '제주', '제주도', '제주시', '서귀포', '서귀포시',
+    '울릉', '울릉도', '울릉군', 
+    '독도', '백령도', '연평도', '대청도', '소청도',
+    '가거도', '소흑산도', '홍도', '흑산도',
+    '거제', '남해', '통영', '고성',
+    '완도', '진도', '신안', '무안', '영광', '고창',
+    '부안', '김제', '정읍', '고창군', '부안군',
+    '옹진', '강화', '교동', '석모도', '볼음도', '신도', '시도', '모도', '장봉도', '덕적도', '소야도', '문갑도', '굴업도', '대이작도', '소이작도'
+  ];
+  
+  return remoteAreaKeywords.some(keyword => address.includes(keyword));
+};
+
 function AdminSettingsDialog() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
@@ -812,9 +830,20 @@ function Manager() {
                     <td className="py-2 px-2 max-w-xs">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-0 h-auto text-xs text-left justify-start max-w-[150px] truncate">
-                            {order.address1} {order.address2}
-                          </Button>
+                          <div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className={`p-0 h-auto text-xs text-left justify-start max-w-[150px] truncate ${
+                                checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : ''
+                              }`}
+                            >
+                              {order.address1} {order.address2}
+                            </Button>
+                            {checkRemoteArea(order.address1) && (
+                              <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                            )}
+                          </div>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">
                           <DialogHeader>
@@ -965,7 +994,12 @@ function Manager() {
                     
                     <div>
                       <span className="text-sm font-medium text-gray-700">배송주소: </span>
-                      <span className="text-sm">{order.address1} {order.address2}</span>
+                      <span className={`text-sm ${checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : ''}`}>
+                        {order.address1} {order.address2}
+                      </span>
+                      {checkRemoteArea(order.address1) && (
+                        <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                      )}
                     </div>
                   </div>
                   

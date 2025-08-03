@@ -33,6 +33,24 @@ const statusIcons = {
   delivered: CheckCircle,
 };
 
+// 제주도 및 도서산간지역 감지 함수
+const checkRemoteArea = (address: string) => {
+  if (!address) return false;
+  
+  const remoteAreaKeywords = [
+    '제주', '제주도', '제주시', '서귀포', '서귀포시',
+    '울릉', '울릉도', '울릉군', 
+    '독도', '백령도', '연평도', '대청도', '소청도',
+    '가거도', '소흑산도', '홍도', '흑산도',
+    '거제', '남해', '통영', '고성',
+    '완도', '진도', '신안', '무안', '영광', '고창',
+    '부안', '김제', '정읍', '고창군', '부안군',
+    '옹진', '강화', '교동', '석모도', '볼음도', '신도', '시도', '모도', '장봉도', '덕적도', '소야도', '문갑도', '굴업도', '대이작도', '소이작도'
+  ];
+  
+  return remoteAreaKeywords.some(keyword => address.includes(keyword));
+};
+
 // Cost Settings Dialog Component
 function CostSettingsDialog() {
   const [open, setOpen] = useState(false);
@@ -1675,11 +1693,18 @@ export default function Admin() {
                     <td className="py-2 px-2 max-w-xs">
                       <Dialog>
                         <DialogTrigger asChild>
-                          <div 
-                            className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
-                            title="클릭하여 전체 주소 보기"
-                          >
-                            {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
+                          <div>
+                            <div 
+                              className={`text-xs cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate ${
+                                checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : 'text-gray-900'
+                              }`}
+                              title="클릭하여 전체 주소 보기"
+                            >
+                              {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
+                            </div>
+                            {checkRemoteArea(order.address1) && (
+                              <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                            )}
                           </div>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">
@@ -1961,15 +1986,21 @@ export default function Admin() {
 
                     <div className="text-sm">
                       <div className="text-gray-500 mb-1">주문자 주소</div>
-                      <div>
+                      <div className={checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : ''}>
                         [{order.zipCode}] {order.address1} {order.address2}
                       </div>
+                      {checkRemoteArea(order.address1) && (
+                        <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                      )}
                       {order.recipientAddress1 && (
                         <>
                           <div className="text-gray-500 mb-1 mt-2">받는분 주소</div>
-                          <div className="text-blue-600">
+                          <div className={`${checkRemoteArea(order.recipientAddress1) ? 'text-red-600 font-medium' : 'text-blue-600'}`}>
                             [{order.recipientZipCode}] {order.recipientAddress1} {order.recipientAddress2}
                           </div>
+                          {checkRemoteArea(order.recipientAddress1) && (
+                            <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                          )}
                         </>
                       )}
                     </div>
