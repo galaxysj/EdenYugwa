@@ -269,13 +269,13 @@ export default function OrderForm() {
                   상품 선택
                 </h4>
                 
-                <div className="space-y-4 md:space-y-6">
+                <div className="space-y-3 md:space-y-4">
                   {/* Product Selection - All in One Interface */}
-                  <div className="border-2 border-eden-beige rounded-lg p-4 md:p-6">
-                    <div className="space-y-4 md:space-y-6">
+                  <div className="border-2 border-eden-beige rounded-lg p-3 md:p-4">
+                    <div className="space-y-3 md:space-y-4">
                       {/* 한과1호 Selection */}
                       <div>
-                        <div className="flex justify-between items-start mb-4">
+                        <div className="flex justify-between items-start mb-2">
                           <div>
                             <h5 className="font-semibold text-eden-brown text-sm md:text-base">한과1호(약 1.1kg)</h5>
                             <p className="text-xs text-eden-dark mt-1">약 35.5×21×11.2cm</p>
@@ -330,7 +330,7 @@ export default function OrderForm() {
 
                       {/* 한과2호 Selection */}
                       <div>
-                        <div className="flex justify-between items-start mb-4">
+                        <div className="flex justify-between items-start mb-2">
                           <div>
                             <h5 className="font-semibold text-eden-brown text-sm md:text-base">한과2호(약 1.3kg)</h5>
                             <p className="text-xs text-eden-dark mt-1">약 37×23×11.5cm</p>
@@ -385,7 +385,7 @@ export default function OrderForm() {
 
                       {/* 보자기 Selection */}
                       <div>
-                        <div className="flex justify-between items-start mb-4">
+                        <div className="flex justify-between items-start mb-2">
                           <div>
                             <h5 className="font-semibold text-eden-brown text-sm md:text-base">보자기</h5>
                             <p className="text-xs text-eden-dark mt-1">개당 +1,000원</p>
@@ -445,8 +445,8 @@ export default function OrderForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>예약발송</FormLabel>
-                        <p className="text-xs text-gray-600 mb-2">발송은 순차적으로 진행하며, 미리 주문시 예약발송 지정 가능</p>
-                        <p className="text-xs text-gray-500 mb-3 border-l-2 border-gray-300 pl-2">예약 발송날짜 지정(선택사항)</p>
+                        <p className="text-xs text-gray-600 mb-1">발송은 순차적으로 진행하며, 미리 주문시 예약발송 지정 가능</p>
+                        <p className="text-xs text-gray-500 mb-2 border-l-2 border-gray-300 pl-2">예약 발송날짜 지정(선택사항)</p>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -494,9 +494,9 @@ export default function OrderForm() {
                   />
 
                   {/* 배송 안내 */}
-                  <div className="mt-6 p-5 bg-gradient-to-r from-eden-cream/40 to-eden-beige/20 rounded-lg border border-eden-brown/10">
-                    <h4 className="text-lg font-bold text-eden-brown mb-4 text-center font-korean">에덴한과 배송</h4>
-                    <div className="space-y-3">
+                  <div className="mt-3 p-3 md:p-4 bg-gradient-to-r from-eden-cream/40 to-eden-beige/20 rounded-lg border border-eden-brown/10">
+                    <h4 className="text-base md:text-lg font-bold text-eden-brown mb-2 md:mb-3 text-center font-korean">에덴한과 배송</h4>
+                    <div className="space-y-2">
                       <div className="flex items-start space-x-3">
                         <span className="text-eden-brown font-bold">•</span>
                         <p className="text-sm text-eden-dark leading-relaxed">물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
@@ -524,15 +524,15 @@ export default function OrderForm() {
             </Card>
 
             {/* Customer Information & Order Summary */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Customer Info */}
               <Card className="shadow-lg">
                 <CardContent className="p-4 md:p-6 lg:p-8">
-                  <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-4 md:mb-6 font-korean">
+                  <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-3 md:mb-4 font-korean">
                     고객 정보
                   </h4>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <FormField
                       control={form.control}
                       name="customerName"
