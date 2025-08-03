@@ -842,6 +842,7 @@ export default function Admin() {
   const pendingOrders = getFilteredOrdersList(filterOrdersByStatus("pending"));
   const scheduledOrders = getFilteredOrdersList(filterOrdersByStatus("scheduled"));
   const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered"));
+  const refundedOrders = getFilteredOrdersList(orders.filter(order => order.paymentStatus === "refunded"));
 
   // Render revenue report function
   const renderRevenueReport = () => {
@@ -2628,11 +2629,14 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="refunded" className="text-red-600">
+                    환불내역 ({refundedOrders.length})
+                  </TabsTrigger>
                   <TabsTrigger value="revenue" className="text-purple-600">
                     <DollarSign className="h-4 w-4 mr-1" />
                     매출관리
@@ -2787,6 +2791,50 @@ export default function Admin() {
                     </div>
                   )}
                   {renderOrdersList(deliveredOrders)}
+                </TabsContent>
+
+                <TabsContent value="refunded" className="mt-6">
+                  {renderOrderFilters()}
+                  {refundedOrders.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      환불된 주문이 없습니다.
+                    </div>
+                  ) : (
+                    <>
+                      {selectedOrderItems.size > 0 && (
+                        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-red-700">
+                              {selectedOrderItems.size}개 주문이 선택되었습니다
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedOrderItems(new Set())}
+                              >
+                                선택 해제
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                    bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                                  }
+                                }}
+                                disabled={bulkDeleteMutation.isPending}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                일괄 삭제
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {renderOrdersList(refundedOrders)}
+                    </>
+                  )}
                 </TabsContent>
                 
                 <TabsContent value="revenue" className="mt-6">
