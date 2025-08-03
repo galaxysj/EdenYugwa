@@ -288,23 +288,35 @@ export default function OrderForm() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>수량</FormLabel>
-                              <Select
-                                value={field.value.toString()}
-                                onValueChange={(value) => field.onChange(parseInt(value))}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="수량 선택" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                                    <SelectItem key={num} value={num.toString()}>
-                                      {num}개
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                    className="w-8 h-8 p-0"
+                                  >
+                                    -
+                                  </Button>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                    className="w-20 text-center"
+                                  />
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => field.onChange(field.value + 1)}
+                                    className="w-8 h-8 p-0"
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -329,23 +341,35 @@ export default function OrderForm() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>수량</FormLabel>
-                              <Select
-                                value={field.value.toString()}
-                                onValueChange={(value) => field.onChange(parseInt(value))}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="수량 선택" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                                    <SelectItem key={num} value={num.toString()}>
-                                      {num}개
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                    className="w-8 h-8 p-0"
+                                  >
+                                    -
+                                  </Button>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                    className="w-20 text-center"
+                                  />
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => field.onChange(field.value + 1)}
+                                    className="w-8 h-8 p-0"
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -370,23 +394,36 @@ export default function OrderForm() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>수량</FormLabel>
-                              <Select
-                                value={field.value.toString()}
-                                onValueChange={(value) => field.onChange(parseInt(value))}
-                              >
-                                <FormControl>
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="수량 선택" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Array.from({ length: Math.min(totalQuantity + 1, 11) }, (_, i) => i).map((num) => (
-                                    <SelectItem key={num} value={num.toString()}>
-                                      {num}개
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormControl>
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                    className="w-8 h-8 p-0"
+                                  >
+                                    -
+                                  </Button>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max={totalQuantity}
+                                    {...field}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                    className="w-20 text-center"
+                                  />
+                                  <Button 
+                                    type="button"
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => field.onChange(field.value + 1)}
+                                    className="w-8 h-8 p-0"
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
