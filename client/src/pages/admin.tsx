@@ -1614,6 +1614,14 @@ export default function Admin() {
                         <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                         <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
+                      {order.scheduledDate && (
+                        <div className="text-red-600 font-bold text-xs">
+                          발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </div>
+                      )}
+                      {order.status === 'scheduled' && !order.scheduledDate && (
+                        <div className="text-orange-600 font-bold text-xs">발송예약 대기</div>
+                      )}
                     </td>
                     <td className="py-2 px-2 text-center">
                       {order.scheduledDate ? (
@@ -1637,14 +1645,6 @@ export default function Admin() {
                       <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
                       {order.recipientName && order.recipientName !== order.customerName && (
                         <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
-                      )}
-                      {order.scheduledDate && (
-                        <div className="text-red-600 font-bold text-xs">
-                          발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                        </div>
-                      )}
-                      {order.status === 'scheduled' && !order.scheduledDate && (
-                        <div className="text-orange-600 font-bold text-xs">발송예약 대기</div>
                       )}
                     </td>
                     <td className="py-2 px-2">
