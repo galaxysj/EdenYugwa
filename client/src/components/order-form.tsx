@@ -687,9 +687,9 @@ export default function OrderForm() {
                       </div>
                     </div>
 
-                    {/* Shipping Info */}
+                    {/* Shipping Info - Hidden on mobile, will be moved to bottom */}
                     {totalQuantity > 0 && (
-                      <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="hidden md:block bg-blue-50 p-4 rounded-lg">
                         <h5 className="font-medium text-blue-900 mb-2">배송비 안내</h5>
                         <p className="text-sm text-blue-800">
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
@@ -725,6 +725,22 @@ export default function OrderForm() {
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       {createOrderMutation.isPending ? "주문 중..." : "주문하기"}
                     </Button>
+
+                    {/* Mobile Shipping Info - Only visible on mobile */}
+                    {totalQuantity > 0 && (
+                      <div className="md:hidden bg-blue-50 p-4 rounded-lg mt-4">
+                        <h5 className="font-medium text-blue-900 mb-2">배송비 안내</h5>
+                        <p className="text-sm text-blue-800">
+                          <span className="font-medium">총 {totalQuantity}개 선택</span>
+                        </p>
+                        <p className="text-sm text-blue-800">
+                          6개 이상: <span className="text-green-600 font-semibold">무료배송</span>
+                        </p>
+                        <p className="text-xs text-eden-dark mt-2">
+                          * 제주도, 도서산간지역은 추가비용 발생
+                        </p>
+                      </div>
+                    )}
 
                     <div className="text-center pt-4">
                       <Link href="/order-lookup">
