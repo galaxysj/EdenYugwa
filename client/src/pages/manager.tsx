@@ -12,6 +12,7 @@ import * as XLSX from "xlsx";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
+import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -755,7 +756,6 @@ function Manager() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
@@ -869,17 +869,6 @@ function Manager() {
                     </td>
 
                     <td className="py-2 px-2 text-center">
-                      <DeliveredDatePicker
-                        order={order}
-                        onDateChange={(date: string | null) => 
-                          updateDeliveredDateMutation.mutate({ 
-                            id: order.id, 
-                            deliveredDate: date 
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="py-2 px-2 text-center">
                       <Button
                         size="sm"
                         variant={order.sellerShipped ? "default" : "outline"}
@@ -893,10 +882,22 @@ function Manager() {
                         {order.sellerShipped ? '발송완료' : '발송하기'}
                       </Button>
                       {order.sellerShippedDate && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div 
+                          className="text-xs text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                            if (sellerShippedDatePicker) {
+                              (sellerShippedDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 판매자발송일 수정"
+                        >
                           {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
                       )}
+                      <div className="hidden" data-order-id={order.id}>
+                        <SellerShippedDatePicker order={order} />
+                      </div>
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex gap-1">
@@ -1004,11 +1005,46 @@ function Manager() {
                       </SelectContent>
                     </Select>
                     
+                    <Button
+                      size="sm"
+                      variant={order.sellerShipped ? "default" : "outline"}
+                      className={`h-8 text-xs ${order.sellerShipped ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                      onClick={() => updateSellerShippedMutation.mutate({ 
+                        id: order.id, 
+                        sellerShipped: !order.sellerShipped 
+                      })}
+                      disabled={updateSellerShippedMutation.isPending}
+                    >
+                      {order.sellerShipped ? '발송완료' : '발송하기'}
+                    </Button>
+                    
                     <SmsDialog order={order}>
                       <Button variant="outline" size="sm" className="h-8 text-xs">
                         SMS
                       </Button>
                     </SmsDialog>
+                  </div>
+                  
+                  {order.sellerShippedDate && (
+                    <div className="mt-2">
+                      <span className="text-xs text-gray-500">판매자발송일: </span>
+                      <span 
+                        className="text-xs text-gray-700 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                        onClick={() => {
+                          const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                          if (sellerShippedDatePicker) {
+                            (sellerShippedDatePicker as HTMLElement).click();
+                          }
+                        }}
+                        title="클릭하여 판매자발송일 수정"
+                      >
+                        {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR')}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="hidden" data-order-id={order.id}>
+                    <SellerShippedDatePicker order={order} />
                   </div>
                 </CardContent>
               </Card>
