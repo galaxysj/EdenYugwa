@@ -167,7 +167,7 @@ export default function Home() {
                   className="rounded-xl shadow-md w-full max-w-sm"
                 />
               </div>
-              <div className="flex justify-center">
+              <div className="hidden md:flex justify-center">
                 <img 
                   src={edenHangwaImage2} 
                   alt="에덴한과 유과 상품" 
