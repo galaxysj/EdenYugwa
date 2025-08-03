@@ -2168,7 +2168,7 @@ export default function Admin() {
                             <SelectItem value="scheduled">
                               <div className="flex items-center space-x-2">
                                 <Calendar className="h-4 w-4 text-blue-500" />
-                                <span>발송예약</span>
+                                <span>발송주문</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="delivered">
@@ -2575,7 +2575,7 @@ export default function Admin() {
           <Card>
             <CardContent className="p-2 sm:p-4 text-center bg-blue-50">
               <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.scheduled || 0}</div>
-              <div className="text-xs sm:text-sm text-gray-600">발송예약</div>
+              <div className="text-xs sm:text-sm text-gray-600">발송주문</div>
             </CardContent>
           </Card>
           <Card>
@@ -2622,7 +2622,7 @@ export default function Admin() {
                 <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
-                  <TabsTrigger value="scheduled">예약발송 ({scheduledOrders.length})</TabsTrigger>
+                  <TabsTrigger value="scheduled">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
                   <TabsTrigger value="revenue" className="text-purple-600">
                     <DollarSign className="h-4 w-4 mr-1" />
