@@ -254,7 +254,7 @@ export default function PublicOrder() {
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel className="flex items-center gap-0.5 text-xs">
+                          <FormLabel className="flex items-center gap-0.5 text-[10px] sm:text-xs">
                             <span className="mr-1">←</span>
                             <span>입금자가 다르면 체크표시 클릭 후 입금자 입력해주세요</span>
                           </FormLabel>
