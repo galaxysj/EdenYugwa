@@ -1826,15 +1826,7 @@ export default function Admin() {
                           )}
                         </div>
                       ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleSellerShipped(order.id)}
-                          disabled={updateSellerShippedMutation.isPending}
-                          className="h-6 text-xs px-2 py-1 text-blue-600 border-blue-200 hover:bg-blue-50"
-                        >
-                          판매자발송
-                        </Button>
+                        <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
                     <td className="py-2 px-2 text-center">
