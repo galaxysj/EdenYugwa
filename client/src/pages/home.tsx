@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Menu, X } from "lucide-react";
+import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Menu, X, Package, Settings } from "lucide-react";
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
@@ -121,6 +121,14 @@ export default function Home() {
                     className="text-left text-eden-red hover:text-eden-brown transition-colors py-2 w-full"
                   >
                     관리자
+                  </button>
+                </Link>
+                <Link href="/manager">
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
+                  >
+                    매니저
                   </button>
                 </Link>
                 <Link href="/manager">
