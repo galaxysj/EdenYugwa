@@ -841,7 +841,7 @@ export default function Admin() {
   const allOrders = getFilteredOrdersList(orders);
   const pendingOrders = getFilteredOrdersList(filterOrdersByStatus("pending"));
   const scheduledOrders = getFilteredOrdersList(filterOrdersByStatus("scheduled"));
-  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered"));
+  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered").filter(order => order.paymentStatus !== "refunded"));
   const refundedOrders = getFilteredOrdersList(orders.filter(order => order.paymentStatus === "refunded"));
 
   // Render revenue report function
