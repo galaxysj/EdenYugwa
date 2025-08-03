@@ -876,11 +876,11 @@ function Manager() {
                           ? 'bg-yellow-100 text-yellow-800'
                           : order.paymentStatus === 'refunded'
                           ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-800'
+                          : 'bg-red-100 text-red-800'
                       }`}>
                         {order.paymentStatus === 'confirmed' ? '입금완료' :
                          order.paymentStatus === 'partial' ? '부분결제' :
-                         order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
+                         order.paymentStatus === 'refunded' ? '환불' : '미입금'}
                       </span>
                     </td>
                     <td className="py-2 px-2 text-center">
