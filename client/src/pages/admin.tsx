@@ -1654,13 +1654,32 @@ export default function Admin() {
                         <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                         <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
-                      {order.scheduledDate && (
-                        <div className="text-red-600 font-bold text-xs">
+                      {order.scheduledDate ? (
+                        <div 
+                          className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 발송예약일 수정"
+                        >
                           발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
-                      )}
-                      {order.status === 'scheduled' && !order.scheduledDate && (
-                        <div className="text-orange-600 font-bold text-xs">발송예약 대기</div>
+                      ) : (
+                        <div 
+                          className="text-blue-600 font-bold text-xs cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 발송예약일 설정"
+                        >
+                          + 발송예약
+                        </div>
                       )}
                     </td>
                     <td className="py-2 px-2 text-center">
