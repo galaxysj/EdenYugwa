@@ -2418,6 +2418,24 @@ export default function Admin() {
                 <Users className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">고객관리</span>
               </Button>
+              <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 text-xs bg-white/20 text-white hover:bg-white/30"
+                >
+                  관리자
+                </Button>
+                <Link href="/manager">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-xs text-white/70 hover:bg-white/20 hover:text-white"
+                  >
+                    매니저
+                  </Button>
+                </Link>
+              </div>
               <Link href="/admin-settings">
                 <Button 
                   variant="ghost" 

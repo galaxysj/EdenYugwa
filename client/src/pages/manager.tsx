@@ -1051,6 +1051,24 @@ function Manager() {
               <h1 className="text-2xl font-bold text-gray-900">에덴한과 매니저</h1>
             </div>
             <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-blue-50 rounded-lg p-1">
+                <Link href="/admin">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    관리자
+                  </Button>
+                </Link>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  매니저
+                </Button>
+              </div>
               <AdminSettingsDialog />
               <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
                 <LogOut className="h-4 w-4" />
