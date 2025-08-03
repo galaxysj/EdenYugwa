@@ -841,6 +841,7 @@ export default function Admin() {
   const allOrders = getFilteredOrdersList(orders);
   const pendingOrders = getFilteredOrdersList(filterOrdersByStatus("pending"));
   const scheduledOrders = getFilteredOrdersList(filterOrdersByStatus("scheduled"));
+  const sellerShippedOrders = getFilteredOrdersList(filterOrdersByStatus("seller_shipped"));
   const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered").filter(order => order.paymentStatus !== "refunded"));
   const refundedOrders = getFilteredOrdersList(orders.filter(order => order.paymentStatus === "refunded"));
 
@@ -2444,6 +2445,7 @@ export default function Admin() {
       total: 0, 
       pending: 0, 
       scheduled: 0, 
+      seller_shipped: 0,
       delivered: 0, 
       paidOrders: 0, 
       unpaidOrders: 0,
@@ -2570,7 +2572,7 @@ export default function Admin() {
           <>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardContent className="p-2 sm:p-4 text-center">
               <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.total}</div>
@@ -2587,6 +2589,12 @@ export default function Admin() {
             <CardContent className="p-2 sm:p-4 text-center bg-blue-50">
               <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.scheduled || 0}</div>
               <div className="text-xs sm:text-sm text-gray-600">발송주문</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-2 sm:p-4 text-center bg-orange-50">
+              <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.seller_shipped || 0}</div>
+              <div className="text-xs sm:text-sm text-gray-600">발송대기</div>
             </CardContent>
           </Card>
           <Card>
@@ -2630,10 +2638,11 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-7">
+                <TabsList className="grid w-full grid-cols-8">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="scheduled">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                  <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
                   <TabsTrigger value="refunded" className="text-red-600">
                     환불내역 ({refundedOrders.length})
@@ -2756,6 +2765,42 @@ export default function Admin() {
                     </div>
                   )}
                   {renderOrdersList(scheduledOrders)}
+                </TabsContent>
+                
+                <TabsContent value="seller_shipped" className="mt-6">
+                  {renderOrderFilters()}
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {renderOrdersList(sellerShippedOrders)}
                 </TabsContent>
                 
                 <TabsContent value="delivered" className="mt-6">
