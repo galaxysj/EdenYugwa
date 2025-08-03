@@ -985,7 +985,6 @@ export default function Admin() {
             매출 엑셀 다운로드
           </Button>
         </div>
-
         {/* 날짜 필터 */}
         <Card>
           <CardContent className="p-4">
@@ -1048,7 +1047,6 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
-
         {/* 매출 총합계 - 통합 테이블 버전 */}
         <Card className="bg-white border-eden-red/20">
           <CardContent className="p-6">
@@ -1085,7 +1083,7 @@ export default function Admin() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-blue-700 mb-1">택배비건수</div>
+                  <div className="font-semibold text-blue-700 mb-1">택배건수</div>
                   <div className="text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                 </div>
                 
@@ -1111,9 +1109,6 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
-
-
-
         {/* 매출관리 주문 상세 리스트 */}
         {filteredOrders.length > 0 && (
           <Card>
