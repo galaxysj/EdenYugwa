@@ -1512,7 +1512,7 @@ export default function Admin() {
             <option value="all">전체</option>
             <option value="pending">접수대기</option>
             <option value="scheduled">발송주문</option>
-            <option value="seller_shipped">발송예약</option>
+            <option value="seller_shipped">발송대기</option>
             <option value="delivered">발송완료</option>
           </select>
         </div>
