@@ -854,8 +854,14 @@ export default function Admin() {
       parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
     
     // Include all orders with confirmed payment status (including scheduled and delivered orders)
+    // Exclude refunded orders from revenue calculation
     const paidOrders = orders.filter((order: Order) => 
       order.paymentStatus === 'confirmed'
+    );
+    
+    // Count refunded orders separately
+    const refundedOrders = orders.filter((order: Order) => 
+      order.paymentStatus === 'refunded'
     );
     
     // Filter orders by date
@@ -1106,9 +1112,40 @@ export default function Admin() {
                   </div>
                 </div>
               </div>
+              
+              {/* 환불 통계 */}
+              {refundedOrders.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="text-center mb-3">
+                    <h4 className="text-lg font-semibold text-red-600">환불 현황</h4>
+                    <p className="text-sm text-gray-500">매출에서 제외된 환불 주문</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div className="bg-red-50 p-3 rounded-lg">
+                      <div className="font-semibold text-red-700 mb-1">환불건수</div>
+                      <div className="text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg">
+                      <div className="font-semibold text-red-700 mb-1">환불금액</div>
+                      <div className="text-lg font-bold text-red-600">
+                        {formatPrice(refundedOrders.reduce((sum: number, order: Order) => sum + (order.actualPaidAmount || order.totalAmount), 0))}
+                      </div>
+                    </div>
+                    <div className="bg-red-50 p-3 rounded-lg">
+                      <div className="font-semibold text-red-700 mb-1">환불상품</div>
+                      <div className="text-xs text-red-600 space-y-1">
+                        <div>한과1호: {refundedOrders.reduce((sum: number, order: Order) => sum + order.smallBoxQuantity, 0)}개</div>
+                        <div>한과2호: {refundedOrders.reduce((sum: number, order: Order) => sum + order.largeBoxQuantity, 0)}개</div>
+                        <div>보자기: {refundedOrders.reduce((sum: number, order: Order) => sum + order.wrappingQuantity, 0)}개</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+        
         {/* 매출관리 주문 상세 리스트 */}
         {filteredOrders.length > 0 && (
           <Card>
