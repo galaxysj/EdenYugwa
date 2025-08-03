@@ -231,6 +231,11 @@ export default function OrderLookup() {
                             <div className="text-xs ml-5">
                               {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                             </div>
+                            {order.scheduledDate && (
+                              <div className="text-xs ml-5 mt-1 text-blue-600 font-medium">
+                                예약발송일: {formatDate(order.scheduledDate)}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="text-right space-y-2">
@@ -277,14 +282,7 @@ export default function OrderLookup() {
                               {order.address1} {order.address2}
                             </span>
                           </div>
-                          {order.scheduledDate && (
-                            <div>
-                              <span className="text-gray-600">예약발송일: </span>
-                              <span className="font-medium text-blue-600">
-                                {formatDate(order.scheduledDate)}
-                              </span>
-                            </div>
-                          )}
+
                           {order.specialRequests && (
                             <div>
                               <span className="text-gray-600">배송 요청사항: </span>
