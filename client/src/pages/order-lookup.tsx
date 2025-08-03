@@ -24,16 +24,14 @@ const lookupSchema = z.object({
 type LookupFormData = z.infer<typeof lookupSchema>;
 
 const statusLabels = {
-  pending: "주문 접수",
-  preparing: "제작 중",
-  shipping: "배송 중",
-  delivered: "배송 완료",
+  pending: "주문접수",
+  scheduled: "발송주문",
+  delivered: "발송완료",
 };
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
-  preparing: "bg-blue-100 text-blue-800",
-  shipping: "bg-orange-100 text-orange-800",
+  scheduled: "bg-blue-100 text-blue-800",
   delivered: "bg-green-100 text-green-800",
 };
 
