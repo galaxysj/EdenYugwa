@@ -487,11 +487,17 @@ function Manager() {
         sellerShipped, 
         sellerShippedDate: sellerShipped ? new Date().toISOString() : null 
       }),
-    onSuccess: () => {
+    onSuccess: (updatedOrder) => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      
+      // If seller shipped is true, also update order status to delivered
+      if (updatedOrder.sellerShipped) {
+        updateOrderStatusMutation.mutate({ id: updatedOrder.id, status: 'delivered' });
+      }
+      
       toast({
-        title: "판매자 발송 상태 변경 완료",
-        description: "판매자 발송 상태가 성공적으로 변경되었습니다.",
+        title: "판매자 발송 완료",
+        description: "판매자 발송이 완료되어 발송완료 상태로 변경되었습니다.",
       });
     },
     onError: () => {

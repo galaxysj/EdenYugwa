@@ -389,12 +389,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
+    const updateData: any = { 
+      sellerShipped,
+      sellerShippedDate: sellerShipped ? sellerShippedDate : null
+    };
+    
+    // If seller shipped is true, also update status to delivered and set delivered date
+    if (sellerShipped) {
+      updateData.status = 'delivered';
+      updateData.deliveredDate = sellerShippedDate;
+    }
+    
     const [order] = await db
       .update(orders)
-      .set({ 
-        sellerShipped,
-        sellerShippedDate: sellerShipped ? sellerShippedDate : null
-      })
+      .set(updateData)
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;
