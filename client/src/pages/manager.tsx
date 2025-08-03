@@ -834,9 +834,7 @@ function Manager() {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className={`p-0 h-auto text-xs text-left justify-start max-w-[150px] truncate ${
-                                checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : ''
-                              }`}
+                              className="p-0 h-auto text-xs text-left justify-start max-w-[150px] truncate"
                             >
                               {order.address1} {order.address2}
                             </Button>
@@ -994,7 +992,7 @@ function Manager() {
                     
                     <div>
                       <span className="text-sm font-medium text-gray-700">배송주소: </span>
-                      <span className={`text-sm ${checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : ''}`}>
+                      <span className="text-sm">
                         {order.address1} {order.address2}
                       </span>
                       {checkRemoteArea(order.address1) && (

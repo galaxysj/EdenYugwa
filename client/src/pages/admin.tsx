@@ -1695,9 +1695,7 @@ export default function Admin() {
                         <DialogTrigger asChild>
                           <div>
                             <div 
-                              className={`text-xs cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate ${
-                                checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : 'text-gray-900'
-                              }`}
+                              className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
                               title="클릭하여 전체 주소 보기"
                             >
                               {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
@@ -1986,7 +1984,7 @@ export default function Admin() {
 
                     <div className="text-sm">
                       <div className="text-gray-500 mb-1">주문자 주소</div>
-                      <div className={checkRemoteArea(order.address1) ? 'text-red-600 font-medium' : ''}>
+                      <div>
                         [{order.zipCode}] {order.address1} {order.address2}
                       </div>
                       {checkRemoteArea(order.address1) && (
@@ -1995,7 +1993,7 @@ export default function Admin() {
                       {order.recipientAddress1 && (
                         <>
                           <div className="text-gray-500 mb-1 mt-2">받는분 주소</div>
-                          <div className={`${checkRemoteArea(order.recipientAddress1) ? 'text-red-600 font-medium' : 'text-blue-600'}`}>
+                          <div className="text-blue-600">
                             [{order.recipientZipCode}] {order.recipientAddress1} {order.recipientAddress2}
                           </div>
                           {checkRemoteArea(order.recipientAddress1) && (
