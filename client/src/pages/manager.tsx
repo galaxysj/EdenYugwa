@@ -182,9 +182,9 @@ function Manager() {
     refetchInterval: 5000,
   });
 
-  // Filter orders to show only confirmed payments with scheduled status for manager
+  // Filter orders to show only confirmed payments with scheduled or delivered status for manager
   const orders = allOrders.filter(order => 
-    order.paymentStatus === 'confirmed' && order.status === 'scheduled'
+    order.paymentStatus === 'confirmed' && (order.status === 'scheduled' || order.status === 'delivered')
   );
 
   const { data: deletedOrders = [] } = useQuery<Order[]>({
@@ -321,8 +321,10 @@ function Manager() {
   const filteredOrders = getFilteredOrdersList(orders);
   const sortedOrders = sortOrders(filteredOrders);
   
-  // Get all confirmed payment orders for tab filtering
-  const allConfirmedOrders = allOrders.filter(order => order.paymentStatus === 'confirmed');
+  // Get all confirmed payment orders with scheduled or delivered status for tab filtering
+  const allConfirmedOrders = allOrders.filter(order => 
+    order.paymentStatus === 'confirmed' && (order.status === 'scheduled' || order.status === 'delivered')
+  );
   
   // Filter by tab selection
   const getOrdersByTab = () => {
