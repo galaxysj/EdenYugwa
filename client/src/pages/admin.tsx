@@ -1113,31 +1113,15 @@ export default function Admin() {
                 </div>
               </div>
               
-              {/* 환불 통계 */}
+              {/* 환불 통계 - 한줄로 컴팩트하게 */}
               {refundedOrders.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="text-center mb-3">
-                    <h4 className="text-lg font-semibold text-red-600">환불 현황</h4>
-                    <p className="text-sm text-gray-500">매출에서 제외된 환불 주문</p>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div className="bg-red-50 p-3 rounded-lg">
-                      <div className="font-semibold text-red-700 mb-1">환불건수</div>
-                      <div className="text-lg font-bold text-red-600">{refundedOrders.length}건</div>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg">
-                      <div className="font-semibold text-red-700 mb-1">환불금액</div>
-                      <div className="text-lg font-bold text-red-600">
-                        {formatPrice(refundedOrders.reduce((sum: number, order: Order) => sum + (order.actualPaidAmount || order.totalAmount), 0))}
-                      </div>
-                    </div>
-                    <div className="bg-red-50 p-3 rounded-lg">
-                      <div className="font-semibold text-red-700 mb-1">환불상품</div>
-                      <div className="text-xs text-red-600 space-y-1">
-                        <div>한과1호: {refundedOrders.reduce((sum: number, order: Order) => sum + order.smallBoxQuantity, 0)}개</div>
-                        <div>한과2호: {refundedOrders.reduce((sum: number, order: Order) => sum + order.largeBoxQuantity, 0)}개</div>
-                        <div>보자기: {refundedOrders.reduce((sum: number, order: Order) => sum + order.wrappingQuantity, 0)}개</div>
-                      </div>
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="bg-red-50 p-2 rounded-lg">
+                    <div className="text-center text-xs text-red-600">
+                      <span className="font-medium">환불현황:</span>
+                      <span className="ml-2">{refundedOrders.length}건</span>
+                      <span className="ml-2">{formatPrice(refundedOrders.reduce((sum: number, order: Order) => sum + (order.actualPaidAmount || order.totalAmount), 0))}</span>
+                      <span className="ml-2">(한과1호 {refundedOrders.reduce((sum: number, order: Order) => sum + order.smallBoxQuantity, 0)}개, 한과2호 {refundedOrders.reduce((sum: number, order: Order) => sum + order.largeBoxQuantity, 0)}개, 보자기 {refundedOrders.reduce((sum: number, order: Order) => sum + order.wrappingQuantity, 0)}개)</span>
                     </div>
                   </div>
                 </div>
