@@ -246,14 +246,14 @@ export default function PublicOrder() {
                     control={form.control}
                     name="isDifferentDepositor"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-1 space-y-0">
+                      <FormItem className="flex flex-row items-center space-x-1 space-y-0">
                         <FormControl>
                           <Checkbox
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
-                        <div className="space-y-1 leading-none">
+                        <div className="leading-none">
                           <FormLabel className="flex items-center gap-0.5 text-[10px] sm:text-xs">
                             <span className="mr-1">←</span>
                             <span>입금자가 다르면 체크표시 클릭 후 입금자 입력해주세요</span>
