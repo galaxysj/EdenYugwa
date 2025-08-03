@@ -21,7 +21,7 @@ import type { Order } from "@shared/schema";
 
 const statusLabels = {
   pending: "주문접수",
-  scheduled: "발송예약",
+  scheduled: "발송주문",
   delivered: "발송완료",
 };
 
@@ -601,7 +601,7 @@ function Manager() {
           >
             <option value="all">전체</option>
             <option value="pending">접수대기</option>
-            <option value="scheduled">발송예약</option>
+            <option value="scheduled">발송주문</option>
             <option value="delivered">발송완료</option>
           </select>
         </div>

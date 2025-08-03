@@ -22,7 +22,7 @@ import type { Order, Setting } from "@shared/schema";
 
 const statusLabels = {
   pending: "주문접수",
-  scheduled: "발송예약",
+  scheduled: "발송주문",
   delivered: "발송완료",
 };
 
@@ -1460,7 +1460,7 @@ export default function Admin() {
           >
             <option value="all">전체</option>
             <option value="pending">접수대기</option>
-            <option value="scheduled">발송예약</option>
+            <option value="scheduled">발송주문</option>
             <option value="delivered">발송완료</option>
           </select>
         </div>
@@ -1786,7 +1786,7 @@ export default function Admin() {
                           <SelectItem value="scheduled">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-3 w-3 text-blue-500" />
-                              <span>발송예약</span>
+                              <span>발송주문</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="delivered">
