@@ -1133,7 +1133,7 @@ export default function Admin() {
                       <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">할인/미입금</th>
                       <th className="text-right py-2 px-3 font-medium text-gray-600">원가분석</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">실제수익</th>
+                      <th className="text-right py-2 px-3 font-medium text-gray-600">순수익</th>
                     </tr>
                   </thead>
                   <tbody>
