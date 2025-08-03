@@ -2485,22 +2485,6 @@ export default function Admin() {
               </h1>
             </div>
             <div className="flex items-center space-x-2">
-              <Button 
-                onClick={() => setActiveTab('revenue')}
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${activeTab === 'revenue' ? 'bg-white/20' : ''}`}
-              >
-                <DollarSign className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">매출관리</span>
-              </Button>
-              <Button 
-                onClick={() => setShowCustomerManagement(true)}
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${showCustomerManagement ? 'bg-white/20' : ''}`}
-              >
-                <Users className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">고객관리</span>
-              </Button>
               <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1">
                 <Button 
                   variant="ghost" 
@@ -2519,6 +2503,22 @@ export default function Admin() {
                   </Button>
                 </Link>
               </div>
+              <Button 
+                onClick={() => setActiveTab('revenue')}
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${activeTab === 'revenue' ? 'bg-white/20' : ''}`}
+              >
+                <DollarSign className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">매출관리</span>
+              </Button>
+              <Button 
+                onClick={() => setShowCustomerManagement(true)}
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${showCustomerManagement ? 'bg-white/20' : ''}`}
+              >
+                <Users className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">고객관리</span>
+              </Button>
               <Link href="/admin-settings">
                 <Button 
                   variant="ghost" 
