@@ -699,15 +699,31 @@ export default function Admin() {
   const sortOrders = (ordersList: Order[]) => {
     const sorted = [...ordersList];
     
+    // Universal sorting function that puts seller shipped orders at the bottom
+    const sortWithSellerShippedAtBottom = (compareFn: (a: Order, b: Order) => number) => {
+      return sorted.sort((a, b) => {
+        // Seller shipped orders go to bottom
+        if (a.sellerShipped && !b.sellerShipped) return 1;
+        if (!a.sellerShipped && b.sellerShipped) return -1;
+        
+        // If both have same seller shipped status, use the provided compare function
+        return compareFn(a, b);
+      });
+    };
+    
     if (sortOrder === 'latest') {
       // Latest first
-      return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return sortWithSellerShippedAtBottom((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
     } else if (sortOrder === 'oldest') {
       // Oldest first
-      return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return sortWithSellerShippedAtBottom((a, b) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
     } else if (sortOrder === 'delivery-date') {
       // Sort by delivery date: orders without delivery date first, then by delivery date (earliest first)
-      return sorted.sort((a, b) => {
+      return sortWithSellerShippedAtBottom((a, b) => {
         // Orders without delivery date go to top
         if (!a.deliveredDate && b.deliveredDate) return -1;
         if (a.deliveredDate && !b.deliveredDate) return 1;
@@ -722,7 +738,7 @@ export default function Admin() {
       });
     } else if (sortOrder === 'scheduled-date') {
       // Sort by scheduled date: orders without scheduled date first, then by scheduled date (earliest first)
-      return sorted.sort((a, b) => {
+      return sortWithSellerShippedAtBottom((a, b) => {
         // Orders without scheduled date go to top
         if (!a.scheduledDate && b.scheduledDate) return -1;
         if (a.scheduledDate && !b.scheduledDate) return 1;
@@ -737,7 +753,7 @@ export default function Admin() {
       });
     } else if (sortOrder === 'order-status') {
       // Sort by order status: pending -> scheduled -> delivered
-      return sorted.sort((a, b) => {
+      return sortWithSellerShippedAtBottom((a, b) => {
         const statusPriority = { 'pending': 1, 'scheduled': 2, 'delivered': 3 };
         const aPriority = statusPriority[a.status as keyof typeof statusPriority] || 999;
         const bPriority = statusPriority[b.status as keyof typeof statusPriority] || 999;
@@ -751,7 +767,7 @@ export default function Admin() {
       });
     } else if (sortOrder === 'payment-status') {
       // Sort by payment status: pending -> partial -> confirmed -> refunded
-      return sorted.sort((a, b) => {
+      return sortWithSellerShippedAtBottom((a, b) => {
         const paymentPriority = { 'pending': 1, 'partial': 2, 'confirmed': 3, 'refunded': 4 };
         const aPriority = paymentPriority[a.paymentStatus as keyof typeof paymentPriority] || 999;
         const bPriority = paymentPriority[b.paymentStatus as keyof typeof paymentPriority] || 999;
@@ -765,7 +781,7 @@ export default function Admin() {
       });
     } else if (sortOrder === 'order-number') {
       // Sort by order number (earliest first)
-      return sorted.sort((a, b) => {
+      return sortWithSellerShippedAtBottom((a, b) => {
         const aNum = parseInt(a.orderNumber.split('-')[1] || '0');
         const bNum = parseInt(b.orderNumber.split('-')[1] || '0');
         return aNum - bNum;
