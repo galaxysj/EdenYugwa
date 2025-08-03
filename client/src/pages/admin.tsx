@@ -1067,7 +1067,7 @@ export default function Admin() {
             </div>
             
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-4 text-center">
                 <div>
                   <div className="font-semibold text-gray-700 mb-1">주문건수</div>
                   <div className="text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
@@ -1094,6 +1094,11 @@ export default function Admin() {
                 </div>
                 
                 <div>
+                  <div className="font-semibold text-red-700 mb-1">환불건수</div>
+                  <div className="text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                </div>
+                
+                <div>
                   <div className="font-semibold text-green-700 mb-1">실제입금</div>
                   <div className="text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                 </div>
@@ -1113,14 +1118,13 @@ export default function Admin() {
                 </div>
               </div>
               
-              {/* 환불 통계 - 한줄로 컴팩트하게 */}
+              {/* 환불 상세 정보 - 환불건수가 있을 때만 표시 */}
               {refundedOrders.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-200">
                   <div className="bg-red-50 p-2 rounded-lg">
                     <div className="text-center text-xs text-red-600">
-                      <span className="font-medium">환불현황:</span>
-                      <span className="ml-2">{refundedOrders.length}건</span>
-                      <span className="ml-2">{formatPrice(refundedOrders.reduce((sum: number, order: Order) => sum + (order.actualPaidAmount || order.totalAmount), 0))}</span>
+                      <span className="font-medium">환불상세:</span>
+                      <span className="ml-2">금액 {formatPrice(refundedOrders.reduce((sum: number, order: Order) => sum + (order.actualPaidAmount || order.totalAmount), 0))}</span>
                       <span className="ml-2">(한과1호 {refundedOrders.reduce((sum: number, order: Order) => sum + order.smallBoxQuantity, 0)}개, 한과2호 {refundedOrders.reduce((sum: number, order: Order) => sum + order.largeBoxQuantity, 0)}개, 보자기 {refundedOrders.reduce((sum: number, order: Order) => sum + order.wrappingQuantity, 0)}개)</span>
                     </div>
                   </div>
