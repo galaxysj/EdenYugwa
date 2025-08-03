@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShoppingCart, Box, Calculator, Search, Calendar } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ShoppingCart, Box, Calculator, Search, Calendar, AlertTriangle } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";  
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -69,6 +70,7 @@ export default function OrderForm() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [totalAmount, setTotalAmount] = useState(0);
+  const [showShippingAlert, setShowShippingAlert] = useState(false);
 
   // Daum 우편번호 서비스 스크립트 로드
   useEffect(() => {
@@ -121,6 +123,32 @@ export default function OrderForm() {
   });
 
   const watchedValues = form.watch(["smallBoxQuantity", "largeBoxQuantity", "wrappingQuantity"]);
+  const addressValue = form.watch("address1");
+
+  // 제주도 및 도서산간지역 감지 함수
+  const checkRemoteArea = (address: string) => {
+    if (!address) return false;
+    
+    const remoteAreaKeywords = [
+      '제주', '제주도', '제주시', '서귀포', '서귀포시',
+      '울릉', '울릉도', '울릉군', 
+      '독도', '백령도', '연평도', '대청도', '소청도',
+      '가거도', '소흑산도', '홍도', '흑산도',
+      '거제', '남해', '통영', '고성',
+      '완도', '진도', '신안', '무안', '영광', '고창',
+      '부안', '김제', '정읍', '고창군', '부안군',
+      '옹진', '강화', '교동', '석모도', '볼음도', '신도', '시도', '모도', '장봉도', '덕적도', '소야도', '문갑도', '굴업도', '대이작도', '소이작도'
+    ];
+    
+    return remoteAreaKeywords.some(keyword => address.includes(keyword));
+  };
+
+  // 주소가 변경될 때 제주도/도서산간지역 체크
+  useEffect(() => {
+    if (addressValue && checkRemoteArea(addressValue)) {
+      setShowShippingAlert(true);
+    }
+  }, [addressValue]);
 
   useEffect(() => {
     const [smallBoxQuantity, largeBoxQuantity, wrappingQuantity] = watchedValues;
@@ -197,6 +225,11 @@ export default function OrderForm() {
         // 우편번호와 주소 정보를 해당 필드에 넣는다.
         form.setValue('zipCode', data.zonecode);
         form.setValue('address1', addr + extraAddr);
+        
+        // 제주도/도서산간지역 체크
+        if (checkRemoteArea(addr + extraAddr)) {
+          setShowShippingAlert(true);
+        }
         
         // 상세주소 입력 필드에 포커스
         const address2Input = document.querySelector('input[placeholder="상세 주소"]') as HTMLInputElement;
@@ -738,6 +771,26 @@ export default function OrderForm() {
           </div>
         </form>
       </Form>
+
+      {/* 제주도/도서산간지역 추가배송비 안내 팝업 */}
+      <AlertDialog open={showShippingAlert} onOpenChange={setShowShippingAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              추가배송비 안내
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-gray-600">
+              고객정보에서 주소지가 제주도이거나 도서산간지역일 경우에는 추가배송비가 예상됩니다. 판매자에게 문의해주세요.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowShippingAlert(false)}>
+              확인
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
