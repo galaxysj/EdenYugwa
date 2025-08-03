@@ -1508,7 +1508,15 @@ export default function Admin() {
           <select
             key="order-status-filter"
             value={orderStatusFilter}
-            onChange={(e) => setOrderStatusFilter(e.target.value)}
+            onChange={(e) => {
+              const newStatus = e.target.value;
+              setOrderStatusFilter(newStatus);
+              
+              // 발송대기를 선택하면 자동으로 발송대기 탭으로 이동
+              if (newStatus === 'seller_shipped') {
+                setActiveTab('seller_shipped');
+              }
+            }}
             className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
             <option value="all">전체</option>
