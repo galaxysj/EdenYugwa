@@ -842,8 +842,8 @@ export default function Admin() {
   const pendingOrders = getFilteredOrdersList(filterOrdersByStatus("pending"));
   const scheduledOrders = getFilteredOrdersList(filterOrdersByStatus("scheduled"));
   const sellerShippedOrders = getFilteredOrdersList(filterOrdersByStatus("seller_shipped"));
-  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered").filter(order => order.paymentStatus !== "refunded"));
-  const refundedOrders = getFilteredOrdersList(orders.filter(order => order.paymentStatus === "refunded"));
+  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered").filter((order: Order) => order.paymentStatus !== "refunded"));
+  const refundedOrders = getFilteredOrdersList(orders.filter((order: Order) => order.paymentStatus === "refunded"));
 
   // Render revenue report function
   const renderRevenueReport = () => {
