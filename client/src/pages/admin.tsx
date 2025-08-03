@@ -11,6 +11,7 @@ import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, D
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
+import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -1820,7 +1821,16 @@ export default function Admin() {
                         <div className="text-green-600 font-medium text-xs">
                           판매자발송완료
                           {order.sellerShippedDate && (
-                            <div className="text-gray-500 mt-1">
+                            <div 
+                              className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                              onClick={() => {
+                                const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                                if (sellerShippedDatePicker) {
+                                  (sellerShippedDatePicker as HTMLElement).click();
+                                }
+                              }}
+                              title="클릭하여 판매자발송일 수정"
+                            >
                               {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                             </div>
                           )}
@@ -1834,8 +1844,9 @@ export default function Admin() {
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
-                        <div className="hidden">
+                        <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
+                          <SellerShippedDatePicker order={order} />
                         </div>
                         <Button
                           size="sm"
@@ -2126,8 +2137,9 @@ export default function Admin() {
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
-                        <div className="hidden">
+                        <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
+                          <SellerShippedDatePicker order={order} />
                         </div>
                         <Button
                           size="sm"

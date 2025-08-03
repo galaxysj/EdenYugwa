@@ -388,6 +388,15 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
+  async updateOrderSellerShippedDate(id: number, sellerShippedDate: Date | null): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set({ sellerShippedDate })
+      .where(eq(orders.id, id))
+      .returning();
+    return order || undefined;
+  }
+
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
     const updateData: any = { 
       sellerShipped,
