@@ -782,7 +782,7 @@ function Manager() {
                       </div>
                       {order.scheduledDate && (
                         <div className="text-red-600 font-bold text-xs">
-                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                          발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
                       )}
 
@@ -929,6 +929,11 @@ function Manager() {
                       <div className="text-sm text-gray-500">
                         {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                       </div>
+                      {order.scheduledDate && (
+                        <div className="text-red-600 font-bold text-sm">
+                          발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </div>
+                      )}
                     </div>
                     <input
                       type="checkbox"
