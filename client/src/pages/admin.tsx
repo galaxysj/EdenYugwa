@@ -1616,11 +1616,11 @@ export default function Admin() {
                       </div>
                       {order.scheduledDate && (
                         <div className="text-red-600 font-bold text-xs">
-                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                          발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
                       )}
                       {order.status === 'scheduled' && !order.scheduledDate && (
-                        <div className="text-orange-600 font-bold text-xs">예약 대기</div>
+                        <div className="text-orange-600 font-bold text-xs">발송예약 대기</div>
                       )}
                     </td>
                     <td className="py-2 px-2">
