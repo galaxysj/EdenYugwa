@@ -16,9 +16,9 @@ export const orders = pgTable("orders", {
   recipientZipCode: text("recipient_zip_code"), // 받는 분 우편번호
   recipientAddress1: text("recipient_address1"), // 받는 분 주소1
   recipientAddress2: text("recipient_address2"), // 받는 분 주소2
-  // 예금자 정보
-  depositorName: text("depositor_name"), // 예금자 이름 (주문자와 다를 경우)
-  isDifferentDepositor: boolean("is_different_depositor").notNull().default(false), // 예금자가 주문자와 다른지 여부
+  // 입금자 정보
+  depositorName: text("depositor_name"), // 입금자 이름 (주문자와 다를 경우)
+  isDifferentDepositor: boolean("is_different_depositor").notNull().default(false), // 입금자가 주문자와 다른지 여부
   specialRequests: text("special_requests"),
   smallBoxQuantity: integer("small_box_quantity").notNull().default(0), // 소박스(한과1호) 수량
   largeBoxQuantity: integer("large_box_quantity").notNull().default(0), // 대박스(한과2호) 수량

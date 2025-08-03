@@ -47,7 +47,7 @@ const orderSchema = z.object({
   message: "보자기 포장 수량은 전체 수량보다 클 수 없습니다",
   path: ["wrappingQuantity"],
 }).refine((data) => !data.isDifferentDepositor || data.depositorName, {
-  message: "예금자 이름을 입력해주세요",
+  message: "입금자 이름을 입력해주세요",
   path: ["depositorName"],
 });
 

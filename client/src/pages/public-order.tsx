@@ -115,7 +115,7 @@ export default function PublicOrder() {
       recipientZipCode: data.recipientZipCode || null,
       recipientAddress1: data.recipientAddress1 || null,
       recipientAddress2: data.recipientAddress2 || null,
-      // 예금자 정보
+      // 입금자 정보
       isDifferentDepositor: data.isDifferentDepositor,
       depositorName: data.isDifferentDepositor ? data.depositorName || null : null,
       smallBoxQuantity: data.smallBoxQuantity,
