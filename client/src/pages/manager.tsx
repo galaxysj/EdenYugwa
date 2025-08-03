@@ -346,8 +346,9 @@ function Manager() {
   // Manager-specific sorting: move scheduled orders to bottom for 'all' tab
   const managerSortedOrders = orderViewTab === 'all' 
     ? [...tabSortedOrders].sort((a, b) => {
-        if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
-        if (a.status !== 'scheduled' && b.status === 'scheduled') return -1;
+        // 발송완료 주문을 아래로 보내기
+        if (a.status === 'delivered' && b.status !== 'delivered') return 1;
+        if (a.status !== 'delivered' && b.status === 'delivered') return -1;
         return 0;
       })
     : tabSortedOrders;
