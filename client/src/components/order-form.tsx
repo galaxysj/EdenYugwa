@@ -129,9 +129,13 @@ export default function OrderForm() {
   const checkRemoteArea = (address: string) => {
     if (!address) return false;
     
+    // 강원도 울릉은 제외하고 울릉도(섬)만 포함
+    if (address.includes('울릉도')) {
+      return true;
+    }
+    
     const remoteAreaKeywords = [
       '제주', '제주도', '제주시', '서귀포', '서귀포시',
-      '울릉도',
       '독도',
       '강화', '강화도', '강화군',
       '백령', '백령도',
