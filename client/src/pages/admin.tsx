@@ -1845,7 +1845,15 @@ export default function Admin() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">-</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleSellerShipped(order.id)}
+                          disabled={updateSellerShippedMutation.isPending}
+                          className="h-6 text-xs px-2 py-1 text-blue-600 border-blue-200 hover:bg-blue-50"
+                        >
+                          판매자발송
+                        </Button>
                       )}
                     </td>
                     <td className="py-2 px-2 text-center">
@@ -2209,6 +2217,30 @@ export default function Admin() {
     },
   });
 
+  // Seller shipped mutation
+  const updateSellerShippedMutation = useMutation({
+    mutationFn: (orderId: number) => api.orders.updateSellerShipped(orderId, true),
+    onSuccess: async (updatedOrder, orderId) => {
+      // First update seller shipped status
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      
+      // Then automatically update order status to delivered
+      updateStatusMutation.mutate({ id: orderId, status: 'delivered' });
+      
+      toast({
+        title: "판매자 발송 완료",
+        description: "판매자 발송이 완료되고 주문상태가 발송완료로 변경되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "업데이트 실패",
+        description: "판매자 발송 상태 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updatePaymentMutation = useMutation({
     mutationFn: ({ id, paymentStatus, actualPaidAmount, discountReason }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountReason?: string }) => 
       api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountReason),
@@ -2281,6 +2313,10 @@ export default function Admin() {
     if (confirm("정말로 이 주문을 삭제하시겠습니까?")) {
       deleteOrderMutation.mutate(orderId);
     }
+  };
+
+  const handleSellerShipped = (orderId: number) => {
+    updateSellerShippedMutation.mutate(orderId);
   };
 
   const handleExcelDownload = async () => {
