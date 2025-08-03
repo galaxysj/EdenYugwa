@@ -254,12 +254,10 @@ export default function PublicOrder() {
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            입금자가 다릅니다
+                          <FormLabel className="flex items-center gap-1">
+                            <span>←</span>
+                            <span>입금자가 다르면 체크표시 클릭 후 입금자 입력해주세요</span>
                           </FormLabel>
-                          <p className="text-sm text-gray-500">
-                            체크하시면 입금자 이름을 별도로 입력할 수 있습니다
-                          </p>
                         </div>
                       </FormItem>
                     )}

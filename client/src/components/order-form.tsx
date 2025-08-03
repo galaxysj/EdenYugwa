@@ -562,8 +562,9 @@ export default function OrderForm() {
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
-                            <FormLabel>
-                              입금자가 다릅니다
+                            <FormLabel className="flex items-center gap-1">
+                              <span>←</span>
+                              <span>입금자가 다르면 체크표시 클릭 후 입금자 입력해주세요</span>
                             </FormLabel>
                           </div>
                         </FormItem>
