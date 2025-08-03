@@ -1523,8 +1523,8 @@ export default function Admin() {
           >
             <option value="all">🔴 전체</option>
             <option value="pending">🟡 접수대기</option>
+            <option value="seller_shipped">🟠 발송대기</option>
             <option value="scheduled">🔵 발송주문</option>
-            <option value="seller_shipped">🟠 발송대기 (NEW)</option>
             <option value="delivered">🟢 발송완료</option>
           </select>
           <div className="text-xs text-red-600 mt-1 font-bold">
@@ -1891,16 +1891,16 @@ export default function Admin() {
                               <span>주문접수</span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="scheduled">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-3 w-3 text-blue-500" />
-                              <span>발송주문</span>
-                            </div>
-                          </SelectItem>
                           <SelectItem value="seller_shipped">
                             <div className="flex items-center space-x-1">
                               <Clock className="h-3 w-3 text-orange-500" />
                               <span>발송대기</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="scheduled">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3 text-blue-500" />
+                              <span>발송주문</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="delivered">
@@ -2197,16 +2197,16 @@ export default function Admin() {
                                 <span>주문접수</span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="scheduled">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-blue-500" />
-                                <span>발송주문</span>
-                              </div>
-                            </SelectItem>
                             <SelectItem value="seller_shipped">
                               <div className="flex items-center space-x-2">
                                 <Clock className="h-4 w-4 text-orange-500" />
                                 <span>발송대기</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="scheduled">
+                              <div className="flex items-center space-x-2">
+                                <Calendar className="h-4 w-4 text-blue-500" />
+                                <span>발송주문</span>
                               </div>
                             </SelectItem>
                             <SelectItem value="delivered">

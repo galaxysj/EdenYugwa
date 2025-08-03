@@ -22,8 +22,8 @@ import type { Order } from "@shared/schema";
 
 const statusLabels = {
   pending: "주문접수",
-  scheduled: "발송주문",
   seller_shipped: "발송대기",
+  scheduled: "발송주문",
   delivered: "발송완료",
 };
 
