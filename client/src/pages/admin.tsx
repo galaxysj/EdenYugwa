@@ -1503,17 +1503,18 @@ export default function Admin() {
         </div>
 
         {/* Order Status */}
-        <div>
+        <div key="order-status-section">
           <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
           <select
-            key="order-status-filter"
             value={orderStatusFilter}
             onChange={(e) => {
               const newStatus = e.target.value;
+              console.log('주문상태 변경:', newStatus);
               setOrderStatusFilter(newStatus);
               
               // 발송대기를 선택하면 자동으로 발송대기 탭으로 이동
               if (newStatus === 'seller_shipped') {
+                console.log('발송대기 탭으로 이동');
                 setActiveTab('seller_shipped');
               }
             }}
@@ -1525,6 +1526,9 @@ export default function Admin() {
             <option value="seller_shipped">발송대기</option>
             <option value="delivered">발송완료</option>
           </select>
+          <div className="text-xs text-gray-500 mt-1">
+            현재 선택: {orderStatusFilter === 'seller_shipped' ? '발송대기' : orderStatusFilter === 'all' ? '전체' : orderStatusFilter === 'pending' ? '접수대기' : orderStatusFilter === 'scheduled' ? '발송주문' : orderStatusFilter === 'delivered' ? '발송완료' : orderStatusFilter}
+          </div>
         </div>
       </div>
       
