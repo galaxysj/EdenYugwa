@@ -1100,7 +1100,7 @@ export default function Admin() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-purple-700 mb-1">실제수익</div>
+                  <div className="font-semibold text-purple-700 mb-1">순수익</div>
                   <div className={`text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                     {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                   </div>
