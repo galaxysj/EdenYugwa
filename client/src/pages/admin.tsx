@@ -1590,7 +1590,6 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">발송일</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
@@ -1815,24 +1814,6 @@ export default function Admin() {
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                    </td>
-                    <td className="py-2 px-2 text-center">
-                      {order.status === 'delivered' && order.deliveredDate ? (
-                        <div 
-                          className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200"
-                          onClick={() => {
-                            const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
-                            if (deliveredDatePicker) {
-                              (deliveredDatePicker as HTMLElement).click();
-                            }
-                          }}
-                          title="클릭하여 발송완료일 수정"
-                        >
-                          {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
                     </td>
                     <td className="py-2 px-2 text-center">
                       {order.sellerShipped ? (
@@ -2145,25 +2126,7 @@ export default function Admin() {
                           <span className="text-xs text-gray-400 text-center py-1">-</span>
                         )}
                       </div>
-                      <div>
-                        <div className="text-gray-500 mb-2">발송일</div>
-                        {order.status === 'delivered' && order.deliveredDate ? (
-                          <div 
-                            className="text-xs text-green-600 font-medium cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
-                            onClick={() => {
-                              const deliveredDatePicker = document.querySelector(`[data-order-id="${order.id}"] .delivered-date-trigger`);
-                              if (deliveredDatePicker) {
-                                (deliveredDatePicker as HTMLElement).click();
-                              }
-                            }}
-                            title="클릭하여 발송완료일 수정"
-                          >
-                            {new Date(order.deliveredDate).toLocaleDateString('ko-KR')}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400">-</span>
-                        )}
-                      </div>
+
                     </div>
 
                     <div className="pt-4 border-t border-gray-100">
