@@ -239,10 +239,16 @@ export default function OrderLookup() {
                           </div>
                         </div>
                         <div className="text-right space-y-2">
-                          <Badge className={statusColors[order.status as keyof typeof statusColors]}>
-                            {statusLabels[order.status as keyof typeof statusLabels]}
-                          </Badge>
-                          <br />
+                          <div>
+                            <Badge className={statusColors[order.status as keyof typeof statusColors]}>
+                              {statusLabels[order.status as keyof typeof statusLabels]}
+                            </Badge>
+                            {order.status === 'delivered' && order.deliveredDate && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                발송일: {formatDate(order.deliveredDate)}
+                              </div>
+                            )}
+                          </div>
                           <Badge className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}>
                             {paymentStatusLabels[order.paymentStatus as keyof typeof paymentStatusLabels]}
                           </Badge>
