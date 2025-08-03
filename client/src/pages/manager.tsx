@@ -783,9 +783,7 @@ function Manager() {
                           예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
                       )}
-                      {order.status === 'scheduled' && !order.scheduledDate && (
-                        <div className="text-orange-600 font-bold text-xs">예약 대기</div>
-                      )}
+
                     </td>
                     <td className="py-2 px-2">
                       <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
