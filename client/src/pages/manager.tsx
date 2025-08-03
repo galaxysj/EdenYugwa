@@ -36,8 +36,8 @@ const statusIcons = {
 const checkRemoteArea = (address: string) => {
   if (!address) return false;
   
-  // 강원도 울릉은 제외하고 울릉도(섬)만 포함
-  if (address.includes('울릉도')) {
+  // 울릉도(섬) 포함 - 경북 울릉군 포함
+  if (address.includes('울릉도') || address.includes('울릉군')) {
     return true;
   }
   
