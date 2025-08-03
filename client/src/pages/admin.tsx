@@ -1502,9 +1502,9 @@ export default function Admin() {
           </select>
         </div>
 
-        {/* Order Status */}
-        <div key="order-status-section">
-          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
+        {/* Order Status - FORCE REBUILD */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태 (새로고침됨)</label>
           <select
             value={orderStatusFilter}
             onChange={(e) => {
@@ -1518,16 +1518,17 @@ export default function Admin() {
                 setActiveTab('seller_shipped');
               }
             }}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+            className="w-full px-3 py-1.5 border border-red-300 rounded-md text-sm h-8 bg-red-50"
+            style={{ backgroundColor: '#fef2f2', borderColor: '#fca5a5' }}
           >
-            <option value="all">전체</option>
-            <option value="pending">접수대기</option>
-            <option value="scheduled">발송주문</option>
-            <option value="seller_shipped">발송대기</option>
-            <option value="delivered">발송완료</option>
+            <option value="all">🔴 전체</option>
+            <option value="pending">🟡 접수대기</option>
+            <option value="scheduled">🔵 발송주문</option>
+            <option value="seller_shipped">🟠 발송대기 (NEW)</option>
+            <option value="delivered">🟢 발송완료</option>
           </select>
-          <div className="text-xs text-gray-500 mt-1">
-            현재 선택: {orderStatusFilter === 'seller_shipped' ? '발송대기' : orderStatusFilter === 'all' ? '전체' : orderStatusFilter === 'pending' ? '접수대기' : orderStatusFilter === 'scheduled' ? '발송주문' : orderStatusFilter === 'delivered' ? '발송완료' : orderStatusFilter}
+          <div className="text-xs text-red-600 mt-1 font-bold">
+            ⚠️ 현재 선택: {orderStatusFilter} | 옵션 개수: 5개 | 발송대기 포함됨
           </div>
         </div>
       </div>
