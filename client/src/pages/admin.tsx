@@ -1639,7 +1639,7 @@ export default function Admin() {
               {ordersList.map((order: Order) => {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
-                  <tr key={order.id} className={`border-b border-gray-100 hover:bg-gray-50 ${order.paymentStatus === 'pending' ? 'bg-red-50' : ''}`} data-order-id={order.id}>
+                  <tr key={order.id} className={`border-b border-gray-100 ${order.paymentStatus === 'pending' ? 'bg-red-100 hover:bg-red-100' : 'hover:bg-gray-50'}`} data-order-id={order.id}>
                     <td className="py-2 px-2 text-center">
                       <input
                         type="checkbox"
@@ -1934,7 +1934,7 @@ export default function Admin() {
           {ordersList.map((order: Order) => {
             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
             return (
-              <Card key={order.id} className={`border ${order.paymentStatus === 'pending' ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}>
+              <Card key={order.id} className={`border ${order.paymentStatus === 'pending' ? 'border-red-400 bg-red-100' : 'border-gray-200'}`}>
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
