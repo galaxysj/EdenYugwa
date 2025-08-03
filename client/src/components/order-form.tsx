@@ -287,36 +287,38 @@ export default function OrderForm() {
                           name="smallBoxQuantity"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>수량</FormLabel>
-                              <FormControl>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    className="w-20 text-center"
-                                  />
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(field.value + 1)}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </FormControl>
+                              <div className="flex items-center space-x-2">
+                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-1">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-12 h-7 text-center text-xs px-1"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -340,36 +342,38 @@ export default function OrderForm() {
                           name="largeBoxQuantity"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>수량</FormLabel>
-                              <FormControl>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    className="w-20 text-center"
-                                  />
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(field.value + 1)}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </FormControl>
+                              <div className="flex items-center space-x-2">
+                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-1">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-12 h-7 text-center text-xs px-1"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -393,37 +397,39 @@ export default function OrderForm() {
                           name="wrappingQuantity"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>수량</FormLabel>
-                              <FormControl>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    -
-                                  </Button>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    max={totalQuantity}
-                                    {...field}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                    className="w-20 text-center"
-                                  />
-                                  <Button 
-                                    type="button"
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => field.onChange(field.value + 1)}
-                                    className="w-8 h-8 p-0"
-                                  >
-                                    +
-                                  </Button>
-                                </div>
-                              </FormControl>
+                              <div className="flex items-center space-x-2">
+                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-1">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max={totalQuantity}
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-12 h-7 text-center text-xs px-1"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
