@@ -49,7 +49,9 @@ const checkRemoteArea = (address: string) => {
     '백령', '백령도',
     '연평', '연평도',
     '흑산', '흑산도',
-    '진도', '진도군'
+    '진도', '진도군',
+    '가파리', '가파도',
+    '영도', '영도구'
   ];
   
   return remoteAreaKeywords.some(keyword => address.includes(keyword));
