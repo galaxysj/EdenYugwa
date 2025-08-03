@@ -1770,7 +1770,7 @@ export default function Admin() {
                       </Dialog>
                     </td>
                     <td className="py-2 px-2">
-                      <div className="flex items-center space-x-3 text-xs">
+                      <div className="text-xs space-y-1">
                         <div>
                           <span className="text-gray-500">매출:</span>
                           <span className="font-medium text-gray-900 ml-1">{formatPrice(order.totalAmount)}</span>
