@@ -1506,6 +1506,7 @@ export default function Admin() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
           <select
+            key="order-status-filter"
             value={orderStatusFilter}
             onChange={(e) => setOrderStatusFilter(e.target.value)}
             className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
