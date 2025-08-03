@@ -180,7 +180,7 @@ function Manager() {
   const [orderStartDate, setOrderStartDate] = useState<string>('');
   const [orderEndDate, setOrderEndDate] = useState<string>('');
   const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('confirmed'); // Manager always sees confirmed payments only
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all'); // Manager can see all payment statuses
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
@@ -209,7 +209,7 @@ function Manager() {
 
   // Filter orders to show only confirmed payments with scheduled or delivered status for manager
   const orders = allOrders.filter(order => 
-    order.paymentStatus === 'confirmed' && (order.status === 'scheduled' || order.status === 'delivered')
+    order.status === 'scheduled' || order.status === 'delivered'
   );
 
   const { data: deletedOrders = [] } = useQuery<Order[]>({
@@ -249,7 +249,7 @@ function Manager() {
       );
     }
 
-    // Payment status filter - Manager only sees confirmed payments, but we still apply filter for consistency
+    // Payment status filter - Manager can see all payment statuses
     if (paymentStatusFilter !== 'all') {
       filtered = filtered.filter(order => order.paymentStatus === paymentStatusFilter);
     }
@@ -635,15 +635,19 @@ function Manager() {
           />
         </div>
 
-        {/* Payment Status - Hidden for Manager */}
-        <div style={{ display: 'none' }}>
+        {/* Payment Status Filter */}
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">입금상태</label>
           <select
-            value="confirmed"
-            disabled
+            value={paymentStatusFilter}
+            onChange={(e) => setPaymentStatusFilter(e.target.value)}
             className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
+            <option value="all">전체</option>
+            <option value="pending">입금대기</option>
             <option value="confirmed">입금완료</option>
+            <option value="partial">부분결제</option>
+            <option value="refunded">환불</option>
           </select>
         </div>
 
@@ -789,7 +793,7 @@ function Manager() {
               {ordersList.map((order: Order) => {
                 const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                 return (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50" data-order-id={order.id}>
+                  <tr key={order.id} className={`border-b border-gray-100 hover:bg-gray-50 ${order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''}`} data-order-id={order.id}>
                     <td className="py-2 px-2 text-center">
                       <input
                         type="checkbox"
@@ -954,7 +958,7 @@ function Manager() {
           {ordersList.map((order: Order) => {
             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
             return (
-              <Card key={order.id} className="relative">
+              <Card key={order.id} className={`relative ${order.paymentStatus !== 'confirmed' ? 'border-red-300 bg-red-50' : ''}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -1032,6 +1036,12 @@ function Manager() {
                       <StatusIcon className="h-3 w-3 mr-1" />
                       {statusLabels[order.status as keyof typeof statusLabels]}
                     </span>
+                    
+                    {order.paymentStatus !== 'confirmed' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        미입금
+                      </span>
+                    )}
                   </div>
                   
                   <div className="flex gap-2">
