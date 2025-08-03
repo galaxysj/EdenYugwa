@@ -277,6 +277,14 @@ export default function OrderLookup() {
                               {order.address1} {order.address2}
                             </span>
                           </div>
+                          {order.scheduledDate && (
+                            <div>
+                              <span className="text-gray-600">예약발송일: </span>
+                              <span className="font-medium text-blue-600">
+                                {formatDate(order.scheduledDate)}
+                              </span>
+                            </div>
+                          )}
                           {order.specialRequests && (
                             <div>
                               <span className="text-gray-600">배송 요청사항: </span>
