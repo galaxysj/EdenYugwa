@@ -274,23 +274,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get manager orders (all orders but hide financial info)
+  // Get manager orders (confirmed payment orders only)
   app.get("/api/manager/orders", requireManagerOrAdmin, async (req, res) => {
     try {
       const allOrders = await storage.getAllOrders();
-      // 매니저는 전체 주문을 볼 수 있지만 금액 정보는 숨김
-      const managerOrders = allOrders.map(order => ({
-        ...order,
-        totalAmount: undefined,
-        actualPaidAmount: undefined,
-        discountAmount: undefined,
-        discountReason: undefined,
-        smallBoxCost: undefined,
-        largeBoxCost: undefined,
-        totalCost: undefined,
-        netProfit: undefined
-      }));
-      res.json(managerOrders);
+      // 매니저는 입금 확인된 주문만 볼 수 있음
+      const confirmedOrders = allOrders.filter(order => order.paymentStatus === 'confirmed');
+      res.json(confirmedOrders);
     } catch (error) {
       console.error("Error fetching manager orders:", error);
       res.status(500).json({ message: "Failed to fetch manager orders" });
