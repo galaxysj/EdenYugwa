@@ -646,7 +646,7 @@ export default function PublicOrder() {
                       </div>
                     )}
                     <div className="border-t pt-2 mt-4">
-                      <div className="flex justify-between text-lg font-semibold text-eden-brown">
+                      <div className="flex justify-between text-lg font-semibold text-[hsl(25,65%,35%)]">
                         <span>총 주문금액</span>
                         <span>{formatPrice(calculateTotal())}</span>
                       </div>
@@ -670,32 +670,33 @@ export default function PublicOrder() {
                   </div>
                 </div>
 
-                {/* Submit Buttons */}
-                <div className="space-y-3">
-                  <Button 
-                    type="submit" 
-                    disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white text-lg py-6 font-semibold"
-                    data-testid="button-submit-order"
-                  >
-                    {createOrderMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        주문 처리 중...
-                      </>
-                    ) : (
-                      <>
-                        <Package className="mr-2 h-4 w-4" />
-                        주문하기
-                      </>
-                    )}
-                  </Button>
-                  
+                {/* Submit Button */}
+                <Button 
+                  type="submit" 
+                  disabled={createOrderMutation.isPending || calculateTotal() === 0}
+                  className="w-full bg-[hsl(25,65%,35%)] hover:bg-[hsl(25,65%,30%)] text-white text-lg py-6"
+                  data-testid="button-submit-order"
+                >
+                  {createOrderMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      주문 처리 중...
+                    </>
+                  ) : (
+                    <>
+                      <Package className="mr-2 h-4 w-4" />
+                      주문하기
+                    </>
+                  )}
+                </Button>
+                
+                {/* Guest Order Button */}
+                <div className="mt-3">
                   <Button 
                     type="submit" 
                     disabled={createOrderMutation.isPending || calculateTotal() === 0}
                     variant="outline"
-                    className="w-full border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white text-lg py-6 font-semibold"
+                    className="w-full border-2 border-[hsl(25,65%,35%)] text-[hsl(25,65%,35%)] hover:bg-[hsl(25,65%,35%)] hover:text-white text-lg py-6"
                     data-testid="button-guest-order"
                   >
                     {createOrderMutation.isPending ? (
