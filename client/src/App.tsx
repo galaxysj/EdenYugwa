@@ -21,7 +21,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/admin/login" component={Login} />
       <Route path="/admin">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <Admin />
         </ProtectedRoute>
       </Route>
@@ -31,7 +31,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/manager">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="manager">
           <Manager />
         </ProtectedRoute>
       </Route>

@@ -13,17 +13,17 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate("/admin/login");
+      navigate("/login");
       return;
     }
 
     if (!isLoading && isAuthenticated && requiredRole) {
       if (requiredRole === 'admin' && user?.role !== 'admin') {
-        navigate("/admin/login");
+        navigate("/");
         return;
       }
       if (requiredRole === 'manager' && user?.role !== 'manager' && user?.role !== 'admin') {
-        navigate("/admin/login");
+        navigate("/");
         return;
       }
     }

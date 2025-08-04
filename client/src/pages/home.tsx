@@ -62,21 +62,14 @@ export default function Home() {
                   </Button>
                 </Link>
               )}
-              {isAuthenticated && isAdmin && (
+              {isAuthenticated && user?.role === 'admin' && (
                 <Link href="/admin">
                   <Button variant="ghost" className="text-eden-red hover:text-eden-brown">
                     관리자
                   </Button>
                 </Link>
               )}
-              {isAuthenticated && isAdmin && (
-                <Link href="/manager">
-                  <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
-                    매니저
-                  </Button>
-                </Link>
-              )}
-              {isAuthenticated && isManager && !isAdmin && (
+              {isAuthenticated && (user?.role === 'admin' || user?.role === 'manager') && (
                 <Link href="/manager">
                   <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
                     매니저
@@ -163,7 +156,7 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                {isAuthenticated && isAdmin && (
+                {isAuthenticated && user?.role === 'admin' && (
                   <Link href="/admin">
                     <button 
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -173,17 +166,7 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                {isAuthenticated && isAdmin && (
-                  <Link href="/manager">
-                    <button 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
-                    >
-                      매니저
-                    </button>
-                  </Link>
-                )}
-                {isAuthenticated && isManager && !isAdmin && (
+                {isAuthenticated && (user?.role === 'admin' || user?.role === 'manager') && (
                   <Link href="/manager">
                     <button 
                       onClick={() => setIsMobileMenuOpen(false)}
