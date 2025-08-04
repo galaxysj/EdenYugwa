@@ -265,6 +265,91 @@ export default function OrderLookup() {
                 </CardContent>
               </Card>
             ) : (
+              <>
+                {/* 여러 고객이 있을 때 선택 인터페이스 */}
+                {(() => {
+                  // 고유한 전화번호별로 그룹화
+                  const ordersByPhone = orders.reduce((acc, order) => {
+                    if (!acc[order.customerPhone]) {
+                      acc[order.customerPhone] = [];
+                    }
+                    acc[order.customerPhone].push(order);
+                    return acc;
+                  }, {} as Record<string, typeof orders>);
+                  
+                  const phoneNumbers = Object.keys(ordersByPhone);
+                  
+                  // 전화번호가 2개 이상인 경우에만 선택 인터페이스 표시
+                  if (phoneNumbers.length > 1) {
+                    return (
+                      <Card className="mb-6">
+                        <CardHeader>
+                          <CardTitle className="font-korean">여러 고객의 주문이 검색되었습니다</CardTitle>
+                          <p className="text-gray-600">조회하고 싶은 전화번호를 선택해주세요.</p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid gap-3">
+                            {phoneNumbers.map((phone) => {
+                              const phoneOrders = ordersByPhone[phone];
+                              const customerName = phoneOrders[0].customerName;
+                              return (
+                                <Button
+                                  key={phone}
+                                  variant="outline"
+                                  className="justify-start h-auto p-4"
+                                  onClick={() => {
+                                    // 선택된 전화번호의 주문만 표시하도록 필터링
+                                    setOrders(phoneOrders);
+                                  }}
+                                >
+                                  <div className="text-left">
+                                    <div className="font-medium">
+                                      {customerName} ({maskPhoneNumber(phone)})
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      주문 {phoneOrders.length}건
+                                    </div>
+                                  </div>
+                                </Button>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-4">
+                            <Button
+                              variant="ghost"
+                              onClick={() => {
+                                // 전체 주문 다시 표시
+                                window.location.reload();
+                              }}
+                              className="text-sm"
+                            >
+                              전체 주문 다시 보기
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                  return null;
+                })()}
+              </>
+            )}
+            
+            {/* 실제 주문 목록 표시 (여러 전화번호가 있을 때는 선택 후에만 표시) */}
+            {orders.length > 0 && (() => {
+              const ordersByPhone = orders.reduce((acc, order) => {
+                if (!acc[order.customerPhone]) {
+                  acc[order.customerPhone] = [];
+                }
+                acc[order.customerPhone].push(order);
+                return acc;
+              }, {} as Record<string, typeof orders>);
+              
+              const phoneNumbers = Object.keys(ordersByPhone);
+              
+              // 전화번호가 1개이거나, 이미 필터링된 상태에서만 주문 표시
+              if (phoneNumbers.length === 1) {
+                return (
               orders.map((order) => {
                 return (
                   <Card key={order.id} className="border border-gray-200">
@@ -401,8 +486,11 @@ export default function OrderLookup() {
                     </CardContent>
                   </Card>
                 );
-              })
-            )}
+                  })
+                );
+              }
+              return null;
+            })()}
           </div>
         )}
       </div>
