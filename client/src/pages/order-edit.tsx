@@ -238,7 +238,9 @@ export default function OrderEdit() {
           </CardHeader>
           <CardContent className="p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                console.error('폼 검증 실패:', errors);
+              })} className="space-y-8">
                 {/* Customer Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-gray-900">고객 정보</h3>
@@ -588,6 +590,12 @@ export default function OrderEdit() {
                     type="submit" 
                     disabled={isSaving}
                     className="flex-1 bg-eden-brown hover:bg-eden-dark text-white"
+                    onClick={(e) => {
+                      console.log('수정 완료 버튼 클릭됨');
+                      console.log('폼 상태:', form.formState);
+                      console.log('폼 에러:', form.formState.errors);
+                      // Let the form handle the submit
+                    }}
                   >
                     <Save className="mr-2 h-4 w-4" />
                     {isSaving ? "저장 중..." : "수정 완료"}
