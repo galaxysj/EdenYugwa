@@ -138,11 +138,53 @@ export default function Manager() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  // 탭별 필터링
-  const filteredOrders = managerSortedOrders.filter(order => {
-    if (orderViewTab === 'scheduled') return order.status === 'scheduled';
-    if (orderViewTab === 'delivered') return order.status === 'delivered';
-    return true; // 'all'
+  // 필터링 로직 (관리자와 동일)
+  const filteredOrders = allOrders.filter(order => {
+    // 날짜 필터링
+    if (orderDateFilter === 'today') {
+      const today = new Date().toDateString();
+      const orderDate = new Date(order.createdAt).toDateString();
+      if (orderDate !== today) return false;
+    } else if (orderDateFilter === 'week') {
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      if (new Date(order.createdAt) < weekAgo) return false;
+    } else if (orderDateFilter === 'month') {
+      const monthAgo = new Date();
+      monthAgo.setMonth(monthAgo.getMonth() - 1);
+      if (new Date(order.createdAt) < monthAgo) return false;
+    } else if (orderDateFilter === 'custom' && orderStartDate && orderEndDate) {
+      const start = new Date(orderStartDate);
+      const end = new Date(orderEndDate);
+      end.setHours(23, 59, 59, 999);
+      const orderDate = new Date(order.createdAt);
+      if (orderDate < start || orderDate > end) return false;
+    }
+
+    // 고객명 필터링
+    if (customerNameFilter && !order.customerName.toLowerCase().includes(customerNameFilter.toLowerCase())) {
+      return false;
+    }
+
+    // 결제 상태 필터링
+    if (paymentStatusFilter !== 'all' && order.paymentStatus !== paymentStatusFilter) {
+      return false;
+    }
+
+    // 주문 상태 필터링
+    if (orderStatusFilter !== 'all' && order.status !== orderStatusFilter) {
+      return false;
+    }
+
+    // 판매자 발송 필터링
+    if (sellerShippedFilter === 'shipped' && !order.sellerShipped) {
+      return false;
+    }
+    if (sellerShippedFilter === 'not_shipped' && order.sellerShipped) {
+      return false;
+    }
+
+    return true;
   });
 
   // SMS 일괄 발송 mutation
@@ -245,7 +287,6 @@ export default function Manager() {
         order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
         order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
       ].filter(Boolean).join(', '),
-
       '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
                  order.paymentStatus === 'partial' ? '부분결제' :
                  order.paymentStatus === 'refunded' ? '환불' : '입금대기',
@@ -342,40 +383,116 @@ export default function Manager() {
                   </div>
                 )}
 
-                {/* Order View Tabs */}
-                <div className="flex items-center gap-2 border-b pb-2">
-                  <Button
-                    variant={orderViewTab === 'all' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setOrderViewTab('all')}
-                    className="h-8 text-xs"
-                  >
-                    전체보기 ({allOrders.length})
-                  </Button>
-                  <Button
-                    variant={orderViewTab === 'scheduled' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setOrderViewTab('scheduled')}
-                    className="h-8 text-xs"
-                  >
-                    발송주문 ({allOrders.filter(o => o.status === 'scheduled').length})
-                  </Button>
-                  <Button
-                    variant={orderViewTab === 'delivered' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setOrderViewTab('delivered')}
-                    className="h-8 text-xs"
-                  >
-                    발송완료 ({allOrders.filter(o => o.status === 'delivered').length})
-                  </Button>
-                </div>
+                {/* 필터링 UI */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">주문 필터링</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {/* 날짜 필터 */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">주문일</label>
+                        <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체 기간</SelectItem>
+                            <SelectItem value="today">오늘</SelectItem>
+                            <SelectItem value="week">최근 7일</SelectItem>
+                            <SelectItem value="month">최근 30일</SelectItem>
+                            <SelectItem value="custom">사용자 지정</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {orderDateFilter === 'custom' && (
+                          <div className="mt-2 space-y-2">
+                            <Input
+                              type="date"
+                              value={orderStartDate}
+                              onChange={(e) => setOrderStartDate(e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder="시작일"
+                            />
+                            <Input
+                              type="date"
+                              value={orderEndDate}
+                              onChange={(e) => setOrderEndDate(e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder="종료일"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 고객명 필터 */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">고객명</label>
+                        <Input
+                          placeholder="고객명 검색"
+                          value={customerNameFilter}
+                          onChange={(e) => setCustomerNameFilter(e.target.value)}
+                          className="h-9"
+                        />
+                      </div>
+
+                      {/* 결제 상태 필터 */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">결제 상태</label>
+                        <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="pending">입금대기</SelectItem>
+                            <SelectItem value="confirmed">입금완료</SelectItem>
+                            <SelectItem value="partial">부분결제</SelectItem>
+                            <SelectItem value="refunded">환불</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* 주문 상태 필터 */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">주문 상태</label>
+                        <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="pending">주문접수</SelectItem>
+                            <SelectItem value="scheduled">발송주문</SelectItem>
+                            <SelectItem value="delivered">발송완료</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* 판매자 발송 상태 필터 */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">판매자 발송</label>
+                        <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="shipped">발송완료</SelectItem>
+                            <SelectItem value="not_shipped">발송대기</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Package className="h-5 w-5" />
-                      {orderViewTab === 'all' ? '전체 주문 목록' : 
-                       orderViewTab === 'scheduled' ? '발송주문 목록' : '발송완료 목록'} ({filteredOrders.length}건)
+                      주문 목록 ({filteredOrders.length}건)
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
