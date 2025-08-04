@@ -126,6 +126,7 @@ export default function PublicOrder() {
       wrappingQuantity: data.wrappingQuantity,
       specialRequests: data.specialRequests || null,
       scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
+      orderPassword: data.orderPassword, // 주문 비밀번호 추가
       totalAmount,
       status: "pending",
       paymentStatus: "pending",
