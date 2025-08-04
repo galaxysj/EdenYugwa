@@ -592,13 +592,13 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-1">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호×{order.smallBoxQuantity}개</div>
+                                  <div className="text-gray-900">한과1호×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호×{order.largeBoxQuantity}개</div>
+                                  <div className="text-gray-900">한과2호×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
-                                  <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>
+                                  <div className="text-gray-900">보자기×{order.wrappingQuantity}개</div>
                                 )}
                               </div>
                             </td>
