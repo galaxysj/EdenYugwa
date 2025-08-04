@@ -490,6 +490,7 @@ export default function Admin() {
   const [showCustomerManagement, setShowCustomerManagement] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
+  const [selectedShippingItems, setSelectedShippingItems] = useState<Set<number>>(new Set());
   const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
@@ -661,6 +662,7 @@ export default function Admin() {
   const clearAllSelections = () => {
     setSelectedTrashItems(new Set());
     setSelectedOrderItems(new Set());
+    setSelectedShippingItems(new Set());
   };
 
   // Order selection functions
@@ -685,6 +687,31 @@ export default function Admin() {
     
     if (confirm(`선택된 ${selectedTrashItems.size}개 주문을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
       bulkPermanentDeleteMutation.mutate(Array.from(selectedTrashItems));
+    }
+  };
+
+  // Shipping selection functions
+  const toggleShippingSelection = (orderId: number) => {
+    const newSelection = new Set(selectedShippingItems);
+    if (newSelection.has(orderId)) {
+      newSelection.delete(orderId);
+    } else {
+      newSelection.add(orderId);
+    }
+    setSelectedShippingItems(newSelection);
+  };
+
+  const selectAllShipping = (ordersList: Order[]) => {
+    const eligibleOrders = ordersList.filter(order => !order.sellerShipped);
+    const allIds = new Set(eligibleOrders.map(order => order.id));
+    setSelectedShippingItems(allIds);
+  };
+
+  const handleBulkSellerShipped = () => {
+    if (selectedShippingItems.size === 0) return;
+    
+    if (confirm(`선택된 ${selectedShippingItems.size}개 주문을 발송완료로 변경하시겠습니까?`)) {
+      bulkSellerShippedMutation.mutate(Array.from(selectedShippingItems));
     }
   };
 
@@ -1648,6 +1675,35 @@ export default function Admin() {
 
     return (
       <>
+        {/* Bulk Shipping Actions */}
+        {selectedShippingItems.size > 0 && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-blue-700">
+                {selectedShippingItems.size}개 주문이 발송용으로 선택되었습니다
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedShippingItems(new Set())}
+                >
+                  선택 해제
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={handleBulkSellerShipped}
+                  disabled={bulkSellerShippedMutation.isPending}
+                >
+                  <Truck className="h-4 w-4 mr-1" />
+                  선택항목 발송완료 ({selectedShippingItems.size}개)
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
           <table className="w-full">
@@ -1665,6 +1721,22 @@ export default function Admin() {
                       }
                     }}
                     className="rounded border-gray-300"
+                    title="삭제용 선택"
+                  />
+                </th>
+                <th className="w-8 py-2 px-2 text-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedShippingItems.size === ordersList.filter(order => !order.sellerShipped).length && ordersList.filter(order => !order.sellerShipped).length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        selectAllShipping(ordersList);
+                      } else {
+                        setSelectedShippingItems(new Set());
+                      }
+                    }}
+                    className="rounded border-blue-300"
+                    title="발송용 전체 선택"
                   />
                 </th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
@@ -1692,6 +1764,17 @@ export default function Admin() {
                         checked={selectedOrderItems.has(order.id)}
                         onChange={() => toggleOrderSelection(order.id)}
                         className="rounded border-gray-300"
+                        title="삭제용 선택"
+                      />
+                    </td>
+                    <td className="py-2 px-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedShippingItems.has(order.id)}
+                        onChange={() => toggleShippingSelection(order.id)}
+                        className="rounded border-blue-300"
+                        disabled={order.sellerShipped}
+                        title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
                       />
                     </td>
                     <td className="py-2 px-2">
@@ -2003,12 +2086,23 @@ export default function Admin() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedOrderItems.has(order.id)}
-                          onChange={() => toggleOrderSelection(order.id)}
-                          className="rounded border-gray-300 mt-1"
-                        />
+                        <div className="flex flex-col gap-2 mt-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedOrderItems.has(order.id)}
+                            onChange={() => toggleOrderSelection(order.id)}
+                            className="rounded border-gray-300"
+                            title="삭제용 선택"
+                          />
+                          <input
+                            type="checkbox"
+                            checked={selectedShippingItems.has(order.id)}
+                            onChange={() => toggleShippingSelection(order.id)}
+                            className="rounded border-blue-300"
+                            disabled={order.sellerShipped}
+                            title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
+                          />
+                        </div>
                         <div>
                           <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
                         <div className="text-sm text-gray-500">
@@ -2343,6 +2437,33 @@ export default function Admin() {
       toast({
         title: "업데이트 실패",
         description: "판매자 발송 상태 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkSellerShippedMutation = useMutation({
+    mutationFn: async (orderIds: number[]) => {
+      const results = await Promise.all(
+        orderIds.map(orderId => 
+          api.orders.updateSellerShipped(orderId, true)
+            .then(() => api.orders.updateStatus(orderId, 'delivered'))
+        )
+      );
+      return results;
+    },
+    onSuccess: (results, orderIds) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      setSelectedShippingItems(new Set());
+      toast({
+        title: "일괄 발송 완료",
+        description: `${orderIds.length}개 주문이 발송완료로 변경되었습니다.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "일괄 발송 실패",
+        description: "일괄 발송 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
