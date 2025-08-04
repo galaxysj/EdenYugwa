@@ -352,17 +352,11 @@ export default function ManagerDashboard() {
               <div className="flex items-center justify-between">
                 <TabsList>
                   <TabsTrigger value="전체(6)">전체 ({filteredOrders.length})</TabsTrigger>
-                  <TabsTrigger value="입금대기(0)">
-                    입금대기 ({filteredOrders.filter(o => o.paymentStatus === 'pending').length})
-                  </TabsTrigger>
                   <TabsTrigger value="발송예정(1)">
                     발송예정 ({filteredOrders.filter(o => o.status === 'scheduled').length})
                   </TabsTrigger>
                   <TabsTrigger value="발송완료(0)">
                     발송완료 ({filteredOrders.filter(o => o.status === 'delivered').length})
-                  </TabsTrigger>
-                  <TabsTrigger value="환불내역(1)">
-                    환불내역 ({filteredOrders.filter(o => o.paymentStatus === 'refunded').length})
                   </TabsTrigger>
                 </TabsList>
 
@@ -538,9 +532,8 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">메모</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">관리</th>
                         </tr>
                       </thead>
@@ -630,59 +623,31 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2">
                               <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
                             </td>
-                            <td className="py-2 px-2">
-                              <Select
-                                value={order.paymentStatus}
-                                onValueChange={(value) => updatePaymentStatusMutation.mutate({ id: order.id, paymentStatus: value })}
-                              >
-                                <SelectTrigger className="w-20 h-7 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    <div className="flex items-center space-x-1">
-                                      <span>입금대기</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="confirmed">
-                                    <div className="flex items-center space-x-1">
-                                      <span>입금완료</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="partial">
-                                    <div className="flex items-center space-x-1">
-                                      <span>부분결제</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="refunded">
-                                    <div className="flex items-center space-x-1">
-                                      <span>환불</span>
-                                    </div>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
-                            <td className="py-2 px-2">
+                            <td className="py-2 px-2 text-center">
                               <Select
                                 value={order.status}
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                                disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-20 h-7 text-xs">
+                                <SelectTrigger className="w-24 h-6 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="pending">
                                     <div className="flex items-center space-x-1">
+                                      <Clock className="h-3 w-3 text-orange-500" />
                                       <span>주문접수</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="scheduled">
                                     <div className="flex items-center space-x-1">
+                                      <Calendar className="h-3 w-3 text-blue-500" />
                                       <span>발송주문</span>
                                     </div>
                                   </SelectItem>
                                   <SelectItem value="delivered">
                                     <div className="flex items-center space-x-1">
+                                      <CheckCircle className="h-3 w-3 text-green-500" />
                                       <span>발송완료</span>
                                     </div>
                                   </SelectItem>
