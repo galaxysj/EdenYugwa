@@ -371,153 +371,91 @@ export default function OrderEdit() {
                   />
                 </div>
 
-                {/* Product Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-gray-900">상품 정보</h3>
+                {/* Product Selection */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                    <div className="h-5 w-5 text-eden-brown">🎁</div>
+                    <h3 className="text-lg font-semibold text-gray-900">상품 선택</h3>
+                  </div>
                   
-                  {/* Small Box */}
-                  <div className="border-2 border-eden-beige rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-lg font-semibold text-eden-brown">소박스 - 한과1호</h4>
-                        <p className="text-sm text-eden-sage">전통유과 15개입 (약 1.2kg)</p>
-                        <p className="text-xs text-eden-dark">약 35.5×21×11.2cm</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="border border-gray-200 rounded-lg p-6 space-y-4">
+                      <div className="text-center">
+                        <h4 className="font-semibold text-gray-900">한과1호 (소박스)</h4>
+                        <p className="text-2xl font-bold text-eden-brown">{formatPrice(prices.small)}</p>
                       </div>
-                      <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.small)}</span>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name="smallBoxQuantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>수량</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center space-x-2">
-                              <Button 
-                                type="button"
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                className="w-8 h-8 p-0"
-                              >
-                                -
-                              </Button>
-                              <Input
-                                type="number"
-                                min="0"
+                      <FormField
+                        control={form.control}
+                        name="smallBoxQuantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>수량</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0" 
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                className="w-20 text-center"
                               />
-                              <Button 
-                                type="button"
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => field.onChange(field.value + 1)}
-                                className="w-8 h-8 p-0"
-                              >
-                                +
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Large Box */}
-                  <div className="border-2 border-eden-beige rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="text-lg font-semibold text-eden-brown">대박스 - 한과2호</h4>
-                        <p className="text-sm text-eden-sage">전통유과 25개입 (약 1.3kg)</p>
-                        <p className="text-xs text-eden-dark">약 37×23×11.5cm</p>
-                      </div>
-                      <span className="text-xl font-bold text-eden-brown">{formatPrice(prices.large)}</span>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                    <FormField
-                      control={form.control}
-                      name="largeBoxQuantity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>수량</FormLabel>
-                          <FormControl>
-                            <div className="flex items-center space-x-2">
-                              <Button 
-                                type="button"
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                className="w-8 h-8 p-0"
-                              >
-                                -
-                              </Button>
-                              <Input
-                                type="number"
-                                min="0"
+
+                    <div className="border border-gray-200 rounded-lg p-6 space-y-4">
+                      <div className="text-center">
+                        <h4 className="font-semibold text-gray-900">한과2호 (대박스)</h4>
+                        <p className="text-2xl font-bold text-eden-brown">{formatPrice(prices.large)}</p>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="largeBoxQuantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>수량</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0" 
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                className="w-20 text-center"
                               />
-                              <Button 
-                                type="button"
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => field.onChange(field.value + 1)}
-                                className="w-8 h-8 p-0"
-                              >
-                                +
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="border border-gray-200 rounded-lg p-6 space-y-4">
+                      <div className="text-center">
+                        <h4 className="font-semibold text-gray-900">보자기 포장</h4>
+                        <p className="text-2xl font-bold text-eden-brown">{formatPrice(prices.wrapping)}</p>
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="wrappingQuantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>수량</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0" 
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
 
-                  {/* Wrapping */}
-                  <FormField
-                    control={form.control}
-                    name="wrappingQuantity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>보자기 포장 수량</FormLabel>
-                        <p className="text-xs text-gray-600 mb-2">개당 +1,000원</p>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <Button 
-                              type="button"
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                              className="w-8 h-8 p-0"
-                            >
-                              -
-                            </Button>
-                            <Input
-                              type="number"
-                              min="0"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              className="w-20 text-center"
-                            />
-                            <Button 
-                              type="button"
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => field.onChange(field.value + 1)}
-                              className="w-8 h-8 p-0"
-                            >
-                              +
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
 
                   {/* Order Summary */}
                   <div className="bg-eden-cream p-6 rounded-lg border-2 border-eden-beige">
