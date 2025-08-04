@@ -1186,11 +1186,11 @@ export default function Admin() {
                       <th className="text-left py-2 px-3 font-medium text-gray-600">고객명</th>
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문일</th>
                       <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">주문가격</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">실제입금</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">할인/미입금</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">원가분석</th>
-                      <th className="text-right py-2 px-3 font-medium text-gray-600">순수익</th>
+                      <th className="text-right py-2 px-3 font-medium text-blue-600 bg-blue-50">매출정보</th>
+                      <th className="text-right py-2 px-3 font-medium text-green-600 bg-green-50">입금정보</th>
+                      <th className="text-right py-2 px-3 font-medium text-red-600 bg-red-50">할인/미입금</th>
+                      <th className="text-right py-2 px-3 font-medium text-purple-600 bg-purple-50">원가분석</th>
+                      <th className="text-right py-2 px-3 font-medium text-emerald-600 bg-emerald-50">순수익</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1243,66 +1243,88 @@ export default function Admin() {
                               )}
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm font-medium text-gray-700">
-                            {formatPrice(order.totalAmount)}
+                          <td className="py-2 px-3 text-right text-sm font-medium bg-blue-50 border-l-2 border-blue-300">
+                            <div className="text-blue-700 font-semibold">
+                              {formatPrice(order.totalAmount)}
+                            </div>
+                            <div className="text-xs text-blue-600 mt-1">
+                              주문금액
+                            </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm font-medium text-green-600">
-                            {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                          <td className="py-2 px-3 text-right text-sm font-medium bg-green-50 border-l-2 border-green-300">
+                            <div className="text-green-700 font-semibold">
+                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                            </div>
+                            <div className="text-xs text-green-600 mt-1">
+                              실제입금액
+                            </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm">
+                          <td className="py-2 px-3 text-right text-sm bg-red-50 border-l-2 border-red-300">
                             {discountAmount > 0 ? (
-                              <span className="text-blue-600 font-medium">
-                                할인 {formatPrice(discountAmount)}
-                              </span>
+                              <div>
+                                <div className="text-blue-700 font-semibold">
+                                  {formatPrice(discountAmount)}
+                                </div>
+                                <div className="text-xs text-blue-600 mt-1">
+                                  할인금액
+                                </div>
+                              </div>
                             ) : unpaidAmount > 0 ? (
-                              <span className="text-red-600 font-medium">
-                                미입금 {formatPrice(unpaidAmount)}
-                              </span>
+                              <div>
+                                <div className="text-red-700 font-semibold">
+                                  {formatPrice(unpaidAmount)}
+                                </div>
+                                <div className="text-xs text-red-600 mt-1">
+                                  미입금액
+                                </div>
+                              </div>
                             ) : (
-                              <span className="text-gray-400">-</span>
+                              <div>
+                                <div className="text-gray-500 font-semibold">-</div>
+                                <div className="text-xs text-gray-400 mt-1">완납</div>
+                              </div>
                             )}
                           </td>
-                          <td className="py-2 px-3 text-right text-xs">
+                          <td className="py-2 px-3 text-right text-xs bg-purple-50 border-l-2 border-purple-300">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="text-gray-600">
-                                  한과1호원가: {formatPrice(smallBoxesCost)}
+                                <div className="text-purple-600">
+                                  한과1호: {formatPrice(smallBoxesCost)}
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="text-gray-600">
-                                  한과2호원가: {formatPrice(largeBoxesCost)}
+                                <div className="text-purple-600">
+                                  한과2호: {formatPrice(largeBoxesCost)}
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="text-gray-600">
-                                  보자기원가: {formatPrice(wrappingCost)}
+                                <div className="text-purple-600">
+                                  보자기: {formatPrice(wrappingCost)}
                                 </div>
                               )}
                               {shippingFee > 0 && (
-                                <div className="text-gray-600">
+                                <div className="text-purple-600">
                                   배송비: {formatPrice(shippingFee)}
                                 </div>
                               )}
-
-                              {unpaidAmount > 0 && (
-                                <div className="text-red-600">
-                                  미입금: {formatPrice(unpaidAmount)}
-                                </div>
-                              )}
-                              <div className="font-medium text-red-600 border-t pt-1">
+                              <div className="font-semibold text-purple-700 border-t border-purple-300 pt-1 mt-2">
                                 총원가: {formatPrice(totalCost)}
                               </div>
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm">
+                          <td className="py-2 px-3 text-right text-sm bg-emerald-50 border-l-2 border-emerald-300">
                             {(() => {
                               // 실제수익 = 주문가격 - 원가 - 배송비 - 할인/미입금
                               const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                               return (
-                                <span className={`font-medium ${actualProfit >= 0 ? "text-purple-600" : "text-red-600"}`}>
-                                  {formatPrice(actualProfit)}
-                                </span>
+                                <div>
+                                  <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                                    {formatPrice(actualProfit)}
+                                  </div>
+                                  <div className="text-xs text-emerald-600 mt-1">
+                                    순수익
+                                  </div>
+                                </div>
                               );
                             })()}
                           </td>
