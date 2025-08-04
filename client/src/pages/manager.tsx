@@ -652,13 +652,23 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 text-center">
                               <div className="flex flex-col items-center gap-2">
                                 {order.sellerShipped ? (
-                                  <div className="text-green-600 font-medium text-xs">
-                                    매니저발송완료
-                                    {order.sellerShippedDate && (
-                                      <div className="text-gray-500 mt-1">
-                                        {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                                      </div>
-                                    )}
+                                  <div className="text-center">
+                                    <div 
+                                      className="text-green-600 font-medium text-xs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                                      onClick={() => updateSellerShippedMutation.mutate({ 
+                                        id: order.id, 
+                                        sellerShipped: false 
+                                      })}
+                                      title="클릭하여 발송 상태 취소"
+                                    >
+                                      매니저발송완료
+                                    </div>
+                                    <div className="text-gray-500 mt-1 text-xs">
+                                      {order.sellerShippedDate ? 
+                                        new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) :
+                                        new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+                                      }
+                                    </div>
                                   </div>
                                 ) : (
                                   <Button

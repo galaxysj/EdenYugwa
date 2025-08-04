@@ -606,10 +606,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const { sellerShipped, sellerShippedDate } = req.body;
       
+      // If setting to shipped and no date provided, use current date
+      const dateToUse = sellerShipped && !sellerShippedDate ? new Date() : 
+                       sellerShippedDate ? new Date(sellerShippedDate) : null;
+      
       const updatedOrder = await storage.updateOrderSellerShipped(
         id, 
         sellerShipped,
-        sellerShippedDate ? new Date(sellerShippedDate) : null
+        dateToUse
       );
       
       if (!updatedOrder) {
