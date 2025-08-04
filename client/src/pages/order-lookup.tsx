@@ -178,70 +178,66 @@ export default function OrderLookup() {
       </div>
 
       <div className="container mx-auto p-6">
-        {/* Search Form */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="font-korean">주문 조회하기</CardTitle>
-            {isAuthenticated && user ? (
+        {/* 로그인된 사용자는 검색 폼 없이 바로 주문 내역 표시 */}
+        {isAuthenticated && user ? (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="font-korean">{user.name}님의 주문 내역</CardTitle>
               <p className="text-green-600 font-medium">
-                {user.name}님의 주문 내역을 자동으로 조회하고 있습니다.
+                등록된 정보({user.phoneNumber})로 주문 내역을 조회했습니다.
               </p>
-            ) : (
+            </CardHeader>
+          </Card>
+        ) : (
+          /* 비로그인 사용자는 검색 폼 표시 */
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="font-korean">주문 조회하기</CardTitle>
               <p className="text-gray-600">주문 시 입력하신 전화번호 또는 이름으로 주문 내역을 조회할 수 있습니다.</p>
-            )}
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>전화번호</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="010-1234-5678"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>전화번호</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="010-1234-5678"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="customerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>주문자 이름</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="홍길동"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="customerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>주문자 이름</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="홍길동"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                {!isAuthenticated && (
                   <div className="text-sm text-gray-500 mt-2">
                     * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
                   </div>
-                )}
-                
-                {isAuthenticated && user && (
-                  <div className="text-sm text-green-600 mt-2">
-                    * 로그인된 계정({user.name}, {user.phoneNumber})의 주문 내역을 조회합니다.
-                  </div>
-                )}
-                
-                {!isAuthenticated && (
+                  
                   <Button
                     type="submit"
                     disabled={isLoading}
@@ -256,29 +252,11 @@ export default function OrderLookup() {
                       </>
                     )}
                   </Button>
-                )}
-                
-                {isAuthenticated && (
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    variant="outline"
-                    className="border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white w-full md:w-auto"
-                  >
-                    {isLoading ? (
-                      "조회 중..."
-                    ) : (
-                      <>
-                        <Search className="mr-2 h-4 w-4" />
-                        다시 조회
-                      </>
-                    )}
-                  </Button>
-                )}
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Orders Results */}
         {hasSearched && (
