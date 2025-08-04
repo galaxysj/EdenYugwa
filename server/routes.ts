@@ -274,6 +274,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get manager orders (confirmed payment orders only)
+  app.get("/api/manager/orders", requireManagerOrAdmin, async (req, res) => {
+    try {
+      const allOrders = await storage.getAllOrders();
+      // 매니저는 입금 확인된 주문만 볼 수 있음
+      const confirmedOrders = allOrders.filter(order => order.paymentStatus === 'confirmed');
+      res.json(confirmedOrders);
+    } catch (error) {
+      console.error("Error fetching manager orders:", error);
+      res.status(500).json({ message: "Failed to fetch manager orders" });
+    }
+  });
+
   // Lookup orders by phone number or name (must come before /api/orders/:id)
   app.get("/api/orders/lookup", async (req, res) => {
     try {
