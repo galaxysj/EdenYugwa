@@ -655,11 +655,11 @@ export default function PublicOrder() {
                 </div>
 
                 {/* Submit Buttons */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <Button 
                     type="submit" 
                     disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                    className="w-full bg-eden-red hover:bg-eden-red/90 text-white text-lg py-6"
+                    className="w-full bg-eden-brown hover:bg-eden-brown/90 text-white text-lg py-6"
                     data-testid="button-submit-order"
                   >
                     {createOrderMutation.isPending ? (
@@ -679,7 +679,7 @@ export default function PublicOrder() {
                     type="submit" 
                     disabled={createOrderMutation.isPending || calculateTotal() === 0}
                     variant="outline"
-                    className="w-full border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white text-lg py-6"
+                    className="w-full border-2 border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white text-lg py-6"
                     data-testid="button-guest-order"
                   >
                     {createOrderMutation.isPending ? (
@@ -695,7 +695,7 @@ export default function PublicOrder() {
                     )}
                   </Button>
                   
-                  <div className="text-center text-sm text-gray-500">
+                  <div className="text-center text-sm text-gray-500 mt-2">
                     회원가입 없이 주문할 수 있습니다. 주문 비밀번호를 잊지 마세요!
                   </div>
                 </div>
