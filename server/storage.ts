@@ -455,16 +455,11 @@ export class DatabaseStorage implements IStorage {
         sellerShipped: currentOrder?.sellerShipped
       });
       
+      // 판매자 발송 상태와 날짜만 업데이트, 다른 상태는 변경하지 않음
       const updateData: any = { 
         sellerShipped,
         sellerShippedDate: sellerShipped ? sellerShippedDate : null
       };
-      
-      // If seller shipped is true, also update status to delivered and set delivered date
-      if (sellerShipped) {
-        updateData.status = 'delivered';
-        updateData.deliveredDate = sellerShippedDate;
-      }
       
       console.log(`[판매자발송] 주문 ${id} 업데이트 데이터:`, updateData);
       
