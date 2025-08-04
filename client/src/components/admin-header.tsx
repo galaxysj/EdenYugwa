@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download } from "lucide-react";
 
 interface AdminHeaderProps {
   handleExcelDownload?: () => void;
@@ -58,8 +58,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
           <div className="flex items-center justify-between">
             {/* 메인 메뉴 */}
             <div className="flex items-center space-x-1">
-              {/* 관리자 페이지 메뉴 */}
-              {location === '/admin' && setActiveTab && (
+              {setActiveTab && (
                 <>
                   <Button 
                     onClick={() => setActiveTab('revenue')}
@@ -79,7 +78,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     variant="ghost" 
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'customers'
+                      activeTab === 'customers' 
                         ? 'bg-blue-50 text-blue-700 border border-blue-200' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
@@ -92,7 +91,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     variant="ghost" 
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'users'
+                      activeTab === 'users' 
                         ? 'bg-blue-50 text-blue-700 border border-blue-200' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
@@ -101,50 +100,6 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     회원관리
                   </Button>
                 </>
-              )}
-
-              {/* 매니저 페이지 메뉴 */}
-              {location === '/manager' && setActiveTab && (
-                <>
-                  <Button 
-                    onClick={() => setActiveTab('orders')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'orders'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Package className="h-4 w-4 mr-2" />
-                    주문관리
-                  </Button>
-                  <Button 
-                    onClick={() => setActiveTab('customers')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'customers'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    고객관리
-                  </Button>
-                </>
-              )}
-
-              {/* 설정 페이지 메뉴 */}
-              {location === '/admin-settings' && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-md font-medium"
-                >
-                  <Cog className="h-4 w-4 mr-2" />
-                  설정
-                </Button>
               )}
             </div>
 

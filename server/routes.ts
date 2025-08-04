@@ -132,8 +132,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users.map(user => ({
         id: user.id,
         username: user.username,
-        name: user.name,
-        phoneNumber: user.phoneNumber,
         role: user.role,
         isActive: user.isActive,
         createdAt: user.createdAt,
@@ -213,41 +211,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Change manager user account (admin only)
-  app.patch("/api/users/:id/change-user", requireAdmin, async (req, res) => {
-    try {
-      const managerId = parseInt(req.params.id);
-      const { newUserId } = req.body;
-      
-      if (!newUserId) {
-        return res.status(400).json({ message: "새로운 사용자 ID가 필요합니다" });
-      }
-
-      // Get the current manager
-      const currentManager = await userService.getUserById(managerId);
-      if (!currentManager || currentManager.role !== 'manager') {
-        return res.status(404).json({ message: "매니저를 찾을 수 없습니다" });
-      }
-
-      // Get the target user
-      const targetUser = await userService.getUserById(newUserId);
-      if (!targetUser) {
-        return res.status(404).json({ message: "대상 사용자를 찾을 수 없습니다" });
-      }
-
-      // Update the current manager to regular user
-      await userService.updateUser(managerId, { role: 'user' });
-
-      // Update the target user to manager
-      const updatedManager = await userService.updateUser(newUserId, { role: 'manager' });
-
-      res.json(updatedManager);
-    } catch (error) {
-      console.error("Error changing manager user:", error);
-      res.status(500).json({ message: "매니저 사용자 변경에 실패했습니다" });
-    }
-  });
-
   // Get user's own orders (authenticated users)
   app.get("/api/my-orders", requireAuth, async (req, res) => {
     try {
@@ -271,21 +234,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(orders);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch orders" });
-    }
-  });
-
-  // Get manager orders (all orders like admin)
-  app.get("/api/manager/orders", requireManagerOrAdmin, async (req, res) => {
-    try {
-      const allOrders = await storage.getAllOrders();
-      // 매니저는 발송주문(scheduled) 또는 발송완료(delivered) 상태의 주문만 볼 수 있음
-      const filteredOrders = allOrders.filter(order => 
-        order.status === 'scheduled' || order.status === 'delivered'
-      );
-      res.json(filteredOrders);
-    } catch (error) {
-      console.error("Error fetching manager orders:", error);
-      res.status(500).json({ message: "Failed to fetch manager orders" });
     }
   });
 
@@ -460,28 +408,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update payment status (manager and admin only)
-  app.patch("/api/orders/:id/payment-status", requireManagerOrAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { paymentStatus } = req.body;
-      
-      if (!paymentStatus) {
-        return res.status(400).json({ message: "Payment status is required" });
-      }
-      
-      const updatedOrder = await storage.updateOrderPaymentStatus(id, paymentStatus);
-      
-      if (!updatedOrder) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      
-      res.json(updatedOrder);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to update payment status" });
-    }
-  });
-
   // Update order scheduled date (admin and manager)
   app.patch("/api/orders/:id/scheduled-date", requireManagerOrAdmin, async (req, res) => {
     try {
@@ -562,8 +488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const orderId of orderIds) {
         try {
           console.log(`Updating order ${orderId} to seller shipped...`);
-          const currentDate = new Date();
-          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, currentDate);
+          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, new Date());
           if (updatedOrder) {
             results.push(updatedOrder);
             console.log(`Successfully updated order ${orderId}`);
@@ -573,7 +498,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error);
-          console.error(`Error details:`, error);
           errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
         }
       }

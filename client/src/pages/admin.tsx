@@ -642,8 +642,6 @@ export default function Admin() {
     },
   });
 
-
-
   // Toggle selection for trash items
   const toggleTrashSelection = (orderId: number) => {
     const newSelection = new Set(selectedTrashItems);
@@ -1678,7 +1676,34 @@ export default function Admin() {
 
     return (
       <>
-
+        {/* Bulk Shipping Actions */}
+        {selectedShippingItems.size > 0 && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-blue-700">
+                {selectedShippingItems.size}개 주문이 발송용으로 선택되었습니다
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setSelectedShippingItems(new Set())}
+                >
+                  선택 해제
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={handleBulkSellerShipped}
+                  disabled={bulkSellerShippedMutation.isPending}
+                >
+                  <Truck className="h-4 w-4 mr-1" />
+                  선택항목 발송완료 ({selectedShippingItems.size}개)
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
@@ -1708,11 +1733,40 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">메모</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>판매자발송</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedShippingItems.size === ordersList.filter(order => !order.sellerShipped).length && ordersList.filter(order => !order.sellerShipped).length > 0}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            selectAllShipping(ordersList);
+                          } else {
+                            setSelectedShippingItems(new Set());
+                          }
+                        }}
+                        className="rounded border-blue-300"
+                        title="발송용 전체 선택"
+                      />
+                      {selectedShippingItems.size > 0 && (
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 text-xs px-1 py-0.5"
+                          onClick={handleBulkSellerShipped}
+                          disabled={bulkSellerShippedMutation.isPending}
+                          title={`선택된 ${selectedShippingItems.size}개 주문 일괄 발송`}
+                        >
+                          일괄발송
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
@@ -1853,9 +1907,6 @@ export default function Admin() {
                       </Dialog>
                     </td>
                     <td className="py-2 px-2">
-                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
-                    </td>
-                    <td className="py-2 px-2">
                       <div className="text-xs space-y-1">
                         <div>
                           <span className="text-gray-500">매출:</span>
@@ -1988,7 +2039,7 @@ export default function Admin() {
                       <div className="flex flex-col items-center gap-2">
                         {order.sellerShipped ? (
                           <div className="text-green-600 font-medium text-xs">
-                            매니저발송완료
+                            판매자발송완료
                             {order.sellerShippedDate && (
                               <div 
                                 className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
@@ -2005,7 +2056,22 @@ export default function Admin() {
                             )}
                           </div>
                         ) : (
-                          <div className="text-gray-400 text-xs">매니저 미처리</div>
+                          <>
+                            <input
+                              type="checkbox"
+                              checked={selectedShippingItems.has(order.id)}
+                              onChange={() => toggleShippingSelection(order.id)}
+                              className="rounded border-blue-300"
+                              title="발송용 선택"
+                            />
+                            <Button
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
+                              onClick={() => handleSellerShipped(order.id)}
+                            >
+                              발송하기
+                            </Button>
+                          </>
                         )}
                       </div>
                     </td>
@@ -2439,9 +2505,15 @@ export default function Admin() {
 
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      return api.patch('/api/orders/seller-shipped', { orderIds });
+      const results = await Promise.all(
+        orderIds.map(orderId => 
+          api.orders.updateSellerShipped(orderId, true)
+            .then(() => api.orders.updateStatus(orderId, 'delivered'))
+        )
+      );
+      return results;
     },
-    onSuccess: (data, orderIds) => {
+    onSuccess: (results, orderIds) => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setSelectedShippingItems(new Set());
       toast({
@@ -2449,10 +2521,10 @@ export default function Admin() {
         description: `${orderIds.length}개 주문이 발송완료로 변경되었습니다.`,
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
         title: "일괄 발송 실패",
-        description: error.message || "일괄 발송 처리 중 오류가 발생했습니다.",
+        description: "일괄 발송 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },

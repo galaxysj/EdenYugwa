@@ -123,6 +123,4 @@ Using Drizzle ORM with PostgreSQL:
 
 **Secure Order Management System**: Implemented comprehensive security features including order password protection for non-logged-in orders (minimum 4 characters required), user-specific order filtering for logged-in users ensuring customers can only view and modify their own orders, password verification system for non-authenticated order modifications, and role-based access control preventing unauthorized order modifications. The system now supports both authenticated and non-authenticated order placement with appropriate security measures for each scenario. Updated August 4, 2025.
 
-**Enhanced User Management Interface**: Modified manager user change functionality to display all registered users (admin, manager, and general users) instead of filtering only general users. The selection dialog now shows user roles for clear identification and allows promotion of any registered user to manager role. Updated August 4, 2025.
-
 The application is designed for scalability with clear separation of concerns and ready for production deployment with database persistence and SMS integration.
