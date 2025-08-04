@@ -285,8 +285,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if ((req as any).user?.id) {
         (validatedData as any).userId = (req as any).user.id;
         (validatedData as any).orderPassword = null; // 로그인 사용자는 비밀번호 불필요
-      } else if (!(validatedData as any).orderPassword) {
-        return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호가 필요합니다." });
+      } else {
+        // 비로그인 사용자: orderPassword 필수
+        if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
+          return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)가 필요합니다." });
+        }
+        (validatedData as any).orderPassword = req.body.orderPassword;
       }
       
       // Automatically register or update customer
