@@ -574,9 +574,6 @@ export default function ManagerDashboard() {
                             </td>
                             <td className="p-3">
                               <div className="font-medium">{order.customerName}</div>
-                              {order.paymentStatus !== 'confirmed' && (
-                                <div className="text-xs text-red-600 font-bold">미입금</div>
-                              )}
                             </td>
                             <td className="p-3">
                               {new Date(order.createdAt).toLocaleDateString('ko-KR')}
