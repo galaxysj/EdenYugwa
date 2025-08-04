@@ -33,9 +33,6 @@ const editOrderSchema = insertOrderSchema.pick({
   largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
   wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
   orderPassword: z.string().optional(), // 비로그인 사용자를 위한 비밀번호
-}).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
-  message: "최소 1개 이상의 상품을 선택해주세요",
-  path: ["smallBoxQuantity"],
 });
 
 type EditOrderFormData = z.infer<typeof editOrderSchema>;
