@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Save, Settings, Phone, Building, User, Users, Plus, Edit, Trash2, Shield } from "lucide-react";
+import { Save, Settings, Phone, Building, User, Users, Crown, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { AdminSettings } from "@shared/schema";
+import type { AdminSettings, User as UserType } from "@shared/schema";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
@@ -30,6 +32,11 @@ export default function AdminSettingsPage() {
 
   const { data: adminSettings, isLoading } = useQuery<AdminSettings>({
     queryKey: ['/api/admin-settings'],
+    retry: false,
+  });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery<UserType[]>({
+    queryKey: ['/api/users'],
     retry: false,
   });
 
@@ -90,6 +97,29 @@ export default function AdminSettingsPage() {
     updateMutation.mutate(data);
   };
 
+  const updateUserRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: string }) => 
+      apiRequest('PATCH', `/api/users/${userId}/role`, { role }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      toast({
+        title: "권한 변경 완료",
+        description: "사용자 권한이 성공적으로 변경되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "권한 변경 실패",
+        description: error.message || "권한 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRoleChange = (userId: number, newRole: string) => {
+    updateUserRoleMutation.mutate({ userId, role: newRole });
+  };
+
 
 
   if (isLoading) {
@@ -109,35 +139,7 @@ export default function AdminSettingsPage() {
         <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
       </div>
 
-      {/* 시스템 정보 개요 */}
-      <Card className="bg-blue-50 border-blue-200 mb-6">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-blue-800">
-            <Shield className="h-5 w-5" />
-            현재 관리자 정보
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {adminSettings ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-blue-900">{adminSettings.adminName}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-blue-600" />
-                <span className="text-blue-700">{adminSettings.adminPhone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Building className="h-4 w-4 text-blue-600" />
-                <span className="text-blue-700">{adminSettings.businessName}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="text-blue-600">정보를 불러오는 중...</div>
-          )}
-        </CardContent>
-      </Card>
+
 
       <Card>
         <CardHeader>
@@ -291,7 +293,90 @@ export default function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-
+      {/* 사용자 권한 관리 */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            사용자 권한 관리
+          </CardTitle>
+          <CardDescription>
+            회원가입한 사용자들의 권한을 관리합니다. 관리자 또는 매니저 권한을 부여할 수 있습니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {usersLoading ? (
+            <div className="text-center py-8 text-gray-500">사용자 목록을 불러오는 중...</div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">등록된 사용자가 없습니다.</div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>사용자명</TableHead>
+                    <TableHead>이름</TableHead>
+                    <TableHead>전화번호</TableHead>
+                    <TableHead>현재 권한</TableHead>
+                    <TableHead>권한 변경</TableHead>
+                    <TableHead>가입일</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.id}</TableCell>
+                      <TableCell>{user.username}</TableCell>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.phoneNumber}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {user.role === 'admin' ? (
+                            <>
+                              <Crown className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">관리자</span>
+                            </>
+                          ) : user.role === 'manager' ? (
+                            <>
+                              <UserCheck className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">매니저</span>
+                            </>
+                          ) : (
+                            <>
+                              <User className="h-4 w-4 text-gray-600" />
+                              <span className="text-gray-700">일반 사용자</span>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={user.role}
+                          onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                          disabled={updateUserRoleMutation.isPending}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">일반 사용자</SelectItem>
+                            <SelectItem value="manager">매니저</SelectItem>
+                            <SelectItem value="admin">관리자</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(user.createdAt).toLocaleDateString('ko-KR')}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* SMS 발송 안내 */}
       <Card className="mt-6">

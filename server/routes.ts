@@ -190,6 +190,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user role (admin only)
+  app.patch("/api/users/:id/role", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (!role || !['user', 'manager', 'admin'].includes(role)) {
+        return res.status(400).json({ message: "유효한 권한을 입력해주세요" });
+      }
+
+      const user = await userService.updateUser(id, { role });
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "사용자 권한 변경에 실패했습니다" });
+    }
+  });
+
   // Get user's own orders (authenticated users)
   app.get("/api/my-orders", requireAuth, async (req, res) => {
     try {
