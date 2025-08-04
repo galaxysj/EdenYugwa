@@ -531,20 +531,18 @@ export default function ManagerDashboard() {
                               className="rounded"
                             />
                           </th>
-                          <th className="text-left p-3 font-medium text-gray-700">주문번호</th>
-                          <th className="text-left p-3 font-medium text-gray-700">고객정보</th>
-                          <th className="text-left p-3 font-medium text-gray-700">주문일</th>
-                          <th className="text-left p-3 font-medium text-gray-700">제품</th>
-                          <th className="text-left p-3 font-medium text-gray-700">연락처</th>
-                          <th className="text-left p-3 font-medium text-gray-700">배송지</th>
-                          <th className="text-left p-3 font-medium text-gray-700">메모</th>
-                          <th className="text-left p-3 font-medium text-gray-700">발송예약날짜</th>
-                          <th className="text-left p-3 font-medium text-gray-700">입금상태</th>
-                          <th className="text-left p-3 font-medium text-gray-700">주문상태</th>
-                          <th className="text-left p-3 font-medium text-gray-700">입금확인</th>
-                          <th className="text-left p-3 font-medium text-gray-700">발송상태</th>
-                          <th className="text-left p-3 font-medium text-gray-700">판매자발송</th>
-                          <th className="text-left p-3 font-medium text-gray-700">관리</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">발송예약일</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금자</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">제품</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">메모</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">관리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -568,125 +566,161 @@ export default function ManagerDashboard() {
                                 className="rounded"
                               />
                             </td>
-                            <td className="p-3">
-                              <div className="font-medium">{order.orderNumber}</div>
+                            <td className="py-2 px-2">
+                              <div className="font-medium text-xs">{order.orderNumber}</div>
                               <div className="text-xs text-gray-500">
                                 {new Date(order.createdAt).toLocaleDateString('ko-KR')}
                               </div>
                             </td>
-                            <td className="p-3">
-                              <div className="font-medium">{order.customerName}</div>
+                            <td className="py-2 px-2">
+                              {order.scheduledDate ? (
+                                <div 
+                                  className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                  title="클릭하여 예약발송일 수정"
+                                >
+                                  {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400">-</span>
+                              )}
                             </td>
-                            <td className="p-3">
-                              {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                            <td className="py-2 px-2">
+                              <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                              {order.recipientName && order.recipientName !== order.customerName && (
+                                <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                              )}
                             </td>
-                            <td className="p-3">
-                              <div className="space-y-1">
-                                {order.smallBoxQuantity > 0 && <div>한과1호×{order.smallBoxQuantity}</div>}
-                                {order.largeBoxQuantity > 0 && <div>한과2호×{order.largeBoxQuantity}</div>}
-                                {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}</div>}
-                              </div>
-                            </td>
-                            <td className="p-3">{order.customerPhone}</td>
-                            <td className="p-3">
-                              <div className="max-w-xs">
-                                <div className="truncate">{order.address1} {order.address2}</div>
-                                {checkRemoteArea(order.address1) && (
-                                  <div className="text-xs text-red-600 font-bold">배송비추가</div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <div className="max-w-xs">
-                                <div className="text-xs text-gray-600 truncate">{order.memo || '-'}</div>
-                              </div>
-                            </td>
-                            <td className="p-3">
-                              <div className="text-xs">
-                                {order.scheduledDate ? (
-                                  <div className="text-blue-600 font-medium">
-                                    {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { 
-                                      month: '2-digit', 
-                                      day: '2-digit' 
-                                    })}
-                                  </div>
+                            <td className="py-2 px-2">
+                              <div className="font-medium text-xs">
+                                {order.isDifferentDepositor && order.depositorName ? (
+                                  <span className="text-red-600">{order.depositorName}</span>
                                 ) : (
-                                  <div className="text-gray-400">-</div>
+                                  <span className="text-gray-400">-</span>
                                 )}
                               </div>
                             </td>
-                            <td className="p-3">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                order.paymentStatus === 'confirmed' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : order.paymentStatus === 'partial'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : order.paymentStatus === 'refunded'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {order.paymentStatus === 'confirmed' ? '입금완료' :
-                                 order.paymentStatus === 'partial' ? '부분결제' :
-                                 order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
-                              </span>
+                            <td className="py-2 px-2 min-w-[80px]">
+                              <div className="text-xs space-y-1">
+                                {order.smallBoxQuantity > 0 && (
+                                  <div>한과1호×{order.smallBoxQuantity}개</div>
+                                )}
+                                {order.largeBoxQuantity > 0 && (
+                                  <div>한과2호×{order.largeBoxQuantity}개</div>
+                                )}
+                                {order.wrappingQuantity > 0 && (
+                                  <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>
+                                )}
+                              </div>
                             </td>
-                            <td className="p-3">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                order.status === 'delivered' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : order.status === 'scheduled'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {statusLabels[order.status as keyof typeof statusLabels]}
-                              </span>
+                            <td className="py-2 px-2">
+                              <div className="text-xs text-gray-900">{order.customerPhone}</div>
                             </td>
-                            <td className="p-3">
+                            <td className="py-2 px-2 max-w-xs">
+                              <div>
+                                <div 
+                                  className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
+                                  title="클릭하여 전체 주소 보기"
+                                >
+                                  {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
+                                </div>
+                                {checkRemoteArea(order.address1) && (
+                                  <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2">
+                              <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
+                            </td>
+                            <td className="py-2 px-2">
                               <Select
                                 value={order.paymentStatus}
                                 onValueChange={(value) => updatePaymentStatusMutation.mutate({ id: order.id, paymentStatus: value })}
                               >
-                                <SelectTrigger className="w-24 h-8 text-xs">
+                                <SelectTrigger className="w-20 h-7 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="pending">입금대기</SelectItem>
-                                  <SelectItem value="confirmed">입금완료</SelectItem>
-                                  <SelectItem value="partial">부분결제</SelectItem>
-                                  <SelectItem value="refunded">환불</SelectItem>
+                                  <SelectItem value="pending">
+                                    <div className="flex items-center space-x-1">
+                                      <span>입금대기</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="confirmed">
+                                    <div className="flex items-center space-x-1">
+                                      <span>입금완료</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="partial">
+                                    <div className="flex items-center space-x-1">
+                                      <span>부분결제</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="refunded">
+                                    <div className="flex items-center space-x-1">
+                                      <span>환불</span>
+                                    </div>
+                                  </SelectItem>
                                 </SelectContent>
                               </Select>
                             </td>
-                            <td className="p-3">
-                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                order.sellerShipped 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                                {order.sellerShipped ? '발송완료' : '발송대기'}
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <Button
-                                size="sm"
-                                variant={order.sellerShipped ? "default" : "outline"}
-                                onClick={() => updateSellerShippedMutation.mutate({ 
-                                  id: order.id, 
-                                  sellerShipped: !order.sellerShipped 
-                                })}
-                                className="text-xs px-2 py-1 h-7"
+                            <td className="py-2 px-2">
+                              <Select
+                                value={order.status}
+                                onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                               >
-                                {order.sellerShipped ? "발송완료" : "발송처리"}
-                              </Button>
+                                <SelectTrigger className="w-20 h-7 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">
+                                    <div className="flex items-center space-x-1">
+                                      <span>주문접수</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="scheduled">
+                                    <div className="flex items-center space-x-1">
+                                      <span>발송주문</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="delivered">
+                                    <div className="flex items-center space-x-1">
+                                      <span>발송완료</span>
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
                             </td>
-                            <td className="p-3">
-                              <div className="flex gap-1">
-                                <SmsDialog order={order}>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline" 
+                            <td className="py-2 px-2 text-center">
+                              <div className="flex flex-col items-center gap-2">
+                                {order.sellerShipped ? (
+                                  <div className="text-green-600 font-medium text-xs">
+                                    매니저발송완료
+                                    {order.sellerShippedDate && (
+                                      <div className="text-gray-500 mt-1">
+                                        {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => updateSellerShippedMutation.mutate({ 
+                                      id: order.id, 
+                                      sellerShipped: true 
+                                    })}
                                     className="text-xs px-2 py-1 h-7"
                                   >
+                                    발송처리
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="flex flex-col gap-1">
+                                <SmsDialog order={order}>
+                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                    <MessageSquare className="h-3 w-3" />
                                     SMS
                                   </Button>
                                 </SmsDialog>
@@ -695,7 +729,7 @@ export default function ManagerDashboard() {
                                   variant="outline" 
                                   className="text-xs px-2 py-1 h-7"
                                 >
-                                  상세 관리
+                                  수정
                                 </Button>
                               </div>
                             </td>
