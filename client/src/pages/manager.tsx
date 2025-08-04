@@ -187,6 +187,7 @@ function Manager() {
   const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all'); // Manager can see all payment statuses
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+  const [sellerShippedFilter, setSellerShippedFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
@@ -266,6 +267,15 @@ function Manager() {
     // Order status filter
     if (orderStatusFilter !== 'all') {
       filtered = filtered.filter(order => order.status === orderStatusFilter);
+    }
+
+    // Seller shipped filter
+    if (sellerShippedFilter !== 'all') {
+      if (sellerShippedFilter === 'shipped') {
+        filtered = filtered.filter(order => order.sellerShippedDate);
+      } else if (sellerShippedFilter === 'not_shipped') {
+        filtered = filtered.filter(order => !order.sellerShippedDate);
+      }
     }
 
     return filtered;
@@ -568,15 +578,16 @@ function Manager() {
     setOrderStartDate('');
     setOrderEndDate('');
     setCustomerNameFilter('');
-    setPaymentStatusFilter('confirmed'); // Manager always sees confirmed payments only
+    setPaymentStatusFilter('all'); // Manager can see all payment statuses
     setOrderStatusFilter('all');
+    setSellerShippedFilter('all');
     setSortOrder('latest');
   };
 
   // Render filter UI
   const renderOrderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
         {/* Date Filter - Simplified */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
@@ -649,6 +660,35 @@ function Manager() {
             <option value="confirmed">입금완료</option>
             <option value="partial">부분결제</option>
             <option value="refunded">환불</option>
+          </select>
+        </div>
+
+        {/* Order Status Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
+          <select
+            value={orderStatusFilter}
+            onChange={(e) => setOrderStatusFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          >
+            <option value="all">전체</option>
+            <option value="pending">주문접수</option>
+            <option value="scheduled">발송주문</option>
+            <option value="delivered">발송완료</option>
+          </select>
+        </div>
+
+        {/* Seller Shipped Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">판매자발송</label>
+          <select
+            value={sellerShippedFilter}
+            onChange={(e) => setSellerShippedFilter(e.target.value)}
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
+          >
+            <option value="all">전체</option>
+            <option value="shipped">발송완료</option>
+            <option value="not_shipped">발송대기</option>
           </select>
         </div>
 
