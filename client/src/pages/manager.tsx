@@ -478,7 +478,7 @@ export default function ManagerDashboard() {
                           <SelectItem value="all">전체</SelectItem>
                           <SelectItem value="pending">주문접수</SelectItem>
                           <SelectItem value="scheduled">발송주문</SelectItem>
-                          <SelectItem value="delivered">발송완료</SelectItem>
+                          <SelectItem value="delivered">판매자발송</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
