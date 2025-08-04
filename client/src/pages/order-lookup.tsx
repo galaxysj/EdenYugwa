@@ -148,6 +148,11 @@ export default function OrderLookup() {
     return phone;
   };
 
+  // 가격 마스킹 함수
+  const maskPrice = () => {
+    return "***원";
+  };
+
 
 
   return (
@@ -362,18 +367,18 @@ export default function OrderLookup() {
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  보자기 수량 × {order.wrappingQuantity}개 (+{(order.wrappingQuantity * 1000).toLocaleString()}원)
+                                  보자기 수량 × {order.wrappingQuantity}개 (+{maskPrice()})
                                 </div>
                               )}
                               {order.shippingFee > 0 && (
                                 <div className="text-gray-600">
-                                  배송비: +{order.shippingFee.toLocaleString()}원
+                                  배송비: +{maskPrice()}
                                 </div>
                               )}
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-eden-brown">
-                                {formatPrice(order.totalAmount)}
+                                {maskPrice()}
                               </div>
                             </div>
                           </div>
