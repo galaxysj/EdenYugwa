@@ -264,7 +264,38 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
 
-
+        {/* 매니저 정보 개요 */}
+        <Card className="bg-green-50 border-green-200">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-green-800">
+              <Users className="h-5 w-5" />
+              등록된 매니저
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {managersLoading ? (
+              <div className="text-green-600">매니저 목록을 불러오는 중...</div>
+            ) : managers.length === 0 ? (
+              <div className="text-green-600">등록된 매니저가 없습니다.</div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-green-800">
+                    총 {managers.length}명의 매니저
+                  </span>
+                </div>
+                <div className="space-y-1 max-h-20 overflow-y-auto">
+                  {managers.map((manager) => (
+                    <div key={manager.id} className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-sm text-green-700">{manager.username}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
