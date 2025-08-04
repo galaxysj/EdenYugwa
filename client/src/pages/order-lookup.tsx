@@ -544,13 +544,18 @@ export default function OrderLookup() {
 
                       {/* Action Buttons */}
                       <div className="flex justify-end space-x-2 pt-4 border-t">
-                        {order.status === 'pending' && order.paymentStatus === 'pending' && (
+                        {isAuthenticated && order.status === 'pending' && order.paymentStatus === 'pending' && (
                           <Link href={`/order-edit/${order.id}`}>
                             <Button variant="outline" size="sm">
                               <Edit className="mr-2 h-4 w-4" />
                               주문 수정
                             </Button>
                           </Link>
+                        )}
+                        {!isAuthenticated && order.status === 'pending' && order.paymentStatus === 'pending' && (
+                          <div className="text-sm text-gray-500 italic">
+                            주문 수정은 로그인 후 가능합니다
+                          </div>
                         )}
                       </div>
                     </CardContent>

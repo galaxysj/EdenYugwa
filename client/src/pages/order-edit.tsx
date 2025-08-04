@@ -80,9 +80,15 @@ export default function OrderEdit() {
           return;
         }
 
-        // 비로그인 사용자이고 주문에 비밀번호가 있으면 비밀번호 입력 필요
-        if (!isAuthenticated && orderData.orderPassword) {
-          setNeedsPassword(true);
+        // 비로그인 사용자는 주문 수정 불가
+        if (!isAuthenticated) {
+          toast({
+            title: "수정 불가",
+            description: "로그인 후에만 주문을 수정할 수 있습니다.",
+            variant: "destructive",
+          });
+          setLocation('/order-lookup');
+          return;
         }
 
         // Set form values
