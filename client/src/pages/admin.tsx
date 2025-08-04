@@ -2743,14 +2743,24 @@ export default function Admin() {
                 <DollarSign className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">매출관리</span>
               </Button>
-              <Button 
-                onClick={() => setShowCustomerManagement(true)}
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${showCustomerManagement ? 'bg-white/20' : ''}`}
-              >
-                <Users className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">고객관리</span>
-              </Button>
+              <Link href="/user-management">
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+                >
+                  <Users className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">회원관리</span>
+                </Button>
+              </Link>
+              <Link href="/customer-management">
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+                >
+                  <Users className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">고객관리</span>
+                </Button>
+              </Link>
               <Link href="/admin-settings">
                 <Button 
                   variant="ghost" 
@@ -2864,7 +2874,7 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-10">
+                <TabsList className="grid w-full grid-cols-8">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -2876,14 +2886,6 @@ export default function Admin() {
                   <TabsTrigger value="revenue" className="text-purple-600">
                     <DollarSign className="h-4 w-4 mr-1" />
                     매출관리
-                  </TabsTrigger>
-                  <TabsTrigger value="users" className="text-blue-600">
-                    <Users className="h-4 w-4 mr-1" />
-                    회원관리
-                  </TabsTrigger>
-                  <TabsTrigger value="customers" className="text-green-600">
-                    <Users className="h-4 w-4 mr-1" />
-                    고객관리
                   </TabsTrigger>
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
@@ -3121,13 +3123,7 @@ export default function Admin() {
                   {renderRevenueReport()}
                 </TabsContent>
                 
-                <TabsContent value="users" className="mt-6">
-                  <UserManagement />
-                </TabsContent>
 
-                <TabsContent value="customers" className="mt-6">
-                  <CustomerManagement />
-                </TabsContent>
 
                 <TabsContent value="trash" className="mt-6">
                   {isLoadingTrash ? (
