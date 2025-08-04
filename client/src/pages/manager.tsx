@@ -499,8 +499,10 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -583,6 +585,19 @@ export default function ManagerDashboard() {
                                 </div>
                                 {checkRemoteArea(order.address1) && (
                                   <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="text-xs">
+                                {order.paymentStatus === 'confirmed' ? (
+                                  <span className="text-green-600 font-medium">입금완료</span>
+                                ) : order.paymentStatus === 'partial' ? (
+                                  <span className="text-yellow-600 font-medium">부분결제</span>
+                                ) : order.paymentStatus === 'refunded' ? (
+                                  <span className="text-red-600 font-medium">환불</span>
+                                ) : (
+                                  <span className="text-red-600 font-medium">미입금</span>
                                 )}
                               </div>
                             </td>
