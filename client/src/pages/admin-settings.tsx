@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { AdminSettings, User as UserType } from "@shared/schema";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
@@ -42,6 +43,11 @@ export default function AdminSettingsPage() {
 
   // Filter to show only admin and manager users
   const users = allUsers.filter(user => user.role === 'admin' || user.role === 'manager');
+
+  // Manager username editing state
+  const [editManagerDialogOpen, setEditManagerDialogOpen] = React.useState(false);
+  const [editingManager, setEditingManager] = React.useState<UserType | null>(null);
+  const [selectedUserId, setSelectedUserId] = React.useState<string>("");
 
 
 
@@ -121,6 +127,49 @@ export default function AdminSettingsPage() {
 
   const handleRoleChange = (userId: number, newRole: string) => {
     updateUserRoleMutation.mutate({ userId, role: newRole });
+  };
+
+  const handleEditManagerUsername = (manager: UserType) => {
+    setEditingManager(manager);
+    setSelectedUserId(manager.id.toString());
+    setEditManagerDialogOpen(true);
+  };
+
+  const updateManagerUsernameMutation = useMutation({
+    mutationFn: ({ managerId, newUserId }: { managerId: number; newUserId: number }) => 
+      apiRequest('PATCH', `/api/users/${managerId}/change-user`, { newUserId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setEditManagerDialogOpen(false);
+      setEditingManager(null);
+      setSelectedUserId("");
+      toast({
+        title: "매니저 정보 변경 완료",
+        description: "매니저의 사용자 정보가 성공적으로 변경되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "매니저 정보 변경 실패",
+        description: error.message || "매니저 정보 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveManagerUsername = () => {
+    if (!editingManager || !selectedUserId) return;
+    
+    const newUserId = parseInt(selectedUserId);
+    if (newUserId === editingManager.id) {
+      setEditManagerDialogOpen(false);
+      return;
+    }
+
+    updateManagerUsernameMutation.mutate({ 
+      managerId: editingManager.id, 
+      newUserId 
+    });
   };
 
 
@@ -354,20 +403,32 @@ export default function AdminSettingsPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={user.role}
-                          onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
-                          disabled={updateUserRoleMutation.isPending}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="user">일반 사용자</SelectItem>
-                            <SelectItem value="manager">매니저</SelectItem>
-                            <SelectItem value="admin">관리자</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={user.role}
+                            onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                            disabled={updateUserRoleMutation.isPending}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">일반 사용자</SelectItem>
+                              <SelectItem value="manager">매니저</SelectItem>
+                              <SelectItem value="admin">관리자</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {user.role === 'manager' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditManagerUsername(user)}
+                              disabled={updateUserRoleMutation.isPending}
+                            >
+                              수정
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {new Date(user.createdAt).toLocaleDateString('ko-KR')}
@@ -380,6 +441,51 @@ export default function AdminSettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 매니저 사용자명 수정 다이얼로그 */}
+      <Dialog open={editManagerDialogOpen} onOpenChange={setEditManagerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>매니저 사용자 정보 변경</DialogTitle>
+            <DialogDescription>
+              매니저 "{editingManager?.username}"의 사용자 정보를 다른 회원가입자로 변경합니다.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">변경할 사용자 선택</label>
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger className="w-full mt-1">
+                  <SelectValue placeholder="사용자를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allUsers.map((user) => (
+                    <SelectItem key={user.id} value={user.id.toString()}>
+                      {user.username} - {user.name} ({user.phoneNumber})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setEditManagerDialogOpen(false)}
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={handleSaveManagerUsername}
+                disabled={!selectedUserId || updateManagerUsernameMutation.isPending}
+              >
+                {updateManagerUsernameMutation.isPending ? "변경 중..." : "변경"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* SMS 발송 안내 */}
       <Card className="mt-6">
