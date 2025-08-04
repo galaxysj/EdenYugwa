@@ -2785,7 +2785,7 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-8">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -2793,10 +2793,6 @@ export default function Admin() {
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
                   <TabsTrigger value="refunded" className="text-red-600">
                     환불내역 ({refundedOrders.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="revenue" className="text-purple-600">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    매출관리
                   </TabsTrigger>
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
@@ -3030,9 +3026,7 @@ export default function Admin() {
                   )}
                 </TabsContent>
                 
-                <TabsContent value="revenue" className="mt-6">
-                  {renderRevenueReport()}
-                </TabsContent>
+
                 
                 <TabsContent value="customers" className="mt-6">
                   <CustomerManagement />
