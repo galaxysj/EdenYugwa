@@ -322,6 +322,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertOrderSchema.parse(req.body);
       
+      console.log("주문 생성 전 validatedData.userId:", validatedData.userId);
+      
       // Automatically register or update customer
       await storage.autoRegisterCustomer({
         name: validatedData.customerName,
@@ -331,6 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const order = await storage.createOrder(validatedData);
+      console.log("주문 생성 후 order.userId:", order?.userId);
       
       // Update customer statistics after creating order
       await storage.updateCustomerStats(validatedData.customerPhone);

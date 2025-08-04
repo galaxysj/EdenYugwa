@@ -59,6 +59,7 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
     z.null()
   ]).optional().nullable(),
   orderPassword: z.string().optional().nullable(), // 주문 비밀번호는 선택사항
+  userId: z.number().optional().nullable(), // 로그인한 사용자 ID는 선택사항
 });
 
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
