@@ -304,11 +304,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData = req.body;
       delete updateData.orderPassword; // Remove password from update data
       
+      console.log('주문 수정 전 데이터:', existingOrder);
+      console.log('수정할 데이터:', updateData);
+      
       const updatedOrder = await storage.updateOrder(orderId, updateData);
       if (!updatedOrder) {
+        console.error('주문 수정 실패 - updateOrder가 null 반환');
         return res.status(404).json({ message: "주문 수정에 실패했습니다" });
       }
       
+      console.log('주문 수정 완료:', updatedOrder);
       res.json(updatedOrder);
     } catch (error) {
       console.error("Error updating user order:", error);

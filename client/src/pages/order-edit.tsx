@@ -109,7 +109,14 @@ export default function OrderEdit() {
   }, [id, toast, setLocation, form, isAuthenticated]);
 
   const onSubmit = async (data: EditOrderFormData) => {
-    if (!order) return;
+    console.log('onSubmit 함수 호출됨');
+    console.log('form 데이터:', data);
+    console.log('order 정보:', order);
+    
+    if (!order) {
+      console.error('order가 없음');
+      return;
+    }
     
     setIsSaving(true);
     try {
