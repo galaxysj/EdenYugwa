@@ -1735,7 +1735,9 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">메모</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
+                <th className="text-center py-2 px-2 font-medium text-blue-700 text-xs">매출</th>
+                <th className="text-center py-2 px-2 font-medium text-green-700 text-xs">실입금</th>
+                <th className="text-center py-2 px-2 font-medium text-red-700 text-xs">할인/미입금</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
@@ -1881,41 +1883,46 @@ export default function Admin() {
                     <td className="py-2 px-2">
                       <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
                     </td>
-                    <td className="py-2 px-2">
-                      <div className="text-xs space-y-1">
-                        <div>
-                          <span className="text-gray-500">매출:</span>
-                          <span className="font-medium text-gray-900 ml-1">{formatPrice(order.totalAmount)}</span>
+                    {/* 매출 */}
+                    <td className="py-2 px-2 text-center">
+                      <div className="text-xs font-medium text-blue-700">
+                        {formatPrice(order.totalAmount)}
+                      </div>
+                    </td>
+                    {/* 실입금 */}
+                    <td className="py-2 px-2 text-center">
+                      {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                        <div
+                          className="text-xs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200"
+                          onClick={() => {
+                            const currentAmount = order.actualPaidAmount || order.totalAmount;
+                            const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                            if (newAmount && !isNaN(Number(newAmount))) {
+                              handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                            }
+                          }}
+                          title="클릭하여 실제 입금금액 수정"
+                        >
+                          {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
                         </div>
-                        <div>
-                          <span className="text-gray-500">실입금:</span>
-                          {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                            <span
-                              className="cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 ml-1 font-medium"
-                              onClick={() => {
-                                const currentAmount = order.actualPaidAmount || order.totalAmount;
-                                const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                                if (newAmount && !isNaN(Number(newAmount))) {
-                                  handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                                }
-                              }}
-                              title="클릭하여 실제 입금금액 수정"
-                            >
-                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400 ml-1">-</span>
-                          )}
-                        </div>
-                        <div>
-                          {order.discountAmount && order.discountAmount > 0 ? (
-                            <span className="text-blue-600">할인: -{formatPrice(Math.abs(order.discountAmount))}</span>
-                          ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
-                            <span className="text-red-600">미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}</span>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-400">-</div>
+                      )}
+                    </td>
+                    {/* 할인/미입금 */}
+                    <td className="py-2 px-2 text-center">
+                      <div className="text-xs">
+                        {order.discountAmount && order.discountAmount > 0 ? (
+                          <span className="text-blue-600 font-medium">
+                            할인<br/>-{formatPrice(Math.abs(order.discountAmount))}
+                          </span>
+                        ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
+                          <span className="text-red-600 font-medium">
+                            미입금<br/>{formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-2 px-2 text-center">
@@ -2198,52 +2205,49 @@ export default function Admin() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-gray-500 mb-2">매출현황</div>
-                        <div className="text-sm text-gray-600">
-                          주문금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
+                        <div className="text-gray-500 mb-2">매출정보</div>
+                        <div className="text-xs space-y-1">
+                          <div className="text-blue-700 font-medium">
+                            매출: {formatPrice(order.totalAmount)}
+                          </div>
+                          <div className="text-green-700 font-medium">
+                            실입금: 
+                            {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
+                              <span
+                                className="cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 ml-1"
+                                onClick={() => {
+                                  const currentAmount = order.actualPaidAmount || order.totalAmount;
+                                  const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
+                                  if (newAmount && !isNaN(Number(newAmount))) {
+                                    handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
+                                  }
+                                }}
+                                title="클릭하여 실제 입금금액 수정"
+                              >
+                                {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 ml-1">-</span>
+                            )}
+                          </div>
+                          <div>
+                            {order.discountAmount && order.discountAmount > 0 ? (
+                              <span className="text-blue-600 font-medium">
+                                할인: -{formatPrice(Math.abs(order.discountAmount))}
+                              </span>
+                            ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
+                              <span className="text-red-600 font-medium">
+                                미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-6 gap-2">
-                      <div>
-                        <div className="text-gray-500 mb-2">실제입금</div>
-                        {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                          <div
-                            className="text-xs cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200 text-center"
-                            onClick={() => {
-                              const currentAmount = order.actualPaidAmount || order.totalAmount;
-                              const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                              if (newAmount && !isNaN(Number(newAmount))) {
-                                handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                              }
-                            }}
-                            title="클릭하여 실제 입금금액 수정"
-                          >
-                            {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-gray-400 text-center py-1">-</div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-gray-500 mb-2">할인/부분입금</div>
-                        <div className="text-xs space-y-1">
-                          {order.discountAmount && order.discountAmount > 0 && (
-                            <div className="text-blue-600 text-center">
-                              할인: -{formatPrice(Math.abs(order.discountAmount))}
-                            </div>
-                          )}
-                          {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.totalAmount - order.actualPaidAmount > 0 && (
-                            <div className="text-red-600 text-center">
-                              미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
-                            </div>
-                          )}
-                          {!order.discountAmount && (!order.actualPaidAmount || order.actualPaidAmount >= order.totalAmount) && (
-                            <div className="text-gray-400 text-center py-1">-</div>
-                          )}
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-4 gap-2">
                       <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
                         <Select
