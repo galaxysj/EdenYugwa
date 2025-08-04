@@ -567,9 +567,10 @@ export default function ManagerDashboard() {
                               />
                             </td>
                             <td className="py-2 px-2">
-                              <div className="font-medium text-xs">{order.orderNumber}</div>
+                              <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
                               <div className="text-xs text-gray-500">
-                                {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                                <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                                <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                               </div>
                             </td>
                             <td className="py-2 px-2">
