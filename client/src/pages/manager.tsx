@@ -714,6 +714,7 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -862,6 +863,23 @@ export default function ManagerDashboard() {
                                 )}
                               </div>
                             </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="flex flex-col gap-1">
+                                <SmsDialog order={order}>
+                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                    <MessageSquare className="h-3 w-3" />
+                                    SMS
+                                  </Button>
+                                </SmsDialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  수정
+                                </Button>
+                              </div>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -909,6 +927,7 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1055,6 +1074,23 @@ export default function ManagerDashboard() {
                                     발송처리
                                   </Button>
                                 )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="flex flex-col gap-1">
+                                <SmsDialog order={order}>
+                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                    <MessageSquare className="h-3 w-3" />
+                                    SMS
+                                  </Button>
+                                </SmsDialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  수정
+                                </Button>
                               </div>
                             </td>
                           </tr>
