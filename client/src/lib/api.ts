@@ -3,16 +3,20 @@ import { apiRequest } from './queryClient';
 export const api = {
   orders: {
     create: async (data: any) => {
+      console.log('API 요청 데이터:', data);
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
+        credentials: 'include',
       });
       
       if (!response.ok) {
-        throw new Error('주문 생성에 실패했습니다');
+        const errorText = await response.text();
+        console.error('API 응답 오류:', errorText);
+        throw new Error(errorText || '주문 생성에 실패했습니다');
       }
       
       return response.json();
