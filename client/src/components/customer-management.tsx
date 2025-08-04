@@ -732,7 +732,7 @@ export function CustomerManagement() {
                             <TableCell>
                               <Checkbox
                                 checked={groupCustomers.every(c => selectedCustomers.has(c.id))}
-                                indeterminate={groupCustomers.some(c => selectedCustomers.has(c.id)) && !groupCustomers.every(c => selectedCustomers.has(c.id))}
+                                {...(groupCustomers.some(c => selectedCustomers.has(c.id)) && !groupCustomers.every(c => selectedCustomers.has(c.id)) ? { "data-indeterminate": true } : {})}
                                 onCheckedChange={(checked) => {
                                   if (checked) {
                                     groupCustomers.forEach(c => selectedCustomers.add(c.id));
@@ -743,24 +743,53 @@ export function CustomerManagement() {
                                 }}
                               />
                             </TableCell>
-                            <TableCell colSpan={2}>
+                            <TableCell>
                               <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
                                   <User className="h-4 w-4 text-green-600" />
                                   <Badge variant="outline" className="text-green-700 border-green-300">
-                                    회원연결 ({groupCustomers.length}개 고객명)
+                                    회원통합 ({groupCustomers.length}개)
                                   </Badge>
                                 </div>
                                 <div className="text-sm font-medium text-green-700">
-                                  {firstCustomer.userRegisteredName} ({formatPhoneNumber(firstCustomer.userRegisteredPhone!)})
+                                  {firstCustomer.userRegisteredName}
                                 </div>
                                 <div className="text-xs text-gray-600">
-                                  고객명: {groupCustomers.map(c => c.customerName).join(', ')}
+                                  {formatPhoneNumber(firstCustomer.userRegisteredPhone!)}
                                 </div>
                               </div>
                             </TableCell>
-                            <TableCell className="text-xs text-gray-600">
-                              여러 주소
+                            <TableCell className="font-medium">
+                              <div className="text-sm text-gray-600 space-y-1">
+                                {groupCustomers.map((customer, idx) => (
+                                  <div key={customer.id} className="flex items-center gap-1">
+                                    <span className="text-xs text-gray-400">•</span>
+                                    <span>{customer.customerName}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-xs text-gray-600 space-y-1">
+                                {groupCustomers.map((customer, idx) => (
+                                  <div key={customer.id} className="flex items-center gap-1">
+                                    <span className="text-xs text-gray-400">•</span>
+                                    <span>{formatPhoneNumber(customer.customerPhone)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-xs text-gray-600 space-y-1">
+                                {groupCustomers.map((customer, idx) => (
+                                  <div key={customer.id} className="flex items-center gap-1 max-w-xs">
+                                    <span className="text-xs text-gray-400">•</span>
+                                    <span className="truncate" title={getFullAddress(customer)}>
+                                      {getFullAddress(customer)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             </TableCell>
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-1">
@@ -777,100 +806,43 @@ export function CustomerManagement() {
                               {formatLastOrderDate(latestOrderDate)}
                             </TableCell>
                             <TableCell className="text-center">
-                              <div className="text-xs text-gray-500">
-                                개별 관리
+                              <div className="flex flex-col gap-1">
+                                {groupCustomers.map((customer, idx) => (
+                                  <div key={customer.id} className="flex items-center justify-center gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => openSmsDialog(customer)}
+                                      className="text-blue-600 hover:text-blue-700 h-6 w-6 p-0"
+                                      title={`${customer.customerName}에게 문자`}
+                                    >
+                                      <MessageSquare className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleEdit(customer)}
+                                      className="h-6 w-6 p-0"
+                                      title={`${customer.customerName} 수정`}
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDelete(customer)}
+                                      className="text-red-600 hover:text-red-700 h-6 w-6 p-0"
+                                      title={`${customer.customerName} 삭제`}
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ))}
                               </div>
                             </TableCell>
                           </TableRow>
                           
-                          {/* 그룹 내 개별 고객들 */}
-                          {groupCustomers.map((customer, index) => (
-                            <TableRow key={customer.id} className="bg-green-25">
-                              <TableCell className="pl-8">
-                                <Checkbox
-                                  checked={selectedCustomers.has(customer.id)}
-                                  onCheckedChange={() => toggleCustomerSelection(customer.id)}
-                                />
-                              </TableCell>
-                              <TableCell className="pl-8">
-                                <div className="text-xs text-gray-500">
-                                  └ 개별 고객
-                                </div>
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-gray-500" />
-                                  {customer.customerName}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4 text-gray-500" />
-                                  {formatPhoneNumber(customer.customerPhone)}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-gray-500" />
-                                  <div className="flex items-center gap-2">
-                                    <span className="max-w-xs truncate" title={getFullAddress(customer)}>
-                                      {getFullAddress(customer)}
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => openAddressDialog(customer.customerPhone)}
-                                      className="h-6 px-2 text-xs"
-                                    >
-                                      <Eye className="h-3 w-3 mr-1" />
-                                      주소목록
-                                    </Button>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                  <Package className="h-4 w-4 text-gray-500" />
-                                  <Badge variant="secondary">
-                                    {customer.orderCount}회 (2년)
-                                  </Badge>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center font-medium">
-                                {formatAmount(customer.totalSpent)}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {formatLastOrderDate(customer.lastOrderDate)}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex items-center justify-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => openSmsDialog(customer)}
-                                    className="text-blue-600 hover:text-blue-700"
-                                  >
-                                    <MessageSquare className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEdit(customer)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDelete(customer)}
-                                    className="text-red-600 hover:text-red-700"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
+
                         </React.Fragment>
                       );
                     })}
