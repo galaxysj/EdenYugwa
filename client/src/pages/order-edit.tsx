@@ -128,9 +128,11 @@ export default function OrderEdit() {
       };
 
       console.log('주문 수정 요청 데이터:', updateData);
+      console.log('인증 상태:', isAuthenticated);
       
       // Use different API endpoint based on authentication status
       const apiUrl = isAuthenticated ? `/api/my-orders/${order.id}` : `/api/orders/${order.id}`;
+      console.log('사용할 API URL:', apiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'PATCH',
@@ -141,6 +143,7 @@ export default function OrderEdit() {
       });
 
       console.log('응답 상태:', response.status);
+      console.log('응답 헤더:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -148,9 +151,14 @@ export default function OrderEdit() {
         throw new Error(errorData.message || '주문 수정에 실패했습니다');
       }
 
-      console.log('주문 수정 성공, 팝업 표시');
+      const responseData = await response.json();
+      console.log('응답 데이터:', responseData);
+      console.log('주문 수정 성공, 팝업 표시 시도');
+      
       // 성공 팝업 표시
+      console.log('showSuccessDialog 상태 변경 전:', showSuccessDialog);
       setShowSuccessDialog(true);
+      console.log('showSuccessDialog 상태 변경 후 - setShowSuccessDialog(true) 호출됨');
     } catch (error) {
       toast({
         title: "수정 실패",
