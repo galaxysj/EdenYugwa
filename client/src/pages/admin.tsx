@@ -1678,34 +1678,7 @@ export default function Admin() {
 
     return (
       <>
-        {/* Bulk Shipping Actions */}
-        {selectedShippingItems.size > 0 && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-blue-700">
-                {selectedShippingItems.size}개 주문이 발송용으로 선택되었습니다
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setSelectedShippingItems(new Set())}
-                >
-                  선택 해제
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={handleBulkSellerShipped}
-                  disabled={bulkSellerShippedMutation.isPending}
-                >
-                  <Truck className="h-4 w-4 mr-1" />
-                  선택항목 발송완료 ({selectedShippingItems.size}개)
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
@@ -1738,37 +1711,7 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">
-                  <div className="flex flex-col items-center gap-1">
-                    <span>판매자발송</span>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedShippingItems.size === ordersList.filter(order => !order.sellerShipped).length && ordersList.filter(order => !order.sellerShipped).length > 0}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            selectAllShipping(ordersList);
-                          } else {
-                            setSelectedShippingItems(new Set());
-                          }
-                        }}
-                        className="rounded border-blue-300"
-                        title="발송용 전체 선택"
-                      />
-                      {selectedShippingItems.size > 0 && (
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-xs px-1 py-0.5"
-                          onClick={handleBulkSellerShipped}
-                          disabled={bulkSellerShippedMutation.isPending}
-                          title={`선택된 ${selectedShippingItems.size}개 주문 일괄 발송`}
-                        >
-                          일괄발송
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
@@ -2058,22 +2001,13 @@ export default function Admin() {
                             )}
                           </div>
                         ) : (
-                          <>
-                            <input
-                              type="checkbox"
-                              checked={selectedShippingItems.has(order.id)}
-                              onChange={() => toggleShippingSelection(order.id)}
-                              className="rounded border-blue-300"
-                              title="발송용 선택"
-                            />
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
-                              onClick={() => handleSellerShipped(order.id)}
-                            >
-                              발송하기
-                            </Button>
-                          </>
+                          <Button
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
+                            onClick={() => handleSellerShipped(order.id)}
+                          >
+                            발송하기
+                          </Button>
                         )}
                       </div>
                     </td>

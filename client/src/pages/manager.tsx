@@ -200,7 +200,7 @@ export default function ManagerDashboard() {
   // 일괄 판매자 발송 mutation
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      return api.post('/api/orders/bulk-seller-shipped', { orderIds });
+      return api.patch('/api/orders/seller-shipped', { orderIds });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
