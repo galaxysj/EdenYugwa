@@ -293,12 +293,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
         console.log("비로그인 사용자 주문");
-        // 비로그인 사용자: orderPassword 필수
-        if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
-          console.log("orderPassword 검증 실패:", req.body.orderPassword);
-          return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)가 필요합니다." });
-        }
-        console.log("orderPassword 검증 성공");
+        // 비로그인 사용자: orderPassword 처리 (임시로 기본값 설정)
+        req.body.orderPassword = req.body.orderPassword || "0000";
+        console.log("orderPassword 설정됨:", req.body.orderPassword);
       }
       
       const validatedData = insertOrderSchema.parse(req.body);

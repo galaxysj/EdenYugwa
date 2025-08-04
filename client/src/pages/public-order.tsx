@@ -128,10 +128,10 @@ export default function PublicOrder() {
       wrappingQuantity: data.wrappingQuantity,
       specialRequests: data.specialRequests || null,
       scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
-      orderPassword: data.orderPassword, // 주문 비밀번호 추가
+      orderPassword: data.orderPassword || "", // 주문 비밀번호 추가
       totalAmount,
-      status: "pending" as const,
-      paymentStatus: "pending" as const,
+      status: "pending",
+      paymentStatus: "pending",
     };
 
     console.log("전송할 주문 데이터:", orderData);
