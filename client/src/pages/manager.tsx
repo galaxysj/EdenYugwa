@@ -531,10 +531,8 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">제품</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">메모</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">관리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -619,9 +617,6 @@ export default function ManagerDashboard() {
                                   <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
                                 )}
                               </div>
-                            </td>
-                            <td className="py-2 px-2">
-                              <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
                             </td>
                             <td className="py-2 px-2 text-center">
                               <Select
