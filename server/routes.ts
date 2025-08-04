@@ -59,6 +59,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Change password route
+  app.post("/api/auth/change-password", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { newPassword } = req.body;
+      
+      if (!newPassword || newPassword.length < 4) {
+        return res.status(400).json({ message: "새 비밀번호는 최소 4자 이상이어야 합니다" });
+      }
+
+      const success = await userService.changePassword(user.id, newPassword);
+      if (success) {
+        res.json({ message: "비밀번호가 성공적으로 변경되었습니다" });
+      } else {
+        res.status(500).json({ message: "비밀번호 변경에 실패했습니다" });
+      }
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({ message: "비밀번호 변경에 실패했습니다" });
+    }
+  });
+
   // User management routes (admin only)
   app.get("/api/users", requireAdmin, async (req, res) => {
     try {
@@ -124,26 +146,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Change password route
-  app.post("/api/auth/change-password", requireAuth, async (req, res) => {
-    try {
-      const { newPassword } = req.body;
-      const user = req.user as User;
-      
-      if (!newPassword || newPassword.length < 6) {
-        return res.status(400).json({ message: "비밀번호는 최소 6자 이상이어야 합니다" });
-      }
-      
-      const success = await userService.changePassword(user.id, newPassword);
-      if (success) {
-        res.json({ message: "비밀번호가 변경되었습니다" });
-      } else {
-        res.status(500).json({ message: "비밀번호 변경에 실패했습니다" });
-      }
-    } catch (error) {
-      res.status(500).json({ message: "비밀번호 변경 중 오류가 발생했습니다" });
-    }
-  });
   // Get all orders (for admin and manager)
   app.get("/api/orders", requireManagerOrAdmin, async (req, res) => {
     try {

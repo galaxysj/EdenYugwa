@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, FileSpreadsheet, Key } from "lucide-react";
 import * as XLSX from "xlsx";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import PasswordChangeDialog from "@/components/PasswordChangeDialog";
 import type { Order } from "@shared/schema";
 
 const statusLabels = {
@@ -1152,7 +1153,14 @@ function Manager() {
                   매니저
                 </Button>
               </div>
-              <AdminSettingsDialog />
+              <PasswordChangeDialog 
+                triggerComponent={
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Key className="h-4 w-4" />
+                    비밀번호 변경
+                  </Button>
+                }
+              />
               <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
                 <LogOut className="h-4 w-4" />
                 로그아웃
