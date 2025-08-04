@@ -51,11 +51,7 @@ export default function AdminSettingsPage() {
   const [editingManager, setEditingManager] = React.useState<UserType | null>(null);
   const [selectedUserId, setSelectedUserId] = React.useState<string>("");
 
-  // Debug logging
-  React.useEffect(() => {
-    console.log('All users data:', allUsers);
-    console.log('Users loading:', usersLoading);
-  }, [allUsers, usersLoading]);
+
 
 
 
@@ -476,7 +472,7 @@ export default function AdminSettingsPage() {
                     .filter(user => user.id !== editingManager?.id)
                     .map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.username} - {user.name} ({user.phoneNumber}) {user.role === 'manager' ? '(매니저)' : user.role === 'admin' ? '(관리자)' : '(일반회원)'}
+{user.username} - {user.name || '이름없음'} ({user.phoneNumber || '전화번호없음'}) {user.role === 'manager' ? '(매니저)' : user.role === 'admin' ? '(관리자)' : '(일반회원)'}
                       </SelectItem>
                     ))}
                   {allUsers.filter(user => user.id !== editingManager?.id).length === 0 && (
