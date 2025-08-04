@@ -35,10 +35,13 @@ export default function AdminSettingsPage() {
     retry: false,
   });
 
-  const { data: users = [], isLoading: usersLoading } = useQuery<UserType[]>({
+  const { data: allUsers = [], isLoading: usersLoading } = useQuery<UserType[]>({
     queryKey: ['/api/users'],
     retry: false,
   });
+
+  // Filter to show only admin and manager users
+  const users = allUsers.filter(user => user.role === 'admin' || user.role === 'manager');
 
 
 
@@ -301,14 +304,14 @@ export default function AdminSettingsPage() {
             사용자 권한 관리
           </CardTitle>
           <CardDescription>
-            회원가입한 사용자들의 권한을 관리합니다. 관리자 또는 매니저 권한을 부여할 수 있습니다.
+            현재 관리자 및 매니저 권한을 가진 사용자들을 표시합니다. 일반 사용자에게 권한을 부여하려면 사용자 관리 탭을 이용하세요.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {usersLoading ? (
             <div className="text-center py-8 text-gray-500">사용자 목록을 불러오는 중...</div>
           ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">등록된 사용자가 없습니다.</div>
+            <div className="text-center py-8 text-gray-500">관리자 또는 매니저 권한을 가진 사용자가 없습니다.</div>
           ) : (
             <div className="rounded-md border">
               <Table>
