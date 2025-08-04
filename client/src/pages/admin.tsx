@@ -1724,21 +1724,7 @@ export default function Admin() {
                     title="삭제용 선택"
                   />
                 </th>
-                <th className="w-8 py-2 px-2 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedShippingItems.size === ordersList.filter(order => !order.sellerShipped).length && ordersList.filter(order => !order.sellerShipped).length > 0}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        selectAllShipping(ordersList);
-                      } else {
-                        setSelectedShippingItems(new Set());
-                      }
-                    }}
-                    className="rounded border-blue-300"
-                    title="발송용 전체 선택"
-                  />
-                </th>
+
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
@@ -1749,7 +1735,37 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>판매자발송</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedShippingItems.size === ordersList.filter(order => !order.sellerShipped).length && ordersList.filter(order => !order.sellerShipped).length > 0}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            selectAllShipping(ordersList);
+                          } else {
+                            setSelectedShippingItems(new Set());
+                          }
+                        }}
+                        className="rounded border-blue-300"
+                        title="발송용 전체 선택"
+                      />
+                      {selectedShippingItems.size > 0 && (
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 text-xs px-1 py-0.5"
+                          onClick={handleBulkSellerShipped}
+                          disabled={bulkSellerShippedMutation.isPending}
+                          title={`선택된 ${selectedShippingItems.size}개 주문 일괄 발송`}
+                        >
+                          일괄발송
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
@@ -1767,16 +1783,7 @@ export default function Admin() {
                         title="삭제용 선택"
                       />
                     </td>
-                    <td className="py-2 px-2 text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedShippingItems.has(order.id)}
-                        onChange={() => toggleShippingSelection(order.id)}
-                        className="rounded border-blue-300"
-                        disabled={order.sellerShipped}
-                        title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
-                      />
-                    </td>
+
                     <td className="py-2 px-2">
                       <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
@@ -2028,27 +2035,44 @@ export default function Admin() {
                       </Select>
                     </td>
                     <td className="py-2 px-2 text-center">
-                      {order.sellerShipped ? (
-                        <div className="text-green-600 font-medium text-xs">
-                          판매자발송완료
-                          {order.sellerShippedDate && (
-                            <div 
-                              className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
-                              onClick={() => {
-                                const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
-                                if (sellerShippedDatePicker) {
-                                  (sellerShippedDatePicker as HTMLElement).click();
-                                }
-                              }}
-                              title="클릭하여 판매자발송일 수정"
+                      <div className="flex flex-col items-center gap-2">
+                        {order.sellerShipped ? (
+                          <div className="text-green-600 font-medium text-xs">
+                            판매자발송완료
+                            {order.sellerShippedDate && (
+                              <div 
+                                className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                onClick={() => {
+                                  const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                                  if (sellerShippedDatePicker) {
+                                    (sellerShippedDatePicker as HTMLElement).click();
+                                  }
+                                }}
+                                title="클릭하여 판매자발송일 수정"
+                              >
+                                {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            <input
+                              type="checkbox"
+                              checked={selectedShippingItems.has(order.id)}
+                              onChange={() => toggleShippingSelection(order.id)}
+                              className="rounded border-blue-300"
+                              title="발송용 선택"
+                            />
+                            <Button
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
+                              onClick={() => handleSellerShipped(order.id)}
                             >
-                              {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
+                              발송하기
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex flex-col gap-1">
@@ -2086,23 +2110,13 @@ export default function Admin() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-start gap-3">
-                        <div className="flex flex-col gap-2 mt-1">
-                          <input
-                            type="checkbox"
-                            checked={selectedOrderItems.has(order.id)}
-                            onChange={() => toggleOrderSelection(order.id)}
-                            className="rounded border-gray-300"
-                            title="삭제용 선택"
-                          />
-                          <input
-                            type="checkbox"
-                            checked={selectedShippingItems.has(order.id)}
-                            onChange={() => toggleShippingSelection(order.id)}
-                            className="rounded border-blue-300"
-                            disabled={order.sellerShipped}
-                            title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
-                          />
-                        </div>
+                        <input
+                          type="checkbox"
+                          checked={selectedOrderItems.has(order.id)}
+                          onChange={() => toggleOrderSelection(order.id)}
+                          className="rounded border-gray-300 mt-1"
+                          title="삭제용 선택"
+                        />
                         <div>
                           <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
                         <div className="text-sm text-gray-500">
@@ -2371,6 +2385,42 @@ export default function Admin() {
                         <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
+                        
+                        {/* 판매자발송 관리 */}
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={selectedShippingItems.has(order.id)}
+                              onChange={() => toggleShippingSelection(order.id)}
+                              className="rounded border-blue-300"
+                              disabled={order.sellerShipped}
+                              title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
+                            />
+                            <span className="text-sm font-medium text-blue-700">발송 선택</span>
+                          </div>
+                          {!order.sellerShipped && (
+                            <Button
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700 flex-1"
+                              onClick={() => handleSellerShipped(order.id)}
+                            >
+                              <Truck className="h-3 w-3 mr-1" />
+                              발송하기
+                            </Button>
+                          )}
+                          {order.sellerShipped && (
+                            <div className="flex-1 text-sm text-green-600 font-medium">
+                              ✅ 발송완료
+                              {order.sellerShippedDate && (
+                                <div className="text-xs text-gray-500">
+                                  {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR')}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
                         <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
                           <SellerShippedDatePicker order={order} />
