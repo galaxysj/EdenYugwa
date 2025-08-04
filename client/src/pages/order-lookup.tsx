@@ -138,6 +138,16 @@ export default function OrderLookup() {
     return address.substring(0, Math.min(10, address.length)) + ' ***';
   };
 
+  // 전화번호 마스킹 함수 (앞 4자리만 표시)
+  const maskPhoneNumber = (phone: string) => {
+    // 예: "010-1234-5678" → "010-1***"
+    // 또는 "01012345678" → "0101***"
+    if (phone.length >= 4) {
+      return phone.substring(0, 4) + '***';
+    }
+    return phone;
+  };
+
 
 
   return (
@@ -303,7 +313,7 @@ export default function OrderLookup() {
                           </div>
                           <div>
                             <span className="text-gray-600">전화번호: </span>
-                            <span className="font-medium">{order.customerPhone}</span>
+                            <span className="font-medium">{maskPhoneNumber(order.customerPhone)}</span>
                           </div>
                         </div>
                       </div>
