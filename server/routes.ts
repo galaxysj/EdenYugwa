@@ -274,27 +274,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new order
   app.post("/api/orders", async (req, res) => {
     try {
-      console.log("주문 요청 데이터:", JSON.stringify(req.body, null, 2));
+      console.log("=== 주문 요청 분석 시작 ===");
+      console.log("Raw body:", req.body);
+      console.log("orderPassword:", req.body.orderPassword);
+      console.log("orderPassword type:", typeof req.body.orderPassword);
+      console.log("orderPassword length:", req.body.orderPassword?.length);
+      console.log("=== 주문 요청 분석 끝 ===");
       
       // scheduledDate를 Date 객체로 변환
       if (req.body.scheduledDate && typeof req.body.scheduledDate === 'string') {
         req.body.scheduledDate = new Date(req.body.scheduledDate);
       }
       
-      const validatedData = insertOrderSchema.parse(req.body);
-      
       // 로그인된 사용자인 경우 userId 설정, 아닌 경우 orderPassword가 있어야 함
       if ((req as any).user?.id) {
-        (validatedData as any).userId = (req as any).user.id;
-        (validatedData as any).orderPassword = null; // 로그인 사용자는 비밀번호 불필요
+        console.log("로그인된 사용자 주문");
+        req.body.userId = (req as any).user.id;
+        req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
+        console.log("비로그인 사용자 주문");
         // 비로그인 사용자: orderPassword 필수
-        console.log("orderPassword 확인:", req.body.orderPassword);
         if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
+          console.log("orderPassword 검증 실패:", req.body.orderPassword);
           return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)가 필요합니다." });
         }
-        (validatedData as any).orderPassword = req.body.orderPassword;
+        console.log("orderPassword 검증 성공");
       }
+      
+      const validatedData = insertOrderSchema.parse(req.body);
       
       // Automatically register or update customer
       await storage.autoRegisterCustomer({
