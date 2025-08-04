@@ -1367,7 +1367,7 @@ export default function Admin() {
         {ordersList.map((order: Order) => (
           <Card key={order.id} className={`border-red-200 ${
             selectedTrashItems.has(order.id) ? 'bg-red-100 border-red-300' : 
-            order.status === 'waiting_shipping' ? 'bg-blue-50 border-blue-200' : 
+            order.status === 'seller_shipped' ? 'bg-blue-50 border-blue-200' : 
             'bg-red-50'
           }`}>
             <CardContent className="p-4">
@@ -1713,7 +1713,7 @@ export default function Admin() {
                 return (
                   <tr key={order.id} className={`border-b border-gray-100 ${
                     order.paymentStatus === 'pending' ? 'bg-red-100 hover:bg-red-100' : 
-                    order.status === 'waiting_shipping' ? 'bg-blue-50 hover:bg-blue-100' : 
+                    order.status === 'seller_shipped' ? 'bg-blue-50 hover:bg-blue-100' : 
                     'hover:bg-gray-50'
                   }`} data-order-id={order.id}>
                     <td className="py-2 px-2 text-center">
@@ -2046,7 +2046,7 @@ export default function Admin() {
             return (
               <Card key={order.id} className={`border ${
                 order.paymentStatus === 'pending' ? 'border-red-400 bg-red-100' : 
-                order.status === 'waiting_shipping' ? 'border-blue-300 bg-blue-50' : 
+                order.status === 'seller_shipped' ? 'border-blue-300 bg-blue-50' : 
                 'border-gray-200'
               }`}>
                 <CardContent className="p-6">
