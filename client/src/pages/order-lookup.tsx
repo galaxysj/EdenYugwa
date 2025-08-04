@@ -17,7 +17,6 @@ import type { Order } from "@shared/schema";
 const lookupSchema = z.object({
   phoneNumber: z.string().optional(),
   customerName: z.string().optional(),
-  orderPassword: z.string().optional(),
 }).refine(data => data.phoneNumber || data.customerName, {
   message: "전화번호 또는 이름 중 하나는 입력해주세요",
   path: ["phoneNumber"],
@@ -64,7 +63,6 @@ export default function OrderLookup() {
     defaultValues: {
       phoneNumber: "",
       customerName: "",
-      orderPassword: "",
     },
   });
 
@@ -83,7 +81,6 @@ export default function OrderLookup() {
       const queryParams = new URLSearchParams();
       if (data.phoneNumber) queryParams.append('phone', data.phoneNumber);
       if (data.customerName) queryParams.append('name', data.customerName);
-      if (data.orderPassword) queryParams.append('password', data.orderPassword);
       
       const response = await fetch(`/api/orders/lookup?${queryParams.toString()}`);
       
@@ -227,28 +224,7 @@ export default function OrderLookup() {
                   />
                 </div>
 
-                {!isAuthenticated && (
-                  <FormField
-                    control={form.control}
-                    name="orderPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>주문 비밀번호 (선택사항)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="주문 시 설정한 비밀번호"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        <div className="text-sm text-gray-500">
-                          비밀번호를 입력하지 않으면 개인정보 보호를 위해 일부 정보가 마스킹됩니다.
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                )}
+
                 
                 <div className="text-sm text-gray-500 mt-2">
                   * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
