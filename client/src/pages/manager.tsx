@@ -317,10 +317,11 @@ export default function ManagerDashboard() {
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">
+                  <div className="text-2xl font-bold text-blue-600">
                     {(orders as Order[]).filter(o => o.status === 'delivered').length}
                   </div>
-                  <div className="text-sm text-gray-600">발송완료</div>
+                  <div className="text-sm text-gray-600">주문상태</div>
+                  <div className="text-xs text-gray-500">발송완료</div>
                 </CardContent>
               </Card>
 
@@ -330,6 +331,7 @@ export default function ManagerDashboard() {
                     {(orders as Order[]).filter(o => o.sellerShipped).length}
                   </div>
                   <div className="text-sm text-gray-600">판매자발송</div>
+                  <div className="text-xs text-gray-500">발송완료</div>
                 </CardContent>
               </Card>
             </div>
