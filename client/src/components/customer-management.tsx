@@ -681,9 +681,9 @@ export function CustomerManagement() {
                           }}
                         />
                       </TableHead>
+                      <TableHead>회원연결</TableHead>
                       <TableHead>고객명</TableHead>
                       <TableHead>연락처</TableHead>
-                      <TableHead>회원연결</TableHead>
                       <TableHead>주소</TableHead>
                       <TableHead className="text-center">주문횟수</TableHead>
                       <TableHead className="text-center">총주문금액</TableHead>
@@ -699,18 +699,6 @@ export function CustomerManagement() {
                             checked={selectedCustomers.has(customer.id)}
                             onCheckedChange={() => toggleCustomerSelection(customer.id)}
                           />
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-500" />
-                            {customer.customerName}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-500" />
-                            {formatPhoneNumber(customer.customerPhone)}
-                          </div>
                         </TableCell>
                         <TableCell>
                           {customer.userId ? (
@@ -735,6 +723,18 @@ export function CustomerManagement() {
                               <span className="text-gray-500 text-sm">비회원</span>
                             </div>
                           )}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-gray-500" />
+                            {customer.customerName}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-gray-500" />
+                            {formatPhoneNumber(customer.customerPhone)}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
