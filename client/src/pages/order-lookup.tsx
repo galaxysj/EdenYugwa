@@ -66,11 +66,46 @@ export default function OrderLookup() {
     },
   });
 
-  // 로그인된 사용자의 정보를 폼에 미리 채움
+  // 로그인된 사용자의 정보를 폼에 미리 채우고 자동으로 주문 조회
   useEffect(() => {
     if (isAuthenticated && user && user.phoneNumber && user.name) {
       form.setValue('phoneNumber', user.phoneNumber);
       form.setValue('customerName', user.name);
+      
+      // 자동으로 주문 조회 실행
+      const autoSearch = async () => {
+        setIsLoading(true);
+        try {
+          const queryParams = new URLSearchParams();
+          queryParams.append('phone', user.phoneNumber);
+          queryParams.append('name', user.name);
+          
+          const response = await fetch(`/api/orders/lookup?${queryParams.toString()}`);
+          
+          if (response.status === 404) {
+            setOrders([]);
+            setHasSearched(true);
+            return;
+          }
+          
+          if (!response.ok) {
+            throw new Error('주문 조회에 실패했습니다');
+          }
+          
+          const foundOrders = await response.json();
+          setOrders(foundOrders);
+          setHasSearched(true);
+          
+        } catch (error) {
+          console.error('자동 주문 조회 실패:', error);
+          setOrders([]);
+          setHasSearched(true);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      autoSearch();
     }
   }, [isAuthenticated, user, form]);
 
@@ -179,75 +214,87 @@ export default function OrderLookup() {
             <CardTitle className="font-korean">주문 조회하기</CardTitle>
             {isAuthenticated && user ? (
               <p className="text-green-600 font-medium">
-                {user.name}님, 등록된 정보가 자동으로 입력되었습니다. 조회 버튼을 눌러주세요.
+                {user.name}님의 주문 내역을 자동으로 조회하고 있습니다.
               </p>
             ) : (
               <p className="text-gray-600">주문 시 입력하신 전화번호 또는 이름으로 주문 내역을 조회할 수 있습니다.</p>
             )}
           </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="phoneNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>전화번호</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="010-1234-5678"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+          {!isAuthenticated && (
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>전화번호</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="010-1234-5678"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="customerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>주문자 이름</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="홍길동"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
-                  <FormField
-                    control={form.control}
-                    name="customerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>주문자 이름</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="홍길동"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="text-sm text-gray-500 mt-2">
+                    * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
+                  </div>
+                  
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="bg-eden-brown hover:bg-eden-dark text-white w-full md:w-auto"
+                  >
+                    {isLoading ? (
+                      "조회 중..."
+                    ) : (
+                      <>
+                        <Search className="mr-2 h-4 w-4" />
+                        주문 조회
+                      </>
                     )}
-                  />
-                </div>
-
-
-                
-                <div className="text-sm text-gray-500 mt-2">
-                  * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
-                </div>
-                
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-eden-brown hover:bg-eden-dark text-white w-full md:w-auto"
-                >
-                  {isLoading ? (
-                    "조회 중..."
-                  ) : (
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      주문 조회
-                    </>
-                  )}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          )}
         </Card>
+
+        {/* Loading State for Auto Search */}
+        {isAuthenticated && isLoading && !hasSearched && (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown"></div>
+                <p className="text-gray-600">주문 내역을 조회하고 있습니다...</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Orders Results */}
         {hasSearched && (
