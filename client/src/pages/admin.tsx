@@ -1708,6 +1708,7 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
+                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">메모</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
@@ -1850,6 +1851,9 @@ export default function Admin() {
                           </div>
                         </DialogContent>
                       </Dialog>
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
                     </td>
                     <td className="py-2 px-2">
                       <div className="text-xs space-y-1">
