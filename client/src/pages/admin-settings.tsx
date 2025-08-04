@@ -15,6 +15,7 @@ import type { AdminSettings, User as UserType } from "@shared/schema";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AdminHeader } from "@/components/admin-header";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
@@ -185,11 +186,13 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="h-6 w-6 text-eden-brown" />
-        <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader />
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="flex items-center gap-3 mb-6">
+          <Settings className="h-6 w-6 text-eden-brown" />
+          <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
+        </div>
 
 
 
@@ -514,6 +517,7 @@ export default function AdminSettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

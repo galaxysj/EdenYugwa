@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package } from "lucide-react";
 
 interface AdminHeaderProps {
   handleExcelDownload?: () => void;
@@ -60,45 +60,60 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
             <div className="flex items-center space-x-1">
               {setActiveTab && (
                 <>
-                  <Button 
-                    onClick={() => setActiveTab('revenue')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'revenue' 
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    매출관리
-                  </Button>
-                  <Button 
-                    onClick={() => setActiveTab('customers')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'customers' 
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    고객관리
-                  </Button>
-                  <Button 
-                    onClick={() => setActiveTab('users')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'users' 
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    회원관리
-                  </Button>
+                  {location === '/admin' && (
+                    <Button 
+                      onClick={() => setActiveTab('revenue')}
+                      variant="ghost" 
+                      size="sm"
+                      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                        activeTab === 'revenue' 
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      매출관리
+                    </Button>
+                  )}
+                  {(location === '/admin' || location === '/manager') && (
+                    <>
+                      <Button 
+                        onClick={() => setActiveTab(location === '/manager' ? 'orders' : 'customers')}
+                        variant="ghost" 
+                        size="sm"
+                        className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                          (location === '/manager' && activeTab === 'orders') || (location === '/admin' && activeTab === 'customers')
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        {location === '/manager' ? (
+                          <>
+                            <Package className="h-4 w-4 mr-2" />
+                            주문관리
+                          </>
+                        ) : (
+                          <>
+                            <Users className="h-4 w-4 mr-2" />
+                            고객관리
+                          </>
+                        )}
+                      </Button>
+                      <Button 
+                        onClick={() => setActiveTab(location === '/manager' ? 'customers' : 'users')}
+                        variant="ghost" 
+                        size="sm"
+                        className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                          (location === '/manager' && activeTab === 'customers') || (location === '/admin' && activeTab === 'users')
+                            ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        {location === '/manager' ? '고객관리' : '회원관리'}
+                      </Button>
+                    </>
+                  )}
                 </>
               )}
             </div>
