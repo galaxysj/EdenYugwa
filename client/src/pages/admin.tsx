@@ -1846,7 +1846,7 @@ export default function Admin() {
                       </Dialog>
                     </td>
                     <td className="py-2 px-2">
-                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.notes || '-'}</div>
+                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.specialRequests || '-'}</div>
                     </td>
                     {/* 매출 */}
                     <td className="py-2 px-2 text-center">
@@ -2408,13 +2408,17 @@ export default function Admin() {
 
   // Seller shipped mutation
   const updateSellerShippedMutation = useMutation({
-    mutationFn: (orderId: number) => api.orders.updateSellerShipped(orderId),
-    onSuccess: async (updatedOrder, orderId) => {
+    mutationFn: (orderIds: number[]) => api.orders.updateSellerShipped(orderIds),
+    onSuccess: async (updatedOrder, orderIds) => {
       // First update seller shipped status
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       
-      // Then automatically update order status to delivered
-      updateStatusMutation.mutate({ id: orderId, status: 'delivered' });
+      // Then automatically update order status to delivered for each order
+      if (Array.isArray(orderIds)) {
+        orderIds.forEach(orderId => {
+          updateStatusMutation.mutate({ id: orderId, status: 'delivered' });
+        });
+      }
       
       toast({
         title: "판매자 발송 완료",
@@ -2527,7 +2531,7 @@ export default function Admin() {
   };
 
   const handleSellerShipped = (orderId: number) => {
-    updateSellerShippedMutation.mutate(orderId);
+    updateSellerShippedMutation.mutate([orderId]);
   };
 
   const handleExcelDownload = async () => {

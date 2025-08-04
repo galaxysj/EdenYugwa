@@ -524,32 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update payment status (manager and admin only)
-  // Update payment details with actual amount and discount
-  app.patch("/api/orders/:id/payment", requireManagerOrAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { paymentStatus, actualPaidAmount, discountAmount } = req.body;
-      
-      console.log("Payment update request:", { id, paymentStatus, actualPaidAmount, discountAmount });
-      
-      if (!paymentStatus) {
-        return res.status(400).json({ message: "Payment status is required" });
-      }
-      
-      // PaymentDetailsDialog에서 전달된 할인액을 직접 사용하여 업데이트
-      const updatedOrder = await storage.updatePaymentWithDiscount(id, paymentStatus, actualPaidAmount, discountAmount);
-      
-      if (!updatedOrder) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-      
-      res.json(updatedOrder);
-    } catch (error) {
-      console.error("Payment update error:", error);
-      res.status(500).json({ message: "Failed to update payment" });
-    }
-  });
+
 
   app.patch("/api/orders/:id/payment-status", requireManagerOrAdmin, async (req, res) => {
     try {
@@ -720,13 +695,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/orders/:id/payment", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { paymentStatus, actualPaidAmount, discountReason } = req.body;
+      const { paymentStatus, actualPaidAmount, discountAmount } = req.body;
+      
+      console.log("Payment update request:", { id, paymentStatus, actualPaidAmount, discountAmount });
       
       if (!paymentStatus) {
         return res.status(400).json({ message: "Payment status is required" });
       }
       
-      const updatedOrder = await storage.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountReason);
+      const updatedOrder = await storage.updatePaymentWithDiscount(id, paymentStatus, actualPaidAmount, discountAmount);
       
       if (!updatedOrder) {
         return res.status(404).json({ message: "Order not found" });
@@ -737,6 +714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(updatedOrder);
     } catch (error) {
+      console.error("Payment update error:", error);
       res.status(500).json({ message: "Failed to update payment status" });
     }
   });
