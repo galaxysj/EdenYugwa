@@ -721,6 +721,12 @@ export default function Admin() {
   // Filter orders by status
   const filterOrdersByStatus = (status: string) => {
     if (status === "all") return orders;
+    if (status === "delivered") {
+      // 발송완료: status가 delivered이거나 sellerShipped가 true인 주문
+      return orders.filter((order: Order) => 
+        order.status === status || (order.sellerShipped === true)
+      );
+    }
     return orders.filter((order: Order) => order.status === status);
   };
 
@@ -883,7 +889,7 @@ export default function Admin() {
   const pendingOrders = getFilteredOrdersList(filterOrdersByStatus("pending"));
   const scheduledOrders = getFilteredOrdersList(filterOrdersByStatus("scheduled"));
   const sellerShippedOrders = getFilteredOrdersList(filterOrdersByStatus("seller_shipped"));
-  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered").filter((order: Order) => order.paymentStatus !== "refunded"));
+  const deliveredOrders = getFilteredOrdersList(filterOrdersByStatus("delivered"));
   const refundedOrders = getFilteredOrdersList(orders.filter((order: Order) => order.paymentStatus === "refunded"));
 
   // Render revenue report function
