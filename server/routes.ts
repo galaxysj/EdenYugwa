@@ -18,10 +18,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, name, phoneNumber } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ message: "사용자명과 비밀번호를 입력해주세요" });
+      if (!username || !password || !name || !phoneNumber) {
+        return res.status(400).json({ message: "모든 필드를 입력해주세요" });
       }
       
       if (password.length < 6) {
@@ -35,13 +35,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create new user
-      const newUser = await userService.createUser({ username, password, role: 'user', isActive: true });
+      const newUser = await userService.createUser({ 
+        username, 
+        password, 
+        name, 
+        phoneNumber, 
+        role: 'user', 
+        isActive: true 
+      });
       
       res.status(201).json({ 
         message: "회원가입이 완료되었습니다", 
         user: { 
           id: newUser.id, 
           username: newUser.username, 
+          name: newUser.name,
+          phoneNumber: newUser.phoneNumber,
           role: newUser.role 
         } 
       });

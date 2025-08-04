@@ -15,6 +15,8 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +24,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !password || !confirmPassword) {
+    if (!username || !password || !confirmPassword || !name || !phoneNumber) {
       setError("모든 필드를 입력해주세요");
       return;
     }
@@ -46,7 +48,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, name, phoneNumber }),
       });
 
       const data = await response.json();
@@ -59,6 +61,8 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       setUsername("");
       setPassword("");
       setConfirmPassword("");
+      setName("");
+      setPhoneNumber("");
       
       setTimeout(() => {
         onSuccess?.();
@@ -132,6 +136,32 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
               placeholder="비밀번호를 다시 입력하세요"
               required
               data-testid="input-confirm-password"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="name">이름</Label>
+            <Input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="이름을 입력하세요"
+              required
+              data-testid="input-name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber">전화번호</Label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="전화번호를 입력하세요 (예: 010-1234-5678)"
+              required
+              data-testid="input-phone-number"
             />
           </div>
 

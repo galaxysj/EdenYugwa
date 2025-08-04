@@ -12,6 +12,8 @@ export class UserService {
     const [user] = await db.insert(users).values({
       username: userData.username,
       passwordHash: hashedPassword,
+      name: userData.name || "",
+      phoneNumber: userData.phoneNumber || "",
       role: userData.role,
       isActive: userData.isActive ?? true
     }).returning();
@@ -101,6 +103,8 @@ export class UserService {
         await this.createUser({
           username: adminUsername,
           password: adminPassword,
+          name: "관리자",
+          phoneNumber: "",
           role: 'admin',
           isActive: true
         });
@@ -115,6 +119,8 @@ export class UserService {
         await this.createUser({
           username: managerUsername,
           password: managerPassword,
+          name: "매니저",
+          phoneNumber: "",
           role: 'manager',
           isActive: true
         });

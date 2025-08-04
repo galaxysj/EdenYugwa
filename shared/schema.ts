@@ -83,6 +83,8 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: varchar("username", { length: 50 }).notNull().unique(),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull().default(""),
+  phoneNumber: varchar("phone_number", { length: 20 }).notNull().default(""),
   role: text("role").notNull().default("user"), // 'admin', 'manager', 'user'
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -96,6 +98,8 @@ export const insertUserSchema = createInsertSchema(users).omit({
   lastLoginAt: true,
 }).extend({
   password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
+  name: z.string().min(1, "이름을 입력해주세요"),
+  phoneNumber: z.string().min(1, "전화번호를 입력해주세요"),
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
