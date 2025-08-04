@@ -532,6 +532,7 @@ export default function ManagerDashboard() {
                             />
                           </th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
+                          <th className="text-center py-2 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">예약발송일</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금자</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">제품</th>
@@ -579,6 +580,18 @@ export default function ManagerDashboard() {
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
                                 </div>
                               ) : null}
+                            </td>
+                            <td className="py-2 px-2">
+                              {order.scheduledDate ? (
+                                <div 
+                                  className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                  title="클릭하여 예약발송일 수정"
+                                >
+                                  {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400">-</span>
+                              )}
                             </td>
                             <td className="py-2 px-2">
                               <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
