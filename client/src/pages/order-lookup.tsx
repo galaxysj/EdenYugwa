@@ -122,6 +122,22 @@ export default function OrderLookup() {
     });
   };
 
+  // 배송주소 마스킹 함수 (시/구까지만 표시)
+  const maskAddress = (address: string) => {
+    // 예: "서울특별시 강남구 테헤란로 123 건물명 101호" → "서울 강남구 ***"
+    const parts = address.split(' ');
+    if (parts.length >= 2) {
+      let city = parts[0];
+      let district = parts[1];
+      
+      // "서울특별시" → "서울", "경기도" → "경기" 등으로 축약
+      city = city.replace(/특별시|광역시|도$/g, '');
+      
+      return `${city} ${district} ***`;
+    }
+    return address.substring(0, Math.min(10, address.length)) + ' ***';
+  };
+
 
 
   return (
@@ -302,8 +318,7 @@ export default function OrderLookup() {
                           <div>
                             <span className="text-gray-600">주소: </span>
                             <span className="font-medium">
-                              {order.zipCode && `(${order.zipCode}) `}
-                              {order.address1} {order.address2}
+                              {maskAddress(`${order.address1} ${order.address2}`)}
                             </span>
                           </div>
 
