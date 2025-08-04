@@ -453,6 +453,7 @@ export default function AdminSettingsPage() {
             <DialogDescription>
               현재 매니저 "{editingManager?.username}"를 다른 회원가입자로 교체합니다. 
               기존 매니저는 일반 사용자로 변경되고, 선택한 사용자가 새로운 매니저가 됩니다.
+              모든 회원가입된 사용자 중에서 선택할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
           
@@ -461,20 +462,20 @@ export default function AdminSettingsPage() {
               <label className="text-sm font-medium">새 매니저로 지정할 사용자 선택</label>
               <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                 <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="일반 사용자를 선택하세요" />
+                  <SelectValue placeholder="회원가입된 사용자를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
                   {allUsers
-                    .filter(user => user.role === 'user' && user.id !== editingManager?.id)
+                    .filter(user => user.id !== editingManager?.id)
                     .map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.username} - {user.name} ({user.phoneNumber})
+                        {user.username} - {user.name} ({user.phoneNumber}) {user.role === 'manager' ? '(매니저)' : user.role === 'admin' ? '(관리자)' : '(일반회원)'}
                       </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
-                일반 사용자 권한을 가진 회원만 매니저로 지정할 수 있습니다.
+                회원가입된 모든 사용자 중에서 매니저로 지정할 수 있습니다. 권한은 자동으로 매니저로 변경됩니다.
               </p>
             </div>
 
