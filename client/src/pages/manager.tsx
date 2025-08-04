@@ -1132,6 +1132,15 @@ function Manager() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 text-xs text-gray-600 hover:bg-gray-50"
+                >
+                  ← 홈으로
+                </Button>
+              </Link>
               <h1 className="text-2xl font-bold text-gray-900">에덴한과 매니저</h1>
             </div>
             <div className="flex items-center gap-2">
