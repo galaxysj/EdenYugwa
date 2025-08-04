@@ -270,6 +270,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req as any).user?.id;
       const orderId = parseInt(req.params.id);
       
+      console.log(`사용자 주문 수정 요청 - 사용자 ID: ${userId}, 주문 ID: ${orderId}`);
+      console.log('요청 데이터:', req.body);
+      
       if (!userId) {
         return res.status(401).json({ message: "사용자 정보가 없습니다" });
       }
