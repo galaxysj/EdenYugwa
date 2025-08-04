@@ -447,14 +447,6 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
     try {
-      // 업데이트 전 현재 주문 상태 확인
-      const currentOrder = await this.getOrder(id);
-      console.log(`[판매자발송] 업데이트 전 주문 ${id} 상태:`, {
-        paymentStatus: currentOrder?.paymentStatus,
-        status: currentOrder?.status,
-        sellerShipped: currentOrder?.sellerShipped
-      });
-      
       const updateData: any = { 
         sellerShipped,
         sellerShippedDate: sellerShipped ? sellerShippedDate : null
@@ -466,7 +458,7 @@ export class DatabaseStorage implements IStorage {
         updateData.deliveredDate = sellerShippedDate;
       }
       
-      console.log(`[판매자발송] 주문 ${id} 업데이트 데이터:`, updateData);
+      console.log(`Updating order ${id} with data:`, updateData);
       
       const [order] = await db
         .update(orders)
@@ -474,12 +466,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(orders.id, id))
         .returning();
         
-      console.log(`[판매자발송] 업데이트 후 주문 ${id} 상태:`, {
-        paymentStatus: order?.paymentStatus,
-        status: order?.status,
-        sellerShipped: order?.sellerShipped
-      });
-      
+      console.log(`Update result for order ${id}:`, order ? 'success' : 'not found');
       return order || undefined;
     } catch (error) {
       console.error(`Error updating order ${id}:`, error);
