@@ -181,11 +181,22 @@ export default function ManagerDashboard() {
     mutationFn: async ({ id, sellerShipped }: { id: number; sellerShipped: boolean }) => {
       return api.patch(`/api/orders/${id}/seller-shipped`, { sellerShipped });
     },
-    onSuccess: () => {
+    onSuccess: async (data, { id, sellerShipped }) => {
+      // 판매자 발송 완료 시 자동으로 주문 상태를 delivered로 변경
+      if (sellerShipped) {
+        try {
+          await api.patch(`/api/orders/${id}/status`, { status: 'delivered' });
+        } catch (error) {
+          console.error('주문 상태 업데이트 실패:', error);
+        }
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       toast({
         title: "발송 상태 변경",
-        description: "판매자 발송 상태가 변경되었습니다.",
+        description: sellerShipped 
+          ? "판매자 발송이 완료되고 주문상태가 발송완료로 변경되었습니다."
+          : "판매자 발송 상태가 변경되었습니다.",
       });
     },
     onError: (error: any) => {
@@ -223,11 +234,21 @@ export default function ManagerDashboard() {
     mutationFn: async (orderIds: number[]) => {
       return api.patch('/api/orders/seller-shipped', { orderIds });
     },
-    onSuccess: () => {
+    onSuccess: async (data, orderIds) => {
+      // 일괄 발송 완료 시 모든 주문의 상태를 delivered로 변경
+      try {
+        const statusUpdatePromises = orderIds.map(id => 
+          api.patch(`/api/orders/${id}/status`, { status: 'delivered' })
+        );
+        await Promise.all(statusUpdatePromises);
+      } catch (error) {
+        console.error('일괄 주문 상태 업데이트 실패:', error);
+      }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       toast({
         title: "일괄 발송 처리 완료",
-        description: `${selectedOrders.size}개 주문이 발송 처리되었습니다.`,
+        description: `${selectedOrders.size}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
       });
       setSelectedOrders(new Set());
     },
