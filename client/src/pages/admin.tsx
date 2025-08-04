@@ -642,6 +642,8 @@ export default function Admin() {
     },
   });
 
+
+
   // Toggle selection for trash items
   const toggleTrashSelection = (orderId: number) => {
     const newSelection = new Set(selectedTrashItems);
@@ -2505,15 +2507,9 @@ export default function Admin() {
 
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      const results = await Promise.all(
-        orderIds.map(orderId => 
-          api.orders.updateSellerShipped(orderId, true)
-            .then(() => api.orders.updateStatus(orderId, 'delivered'))
-        )
-      );
-      return results;
+      return api.patch('/api/orders/seller-shipped', { orderIds });
     },
-    onSuccess: (results, orderIds) => {
+    onSuccess: (data, orderIds) => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setSelectedShippingItems(new Set());
       toast({
@@ -2521,10 +2517,10 @@ export default function Admin() {
         description: `${orderIds.length}개 주문이 발송완료로 변경되었습니다.`,
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "일괄 발송 실패",
-        description: "일괄 발송 처리 중 오류가 발생했습니다.",
+        description: error.message || "일괄 발송 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },

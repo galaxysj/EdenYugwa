@@ -525,7 +525,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const orderId of orderIds) {
         try {
           console.log(`Updating order ${orderId} to seller shipped...`);
-          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, new Date());
+          const currentDate = new Date();
+          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, currentDate);
           if (updatedOrder) {
             results.push(updatedOrder);
             console.log(`Successfully updated order ${orderId}`);
@@ -535,6 +536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error);
+          console.error(`Error details:`, error);
           errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
         }
       }
