@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Search, Package, MapPin, User, Calendar, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import type { Order } from "@shared/schema";
 
@@ -55,6 +56,7 @@ export default function OrderLookup() {
   const [hasSearched, setHasSearched] = useState(false);
 
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
 
   const form = useForm<LookupFormData>({
     resolver: zodResolver(lookupSchema),
@@ -63,6 +65,48 @@ export default function OrderLookup() {
       customerName: "",
     },
   });
+
+  // 로그인된 사용자가 있으면 자동으로 주문 조회
+  useEffect(() => {
+    if (isAuthenticated && user && user.phoneNumber && user.name) {
+      const autoLookup = async () => {
+        setIsLoading(true);
+        try {
+          const queryParams = new URLSearchParams();
+          queryParams.append('phone', user.phoneNumber);
+          queryParams.append('name', user.name);
+          
+          const response = await fetch(`/api/orders/lookup?${queryParams.toString()}`);
+          
+          if (response.status === 404) {
+            // 404인 경우 주문 내역이 없음
+            setOrders([]);
+            setHasSearched(true);
+            return;
+          }
+          
+          if (!response.ok) {
+            throw new Error("주문 조회에 실패했습니다");
+          }
+
+          const foundOrders = await response.json();
+          setOrders(foundOrders);
+          setHasSearched(true);
+          
+          // 폼에 사용자 정보를 미리 채움
+          form.setValue('phoneNumber', user.phoneNumber);
+          form.setValue('customerName', user.name);
+        } catch (error) {
+          console.error("Auto lookup error:", error);
+          // 자동 조회 실패는 에러 토스트를 표시하지 않음
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      autoLookup();
+    }
+  }, [isAuthenticated, user, form]);
 
   const onSubmit = async (data: LookupFormData) => {
     setIsLoading(true);

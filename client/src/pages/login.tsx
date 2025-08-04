@@ -18,7 +18,7 @@ export default function LoginPage() {
       } else if (user.role === 'manager') {
         navigate("/manager"); // 매니저는 매니저 페이지로
       } else {
-        navigate("/order-lookup"); // 일반 사용자는 주문조회로
+        navigate("/"); // 일반 사용자는 홈으로
       }
     }
   }, [isAuthenticated, isLoading, user, navigate]);
