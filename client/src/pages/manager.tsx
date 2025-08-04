@@ -125,11 +125,11 @@ export default function Manager() {
     queryKey: ["/api/admin-settings"],
   });
 
-  // 확인된 결제 주문만 매니저에게 표시
-  const allConfirmedOrders = (orders as Order[]).filter(order => order.paymentStatus === 'confirmed');
+  // 매니저는 모든 주문을 볼 수 있음 (관리자와 동일)
+  const allOrders = (orders as Order[]);
 
   // 매니저 주문 정렬 함수 - 발송주문(scheduled) 상태를 맨 아래로
-  const managerSortedOrders = [...allConfirmedOrders].sort((a, b) => {
+  const managerSortedOrders = [...allOrders].sort((a, b) => {
     // scheduled 상태를 맨 아래로
     if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
     if (b.status === 'scheduled' && a.status !== 'scheduled') return -1;
@@ -210,6 +210,28 @@ export default function Manager() {
     },
   });
 
+  // 일괄 판매자 발송 mutation
+  const bulkSellerShippedMutation = useMutation({
+    mutationFn: async (orderIds: number[]) => {
+      return api.patch('/api/orders/seller-shipped', { orderIds });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
+      toast({
+        title: "일괄 발송 완료",
+        description: `${selectedOrderItems.size}개 주문이 발송 처리되었습니다.`,
+      });
+      setSelectedOrderItems(new Set());
+    },
+    onError: (error: any) => {
+      toast({
+        title: "일괄 발송 실패",
+        description: error.message || "일괄 발송 처리 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Excel 다운로드 함수
   const exportToExcel = () => {
     const excelData = filteredOrders.map(order => ({
@@ -223,7 +245,7 @@ export default function Manager() {
         order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
         order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
       ].filter(Boolean).join(', '),
-      '총금액': `${order.totalAmount?.toLocaleString() || 0}원`,
+
       '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
                  order.paymentStatus === 'partial' ? '부분결제' :
                  order.paymentStatus === 'refunded' ? '환불' : '입금대기',
@@ -301,6 +323,15 @@ export default function Manager() {
                         </Button>
                         <Button
                           size="sm"
+                          variant="outline"
+                          onClick={() => bulkSellerShippedMutation.mutate(Array.from(selectedOrderItems))}
+                          disabled={bulkSellerShippedMutation.isPending}
+                          className="bg-white"
+                        >
+                          {bulkSellerShippedMutation.isPending ? '처리중...' : '일괄 발송처리'}
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={() => setSelectedOrderItems(new Set())}
                         >
@@ -319,7 +350,7 @@ export default function Manager() {
                     onClick={() => setOrderViewTab('all')}
                     className="h-8 text-xs"
                   >
-                    전체보기 ({allConfirmedOrders.length})
+                    전체보기 ({allOrders.length})
                   </Button>
                   <Button
                     variant={orderViewTab === 'scheduled' ? 'default' : 'ghost'}
@@ -327,7 +358,7 @@ export default function Manager() {
                     onClick={() => setOrderViewTab('scheduled')}
                     className="h-8 text-xs"
                   >
-                    발송주문 ({allConfirmedOrders.filter(o => o.status === 'scheduled').length})
+                    발송주문 ({allOrders.filter(o => o.status === 'scheduled').length})
                   </Button>
                   <Button
                     variant={orderViewTab === 'delivered' ? 'default' : 'ghost'}
@@ -335,7 +366,7 @@ export default function Manager() {
                     onClick={() => setOrderViewTab('delivered')}
                     className="h-8 text-xs"
                   >
-                    발송완료 ({allConfirmedOrders.filter(o => o.status === 'delivered').length})
+                    발송완료 ({allOrders.filter(o => o.status === 'delivered').length})
                   </Button>
                 </div>
 
@@ -352,7 +383,11 @@ export default function Manager() {
                       {filteredOrders.map((order) => {
                         const StatusIcon = statusIcons[order.status as keyof typeof statusIcons] || Clock;
                         return (
-                          <Card key={order.id} className="border-l-4 border-l-blue-500">
+                          <Card key={order.id} className={`border-l-4 ${
+                            order.paymentStatus !== 'confirmed' 
+                              ? 'border-l-red-500 bg-red-50' 
+                              : 'border-l-blue-500'
+                          }`}>
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
@@ -377,12 +412,12 @@ export default function Manager() {
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-lg font-bold text-eden-primary">
-                                    {order.totalAmount?.toLocaleString() || 0}원
-                                  </div>
                                   <div className="text-sm text-gray-500">
                                     {order.customerPhone}
                                   </div>
+                                  {order.paymentStatus !== 'confirmed' && (
+                                    <div className="text-xs text-red-600 font-bold">미입금</div>
+                                  )}
                                 </div>
                               </div>
                               
