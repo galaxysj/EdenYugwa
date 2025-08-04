@@ -274,6 +274,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create new order
   app.post("/api/orders", async (req, res) => {
     try {
+      console.log("주문 요청 데이터:", JSON.stringify(req.body, null, 2));
+      
       // scheduledDate를 Date 객체로 변환
       if (req.body.scheduledDate && typeof req.body.scheduledDate === 'string') {
         req.body.scheduledDate = new Date(req.body.scheduledDate);
@@ -287,6 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (validatedData as any).orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
         // 비로그인 사용자: orderPassword 필수
+        console.log("orderPassword 확인:", req.body.orderPassword);
         if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
           return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)가 필요합니다." });
         }

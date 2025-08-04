@@ -96,6 +96,8 @@ export default function PublicOrder() {
   });
 
   const onSubmit = (data: PublicOrderForm) => {
+    console.log("폼 데이터:", data);
+    
     // Calculate total amount
     const smallBoxPrice = 30000;
     const largeBoxPrice = 50000;
@@ -106,7 +108,7 @@ export default function PublicOrder() {
       (data.largeBoxQuantity * largeBoxPrice) +
       (data.wrappingQuantity * wrappingPrice);
 
-    const orderData: InsertOrder = {
+    const orderData = {
       customerName: data.customerName,
       customerPhone: data.customerPhone,
       zipCode: data.zipCode || null,
@@ -128,10 +130,11 @@ export default function PublicOrder() {
       scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
       orderPassword: data.orderPassword, // 주문 비밀번호 추가
       totalAmount,
-      status: "pending",
-      paymentStatus: "pending",
+      status: "pending" as const,
+      paymentStatus: "pending" as const,
     };
 
+    console.log("전송할 주문 데이터:", orderData);
     createOrderMutation.mutate(orderData);
   };
 
