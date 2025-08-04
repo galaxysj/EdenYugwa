@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, isManagerOrAdmin, isAdmin } = useAuth();
+  const { isAuthenticated, isManagerOrAdmin, isAdmin, isManager } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -69,7 +69,14 @@ export default function Home() {
                   </Button>
                 </Link>
               )}
-              {isAuthenticated && isManagerOrAdmin && (
+              {isAuthenticated && isAdmin && (
+                <Link href="/manager">
+                  <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
+                    매니저
+                  </Button>
+                </Link>
+              )}
+              {isAuthenticated && isManager && !isAdmin && (
                 <Link href="/manager">
                   <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
                     매니저
@@ -148,7 +155,17 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                {isAuthenticated && isManagerOrAdmin && (
+                {isAuthenticated && isAdmin && (
+                  <Link href="/manager">
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
+                    >
+                      매니저
+                    </button>
+                  </Link>
+                )}
+                {isAuthenticated && isManager && !isAdmin && (
                   <Link href="/manager">
                     <button 
                       onClick={() => setIsMobileMenuOpen(false)}

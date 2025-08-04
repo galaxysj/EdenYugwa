@@ -75,9 +75,9 @@ function AdminSettingsDialog() {
   
   useEffect(() => {
     if (settings) {
-      setAdminName(settings?.adminName || "");
-      setAdminPhone(settings?.adminPhone || "");
-      setBankInfo(settings?.bankInfo || "");
+      setAdminName((settings as any)?.adminName || "");
+      setAdminPhone((settings as any)?.adminPhone || "");
+      setBankInfo((settings as any)?.bankInfo || "");
     }
   }, [settings]);
   
@@ -178,7 +178,7 @@ function Manager() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   
   // Filter states
   const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
@@ -1136,15 +1136,17 @@ function Manager() {
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 bg-blue-50 rounded-lg p-1">
-                <Link href="/admin">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    관리자
-                  </Button>
-                </Link>
+                {isAdmin && (
+                  <Link href="/admin">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      관리자
+                    </Button>
+                  </Link>
+                )}
                 <Button 
                   variant="default" 
                   size="sm" 
