@@ -3037,7 +3037,13 @@ export default function Admin() {
                   {renderRevenueReport()}
                 </TabsContent>
                 
-
+                <TabsContent value="customers" className="mt-6">
+                  <CustomerManagement />
+                </TabsContent>
+                
+                <TabsContent value="users" className="mt-6">
+                  <UserManagement />
+                </TabsContent>
 
                 <TabsContent value="trash" className="mt-6">
                   {isLoadingTrash ? (

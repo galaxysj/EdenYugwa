@@ -12,8 +12,6 @@ import Login from "@/pages/login";
 import OrderLookup from "@/pages/order-lookup";
 import OrderEdit from "@/pages/order-edit";
 import PublicOrder from "@/pages/public-order";
-import UserManagementPage from "@/pages/user-management";
-import CustomerManagementPage from "@/pages/customer-management";
 import { ProtectedRoute } from "@/components/protected-route";
 
 function Router() {
@@ -32,16 +30,7 @@ function Router() {
           <AdminSettings />
         </ProtectedRoute>
       </Route>
-      <Route path="/user-management">
-        <ProtectedRoute requiredRole="admin">
-          <UserManagementPage />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/customer-management">
-        <ProtectedRoute requiredRole="admin">
-          <CustomerManagementPage />
-        </ProtectedRoute>
-      </Route>
+
       <Route path="/manager">
         <ProtectedRoute requiredRole="manager">
           <Manager />

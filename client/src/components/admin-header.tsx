@@ -71,26 +71,28 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   매출관리
                 </Button>
               )}
-              <Link href="/customer-management">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className={`text-white hover:text-gray-200 ${location === '/customer-management' ? 'bg-white/20' : 'bg-white/10'}`}
-                >
-                  <Users className="h-4 w-4 mr-1" />
-                  고객관리
-                </Button>
-              </Link>
-              <Link href="/user-management">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className={`text-white hover:text-gray-200 ${location === '/user-management' ? 'bg-white/20' : 'bg-white/10'}`}
-                >
-                  <Users className="h-4 w-4 mr-1" />
-                  회원관리
-                </Button>
-              </Link>
+              {setActiveTab && (
+                <>
+                  <Button 
+                    onClick={() => setActiveTab('customers')}
+                    variant="ghost" 
+                    size="sm"
+                    className={`text-white hover:text-gray-200 ${activeTab === 'customers' ? 'bg-white/20' : 'bg-white/10'}`}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    고객관리
+                  </Button>
+                  <Button 
+                    onClick={() => setActiveTab('users')}
+                    variant="ghost" 
+                    size="sm"
+                    className={`text-white hover:text-gray-200 ${activeTab === 'users' ? 'bg-white/20' : 'bg-white/10'}`}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    회원관리
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
