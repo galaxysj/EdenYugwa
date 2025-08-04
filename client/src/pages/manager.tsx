@@ -536,7 +536,8 @@ export default function ManagerDashboard() {
                           <th className="text-left p-3 font-medium text-gray-700">주문일</th>
                           <th className="text-left p-3 font-medium text-gray-700">제품</th>
                           <th className="text-left p-3 font-medium text-gray-700">연락처</th>
-                          <th className="text-left p-3 font-medium text-gray-700">배송지/메모</th>
+                          <th className="text-left p-3 font-medium text-gray-700">배송지</th>
+                          <th className="text-left p-3 font-medium text-gray-700">메모</th>
                           <th className="text-left p-3 font-medium text-gray-700">입금상태</th>
                           <th className="text-left p-3 font-medium text-gray-700">주문상태</th>
                           <th className="text-left p-3 font-medium text-gray-700">입금확인</th>
@@ -592,6 +593,11 @@ export default function ManagerDashboard() {
                                 {checkRemoteArea(order.address1) && (
                                   <div className="text-xs text-red-600 font-bold">배송비추가</div>
                                 )}
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="max-w-xs">
+                                <div className="text-xs text-gray-600 truncate">{order.memo || '-'}</div>
                               </div>
                             </td>
                             <td className="p-3">
