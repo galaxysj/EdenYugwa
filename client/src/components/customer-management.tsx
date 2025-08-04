@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -449,6 +449,28 @@ export function CustomerManagement() {
     return amount.toLocaleString() + "원";
   };
 
+  // 회원별로 고객을 그룹화하는 함수
+  const groupCustomersByUser = (customers: Customer[]) => {
+    const userGroups: { [key: string]: Customer[] } = {};
+    const nonMembers: Customer[] = [];
+
+    customers.forEach(customer => {
+      if (customer.userId && customer.userRegisteredName && customer.userRegisteredPhone) {
+        const userKey = `${customer.userId}-${customer.userRegisteredName}-${customer.userRegisteredPhone}`;
+        if (!userGroups[userKey]) {
+          userGroups[userKey] = [];
+        }
+        userGroups[userKey].push(customer);
+      } else {
+        nonMembers.push(customer);
+      }
+    });
+
+    return { userGroups, nonMembers };
+  };
+
+  const { userGroups, nonMembers } = groupCustomersByUser(customers || []);
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -692,7 +714,169 @@ export function CustomerManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {customers.map((customer) => (
+                    {/* 회원별 그룹 렌더링 */}
+                    {Object.entries(userGroups).map(([userKey, groupCustomers], groupIndex) => {
+                      const firstCustomer = groupCustomers[0];
+                      const totalOrderCount = groupCustomers.reduce((sum, c) => sum + c.orderCount, 0);
+                      const totalSpent = groupCustomers.reduce((sum, c) => sum + c.totalSpent, 0);
+                      const latestOrderDate = groupCustomers.reduce((latest, c) => {
+                        if (!latest) return c.lastOrderDate;
+                        if (!c.lastOrderDate) return latest;
+                        return new Date(c.lastOrderDate) > new Date(latest) ? c.lastOrderDate : latest;
+                      }, null as string | Date | null);
+
+                      return (
+                        <React.Fragment key={userKey}>
+                          {/* 회원 그룹 헤더 */}
+                          <TableRow className="bg-green-50 border-t-2 border-green-200">
+                            <TableCell>
+                              <Checkbox
+                                checked={groupCustomers.every(c => selectedCustomers.has(c.id))}
+                                indeterminate={groupCustomers.some(c => selectedCustomers.has(c.id)) && !groupCustomers.every(c => selectedCustomers.has(c.id))}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    groupCustomers.forEach(c => selectedCustomers.add(c.id));
+                                  } else {
+                                    groupCustomers.forEach(c => selectedCustomers.delete(c.id));
+                                  }
+                                  setSelectedCustomers(new Set(selectedCustomers));
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell colSpan={2}>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-green-600" />
+                                  <Badge variant="outline" className="text-green-700 border-green-300">
+                                    회원연결 ({groupCustomers.length}개 고객명)
+                                  </Badge>
+                                </div>
+                                <div className="text-sm font-medium text-green-700">
+                                  {firstCustomer.userRegisteredName} ({formatPhoneNumber(firstCustomer.userRegisteredPhone!)})
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  고객명: {groupCustomers.map(c => c.customerName).join(', ')}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-gray-600">
+                              여러 주소
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <Package className="h-4 w-4 text-gray-500" />
+                                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                  {totalOrderCount}회 (통합)
+                                </Badge>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center font-medium text-green-700">
+                              {formatAmount(totalSpent)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {formatLastOrderDate(latestOrderDate)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="text-xs text-gray-500">
+                                개별 관리
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          
+                          {/* 그룹 내 개별 고객들 */}
+                          {groupCustomers.map((customer, index) => (
+                            <TableRow key={customer.id} className="bg-green-25">
+                              <TableCell className="pl-8">
+                                <Checkbox
+                                  checked={selectedCustomers.has(customer.id)}
+                                  onCheckedChange={() => toggleCustomerSelection(customer.id)}
+                                />
+                              </TableCell>
+                              <TableCell className="pl-8">
+                                <div className="text-xs text-gray-500">
+                                  └ 개별 고객
+                                </div>
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4 text-gray-500" />
+                                  {customer.customerName}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-gray-500" />
+                                  {formatPhoneNumber(customer.customerPhone)}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-gray-500" />
+                                  <div className="flex items-center gap-2">
+                                    <span className="max-w-xs truncate" title={getFullAddress(customer)}>
+                                      {getFullAddress(customer)}
+                                    </span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => openAddressDialog(customer.customerPhone)}
+                                      className="h-6 px-2 text-xs"
+                                    >
+                                      <Eye className="h-3 w-3 mr-1" />
+                                      주소목록
+                                    </Button>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-1">
+                                  <Package className="h-4 w-4 text-gray-500" />
+                                  <Badge variant="secondary">
+                                    {customer.orderCount}회 (2년)
+                                  </Badge>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center font-medium">
+                                {formatAmount(customer.totalSpent)}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {formatLastOrderDate(customer.lastOrderDate)}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => openSmsDialog(customer)}
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    <MessageSquare className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEdit(customer)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(customer)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
+
+                    {/* 비회원 고객들 */}
+                    {nonMembers.map((customer) => (
                       <TableRow key={customer.id}>
                         <TableCell>
                           <Checkbox
@@ -701,28 +885,10 @@ export function CustomerManagement() {
                           />
                         </TableCell>
                         <TableCell>
-                          {customer.userId ? (
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4 text-green-600" />
-                                <Badge variant="outline" className="text-green-700 border-green-300">
-                                  회원연결
-                                </Badge>
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                {customer.userRegisteredName && customer.userRegisteredPhone && (
-                                  <div>
-                                    {customer.userRegisteredName} ({formatPhoneNumber(customer.userRegisteredPhone)})
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-gray-400" />
-                              <span className="text-gray-500 text-sm">비회원</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-500 text-sm">비회원</span>
+                          </div>
                         </TableCell>
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
