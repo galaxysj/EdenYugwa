@@ -243,7 +243,7 @@ export default function OrderLookup() {
                         </FormControl>
                         <FormMessage />
                         <div className="text-sm text-gray-500">
-                          비밀번호를 입력하면 전체 주문 정보를 확인할 수 있습니다.
+                          비밀번호를 입력하지 않으면 개인정보 보호를 위해 일부 정보가 마스킹됩니다.
                         </div>
                       </FormItem>
                     )}

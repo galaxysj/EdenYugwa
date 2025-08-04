@@ -58,6 +58,7 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
     z.string().transform((str) => new Date(str)), 
     z.null()
   ]).optional().nullable(),
+  orderPassword: z.string().optional().nullable(), // 주문 비밀번호는 선택사항
 });
 
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
