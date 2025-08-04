@@ -190,6 +190,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's own orders (authenticated users)
+  app.get("/api/my-orders", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "사용자 정보가 없습니다" });
+      }
+      
+      const orders = await storage.getOrdersByUserId(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      res.status(500).json({ message: "주문 조회에 실패했습니다" });
+    }
+  });
+
   // Get all orders (for admin and manager)
   app.get("/api/orders", requireManagerOrAdmin, async (req, res) => {
     try {

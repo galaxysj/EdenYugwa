@@ -68,21 +68,29 @@ export default function OrderLookup() {
 
   // 로그인된 사용자의 정보를 폼에 미리 채우고 자동으로 주문 조회
   useEffect(() => {
-    if (isAuthenticated && user && user.phoneNumber && user.name) {
-      form.setValue('phoneNumber', user.phoneNumber);
-      form.setValue('customerName', user.name);
+    if (isAuthenticated && user) {
+      console.log('자동 주문 조회 시작 - 사용자 정보:', { 
+        userId: user.id,
+        phoneNumber: user.phoneNumber, 
+        name: user.name 
+      });
       
-      // 자동으로 주문 조회 실행
+      // 폼에 사용자 정보 미리 입력 (있다면)
+      if (user.phoneNumber) form.setValue('phoneNumber', user.phoneNumber);
+      if (user.name) form.setValue('customerName', user.name);
+      
+      // 로그인된 사용자의 주문을 직접 조회
       const autoSearch = async () => {
         setIsLoading(true);
         try {
-          const queryParams = new URLSearchParams();
-          queryParams.append('phone', user.phoneNumber);
-          queryParams.append('name', user.name);
+          const response = await fetch('/api/my-orders', {
+            credentials: 'include'
+          });
           
-          const response = await fetch(`/api/orders/lookup?${queryParams.toString()}`);
+          console.log('내 주문 조회 응답 상태:', response.status);
           
           if (response.status === 404) {
+            console.log('주문 내역 없음 (404)');
             setOrders([]);
             setHasSearched(true);
             return;
@@ -93,6 +101,7 @@ export default function OrderLookup() {
           }
           
           const foundOrders = await response.json();
+          console.log('찾은 주문 수:', foundOrders.length);
           setOrders(foundOrders);
           setHasSearched(true);
           
@@ -106,6 +115,11 @@ export default function OrderLookup() {
       };
       
       autoSearch();
+    } else {
+      console.log('자동 조회 조건 미충족:', { 
+        isAuthenticated, 
+        hasUser: !!user
+      });
     }
   }, [isAuthenticated, user, form]);
 

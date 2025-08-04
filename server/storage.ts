@@ -289,6 +289,12 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(orders.createdAt));
   }
 
+  async getOrdersByUserId(userId: number): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, false)))
+      .orderBy(desc(orders.createdAt));
+  }
+
   async updateOrder(id: number, updateData: Partial<InsertOrder>): Promise<Order | undefined> {
     // Convert string dates to Date objects if needed
     const processedData: any = { ...updateData };
