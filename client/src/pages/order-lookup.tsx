@@ -374,8 +374,8 @@ export default function OrderLookup() {
                                       {customerName}
                                     </div>
                                     <div className="text-sm text-gray-500 space-y-1">
-                                      <div>전화번호: {maskPhoneNumber(phone)}</div>
-                                      <div>주소: {maskAddress(address)}</div>
+                                      <div>전화번호: {isAuthenticated ? phone : maskPhoneNumber(phone)}</div>
+                                      <div>주소: {isAuthenticated ? address : maskAddress(address)}</div>
                                       <div>주문 {identityOrders.length}건</div>
                                     </div>
                                   </div>
@@ -473,7 +473,7 @@ export default function OrderLookup() {
                           </div>
                           <div>
                             <span className="text-gray-600">전화번호: </span>
-                            <span className="font-medium">{maskPhoneNumber(order.customerPhone)}</span>
+                            <span className="font-medium">{isAuthenticated ? order.customerPhone : maskPhoneNumber(order.customerPhone)}</span>
                           </div>
                         </div>
                       </div>
@@ -488,7 +488,7 @@ export default function OrderLookup() {
                           <div>
                             <span className="text-gray-600">주소: </span>
                             <span className="font-medium">
-                              {maskAddress(`${order.address1} ${order.address2}`)}
+                              {isAuthenticated ? `${order.address1} ${order.address2}` : maskAddress(`${order.address1} ${order.address2}`)}
                             </span>
                           </div>
 
@@ -522,18 +522,18 @@ export default function OrderLookup() {
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  보자기 수량 × {order.wrappingQuantity}개 (+{maskPrice()})
+                                  보자기 수량 × {order.wrappingQuantity}개 (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
                                 </div>
                               )}
                               {order.shippingFee > 0 && (
                                 <div className="text-gray-600">
-                                  배송비: +{maskPrice()}
+                                  배송비: +{isAuthenticated ? `${order.shippingFee.toLocaleString()}원` : maskPrice()}
                                 </div>
                               )}
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-eden-brown">
-                                {maskPrice()}
+                                {isAuthenticated ? `${order.totalAmount.toLocaleString()}원` : maskPrice()}
                               </div>
                             </div>
                           </div>
