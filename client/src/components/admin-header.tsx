@@ -14,142 +14,151 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
   const [location] = useLocation();
 
   return (
-    <div className="bg-eden-red text-white p-4 sm:p-6">
-      <div className="container mx-auto">
-        {/* 첫 번째 줄: 홈으로 버튼과 제목 */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-2 sm:space-x-4">
+    <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="container mx-auto px-4 sm:px-6">
+        {/* 헤더 상단 */}
+        <div className="flex justify-between items-center py-4 border-b border-gray-100">
+          <div className="flex items-center space-x-4">
             <Link href="/">
-              <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
-                <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">홈으로</span>
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                홈으로
               </Button>
             </Link>
-            <h1 className="text-lg sm:text-2xl font-bold font-korean">
-              <Settings className="inline mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+            <div className="h-6 w-px bg-gray-200"></div>
+            <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+              <Settings className="h-5 w-5 mr-2 text-gray-600" />
               관리자 패널
             </h1>
           </div>
-          <div className="flex items-center space-x-2">
-            <Button 
-              onClick={async () => {
-                try {
-                  const response = await fetch('/api/auth/logout', {
-                    method: 'POST',
-                    credentials: 'include'
-                  });
-                  if (response.ok) {
-                    window.location.href = '/';
-                  }
-                } catch (error) {
-                  console.error('로그아웃 실패:', error);
+          <Button 
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/auth/logout', {
+                  method: 'POST',
+                  credentials: 'include'
+                });
+                if (response.ok) {
+                  window.location.href = '/';
                 }
-              }}
-              variant="ghost" 
-              className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
-            >
-              <LogOut className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">로그아웃</span>
-            </Button>
-          </div>
+              } catch (error) {
+                console.error('로그아웃 실패:', error);
+              }
+            }}
+            variant="outline"
+            className="text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            로그아웃
+          </Button>
         </div>
 
-        {/* 두 번째 줄: 카테고리별 메뉴 */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          {/* 관리 섹션 */}
-          <div className="flex flex-col">
-            <div className="text-sm font-bold mb-2 text-white/80">관리</div>
-            <div className="flex flex-wrap gap-2">
-              {setActiveTab && (
-                <Button 
-                  onClick={() => setActiveTab('revenue')}
-                  variant="ghost" 
-                  size="sm"
-                  className={`text-white hover:text-gray-200 ${activeTab === 'revenue' ? 'bg-white/20' : 'bg-white/10'}`}
-                >
-                  <DollarSign className="h-4 w-4 mr-1" />
-                  매출관리
-                </Button>
-              )}
+        {/* 네비게이션 메뉴 */}
+        <div className="py-3">
+          <div className="flex items-center justify-between">
+            {/* 메인 메뉴 */}
+            <div className="flex items-center space-x-1">
               {setActiveTab && (
                 <>
+                  <Button 
+                    onClick={() => setActiveTab('revenue')}
+                    variant="ghost" 
+                    size="sm"
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                      activeTab === 'revenue' 
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    매출관리
+                  </Button>
                   <Button 
                     onClick={() => setActiveTab('customers')}
                     variant="ghost" 
                     size="sm"
-                    className={`text-white hover:text-gray-200 ${activeTab === 'customers' ? 'bg-white/20' : 'bg-white/10'}`}
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                      activeTab === 'customers' 
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
                   >
-                    <Users className="h-4 w-4 mr-1" />
+                    <Users className="h-4 w-4 mr-2" />
                     고객관리
                   </Button>
                   <Button 
                     onClick={() => setActiveTab('users')}
                     variant="ghost" 
                     size="sm"
-                    className={`text-white hover:text-gray-200 ${activeTab === 'users' ? 'bg-white/20' : 'bg-white/10'}`}
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                      activeTab === 'users' 
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
                   >
-                    <Users className="h-4 w-4 mr-1" />
+                    <Users className="h-4 w-4 mr-2" />
                     회원관리
                   </Button>
                 </>
               )}
             </div>
-          </div>
 
-          {/* 설정 섹션 */}
-          {(handleExcelDownload || costSettingsDialog || passwordChangeDialog || location === '/admin') && (
-            <div className="flex flex-col">
-              <div className="text-sm font-bold mb-2 text-white/80">설정</div>
-              <div className="flex flex-wrap gap-2">
-                <Link href="/admin-settings">
+            {/* 설정 메뉴 */}
+            <div className="flex items-center space-x-1">
+              {(handleExcelDownload || costSettingsDialog || passwordChangeDialog || location === '/admin') && (
+                <>
+                  <Link href="/admin-settings">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                    >
+                      <Cog className="h-4 w-4 mr-2" />
+                      설정
+                    </Button>
+                  </Link>
+                  {costSettingsDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{costSettingsDialog}</div>}
+                  {passwordChangeDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{passwordChangeDialog}</div>}
+                  {handleExcelDownload && (
+                    <Button 
+                      onClick={handleExcelDownload}
+                      variant="ghost" 
+                      size="sm"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      엑셀
+                    </Button>
+                  )}
+                  <div className="h-4 w-px bg-gray-200 mx-2"></div>
+                </>
+              )}
+              
+              {/* 권한 전환 */}
+              <div className="flex items-center bg-gray-50 rounded-lg p-1">
+                <Link href="/admin">
                   <Button 
                     variant="ghost" 
-                    size="sm"
-                    className="text-white hover:text-gray-200 bg-white/10"
+                    size="sm" 
+                    className={`h-7 px-3 text-xs font-medium transition-all ${
+                      location === '/admin' 
+                        ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
                   >
-                    <Cog className="h-4 w-4 mr-1" />
-                    관리자 설정
+                    관리자
                   </Button>
                 </Link>
-                {costSettingsDialog}
-                {passwordChangeDialog}
-                {handleExcelDownload && (
+                <Link href="/manager">
                   <Button 
-                    onClick={handleExcelDownload}
                     variant="ghost" 
-                    size="sm"
-                    className="text-white hover:text-gray-200 bg-white/10"
+                    size="sm" 
+                    className="h-7 px-3 text-xs font-medium text-gray-600 hover:text-gray-900"
                   >
-                    <Download className="h-4 w-4 mr-1" />
-                    엑셀 다운로드
+                    매니저
                   </Button>
-                )}
+                </Link>
               </div>
-            </div>
-          )}
-
-          {/* 권한 섹션 */}
-          <div className="flex flex-col">
-            <div className="text-sm font-bold mb-2 text-white/80">권한</div>
-            <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1">
-              <Link href="/admin">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`h-8 text-xs ${location === '/admin' ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/20 hover:text-white'}`}
-                >
-                  관리자
-                </Button>
-              </Link>
-              <Link href="/manager">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 text-xs text-white/70 hover:bg-white/20 hover:text-white"
-                >
-                  매니저
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
