@@ -62,8 +62,7 @@ const checkRemoteArea = (address: string) => {
 };
 
 // Payment Details Dialog Component
-function PaymentDetailsDialog({ order, onUpdate }: { order: Order; onUpdate: (orderId: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number) => void }) {
-  const [open, setOpen] = useState(false);
+function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order; onUpdate: (orderId: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number) => void; open: boolean; setOpen: (open: boolean) => void }) {
   const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || order.totalAmount.toString());
   const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || "0");
 
@@ -92,12 +91,6 @@ function PaymentDetailsDialog({ order, onUpdate }: { order: Order; onUpdate: (or
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <div className="flex items-center space-x-1 cursor-pointer">
-          <DollarSign className="h-3 w-3 text-green-500" />
-          <span>입금완료</span>
-        </div>
-      </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>입금 내역 입력</DialogTitle>
@@ -470,6 +463,7 @@ export default function Admin() {
   const [sellerShippedFilter, setSellerShippedFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
+  const [showPaymentDetailsDialog, setShowPaymentDetailsDialog] = useState(false);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
 
   // Clear selections when switching tabs
@@ -2511,6 +2505,7 @@ export default function Admin() {
       const order = orders.find((o: Order) => o.id === orderId);
       if (order) {
         setSelectedOrderForPayment(order);
+        setShowPaymentDetailsDialog(true);
       }
     } else if (newPaymentStatus === 'partial') {
       // 부분결제 선택시도 실제 입금금액 입력 다이얼로그 열기
@@ -2965,9 +2960,12 @@ export default function Admin() {
       {selectedOrderForPayment && (
         <PaymentDetailsDialog 
           order={selectedOrderForPayment} 
+          open={showPaymentDetailsDialog}
+          setOpen={setShowPaymentDetailsDialog}
           onUpdate={(orderId, paymentStatus, actualPaidAmount, discountAmount) => {
             handlePaymentStatusChange(orderId, paymentStatus, actualPaidAmount, discountAmount);
             setSelectedOrderForPayment(null);
+            setShowPaymentDetailsDialog(false);
           }} 
         />
       )}
