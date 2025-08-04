@@ -178,30 +178,7 @@ function Manager() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { logout, isAdmin, isManagerOrAdmin, user } = useAuth();
-
-  // 매니저 권한 체크
-  if (!isManagerOrAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full mx-auto p-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">접근 권한이 없습니다</h2>
-            <p className="text-gray-600 mb-4">
-              매니저 페이지는 관리자가 지정한 매니저만 접근할 수 있습니다.
-            </p>
-            <button
-              onClick={() => setLocation('/')}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              홈으로 돌아가기
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const { logout, isAdmin } = useAuth();
   
   // Filter states
   const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
@@ -210,7 +187,6 @@ function Manager() {
   const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all'); // Manager can see all payment statuses
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
-  const [sellerShippedFilter, setSellerShippedFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
@@ -290,15 +266,6 @@ function Manager() {
     // Order status filter
     if (orderStatusFilter !== 'all') {
       filtered = filtered.filter(order => order.status === orderStatusFilter);
-    }
-
-    // Seller shipped filter
-    if (sellerShippedFilter !== 'all') {
-      if (sellerShippedFilter === 'shipped') {
-        filtered = filtered.filter(order => order.sellerShippedDate);
-      } else if (sellerShippedFilter === 'not_shipped') {
-        filtered = filtered.filter(order => !order.sellerShippedDate);
-      }
     }
 
     return filtered;
@@ -601,16 +568,15 @@ function Manager() {
     setOrderStartDate('');
     setOrderEndDate('');
     setCustomerNameFilter('');
-    setPaymentStatusFilter('all'); // Manager can see all payment statuses
+    setPaymentStatusFilter('confirmed'); // Manager always sees confirmed payments only
     setOrderStatusFilter('all');
-    setSellerShippedFilter('all');
     setSortOrder('latest');
   };
 
   // Render filter UI
   const renderOrderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
         {/* Date Filter - Simplified */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
@@ -683,35 +649,6 @@ function Manager() {
             <option value="confirmed">입금완료</option>
             <option value="partial">부분결제</option>
             <option value="refunded">환불</option>
-          </select>
-        </div>
-
-        {/* Order Status Filter */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
-          <select
-            value={orderStatusFilter}
-            onChange={(e) => setOrderStatusFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
-          >
-            <option value="all">전체</option>
-            <option value="pending">주문접수</option>
-            <option value="scheduled">발송주문</option>
-            <option value="delivered">발송완료</option>
-          </select>
-        </div>
-
-        {/* Seller Shipped Filter */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">판매자발송</label>
-          <select
-            value={sellerShippedFilter}
-            onChange={(e) => setSellerShippedFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
-          >
-            <option value="all">전체</option>
-            <option value="shipped">발송완료</option>
-            <option value="not_shipped">발송대기</option>
           </select>
         </div>
 

@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Save, Settings, Phone, Building, User, Users, Crown, UserCheck } from "lucide-react";
+import { Save, Settings, Phone, Building, User, Users, Plus, Edit, Trash2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { AdminSettings, User as UserType } from "@shared/schema";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import type { AdminSettings, Manager } from "@shared/schema";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
@@ -24,7 +25,13 @@ const adminSettingsSchema = z.object({
   bankAccount: z.string().optional(),
 });
 
+const managerSchema = z.object({
+  username: z.string().min(1, "아이디를 입력해주세요"),
+  password: z.string().min(4, "비밀번호는 최소 4자 이상이어야 합니다"),
+});
+
 type AdminSettingsFormData = z.infer<typeof adminSettingsSchema>;
+type ManagerFormData = z.infer<typeof managerSchema>;
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
@@ -35,12 +42,37 @@ export default function AdminSettingsPage() {
     retry: false,
   });
 
-  const { data: users = [], isLoading: usersLoading } = useQuery<UserType[]>({
-    queryKey: ['/api/users'],
+  // Manager management state and queries
+  const [managerDialogOpen, setManagerDialogOpen] = React.useState(false);
+  const [editingManager, setEditingManager] = React.useState<Manager | null>(null);
+
+  const { data: managers = [], isLoading: managersLoading } = useQuery<Manager[]>({
+    queryKey: ['/api/managers'],
     retry: false,
   });
 
+  const managerForm = useForm<ManagerFormData>({
+    resolver: zodResolver(managerSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
 
+  // Reset manager form when editing
+  React.useEffect(() => {
+    if (editingManager) {
+      managerForm.reset({
+        username: editingManager.username,
+        password: "",
+      });
+    } else {
+      managerForm.reset({
+        username: "",
+        password: "",
+      });
+    }
+  }, [editingManager, managerForm]);
 
   const form = useForm<AdminSettingsFormData>({
     resolver: zodResolver(adminSettingsSchema),
@@ -91,36 +123,97 @@ export default function AdminSettingsPage() {
     },
   });
 
-
-
-  const onSubmit = (data: AdminSettingsFormData) => {
-    updateMutation.mutate(data);
-  };
-
-  const updateUserRoleMutation = useMutation({
-    mutationFn: ({ userId, role }: { userId: number; role: string }) => 
-      apiRequest('PATCH', `/api/users/${userId}/role`, { role }),
+  // Manager mutations
+  const createManagerMutation = useMutation({
+    mutationFn: (data: ManagerFormData) => apiRequest('POST', '/api/managers', data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/managers'] });
+      setManagerDialogOpen(false);
+      setEditingManager(null);
+      managerForm.reset();
       toast({
-        title: "권한 변경 완료",
-        description: "사용자 권한이 성공적으로 변경되었습니다.",
+        title: "매니저 생성 완료",
+        description: "새 매니저가 성공적으로 생성되었습니다.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "권한 변경 실패",
-        description: error.message || "권한 변경 중 오류가 발생했습니다.",
+        title: "매니저 생성 실패",
+        description: error.message || "매니저 생성 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
   });
 
-  const handleRoleChange = (userId: number, newRole: string) => {
-    updateUserRoleMutation.mutate({ userId, role: newRole });
+  const updateManagerMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<ManagerFormData> }) => 
+      apiRequest('PATCH', `/api/managers/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/managers'] });
+      setManagerDialogOpen(false);
+      setEditingManager(null);
+      managerForm.reset();
+      toast({
+        title: "매니저 수정 완료",
+        description: "매니저 정보가 성공적으로 수정되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "매니저 수정 실패",
+        description: error.message || "매니저 수정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteManagerMutation = useMutation({
+    mutationFn: (id: number) => apiRequest('DELETE', `/api/managers/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/managers'] });
+      toast({
+        title: "매니저 삭제 완료",
+        description: "매니저가 성공적으로 삭제되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "매니저 삭제 실패",
+        description: error.message || "매니저 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: AdminSettingsFormData) => {
+    updateMutation.mutate(data);
   };
 
+  // Manager handlers
+  const handleCreateManager = () => {
+    setEditingManager(null);
+    setManagerDialogOpen(true);
+  };
 
+  const handleEditManager = (manager: Manager) => {
+    setEditingManager(manager);
+    setManagerDialogOpen(true);
+  };
+
+  const handleDeleteManager = (id: number) => {
+    deleteManagerMutation.mutate(id);
+  };
+
+  const onManagerSubmit = (data: ManagerFormData) => {
+    if (editingManager) {
+      updateManagerMutation.mutate({ 
+        id: editingManager.id, 
+        data: data 
+      });
+    } else {
+      createManagerMutation.mutate(data);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -138,8 +231,6 @@ export default function AdminSettingsPage() {
         <Settings className="h-6 w-6 text-eden-brown" />
         <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
       </div>
-
-
 
       <Card>
         <CardHeader>
@@ -293,81 +384,83 @@ export default function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 사용자 권한 관리 */}
+      {/* 매니저 관리 */}
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            사용자 권한 관리
+            매니저 관리
           </CardTitle>
           <CardDescription>
-            회원가입한 사용자들의 권한을 관리합니다. 관리자 또는 매니저 권한을 부여할 수 있습니다.
+            매니저 패널에 접근할 수 있는 매니저 계정을 관리합니다.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {usersLoading ? (
-            <div className="text-center py-8 text-gray-500">사용자 목록을 불러오는 중...</div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">등록된 사용자가 없습니다.</div>
+          <div className="flex justify-end mb-4">
+            <Button onClick={handleCreateManager} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              매니저 추가
+            </Button>
+          </div>
+
+          {managersLoading ? (
+            <div className="text-center py-8 text-gray-500">매니저 목록을 불러오는 중...</div>
+          ) : managers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">등록된 매니저가 없습니다.</div>
           ) : (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>사용자명</TableHead>
-                    <TableHead>이름</TableHead>
-                    <TableHead>전화번호</TableHead>
-                    <TableHead>현재 권한</TableHead>
-                    <TableHead>권한 변경</TableHead>
-                    <TableHead>가입일</TableHead>
+                    <TableHead>아이디</TableHead>
+                    <TableHead>등록일</TableHead>
+                    <TableHead className="text-right">작업</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.id}</TableCell>
-                      <TableCell>{user.username}</TableCell>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.phoneNumber}</TableCell>
+                  {managers.map((manager) => (
+                    <TableRow key={manager.id}>
+                      <TableCell className="font-medium">{manager.id}</TableCell>
+                      <TableCell>{manager.username}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          {user.role === 'admin' ? (
-                            <>
-                              <Crown className="h-4 w-4 text-yellow-600" />
-                              <span className="font-medium text-yellow-800">관리자</span>
-                            </>
-                          ) : user.role === 'manager' ? (
-                            <>
-                              <UserCheck className="h-4 w-4 text-blue-600" />
-                              <span className="font-medium text-blue-800">매니저</span>
-                            </>
-                          ) : (
-                            <>
-                              <User className="h-4 w-4 text-gray-600" />
-                              <span className="text-gray-700">일반 사용자</span>
-                            </>
-                          )}
+                        {new Date(manager.createdAt).toLocaleDateString('ko-KR')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditManager(manager)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>매니저 삭제</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  정말로 매니저 "{manager.username}"를 삭제하시겠습니까?
+                                  이 작업은 되돌릴 수 없습니다.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>취소</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteManager(manager.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  삭제
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={user.role}
-                          onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
-                          disabled={updateUserRoleMutation.isPending}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="user">일반 사용자</SelectItem>
-                            <SelectItem value="manager">매니저</SelectItem>
-                            <SelectItem value="admin">관리자</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -377,6 +470,89 @@ export default function AdminSettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 매니저 추가/수정 다이얼로그 */}
+      <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              {editingManager ? "매니저 수정" : "새 매니저 추가"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingManager 
+                ? "매니저 정보를 수정합니다. 비밀번호를 변경하지 않으려면 비워두세요."
+                : "새로운 매니저 계정을 생성합니다."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...managerForm}>
+            <form onSubmit={managerForm.handleSubmit(onManagerSubmit)} className="space-y-4">
+              <FormField
+                control={managerForm.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>아이디 *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="매니저 아이디를 입력하세요" 
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    {editingManager && (
+                      <p className="text-xs text-amber-600">
+                        아이디를 변경하면 기존 로그인 정보가 무효화됩니다.
+                      </p>
+                    )}
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={managerForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>비밀번호 *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password"
+                        placeholder={editingManager ? "새 비밀번호를 입력하세요" : "비밀번호를 입력하세요"}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    {editingManager && (
+                      <p className="text-xs text-gray-500">
+                        보안을 위해 새 비밀번호를 입력해주세요.
+                      </p>
+                    )}
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setManagerDialogOpen(false)}
+                >
+                  취소
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createManagerMutation.isPending || updateManagerMutation.isPending}
+                >
+                  {editingManager ? "수정" : "생성"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       {/* SMS 발송 안내 */}
       <Card className="mt-6">

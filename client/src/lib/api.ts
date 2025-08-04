@@ -162,21 +162,6 @@ export const api = {
       
       return response.json();
     },
-    updateSellerShipped: async (orderIds: number[]) => {
-      const response = await fetch('/api/orders/seller-shipped', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderIds }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('판매자발송 업데이트에 실패했습니다');
-      }
-      
-      return response.json();
-    },
   },
   sms: {
     send: async (data: { orderId: number; phoneNumber: string; message: string }) => {

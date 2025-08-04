@@ -190,27 +190,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user role (admin only)
-  app.patch("/api/users/:id/role", requireAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { role } = req.body;
-      
-      if (!role || !['user', 'manager', 'admin'].includes(role)) {
-        return res.status(400).json({ message: "유효한 권한을 입력해주세요" });
-      }
-
-      const user = await userService.updateUser(id, { role });
-      if (!user) {
-        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
-      }
-      res.json(user);
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      res.status(500).json({ message: "사용자 권한 변경에 실패했습니다" });
-    }
-  });
-
   // Get user's own orders (authenticated users)
   app.get("/api/my-orders", requireAuth, async (req, res) => {
     try {
@@ -468,59 +447,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedOrder);
     } catch (error) {
       res.status(500).json({ message: "Failed to update order seller shipped date" });
-    }
-  });
-
-  // Bulk seller shipped update
-  app.patch("/api/orders/seller-shipped", requireManagerOrAdmin, async (req, res) => {
-    try {
-      const { orderIds } = req.body;
-      
-      console.log("Bulk seller shipped request received:", { orderIds });
-      
-      if (!Array.isArray(orderIds) || orderIds.length === 0) {
-        return res.status(400).json({ message: "주문 ID 목록이 필요합니다" });
-      }
-      
-      const results = [];
-      const errors = [];
-      
-      for (const orderId of orderIds) {
-        try {
-          console.log(`Updating order ${orderId} to seller shipped...`);
-          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, new Date());
-          if (updatedOrder) {
-            results.push(updatedOrder);
-            console.log(`Successfully updated order ${orderId}`);
-          } else {
-            console.error(`Order ${orderId} not found or could not be updated`);
-            errors.push({ orderId, error: "주문을 찾을 수 없거나 업데이트할 수 없습니다" });
-          }
-        } catch (error) {
-          console.error(`Failed to update order ${orderId}:`, error);
-          errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
-        }
-      }
-      
-      if (errors.length > 0) {
-        console.error("Some orders failed to update:", errors);
-        return res.status(500).json({ 
-          message: `${results.length}개 주문은 성공, ${errors.length}개 주문 실패`,
-          updatedOrders: results,
-          errors: errors
-        });
-      }
-      
-      res.json({ 
-        message: `${results.length}개 주문이 발송완료로 변경되었습니다`,
-        updatedOrders: results 
-      });
-    } catch (error) {
-      console.error("Bulk seller shipped update error:", error);
-      res.status(500).json({ 
-        message: "일괄 발송 업데이트에 실패했습니다",
-        error: error instanceof Error ? error.message : String(error)
-      });
     }
   });
 
@@ -1380,73 +1306,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error refreshing customer stats:", error);
       res.status(500).json({ error: "고객 통계 업데이트에 실패했습니다" });
-    }
-  });
-
-  // User Management API routes (admin only)
-  
-  // Get all users (admin only)
-  app.get("/api/users", requireAdmin, async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      // Remove password hash from response
-      const safeUsers = users.map(user => ({
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        phoneNumber: user.phoneNumber,
-        role: user.role,
-        isActive: user.isActive,
-        createdAt: user.createdAt,
-        lastLoginAt: user.lastLoginAt
-      }));
-      res.json(safeUsers);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "사용자 목록 조회에 실패했습니다" });
-    }
-  });
-
-  // Update user role (admin only)
-  app.patch("/api/users/:id/role", requireAdmin, async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { role } = req.body;
-      
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다" });
-      }
-      
-      if (!role || !['user', 'manager'].includes(role)) {
-        return res.status(400).json({ message: "유효하지 않은 역할입니다. 'user' 또는 'manager'만 가능합니다" });
-      }
-      
-      const user = await storage.getUserById(id);
-      if (!user) {
-        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
-      }
-      
-      const updatedUser = await storage.updateUserRole(id, role);
-      if (!updatedUser) {
-        return res.status(500).json({ message: "역할 업데이트에 실패했습니다" });
-      }
-      
-      // Remove password hash from response
-      const safeUser = {
-        id: updatedUser.id,
-        username: updatedUser.username,
-        name: updatedUser.name,
-        phoneNumber: updatedUser.phoneNumber,
-        role: updatedUser.role,
-        isActive: updatedUser.isActive,
-        createdAt: updatedUser.createdAt,
-        lastLoginAt: updatedUser.lastLoginAt
-      };
-      
-      res.json(safeUser);
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      res.status(500).json({ message: "역할 업데이트에 실패했습니다" });
     }
   });
 

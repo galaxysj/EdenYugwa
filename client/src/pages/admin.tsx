@@ -8,19 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
 import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
-import { UserManagement } from "@/components/user-management";
 import PasswordChangeDialog from "@/components/PasswordChangeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AdminHeader } from "@/components/admin-header";
 import type { Order, Setting } from "@shared/schema";
 
 
@@ -489,9 +487,7 @@ export default function Admin() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
   const [showCustomerManagement, setShowCustomerManagement] = useState(false);
-  const [showUserManagement, setShowUserManagement] = useState(false);
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
-  const [selectedShippingItems, setSelectedShippingItems] = useState<Set<number>>(new Set());
   const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
@@ -663,7 +659,6 @@ export default function Admin() {
   const clearAllSelections = () => {
     setSelectedTrashItems(new Set());
     setSelectedOrderItems(new Set());
-    setSelectedShippingItems(new Set());
   };
 
   // Order selection functions
@@ -688,31 +683,6 @@ export default function Admin() {
     
     if (confirm(`선택된 ${selectedTrashItems.size}개 주문을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
       bulkPermanentDeleteMutation.mutate(Array.from(selectedTrashItems));
-    }
-  };
-
-  // Shipping selection functions
-  const toggleShippingSelection = (orderId: number) => {
-    const newSelection = new Set(selectedShippingItems);
-    if (newSelection.has(orderId)) {
-      newSelection.delete(orderId);
-    } else {
-      newSelection.add(orderId);
-    }
-    setSelectedShippingItems(newSelection);
-  };
-
-  const selectAllShipping = (ordersList: Order[]) => {
-    const eligibleOrders = ordersList.filter(order => !order.sellerShipped);
-    const allIds = new Set(eligibleOrders.map(order => order.id));
-    setSelectedShippingItems(allIds);
-  };
-
-  const handleBulkSellerShipped = () => {
-    if (selectedShippingItems.size === 0) return;
-    
-    if (confirm(`선택된 ${selectedShippingItems.size}개 주문을 발송완료로 변경하시겠습니까?`)) {
-      bulkSellerShippedMutation.mutate(Array.from(selectedShippingItems));
     }
   };
 
@@ -1676,35 +1646,6 @@ export default function Admin() {
 
     return (
       <>
-        {/* Bulk Shipping Actions */}
-        {selectedShippingItems.size > 0 && (
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-blue-700">
-                {selectedShippingItems.size}개 주문이 발송용으로 선택되었습니다
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setSelectedShippingItems(new Set())}
-                >
-                  선택 해제
-                </Button>
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={handleBulkSellerShipped}
-                  disabled={bulkSellerShippedMutation.isPending}
-                >
-                  <Truck className="h-4 w-4 mr-1" />
-                  선택항목 발송완료 ({selectedShippingItems.size}개)
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
           <table className="w-full">
@@ -1722,10 +1663,8 @@ export default function Admin() {
                       }
                     }}
                     className="rounded border-gray-300"
-                    title="삭제용 선택"
                   />
                 </th>
-
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
@@ -1736,37 +1675,7 @@ export default function Admin() {
                 <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">매출/입금정보</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">
-                  <div className="flex flex-col items-center gap-1">
-                    <span>판매자발송</span>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="checkbox"
-                        checked={selectedShippingItems.size === ordersList.filter(order => !order.sellerShipped).length && ordersList.filter(order => !order.sellerShipped).length > 0}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            selectAllShipping(ordersList);
-                          } else {
-                            setSelectedShippingItems(new Set());
-                          }
-                        }}
-                        className="rounded border-blue-300"
-                        title="발송용 전체 선택"
-                      />
-                      {selectedShippingItems.size > 0 && (
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-xs px-1 py-0.5"
-                          onClick={handleBulkSellerShipped}
-                          disabled={bulkSellerShippedMutation.isPending}
-                          title={`선택된 ${selectedShippingItems.size}개 주문 일괄 발송`}
-                        >
-                          일괄발송
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </th>
+                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
                 <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
               </tr>
             </thead>
@@ -1781,10 +1690,8 @@ export default function Admin() {
                         checked={selectedOrderItems.has(order.id)}
                         onChange={() => toggleOrderSelection(order.id)}
                         className="rounded border-gray-300"
-                        title="삭제용 선택"
                       />
                     </td>
-
                     <td className="py-2 px-2">
                       <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500">
@@ -2036,53 +1943,31 @@ export default function Admin() {
                       </Select>
                     </td>
                     <td className="py-2 px-2 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        {order.sellerShipped ? (
-                          <div className="text-green-600 font-medium text-xs">
-                            판매자발송완료
-                            {order.sellerShippedDate && (
-                              <div 
-                                className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
-                                onClick={() => {
-                                  const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
-                                  if (sellerShippedDatePicker) {
-                                    (sellerShippedDatePicker as HTMLElement).click();
-                                  }
-                                }}
-                                title="클릭하여 판매자발송일 수정"
-                              >
-                                {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <>
-                            <input
-                              type="checkbox"
-                              checked={selectedShippingItems.has(order.id)}
-                              onChange={() => toggleShippingSelection(order.id)}
-                              className="rounded border-blue-300"
-                              title="발송용 선택"
-                            />
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
-                              onClick={() => handleSellerShipped(order.id)}
+                      {order.sellerShipped ? (
+                        <div className="text-green-600 font-medium text-xs">
+                          판매자발송완료
+                          {order.sellerShippedDate && (
+                            <div 
+                              className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                              onClick={() => {
+                                const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                                if (sellerShippedDatePicker) {
+                                  (sellerShippedDatePicker as HTMLElement).click();
+                                }
+                              }}
+                              title="클릭하여 판매자발송일 수정"
                             >
-                              발송하기
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                              {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex flex-col gap-1">
-                        <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                            <MessageSquare className="h-3 w-3" />
-                            SMS
-                          </Button>
-                        </SmsDialog>
+                        <SmsDialog order={order} />
                         <FinancialDialog order={order} />
                         <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
@@ -2121,7 +2006,6 @@ export default function Admin() {
                           checked={selectedOrderItems.has(order.id)}
                           onChange={() => toggleOrderSelection(order.id)}
                           className="rounded border-gray-300 mt-1"
-                          title="삭제용 선택"
                         />
                         <div>
                           <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
@@ -2388,50 +2272,9 @@ export default function Admin() {
 
                     <div className="pt-4 border-t border-gray-100">
                       <div className="flex flex-col gap-3">
-                        <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                            <MessageSquare className="h-3 w-3" />
-                            SMS 발송
-                          </Button>
-                        </SmsDialog>
+                        <SmsDialog order={order} />
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
-                        
-                        {/* 판매자발송 관리 */}
-                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedShippingItems.has(order.id)}
-                              onChange={() => toggleShippingSelection(order.id)}
-                              className="rounded border-blue-300"
-                              disabled={order.sellerShipped}
-                              title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
-                            />
-                            <span className="text-sm font-medium text-blue-700">발송 선택</span>
-                          </div>
-                          {!order.sellerShipped && (
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 flex-1"
-                              onClick={() => handleSellerShipped(order.id)}
-                            >
-                              <Truck className="h-3 w-3 mr-1" />
-                              발송하기
-                            </Button>
-                          )}
-                          {order.sellerShipped && (
-                            <div className="flex-1 text-sm text-green-600 font-medium">
-                              ✅ 발송완료
-                              {order.sellerShippedDate && (
-                                <div className="text-xs text-gray-500">
-                                  {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR')}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
                         <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
                           <SellerShippedDatePicker order={order} />
@@ -2498,33 +2341,6 @@ export default function Admin() {
       toast({
         title: "업데이트 실패",
         description: "판매자 발송 상태 업데이트 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const bulkSellerShippedMutation = useMutation({
-    mutationFn: async (orderIds: number[]) => {
-      const results = await Promise.all(
-        orderIds.map(orderId => 
-          api.orders.updateSellerShipped(orderId, true)
-            .then(() => api.orders.updateStatus(orderId, 'delivered'))
-        )
-      );
-      return results;
-    },
-    onSuccess: (results, orderIds) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      setSelectedShippingItems(new Set());
-      toast({
-        title: "일괄 발송 완료",
-        description: `${orderIds.length}개 주문이 발송완료로 변경되었습니다.`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: "일괄 발송 실패",
-        description: "일괄 발송 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
@@ -2711,15 +2527,118 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-eden-cream">
-      <AdminHeader 
-        handleExcelDownload={handleExcelDownload}
-        setActiveTab={setActiveTab}
-        activeTab={activeTab}
-        costSettingsDialog={<CostSettingsDialog />}
-        passwordChangeDialog={<PasswordChangeDialog />}
-      />
+      {/* Header */}
+      <div className="bg-eden-red text-white p-4 sm:p-6">
+        <div className="container mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/">
+                <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
+                  <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">홈으로</span>
+                </Button>
+              </Link>
+              <h1 className="text-lg sm:text-2xl font-bold font-korean">
+                <Settings className="inline mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6" />
+                관리자 패널
+              </h1>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 text-xs bg-white/20 text-white hover:bg-white/30"
+                >
+                  관리자
+                </Button>
+                <Link href="/manager">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 text-xs text-white/70 hover:bg-white/20 hover:text-white"
+                  >
+                    매니저
+                  </Button>
+                </Link>
+              </div>
+              <Button 
+                onClick={() => setActiveTab('revenue')}
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${activeTab === 'revenue' ? 'bg-white/20' : ''}`}
+              >
+                <DollarSign className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">매출관리</span>
+              </Button>
+              <Button 
+                onClick={() => setShowCustomerManagement(true)}
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2 ${showCustomerManagement ? 'bg-white/20' : ''}`}
+              >
+                <Users className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">고객관리</span>
+              </Button>
+              <Link href="/admin-settings">
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+                >
+                  <Cog className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">관리자 설정</span>
+                </Button>
+              </Link>
+              <CostSettingsDialog />
+              <PasswordChangeDialog />
+              <Button 
+                onClick={handleExcelDownload}
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+              >
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">엑셀 다운로드</span>
+              </Button>
+              <Button 
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/auth/logout', {
+                      method: 'POST',
+                      credentials: 'include'
+                    });
+                    if (response.ok) {
+                      window.location.href = '/';
+                    }
+                  } catch (error) {
+                    console.error('로그아웃 실패:', error);
+                  }
+                }}
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
+              >
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">로그아웃</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="container mx-auto p-4 sm:p-6">
+        {showCustomerManagement ? (
+          <div className="bg-white rounded-lg p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold">고객 관리</h3>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCustomerManagement(false)}
+              >
+                <X className="h-4 w-4 mr-2" />
+                닫기
+              </Button>
+            </div>
+            <CustomerManagement />
+          </div>
+        ) : (
+          <>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-6 sm:mb-8">
@@ -3037,14 +2956,6 @@ export default function Admin() {
                   {renderRevenueReport()}
                 </TabsContent>
                 
-                <TabsContent value="customers" className="mt-6">
-                  <CustomerManagement />
-                </TabsContent>
-                
-                <TabsContent value="users" className="mt-6">
-                  <UserManagement />
-                </TabsContent>
-
                 <TabsContent value="trash" className="mt-6">
                   {isLoadingTrash ? (
                     <div className="text-center py-8">
@@ -3064,7 +2975,8 @@ export default function Admin() {
             )}
           </CardContent>
         </Card>
-
+          </>
+        )}
       </div>
 
       {/* Payment Confirmation Dialog */}

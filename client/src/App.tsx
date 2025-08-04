@@ -30,7 +30,6 @@ function Router() {
           <AdminSettings />
         </ProtectedRoute>
       </Route>
-
       <Route path="/manager">
         <ProtectedRoute requiredRole="manager">
           <Manager />
