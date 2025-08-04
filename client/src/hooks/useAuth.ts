@@ -4,6 +4,8 @@ import { apiRequest } from "@/lib/queryClient";
 interface User {
   id: number;
   username: string;
+  name: string;
+  phoneNumber: string;
   role: 'admin' | 'manager' | 'user';
 }
 

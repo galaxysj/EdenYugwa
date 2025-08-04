@@ -99,6 +99,8 @@ export default function OrderLookup() {
         } catch (error) {
           console.error("Auto lookup error:", error);
           // 자동 조회 실패는 에러 토스트를 표시하지 않음
+          setOrders([]);
+          setHasSearched(true);
         } finally {
           setIsLoading(false);
         }
@@ -180,7 +182,13 @@ export default function OrderLookup() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="font-korean">주문 조회하기</CardTitle>
-            <p className="text-gray-600">주문 시 입력하신 전화번호 또는 이름으로 주문 내역을 조회할 수 있습니다.</p>
+            {isAuthenticated && user ? (
+              <p className="text-green-600 font-medium">
+                {user.name}님의 주문 내역을 자동으로 조회하고 있습니다.
+              </p>
+            ) : (
+              <p className="text-gray-600">주문 시 입력하신 전화번호 또는 이름으로 주문 내역을 조회할 수 있습니다.</p>
+            )}
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -221,24 +229,52 @@ export default function OrderLookup() {
                   />
                 </div>
                 
-                <div className="text-sm text-gray-500 mt-2">
-                  * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
-                </div>
+                {!isAuthenticated && (
+                  <div className="text-sm text-gray-500 mt-2">
+                    * 전화번호 또는 이름 중 하나만 입력해도 조회 가능합니다.
+                  </div>
+                )}
                 
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-eden-brown hover:bg-eden-dark text-white w-full md:w-auto"
-                >
-                  {isLoading ? (
-                    "조회 중..."
-                  ) : (
-                    <>
-                      <Search className="mr-2 h-4 w-4" />
-                      주문 조회
-                    </>
-                  )}
-                </Button>
+                {isAuthenticated && user && (
+                  <div className="text-sm text-green-600 mt-2">
+                    * 로그인된 계정({user.name}, {user.phoneNumber})의 주문 내역을 조회합니다.
+                  </div>
+                )}
+                
+                {!isAuthenticated && (
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="bg-eden-brown hover:bg-eden-dark text-white w-full md:w-auto"
+                  >
+                    {isLoading ? (
+                      "조회 중..."
+                    ) : (
+                      <>
+                        <Search className="mr-2 h-4 w-4" />
+                        주문 조회
+                      </>
+                    )}
+                  </Button>
+                )}
+                
+                {isAuthenticated && (
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    variant="outline"
+                    className="border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white w-full md:w-auto"
+                  >
+                    {isLoading ? (
+                      "조회 중..."
+                    ) : (
+                      <>
+                        <Search className="mr-2 h-4 w-4" />
+                        다시 조회
+                      </>
+                    )}
+                  </Button>
+                )}
               </form>
             </Form>
           </CardContent>
