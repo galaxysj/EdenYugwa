@@ -268,46 +268,52 @@ export default function OrderLookup() {
               <>
                 {/* 여러 고객이 있을 때 선택 인터페이스 */}
                 {(() => {
-                  // 고유한 전화번호별로 그룹화
-                  const ordersByPhone = orders.reduce((acc, order) => {
-                    if (!acc[order.customerPhone]) {
-                      acc[order.customerPhone] = [];
+                  // 고유한 식별자로 그룹화 (전화번호 + 주소의 조합)
+                  const ordersByIdentity = orders.reduce((acc, order) => {
+                    const identity = `${order.customerPhone}_${order.address1}`;
+                    if (!acc[identity]) {
+                      acc[identity] = [];
                     }
-                    acc[order.customerPhone].push(order);
+                    acc[identity].push(order);
                     return acc;
                   }, {} as Record<string, typeof orders>);
                   
-                  const phoneNumbers = Object.keys(ordersByPhone);
+                  const identities = Object.keys(ordersByIdentity);
                   
-                  // 전화번호가 2개 이상인 경우에만 선택 인터페이스 표시
-                  if (phoneNumbers.length > 1) {
+                  // 고유한 고객이 2명 이상인 경우에만 선택 인터페이스 표시
+                  if (identities.length > 1) {
                     return (
                       <Card className="mb-6">
                         <CardHeader>
                           <CardTitle className="font-korean">여러 고객의 주문이 검색되었습니다</CardTitle>
-                          <p className="text-gray-600">조회하고 싶은 전화번호를 선택해주세요.</p>
+                          <p className="text-gray-600">조회하고 싶은 고객을 선택해주세요.</p>
                         </CardHeader>
                         <CardContent>
                           <div className="grid gap-3">
-                            {phoneNumbers.map((phone) => {
-                              const phoneOrders = ordersByPhone[phone];
-                              const customerName = phoneOrders[0].customerName;
+                            {identities.map((identity) => {
+                              const identityOrders = ordersByIdentity[identity];
+                              const order = identityOrders[0];
+                              const customerName = order.customerName;
+                              const phone = order.customerPhone;
+                              const address = order.address1;
                               return (
                                 <Button
-                                  key={phone}
+                                  key={identity}
                                   variant="outline"
                                   className="justify-start h-auto p-4"
                                   onClick={() => {
-                                    // 선택된 전화번호의 주문만 표시하도록 필터링
-                                    setOrders(phoneOrders);
+                                    // 선택된 고객의 주문만 표시하도록 필터링
+                                    setOrders(identityOrders);
                                   }}
                                 >
-                                  <div className="text-left">
+                                  <div className="text-left w-full">
                                     <div className="font-medium">
-                                      {customerName} ({maskPhoneNumber(phone)})
+                                      {customerName}
                                     </div>
-                                    <div className="text-sm text-gray-500">
-                                      주문 {phoneOrders.length}건
+                                    <div className="text-sm text-gray-500 space-y-1">
+                                      <div>전화번호: {maskPhoneNumber(phone)}</div>
+                                      <div>주소: {maskAddress(address)}</div>
+                                      <div>주문 {identityOrders.length}건</div>
                                     </div>
                                   </div>
                                 </Button>
@@ -335,20 +341,21 @@ export default function OrderLookup() {
               </>
             )}
             
-            {/* 실제 주문 목록 표시 (여러 전화번호가 있을 때는 선택 후에만 표시) */}
+            {/* 실제 주문 목록 표시 (여러 고객이 있을 때는 선택 후에만 표시) */}
             {orders.length > 0 && (() => {
-              const ordersByPhone = orders.reduce((acc, order) => {
-                if (!acc[order.customerPhone]) {
-                  acc[order.customerPhone] = [];
+              const ordersByIdentity = orders.reduce((acc, order) => {
+                const identity = `${order.customerPhone}_${order.address1}`;
+                if (!acc[identity]) {
+                  acc[identity] = [];
                 }
-                acc[order.customerPhone].push(order);
+                acc[identity].push(order);
                 return acc;
               }, {} as Record<string, typeof orders>);
               
-              const phoneNumbers = Object.keys(ordersByPhone);
+              const identities = Object.keys(ordersByIdentity);
               
-              // 전화번호가 1개이거나, 이미 필터링된 상태에서만 주문 표시
-              if (phoneNumbers.length === 1) {
+              // 고객이 1명이거나, 이미 필터링된 상태에서만 주문 표시
+              if (identities.length === 1) {
                 return (
               orders.map((order) => {
                 return (
