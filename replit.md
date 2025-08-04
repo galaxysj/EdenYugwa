@@ -119,4 +119,6 @@ Using Drizzle ORM with PostgreSQL:
 
 **Order Processing Flexibility**: Admin users can now change order status to "발송주문" regardless of payment status, providing operational flexibility. Unpaid orders in manager interface are clearly highlighted in red with "미입금" status for easy identification while maintaining processing capability. Updated August 3, 2025.
 
+**Order Address Integrity**: Removed automatic address updates for existing orders when customer information changes. Each order now maintains its original delivery address as entered at the time of ordering, preventing unintended modifications to historical order data. Only phone number updates are synchronized across orders when customer contact information changes. Updated August 4, 2025.
+
 The application is designed for scalability with clear separation of concerns and ready for production deployment with database persistence and SMS integration.

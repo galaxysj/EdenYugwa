@@ -631,27 +631,11 @@ export class DatabaseStorage implements IStorage {
       .where(eq(customers.id, id))
       .returning();
     
-    // 고객 정보가 업데이트되면 해당 고객의 모든 주문의 주소 정보도 업데이트
-    if (updated && oldPhone) {
-      // 주소 정보 업데이트
-      const addressUpdateData: any = {};
-      if (customer.zipCode !== undefined) addressUpdateData.zipCode = customer.zipCode;
-      if (customer.address1 !== undefined) addressUpdateData.address1 = customer.address1;
-      if (customer.address2 !== undefined) addressUpdateData.address2 = customer.address2;
-      
-      // 주소 관련 정보가 있을 때 주문 테이블 업데이트
-      if (Object.keys(addressUpdateData).length > 0) {
-        await db.update(orders)
-          .set(addressUpdateData)
-          .where(eq(orders.customerPhone, oldPhone));
-      }
-      
-      // 연락처가 변경된 경우 주문 테이블의 연락처도 업데이트
-      if (customer.customerPhone && customer.customerPhone !== oldPhone) {
-        await db.update(orders)
-          .set({ customerPhone: customer.customerPhone })
-          .where(eq(orders.customerPhone, oldPhone));
-      }
+    // 연락처가 변경된 경우에만 주문 테이블의 연락처 업데이트 (주소는 각 주문의 원본 유지)
+    if (updated && oldPhone && customer.customerPhone && customer.customerPhone !== oldPhone) {
+      await db.update(orders)
+        .set({ customerPhone: customer.customerPhone })
+        .where(eq(orders.customerPhone, oldPhone));
     }
     
     return updated || undefined;
