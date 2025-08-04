@@ -1967,7 +1967,7 @@ export default function Admin() {
                       </Dialog>
                     </td>
                     <td className="py-2 px-2">
-                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.memo || '-'}</div>
+                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.notes || '-'}</div>
                     </td>
                     {/* 매출 */}
                     <td className="py-2 px-2 text-center">
@@ -2037,7 +2037,12 @@ export default function Admin() {
                               <span>입금대기</span>
                             </div>
                           </SelectItem>
-                          <PaymentDetailsDialog order={order} onUpdate={handlePaymentStatusChange} />
+                          <SelectItem value="confirmed">
+                            <div className="flex items-center space-x-1">
+                              <DollarSign className="h-3 w-3 text-green-500" />
+                              <span>입금완료</span>
+                            </div>
+                          </SelectItem>
                           <SelectItem value="partial">
                             <div className="flex items-center space-x-1">
                               <AlertCircle className="h-3 w-3 text-red-500" />
@@ -2450,7 +2455,7 @@ export default function Admin() {
                               checked={selectedShippingItems.has(order.id)}
                               onChange={() => toggleShippingSelection(order.id)}
                               className="rounded border-blue-300"
-                              disabled={order.sellerShipped}
+                              disabled={order.sellerShipped || false}
                               title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
                             />
                             <span className="text-sm font-medium text-blue-700">발송 선택</span>
@@ -2526,7 +2531,7 @@ export default function Admin() {
 
   // Seller shipped mutation
   const updateSellerShippedMutation = useMutation({
-    mutationFn: (orderId: number) => api.orders.updateSellerShipped(orderId, true),
+    mutationFn: (orderId: number) => api.orders.updateSellerShipped(orderId),
     onSuccess: async (updatedOrder, orderId) => {
       // First update seller shipped status
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
@@ -2595,7 +2600,7 @@ export default function Admin() {
         id: selectedOrderForPayment.id,
         paymentStatus: 'confirmed',
         actualPaidAmount,
-        discountReason
+        discountAmount: 0 // Default value
       });
       setSelectedOrderForPayment(null);
     }
@@ -2621,8 +2626,11 @@ export default function Admin() {
         discountAmount: discountAmount
       });
     } else if (newPaymentStatus === 'confirmed') {
-      // 입금완료 선택시 - PaymentDetailsDialog가 처리함
-      return;
+      // 입금완료 선택시 PaymentDetailsDialog 열기
+      const order = orders.find((o: Order) => o.id === orderId);
+      if (order) {
+        setSelectedOrderForPayment(order);
+      }
     } else if (newPaymentStatus === 'partial') {
       // 부분결제 선택시도 실제 입금금액 입력 다이얼로그 열기
       const order = orders.find((o: Order) => o.id === orderId);
@@ -3071,6 +3079,17 @@ export default function Admin() {
         setOpen={setShowPaymentDialog}
         onConfirm={handlePaymentConfirmation}
       />
+      
+      {/* Payment Details Dialog - for confirmed payment */}
+      {selectedOrderForPayment && (
+        <PaymentDetailsDialog 
+          order={selectedOrderForPayment} 
+          onUpdate={(orderId, paymentStatus, actualPaidAmount, discountAmount) => {
+            handlePaymentStatusChange(orderId, paymentStatus, actualPaidAmount, discountAmount);
+            setSelectedOrderForPayment(null);
+          }} 
+        />
+      )}
     </div>
   );
 }
