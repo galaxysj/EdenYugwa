@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Save, Settings, Phone, Building, User, Users, Plus, Edit, Trash2, Shield } from "lucide-react";
+import { Save, Settings, Phone, Building, User, Users, Crown, UserCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import type { AdminSettings, User as UserType } from "@shared/schema";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import type { AdminSettings, Manager } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AdminHeader } from "@/components/admin-header";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
@@ -25,13 +26,7 @@ const adminSettingsSchema = z.object({
   bankAccount: z.string().optional(),
 });
 
-const managerSchema = z.object({
-  username: z.string().min(1, "아이디를 입력해주세요"),
-  password: z.string().min(4, "비밀번호는 최소 4자 이상이어야 합니다"),
-});
-
 type AdminSettingsFormData = z.infer<typeof adminSettingsSchema>;
-type ManagerFormData = z.infer<typeof managerSchema>;
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
@@ -42,37 +37,23 @@ export default function AdminSettingsPage() {
     retry: false,
   });
 
-  // Manager management state and queries
-  const [managerDialogOpen, setManagerDialogOpen] = React.useState(false);
-  const [editingManager, setEditingManager] = React.useState<Manager | null>(null);
-
-  const { data: managers = [], isLoading: managersLoading } = useQuery<Manager[]>({
-    queryKey: ['/api/managers'],
+  const { data: allUsers = [], isLoading: usersLoading } = useQuery<UserType[]>({
+    queryKey: ['/api/users'],
     retry: false,
+    staleTime: 0, // 항상 최신 데이터 가져오기
   });
 
-  const managerForm = useForm<ManagerFormData>({
-    resolver: zodResolver(managerSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
-  });
+  // Filter to show only admin and manager users
+  const users = allUsers.filter(user => user.role === 'admin' || user.role === 'manager');
 
-  // Reset manager form when editing
-  React.useEffect(() => {
-    if (editingManager) {
-      managerForm.reset({
-        username: editingManager.username,
-        password: "",
-      });
-    } else {
-      managerForm.reset({
-        username: "",
-        password: "",
-      });
-    }
-  }, [editingManager, managerForm]);
+  // Manager username editing state
+  const [editManagerDialogOpen, setEditManagerDialogOpen] = React.useState(false);
+  const [editingManager, setEditingManager] = React.useState<UserType | null>(null);
+  const [selectedUserId, setSelectedUserId] = React.useState<string>("");
+
+
+
+
 
   const form = useForm<AdminSettingsFormData>({
     resolver: zodResolver(adminSettingsSchema),
@@ -123,97 +104,79 @@ export default function AdminSettingsPage() {
     },
   });
 
-  // Manager mutations
-  const createManagerMutation = useMutation({
-    mutationFn: (data: ManagerFormData) => apiRequest('POST', '/api/managers', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/managers'] });
-      setManagerDialogOpen(false);
-      setEditingManager(null);
-      managerForm.reset();
-      toast({
-        title: "매니저 생성 완료",
-        description: "새 매니저가 성공적으로 생성되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "매니저 생성 실패",
-        description: error.message || "매니저 생성 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
 
-  const updateManagerMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<ManagerFormData> }) => 
-      apiRequest('PATCH', `/api/managers/${id}`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/managers'] });
-      setManagerDialogOpen(false);
-      setEditingManager(null);
-      managerForm.reset();
-      toast({
-        title: "매니저 수정 완료",
-        description: "매니저 정보가 성공적으로 수정되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "매니저 수정 실패",
-        description: error.message || "매니저 수정 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteManagerMutation = useMutation({
-    mutationFn: (id: number) => apiRequest('DELETE', `/api/managers/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/managers'] });
-      toast({
-        title: "매니저 삭제 완료",
-        description: "매니저가 성공적으로 삭제되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "매니저 삭제 실패",
-        description: error.message || "매니저 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
 
   const onSubmit = (data: AdminSettingsFormData) => {
     updateMutation.mutate(data);
   };
 
-  // Manager handlers
-  const handleCreateManager = () => {
-    setEditingManager(null);
-    setManagerDialogOpen(true);
-  };
-
-  const handleEditManager = (manager: Manager) => {
-    setEditingManager(manager);
-    setManagerDialogOpen(true);
-  };
-
-  const handleDeleteManager = (id: number) => {
-    deleteManagerMutation.mutate(id);
-  };
-
-  const onManagerSubmit = (data: ManagerFormData) => {
-    if (editingManager) {
-      updateManagerMutation.mutate({ 
-        id: editingManager.id, 
-        data: data 
+  const updateUserRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: string }) => 
+      apiRequest('PATCH', `/api/users/${userId}/role`, { role }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      toast({
+        title: "권한 변경 완료",
+        description: "사용자 권한이 성공적으로 변경되었습니다.",
       });
-    } else {
-      createManagerMutation.mutate(data);
-    }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "권한 변경 실패",
+        description: error.message || "권한 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRoleChange = (userId: number, newRole: string) => {
+    updateUserRoleMutation.mutate({ userId, role: newRole });
   };
+
+  const handleEditManagerUsername = (manager: UserType) => {
+    setEditingManager(manager);
+    setSelectedUserId(""); // 빈 값으로 시작하여 사용자가 선택하도록 함
+    setEditManagerDialogOpen(true);
+  };
+
+  const updateManagerUsernameMutation = useMutation({
+    mutationFn: ({ managerId, newUserId }: { managerId: number; newUserId: number }) => 
+      apiRequest('PATCH', `/api/users/${managerId}/change-user`, { newUserId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setEditManagerDialogOpen(false);
+      setEditingManager(null);
+      setSelectedUserId("");
+      toast({
+        title: "매니저 정보 변경 완료",
+        description: "매니저의 사용자 정보가 성공적으로 변경되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "매니저 정보 변경 실패",
+        description: error.message || "매니저 정보 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveManagerUsername = () => {
+    if (!editingManager || !selectedUserId) return;
+    
+    const newUserId = parseInt(selectedUserId);
+    if (newUserId === editingManager.id) {
+      setEditManagerDialogOpen(false);
+      return;
+    }
+
+    updateManagerUsernameMutation.mutate({ 
+      managerId: editingManager.id, 
+      newUserId 
+    });
+  };
+
+
 
   if (isLoading) {
     return (
@@ -226,11 +189,15 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="h-6 w-6 text-eden-brown" />
-        <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader />
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="flex items-center gap-3 mb-6">
+          <Settings className="h-6 w-6 text-eden-brown" />
+          <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
+        </div>
+
+
 
       <Card>
         <CardHeader>
@@ -384,83 +351,93 @@ export default function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 매니저 관리 */}
+      {/* 사용자 권한 관리 */}
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            매니저 관리
+            사용자 권한 관리
           </CardTitle>
           <CardDescription>
-            매니저 패널에 접근할 수 있는 매니저 계정을 관리합니다.
+            현재 관리자 및 매니저 권한을 가진 사용자들을 표시합니다. 일반 사용자에게 권한을 부여하려면 사용자 관리 탭을 이용하세요.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-end mb-4">
-            <Button onClick={handleCreateManager} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              매니저 추가
-            </Button>
-          </div>
-
-          {managersLoading ? (
-            <div className="text-center py-8 text-gray-500">매니저 목록을 불러오는 중...</div>
-          ) : managers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">등록된 매니저가 없습니다.</div>
+          {usersLoading ? (
+            <div className="text-center py-8 text-gray-500">사용자 목록을 불러오는 중...</div>
+          ) : users.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">관리자 또는 매니저 권한을 가진 사용자가 없습니다.</div>
           ) : (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>ID</TableHead>
-                    <TableHead>아이디</TableHead>
-                    <TableHead>등록일</TableHead>
-                    <TableHead className="text-right">작업</TableHead>
+                    <TableHead>사용자명</TableHead>
+                    <TableHead>이름</TableHead>
+                    <TableHead>전화번호</TableHead>
+                    <TableHead>현재 권한</TableHead>
+                    <TableHead>권한 변경</TableHead>
+                    <TableHead>가입일</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {managers.map((manager) => (
-                    <TableRow key={manager.id}>
-                      <TableCell className="font-medium">{manager.id}</TableCell>
-                      <TableCell>{manager.username}</TableCell>
+                  {users.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">{user.id}</TableCell>
+                      <TableCell>{user.username}</TableCell>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.phoneNumber}</TableCell>
                       <TableCell>
-                        {new Date(manager.createdAt).toLocaleDateString('ko-KR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditManager(manager)}
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>매니저 삭제</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  정말로 매니저 "{manager.username}"를 삭제하시겠습니까?
-                                  이 작업은 되돌릴 수 없습니다.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>취소</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteManager(manager.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  삭제
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                        <div className="flex items-center gap-2">
+                          {user.role === 'admin' ? (
+                            <>
+                              <Crown className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">관리자</span>
+                            </>
+                          ) : user.role === 'manager' ? (
+                            <>
+                              <UserCheck className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">매니저</span>
+                            </>
+                          ) : (
+                            <>
+                              <User className="h-4 w-4 text-gray-600" />
+                              <span className="text-gray-700">일반 사용자</span>
+                            </>
+                          )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={user.role}
+                            onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                            disabled={updateUserRoleMutation.isPending}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">일반 사용자</SelectItem>
+                              <SelectItem value="manager">매니저</SelectItem>
+                              <SelectItem value="admin">관리자</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {user.role === 'manager' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditManagerUsername(user)}
+                              disabled={updateUserRoleMutation.isPending || updateManagerUsernameMutation.isPending}
+                            >
+                              사용자 변경
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -471,86 +448,58 @@ export default function AdminSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 매니저 추가/수정 다이얼로그 */}
-      <Dialog open={managerDialogOpen} onOpenChange={setManagerDialogOpen}>
+      {/* 매니저 사용자명 수정 다이얼로그 */}
+      <Dialog open={editManagerDialogOpen} onOpenChange={setEditManagerDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              {editingManager ? "매니저 수정" : "새 매니저 추가"}
-            </DialogTitle>
+            <DialogTitle>매니저 사용자 교체</DialogTitle>
             <DialogDescription>
-              {editingManager 
-                ? "매니저 정보를 수정합니다. 비밀번호를 변경하지 않으려면 비워두세요."
-                : "새로운 매니저 계정을 생성합니다."
-              }
+              현재 매니저 "{editingManager?.username}"를 다른 회원가입자로 교체합니다. 
+              기존 매니저는 일반 사용자로 변경되고, 선택한 사용자가 새로운 매니저가 됩니다.
+              모든 회원가입된 사용자 중에서 선택할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
           
-          <Form {...managerForm}>
-            <form onSubmit={managerForm.handleSubmit(onManagerSubmit)} className="space-y-4">
-              <FormField
-                control={managerForm.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>아이디 *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="매니저 아이디를 입력하세요" 
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                    {editingManager && (
-                      <p className="text-xs text-amber-600">
-                        아이디를 변경하면 기존 로그인 정보가 무효화됩니다.
-                      </p>
-                    )}
-                  </FormItem>
-                )}
-              />
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">새 매니저로 지정할 사용자 선택</label>
+              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                <SelectTrigger className="w-full mt-1">
+                  <SelectValue placeholder="회원가입된 사용자를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allUsers
+                    .filter(user => user.id !== editingManager?.id)
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+{user.username} - {user.name || '이름없음'} ({user.phoneNumber || '전화번호없음'}) {user.role === 'manager' ? '(매니저)' : user.role === 'admin' ? '(관리자)' : '(일반회원)'}
+                      </SelectItem>
+                    ))}
+                  {allUsers.filter(user => user.id !== editingManager?.id).length === 0 && (
+                    <div className="px-2 py-1 text-sm text-gray-500">사용자를 불러오는 중...</div>
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                회원가입된 모든 사용자 중에서 매니저로 지정할 수 있습니다. 권한은 자동으로 매니저로 변경됩니다.
+              </p>
+            </div>
 
-              <FormField
-                control={managerForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>비밀번호 *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="password"
-                        placeholder={editingManager ? "새 비밀번호를 입력하세요" : "비밀번호를 입력하세요"}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                    {editingManager && (
-                      <p className="text-xs text-gray-500">
-                        보안을 위해 새 비밀번호를 입력해주세요.
-                      </p>
-                    )}
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setManagerDialogOpen(false)}
-                >
-                  취소
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createManagerMutation.isPending || updateManagerMutation.isPending}
-                >
-                  {editingManager ? "수정" : "생성"}
-                </Button>
-              </div>
-            </form>
-          </Form>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setEditManagerDialogOpen(false)}
+              >
+                취소
+              </Button>
+              <Button 
+                onClick={handleSaveManagerUsername}
+                disabled={!selectedUserId || updateManagerUsernameMutation.isPending}
+              >
+                {updateManagerUsernameMutation.isPending ? "교체 중..." : "매니저 교체"}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -575,6 +524,7 @@ export default function AdminSettingsPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

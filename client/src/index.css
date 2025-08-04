@@ -4,21 +4,21 @@
 
 :root {
   --background: hsl(45, 29%, 97%);
-  --foreground: hsl(25, 45%, 15%);
+  --foreground: hsl(0, 0%, 0%);
   --muted: hsl(43, 13%, 93%);
-  --muted-foreground: hsl(25, 10%, 45%);
+  --muted-foreground: hsl(0, 0%, 35%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(25, 45%, 15%);
+  --popover-foreground: hsl(0, 0%, 0%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(25, 45%, 15%);
+  --card-foreground: hsl(0, 0%, 0%);
   --border: hsl(43, 15%, 85%);
   --input: hsl(43, 15%, 85%);
   --primary: hsl(25, 65%, 35%);
   --primary-foreground: hsl(0, 0%, 98%);
   --secondary: hsl(43, 13%, 93%);
-  --secondary-foreground: hsl(25, 35%, 25%);
+  --secondary-foreground: hsl(0, 0%, 20%);
   --accent: hsl(120, 25%, 55%);
-  --accent-foreground: hsl(25, 45%, 15%);
+  --accent-foreground: hsl(0, 0%, 0%);
   --destructive: hsl(0, 75%, 55%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(25, 45%, 15%);
@@ -62,8 +62,9 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background;
     font-family: 'Noto Sans KR', 'Inter', sans-serif;
+    color: #000000;
   }
 }
 
@@ -73,6 +74,16 @@
 .eden-sage { color: var(--eden-sage); }
 .eden-beige { color: var(--eden-beige); }
 .eden-red { color: var(--eden-red); }
+
+/* 주요 제목들에만 적용할 색상 클래스 */
+.section-title {
+  color: var(--eden-brown);
+}
+
+/* 기본 텍스트는 검정색 유지 */
+.text-black {
+  color: #000000 !important;
+}
 .eden-dark { color: var(--eden-dark); }
 
 .bg-eden-brown { background-color: var(--eden-brown); }

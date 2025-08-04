@@ -1,6 +1,6 @@
-import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Order management
@@ -58,6 +58,13 @@ export interface IStorage {
   updateCustomerStats(customerPhone: string): Promise<void>;
   autoRegisterCustomer(customerData: {name: string, phone: string, address?: string, zipCode?: string}): Promise<Customer | null>;
   bulkCreateCustomers(customers: InsertCustomer[]): Promise<Customer[]>;
+  
+  // User management
+  getUserById(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUserRole(id: number, role: string): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -171,6 +178,9 @@ export class DatabaseStorage implements IStorage {
       orderNumber,
       status: "pending", // 예약날짜와 상관없이 항상 pending으로 시작
       paymentStatus: "pending",
+      // 인증 관련 필드
+      userId: insertOrder.userId,
+      orderPassword: insertOrder.orderPassword,
     };
     
     const [order] = await db
@@ -289,6 +299,12 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(orders.createdAt));
   }
 
+  async getOrdersByUserId(userId: number): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, false)))
+      .orderBy(desc(orders.createdAt));
+  }
+
   async updateOrder(id: number, updateData: Partial<InsertOrder>): Promise<Order | undefined> {
     // Convert string dates to Date objects if needed
     const processedData: any = { ...updateData };
@@ -315,6 +331,15 @@ export class DatabaseStorage implements IStorage {
     const [order] = await db
       .update(orders)
       .set(updateData)
+      .where(eq(orders.id, id))
+      .returning();
+    return order || undefined;
+  }
+
+  async updateOrderPaymentStatus(id: number, paymentStatus: string): Promise<Order | undefined> {
+    const [order] = await db
+      .update(orders)
+      .set({ paymentStatus })
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;
@@ -398,23 +423,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
-    const updateData: any = { 
-      sellerShipped,
-      sellerShippedDate: sellerShipped ? sellerShippedDate : null
-    };
-    
-    // If seller shipped is true, also update status to delivered and set delivered date
-    if (sellerShipped) {
-      updateData.status = 'delivered';
-      updateData.deliveredDate = sellerShippedDate;
+    try {
+      const updateData: any = { 
+        sellerShipped,
+        sellerShippedDate: sellerShipped ? sellerShippedDate : null
+      };
+      
+      // If seller shipped is true, also update status to delivered and set delivered date
+      if (sellerShipped) {
+        updateData.status = 'delivered';
+        updateData.deliveredDate = sellerShippedDate;
+      }
+      
+      console.log(`Updating order ${id} with data:`, updateData);
+      
+      const [order] = await db
+        .update(orders)
+        .set(updateData)
+        .where(eq(orders.id, id))
+        .returning();
+        
+      console.log(`Update result for order ${id}:`, order ? 'success' : 'not found');
+      return order || undefined;
+    } catch (error) {
+      console.error(`Error updating order ${id}:`, error);
+      throw error;
     }
-    
-    const [order] = await db
-      .update(orders)
-      .set(updateData)
-      .where(eq(orders.id, id))
-      .returning();
-    return order || undefined;
   }
 
   async createSmsNotification(insertNotification: InsertSmsNotification): Promise<SmsNotification> {
@@ -615,7 +649,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllCustomers(): Promise<Customer[]> {
-    return await db.select().from(customers).orderBy(desc(customers.createdAt));
+    return await db.select().from(customers)
+      .where(eq(customers.isDeleted, false))
+      .orderBy(desc(customers.createdAt));
+  }
+
+  async getTrashedCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers)
+      .where(eq(customers.isDeleted, true))
+      .orderBy(desc(customers.deletedAt));
   }
 
   async updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined> {
@@ -642,7 +684,51 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCustomer(id: number): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: true, 
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id));
+  }
+
+  async restoreCustomer(id: number): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: false, 
+        deletedAt: null,
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id));
+  }
+
+  async permanentlyDeleteCustomer(id: number): Promise<void> {
     await db.delete(customers).where(eq(customers.id, id));
+  }
+
+  async bulkDeleteCustomers(ids: number[]): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: true, 
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(inArray(customers.id, ids));
+  }
+
+  async bulkRestoreCustomers(ids: number[]): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: false, 
+        deletedAt: null,
+        updatedAt: new Date()
+      })
+      .where(inArray(customers.id, ids));
+  }
+
+  async bulkPermanentlyDeleteCustomers(ids: number[]): Promise<void> {
+    await db.delete(customers).where(inArray(customers.id, ids));
   }
 
   async updateCustomerStats(phoneNumber: string): Promise<void> {
@@ -792,6 +878,46 @@ export class DatabaseStorage implements IStorage {
       address,
       orderCount: count
     })).sort((a, b) => b.orderCount - a.orderCount);
+  }
+
+  // User management methods
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    
+    const [user] = await db.insert(users).values({
+      username: userData.username,
+      passwordHash: hashedPassword,
+      name: userData.name,
+      phoneNumber: userData.phoneNumber,
+      role: userData.role || 'user',
+      isActive: userData.isActive ?? true
+    }).returning();
+    
+    return user;
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 }
 

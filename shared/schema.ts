@@ -58,6 +58,8 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
     z.string().transform((str) => new Date(str)), 
     z.null()
   ]).optional().nullable(),
+  orderPassword: z.string().optional().nullable(), // 주문 비밀번호는 선택사항
+  userId: z.number().optional().nullable(), // 로그인한 사용자 ID는 선택사항
 });
 
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
@@ -201,6 +203,8 @@ export const customers = pgTable("customers", {
   totalSpent: integer("total_spent").notNull().default(0), // 총 주문금액
   lastOrderDate: timestamp("last_order_date"), // 마지막 주문일
   notes: text("notes"), // 메모
+  isDeleted: boolean("is_deleted").notNull().default(false),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

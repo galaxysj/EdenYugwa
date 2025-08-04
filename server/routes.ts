@@ -132,6 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users.map(user => ({
         id: user.id,
         username: user.username,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
         role: user.role,
         isActive: user.isActive,
         createdAt: user.createdAt,
@@ -190,6 +192,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user role (admin only)
+  app.patch("/api/users/:id/role", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (!role || !['user', 'manager', 'admin'].includes(role)) {
+        return res.status(400).json({ message: "유효한 권한을 입력해주세요" });
+      }
+
+      const user = await userService.updateUser(id, { role });
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "사용자 권한 변경에 실패했습니다" });
+    }
+  });
+
+  // Change manager user account (admin only)
+  app.patch("/api/users/:id/change-user", requireAdmin, async (req, res) => {
+    try {
+      const managerId = parseInt(req.params.id);
+      const { newUserId } = req.body;
+      
+      if (!newUserId) {
+        return res.status(400).json({ message: "새로운 사용자 ID가 필요합니다" });
+      }
+
+      // Get the current manager
+      const currentManager = await userService.getUserById(managerId);
+      if (!currentManager || currentManager.role !== 'manager') {
+        return res.status(404).json({ message: "매니저를 찾을 수 없습니다" });
+      }
+
+      // Get the target user
+      const targetUser = await userService.getUserById(newUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "대상 사용자를 찾을 수 없습니다" });
+      }
+
+      // Update the current manager to regular user
+      await userService.updateUser(managerId, { role: 'user' });
+
+      // Update the target user to manager
+      const updatedManager = await userService.updateUser(newUserId, { role: 'manager' });
+
+      res.json(updatedManager);
+    } catch (error) {
+      console.error("Error changing manager user:", error);
+      res.status(500).json({ message: "매니저 사용자 변경에 실패했습니다" });
+    }
+  });
+
+  // Get user's own orders (authenticated users)
+  app.get("/api/my-orders", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "사용자 정보가 없습니다" });
+      }
+      
+      const orders = await storage.getOrdersByUserId(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      res.status(500).json({ message: "주문 조회에 실패했습니다" });
+    }
+  });
+
   // Get all orders (for admin and manager)
   app.get("/api/orders", requireManagerOrAdmin, async (req, res) => {
     try {
@@ -200,11 +274,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get manager orders (all orders like admin)
+  app.get("/api/manager/orders", requireManagerOrAdmin, async (req, res) => {
+    try {
+      const allOrders = await storage.getAllOrders();
+      // 매니저는 발송주문(scheduled) 또는 발송완료(delivered) 상태의 주문만 볼 수 있음
+      const filteredOrders = allOrders.filter(order => 
+        order.status === 'scheduled' || order.status === 'delivered'
+      );
+      res.json(filteredOrders);
+    } catch (error) {
+      console.error("Error fetching manager orders:", error);
+      res.status(500).json({ message: "Failed to fetch manager orders" });
+    }
+  });
+
   // Lookup orders by phone number or name (must come before /api/orders/:id)
   app.get("/api/orders/lookup", async (req, res) => {
     try {
       const userId = (req as any).user?.id; // 로그인된 사용자 ID
       const { phone, name, password } = req.query;
+      
+      console.log("주문 조회 요청:", { userId, phone, name });
       
       if ((!phone || typeof phone !== 'string') && (!name || typeof name !== 'string')) {
         return res.status(400).json({ message: "Phone number or name is required" });
@@ -214,11 +305,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (phone && typeof phone === 'string') {
         const phoneOrders = await storage.getOrdersByPhone(phone);
+        console.log(`전화번호 ${phone}로 찾은 주문:`, phoneOrders.length);
         orders = [...orders, ...phoneOrders];
       }
       
       if (name && typeof name === 'string') {
         const nameOrders = await storage.getOrdersByName(name);
+        console.log(`이름 ${name}으로 찾은 주문:`, nameOrders.length);
         orders = [...orders, ...nameOrders];
       }
       
@@ -227,43 +320,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         index === self.findIndex(o => o.id === order.id)
       );
       
-      // 로그인된 사용자인 경우, 본인의 주문만 필터링
-      if (userId) {
-        uniqueOrders = uniqueOrders.filter(order => order.userId === userId);
-      }
-      
       if (uniqueOrders.length === 0) {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      // 비로그인 사용자의 경우 비밀번호 검증 및 정보 마스킹
-      if (!userId) {
-        if (password && typeof password === 'string') {
-          // 비밀번호가 제공된 경우: 일치하는 주문만 필터링하고 전체 정보 제공
-          const authenticatedOrders = uniqueOrders.filter(order => order.orderPassword === password);
-          if (authenticatedOrders.length > 0) {
-            res.json(authenticatedOrders);
-            return;
-          }
-        }
-        
-        // 비밀번호가 없거나 일치하지 않는 경우: 마스킹된 정보 제공
-        const maskedOrders = uniqueOrders.map(order => ({
-          ...order,
-          customerPhone: order.customerPhone.substring(0, 4) + '***',
-          address1: order.address1.split(' ').slice(0, 2).join(' ') + ' ***',
-          address2: order.address2 ? '***' : null,
-          totalAmount: null, // 가격 숨김
-          actualPaidAmount: null,
-          recipientName: order.recipientName ? order.recipientName.charAt(0) + '***' : null,
-          recipientPhone: order.recipientPhone ? order.recipientPhone.substring(0, 4) + '***' : null,
-          recipientAddress1: order.recipientAddress1 ? order.recipientAddress1.split(' ').slice(0, 2).join(' ') + ' ***' : null,
-          recipientAddress2: order.recipientAddress2 ? '***' : null,
-        }));
-        res.json(maskedOrders);
-      } else {
-        res.json(uniqueOrders);
-      }
+      // 전화번호/이름으로 조회된 모든 주문 정보 제공 (로그인 여부 무관)
+      res.json(uniqueOrders);
     } catch (error) {
       res.status(500).json({ message: "Failed to lookup orders" });
     }
@@ -313,21 +375,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.scheduledDate = new Date(req.body.scheduledDate);
       }
       
-      // 로그인된 사용자인 경우 userId 설정, 아닌 경우 orderPassword가 있어야 함
+      // 로그인된 사용자인 경우 userId 설정
       if ((req as any).user?.id) {
-        console.log("로그인된 사용자 주문");
+        console.log(`로그인된 사용자 주문 (user ID: ${(req as any).user.id})`);
         req.body.userId = (req as any).user.id;
         req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
         console.log("비로그인 사용자 주문");
-        // 비로그인 사용자: orderPassword 필수
-        if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
-          return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)를 입력해주세요." });
+        // 비로그인 사용자는 주문 생성 시 비밀번호 선택사항
+        req.body.userId = null;
+        // orderPassword가 있으면 사용, 없으면 null
+        if (req.body.orderPassword && req.body.orderPassword.trim().length > 0) {
+          console.log("orderPassword 설정됨:", req.body.orderPassword);
+        } else {
+          req.body.orderPassword = null;
+          console.log("orderPassword 없음 - 비밀번호 없이 주문 생성");
         }
-        console.log("orderPassword 설정됨:", req.body.orderPassword);
       }
       
       const validatedData = insertOrderSchema.parse(req.body);
+      
+      console.log("주문 생성 전 validatedData.userId:", validatedData.userId);
       
       // Automatically register or update customer
       await storage.autoRegisterCustomer({
@@ -338,6 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const order = await storage.createOrder(validatedData);
+      console.log("주문 생성 후 order.userId:", order?.userId);
       
       // Update customer statistics after creating order
       await storage.updateCustomerStats(validatedData.customerPhone);
@@ -388,6 +457,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedOrder);
     } catch (error) {
       res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Update payment status (manager and admin only)
+  app.patch("/api/orders/:id/payment-status", requireManagerOrAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { paymentStatus } = req.body;
+      
+      if (!paymentStatus) {
+        return res.status(400).json({ message: "Payment status is required" });
+      }
+      
+      const updatedOrder = await storage.updateOrderPaymentStatus(id, paymentStatus);
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update payment status" });
     }
   });
 
@@ -451,6 +542,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedOrder);
     } catch (error) {
       res.status(500).json({ message: "Failed to update order seller shipped date" });
+    }
+  });
+
+  // Bulk seller shipped update
+  app.patch("/api/orders/seller-shipped", requireManagerOrAdmin, async (req, res) => {
+    try {
+      const { orderIds } = req.body;
+      
+      console.log("Bulk seller shipped request received:", { orderIds });
+      
+      if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        return res.status(400).json({ message: "주문 ID 목록이 필요합니다" });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      for (const orderId of orderIds) {
+        try {
+          console.log(`Updating order ${orderId} to seller shipped...`);
+          const currentDate = new Date();
+          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, currentDate);
+          if (updatedOrder) {
+            results.push(updatedOrder);
+            console.log(`Successfully updated order ${orderId}`);
+          } else {
+            console.error(`Order ${orderId} not found or could not be updated`);
+            errors.push({ orderId, error: "주문을 찾을 수 없거나 업데이트할 수 없습니다" });
+          }
+        } catch (error) {
+          console.error(`Failed to update order ${orderId}:`, error);
+          console.error(`Error details:`, error);
+          errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
+        }
+      }
+      
+      if (errors.length > 0) {
+        console.error("Some orders failed to update:", errors);
+        return res.status(500).json({ 
+          message: `${results.length}개 주문은 성공, ${errors.length}개 주문 실패`,
+          updatedOrders: results,
+          errors: errors
+        });
+      }
+      
+      res.json({ 
+        message: `${results.length}개 주문이 발송완료로 변경되었습니다`,
+        updatedOrders: results 
+      });
+    } catch (error) {
+      console.error("Bulk seller shipped update error:", error);
+      res.status(500).json({ 
+        message: "일괄 발송 업데이트에 실패했습니다",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
@@ -1218,6 +1364,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk delete customers
+  app.post("/api/customers/bulk-delete", async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: "선택된 고객이 없습니다" });
+      }
+      await storage.bulkDeleteCustomers(ids);
+      res.json({ success: true, message: `${ids.length}개 고객이 휴지통으로 이동되었습니다` });
+    } catch (error) {
+      console.error("Error bulk deleting customers:", error);
+      res.status(500).json({ error: "고객 일괄 삭제에 실패했습니다" });
+    }
+  });
+
+  // Get trashed customers
+  app.get("/api/customers/trash", async (req, res) => {
+    try {
+      const trashedCustomers = await storage.getTrashedCustomers();
+      res.json(trashedCustomers);
+    } catch (error) {
+      console.error("Error fetching trashed customers:", error);
+      res.status(500).json({ error: "삭제된 고객 목록을 불러오는데 실패했습니다" });
+    }
+  });
+
+  // Restore customer
+  app.post("/api/customers/:id/restore", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.restoreCustomer(id);
+      res.json({ success: true, message: "고객이 복구되었습니다" });
+    } catch (error) {
+      console.error("Error restoring customer:", error);
+      res.status(500).json({ error: "고객 복구에 실패했습니다" });
+    }
+  });
+
+  // Permanently delete customer
+  app.delete("/api/customers/:id/permanent", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.permanentlyDeleteCustomer(id);
+      res.json({ success: true, message: "고객이 영구적으로 삭제되었습니다" });
+    } catch (error) {
+      console.error("Error permanently deleting customer:", error);
+      res.status(500).json({ error: "고객 영구 삭제에 실패했습니다" });
+    }
+  });
+
+  // Bulk restore customers
+  app.post("/api/customers/bulk-restore", async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: "선택된 고객이 없습니다" });
+      }
+      await storage.bulkRestoreCustomers(ids);
+      res.json({ success: true, message: `${ids.length}개 고객이 복구되었습니다` });
+    } catch (error) {
+      console.error("Error bulk restoring customers:", error);
+      res.status(500).json({ error: "고객 일괄 복구에 실패했습니다" });
+    }
+  });
+
+  // Bulk permanently delete customers
+  app.post("/api/customers/bulk-permanent-delete", async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ error: "선택된 고객이 없습니다" });
+      }
+      await storage.bulkPermanentlyDeleteCustomers(ids);
+      res.json({ success: true, message: `${ids.length}개 고객이 영구적으로 삭제되었습니다` });
+    } catch (error) {
+      console.error("Error bulk permanently deleting customers:", error);
+      res.status(500).json({ error: "고객 일괄 영구 삭제에 실패했습니다" });
+    }
+  });
+
   // Customer stats refresh endpoint
   app.post("/api/customers/refresh-stats", async (req, res) => {
     try {
@@ -1230,6 +1456,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error refreshing customer stats:", error);
       res.status(500).json({ error: "고객 통계 업데이트에 실패했습니다" });
+    }
+  });
+
+  // User Management API routes (admin only)
+  
+  // Get all users (admin only)
+  app.get("/api/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove password hash from response
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        lastLoginAt: user.lastLoginAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "사용자 목록 조회에 실패했습니다" });
+    }
+  });
+
+  // Update user role (admin only)
+  app.patch("/api/users/:id/role", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다" });
+      }
+      
+      if (!role || !['user', 'manager'].includes(role)) {
+        return res.status(400).json({ message: "유효하지 않은 역할입니다. 'user' 또는 'manager'만 가능합니다" });
+      }
+      
+      const user = await storage.getUserById(id);
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+      
+      const updatedUser = await storage.updateUserRole(id, role);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "역할 업데이트에 실패했습니다" });
+      }
+      
+      // Remove password hash from response
+      const safeUser = {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        phoneNumber: updatedUser.phoneNumber,
+        role: updatedUser.role,
+        isActive: updatedUser.isActive,
+        createdAt: updatedUser.createdAt,
+        lastLoginAt: updatedUser.lastLoginAt
+      };
+      
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "역할 업데이트에 실패했습니다" });
     }
   });
 

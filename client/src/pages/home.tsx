@@ -76,15 +76,18 @@ export default function Home() {
                   </Button>
                 </Link>
               )}
-              {isAuthenticated && user?.role === 'user' && (
+              {isAuthenticated && (
                 <Button 
                   variant="outline" 
                   className="text-eden-brown border-eden-brown hover:bg-eden-brown hover:text-white"
                   onClick={async () => {
                     try {
-                      const response = await fetch('/api/auth/logout', { method: 'POST' });
+                      const response = await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: 'include'
+                      });
                       if (response.ok) {
-                        window.location.reload();
+                        window.location.href = '/';
                       }
                     } catch (error) {
                       console.error('로그아웃 실패:', error);
@@ -94,6 +97,7 @@ export default function Home() {
                   로그아웃
                 </Button>
               )}
+
             </nav>
 
             {/* Mobile Menu Button */}
@@ -176,24 +180,28 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                {isAuthenticated && user?.role === 'user' && (
+                {isAuthenticated && (
                   <button 
+                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
                     onClick={async () => {
                       setIsMobileMenuOpen(false);
                       try {
-                        const response = await fetch('/api/auth/logout', { method: 'POST' });
+                        const response = await fetch('/api/auth/logout', {
+                          method: 'POST',
+                          credentials: 'include'
+                        });
                         if (response.ok) {
-                          window.location.reload();
+                          window.location.href = '/';
                         }
                       } catch (error) {
                         console.error('로그아웃 실패:', error);
                       }
                     }}
-                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
                   >
                     로그아웃
                   </button>
                 )}
+
               </div>
             </nav>
           )}
