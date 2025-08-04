@@ -654,12 +654,28 @@ export default function PublicOrder() {
                   </div>
                 </div>
 
+                {/* Payment Information */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">입금 안내</h3>
+                  <div className="space-y-3">
+                    <div className="text-sm text-gray-700">
+                      <div className="font-medium mb-2">입금계좌:</div>
+                      <div className="text-lg font-mono text-gray-900">
+                        농협 352-1701-3342-63 (송*연)
+                      </div>
+                    </div>
+                    <div className="text-sm text-blue-700">
+                      ※ 주문 확인 후 24시간 이내 입금 부탁드립니다.
+                    </div>
+                  </div>
+                </div>
+
                 {/* Submit Buttons */}
                 <div className="space-y-3">
                   <Button 
                     type="submit" 
                     disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                    className="w-full bg-eden-brown hover:bg-eden-brown/90 text-white text-lg py-6"
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white text-lg py-6 font-semibold"
                     data-testid="button-submit-order"
                   >
                     {createOrderMutation.isPending ? (
@@ -679,7 +695,7 @@ export default function PublicOrder() {
                     type="submit" 
                     disabled={createOrderMutation.isPending || calculateTotal() === 0}
                     variant="outline"
-                    className="w-full border-2 border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white text-lg py-6"
+                    className="w-full border-2 border-orange-600 text-orange-600 hover:bg-orange-600 hover:text-white text-lg py-6 font-semibold"
                     data-testid="button-guest-order"
                   >
                     {createOrderMutation.isPending ? (
