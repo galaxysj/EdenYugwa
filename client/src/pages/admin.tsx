@@ -1589,8 +1589,6 @@ export default function Admin() {
             className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
             <option value="all">전체</option>
-            <option value="pending">접수대기</option>
-            <option value="seller_shipped">발송대기</option>
             <option value="scheduled">발송주문</option>
             <option value="delivered">발송완료</option>
           </select>
@@ -2676,46 +2674,6 @@ export default function Admin() {
       />
 
       <div className="container mx-auto p-4 sm:p-6">
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center">
-              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.total}</div>
-              <div className="text-xs sm:text-sm text-gray-600">총 주문</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-yellow-50">
-              <div className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending || 0}</div>
-              <div className="text-xs sm:text-sm text-gray-600">주문접수</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-blue-50">
-              <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.scheduled || 0}</div>
-              <div className="text-xs sm:text-sm text-gray-600">발송주문</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-orange-50">
-              <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.seller_shipped || 0}</div>
-              <div className="text-xs sm:text-sm text-gray-600">발송대기</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-green-50">
-              <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.delivered || 0}</div>
-              <div className="text-xs sm:text-sm text-gray-600">발송완료</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-2 sm:p-4 text-center bg-emerald-50">
-              <div className="text-lg sm:text-2xl font-bold text-emerald-600">{stats.paidOrders || 0}</div>
-              <div className="text-xs sm:text-sm text-gray-600">입금 완료</div>
-            </CardContent>
-          </Card>
-        </div>
 
 
 

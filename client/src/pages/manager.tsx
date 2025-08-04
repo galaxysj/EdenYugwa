@@ -83,8 +83,13 @@ export default function ManagerDashboard() {
     queryKey: ["/api/admin-settings"],
   });
 
-  // 필터링 로직 (관리자와 동일)
+  // 필터링 로직 (매니저용 - 발송주문과 발송완료만 표시)
   const filteredOrders = (orders as Order[]).filter(order => {
+    // 매니저는 발송주문(seller_shipped)과 발송완료(delivered) 상태의 주문만 볼 수 있음
+    if (order.status !== 'seller_shipped' && order.status !== 'delivered') {
+      return false;
+    }
+
     // 날짜 필터링
     if (orderDateFilter === 'today') {
       const today = new Date().toDateString();
@@ -313,29 +318,6 @@ export default function ManagerDashboard() {
       <div className="container mx-auto p-4 space-y-6">
         {currentPage === "orders" && (
           <>
-            {/* 상단 통계 카드들 (금액 제외) */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {(orders as Order[]).filter(o => o.status === 'delivered').length}
-                  </div>
-                  <div className="text-sm text-gray-600">주문상태</div>
-                  <div className="text-xs text-gray-500">발송완료</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {(orders as Order[]).filter(o => o.sellerShipped).length}
-                  </div>
-                  <div className="text-sm text-gray-600">판매자발송</div>
-                  <div className="text-xs text-gray-500">발송완료</div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* 주문 목록 */}
             <Tabs defaultValue="전체보기" className="space-y-4">
               <div className="flex items-center justify-between">
