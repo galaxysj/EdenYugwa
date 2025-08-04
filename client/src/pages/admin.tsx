@@ -1827,12 +1827,18 @@ export default function Admin() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <Select
+                        key={`payment-${order.id}-${order.paymentStatus}`}
                         value={
                           order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
                             ? 'partial'
                             : order.paymentStatus || 'pending'
                         }
-                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                        onValueChange={(newPaymentStatus) => {
+                          // Portal 오류 방지를 위한 지연된 상태 업데이트
+                          setTimeout(() => {
+                            handlePaymentStatusChange(order.id, newPaymentStatus);
+                          }, 0);
+                        }}
                         disabled={updatePaymentMutation.isPending}
                       >
                         <SelectTrigger className="w-24 h-6 text-xs">
@@ -1868,8 +1874,14 @@ export default function Admin() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <Select
+                        key={`status-${order.id}-${order.status}`}
                         value={order.status}
-                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                        onValueChange={(newStatus) => {
+                          // Portal 오류 방지를 위한 지연된 상태 업데이트
+                          setTimeout(() => {
+                            handleStatusChange(order.id, newStatus);
+                          }, 0);
+                        }}
                         disabled={updateStatusMutation.isPending}
                       >
                         <SelectTrigger className="w-24 h-6 text-xs">
