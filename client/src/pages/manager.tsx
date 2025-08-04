@@ -596,12 +596,6 @@ export default function ManagerDashboard() {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="pending">
-                                    <div className="flex items-center space-x-1">
-                                      <Clock className="h-3 w-3 text-orange-500" />
-                                      <span>주문접수</span>
-                                    </div>
-                                  </SelectItem>
                                   <SelectItem value="scheduled">
                                     <div className="flex items-center space-x-1">
                                       <Calendar className="h-3 w-3 text-blue-500" />
