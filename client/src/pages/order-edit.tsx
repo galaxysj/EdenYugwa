@@ -15,7 +15,17 @@ import { api } from "@/lib/api";
 import { insertOrderSchema, type Order } from "@shared/schema";
 import { z } from "zod";
 
-const editOrderSchema = insertOrderSchema.extend({
+const editOrderSchema = insertOrderSchema.pick({
+  customerName: true,
+  customerPhone: true,
+  zipCode: true,
+  address1: true,
+  address2: true,
+  specialRequests: true,
+  smallBoxQuantity: true,
+  largeBoxQuantity: true,
+  wrappingQuantity: true,
+}).extend({
   customerName: z.string().min(1, "이름을 입력해주세요"),
   customerPhone: z.string().min(1, "전화번호를 입력해주세요"),
   address1: z.string().min(1, "주소를 입력해주세요"),
