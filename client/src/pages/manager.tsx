@@ -85,8 +85,8 @@ export default function ManagerDashboard() {
 
   // 필터링 로직 (매니저용 - 발송주문과 발송완료만 표시)
   const filteredOrders = (orders as Order[]).filter(order => {
-    // 매니저는 발송주문(seller_shipped)과 발송완료(delivered) 상태의 주문만 볼 수 있음
-    if (order.status !== 'seller_shipped' && order.status !== 'delivered') {
+    // 매니저는 발송주문(scheduled)과 발송완료(delivered) 상태의 주문만 볼 수 있음
+    if (order.status !== 'scheduled' && order.status !== 'delivered') {
       return false;
     }
 
