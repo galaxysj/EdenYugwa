@@ -372,86 +372,98 @@ export default function OrderEdit() {
                 </div>
 
                 {/* Product Selection */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
                     <div className="h-5 w-5 text-eden-brown">🎁</div>
                     <h3 className="text-lg font-semibold text-gray-900">상품 선택</h3>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="border border-gray-200 rounded-lg p-6 space-y-4">
-                      <div className="text-center">
+                  <div className="space-y-4">
+                    {/* 한과1호 (소박스) */}
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
+                      <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">한과1호 (소박스)</h4>
-                        <p className="text-2xl font-bold text-eden-brown">{formatPrice(prices.small)}</p>
+                        <p className="text-lg font-bold text-eden-brown">{formatPrice(prices.small)}</p>
                       </div>
-                      <FormField
-                        control={form.control}
-                        name="smallBoxQuantity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>수량</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="0" 
-                                {...field}
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex items-center gap-3">
+                        <FormField
+                          control={form.control}
+                          name="smallBoxQuantity"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-2">
+                              <FormLabel className="text-sm text-gray-600 min-w-8">수량</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="0" 
+                                  className="w-20 text-center"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
-                    <div className="border border-gray-200 rounded-lg p-6 space-y-4">
-                      <div className="text-center">
+                    {/* 한과2호 (대박스) */}
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
+                      <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">한과2호 (대박스)</h4>
-                        <p className="text-2xl font-bold text-eden-brown">{formatPrice(prices.large)}</p>
+                        <p className="text-lg font-bold text-eden-brown">{formatPrice(prices.large)}</p>
                       </div>
-                      <FormField
-                        control={form.control}
-                        name="largeBoxQuantity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>수량</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="0" 
-                                {...field}
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex items-center gap-3">
+                        <FormField
+                          control={form.control}
+                          name="largeBoxQuantity"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-2">
+                              <FormLabel className="text-sm text-gray-600 min-w-8">수량</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="0" 
+                                  className="w-20 text-center"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
-                    <div className="border border-gray-200 rounded-lg p-6 space-y-4">
-                      <div className="text-center">
+                    {/* 보자기 포장 */}
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
+                      <div className="flex-1">
                         <h4 className="font-semibold text-gray-900">보자기 포장</h4>
-                        <p className="text-2xl font-bold text-eden-brown">{formatPrice(prices.wrapping)}</p>
+                        <p className="text-lg font-bold text-eden-brown">{formatPrice(prices.wrapping)}</p>
                       </div>
-                      <FormField
-                        control={form.control}
-                        name="wrappingQuantity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>수량</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="0" 
-                                {...field}
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex items-center gap-3">
+                        <FormField
+                          control={form.control}
+                          name="wrappingQuantity"
+                          render={({ field }) => (
+                            <FormItem className="flex items-center gap-2">
+                              <FormLabel className="text-sm text-gray-600 min-w-8">수량</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  min="0" 
+                                  className="w-20 text-center"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
 
