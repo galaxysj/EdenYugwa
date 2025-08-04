@@ -101,6 +101,16 @@ export default function PublicOrder() {
   const onSubmit = (data: PublicOrderForm) => {
     console.log("폼 데이터:", data);
     
+    // 주문 비밀번호 검증
+    if (!data.orderPassword || data.orderPassword.length < 4) {
+      toast({
+        title: "비밀번호 입력 필요",
+        description: "주문 비밀번호를 4자리 이상 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Calculate total amount
     const smallBoxPrice = 30000;
     const largeBoxPrice = 50000;
@@ -117,13 +127,11 @@ export default function PublicOrder() {
       zipCode: data.zipCode || null,
       address1: data.address1,
       address2: data.address2 || null,
-      // 받는 분 정보
       recipientName: data.recipientName || null,
       recipientPhone: data.recipientPhone || null,
       recipientZipCode: data.recipientZipCode || null,
       recipientAddress1: data.recipientAddress1 || null,
       recipientAddress2: data.recipientAddress2 || null,
-      // 입금자 정보
       isDifferentDepositor: data.isDifferentDepositor,
       depositorName: data.isDifferentDepositor ? data.depositorName || null : null,
       smallBoxQuantity: data.smallBoxQuantity,
@@ -131,10 +139,11 @@ export default function PublicOrder() {
       wrappingQuantity: data.wrappingQuantity,
       specialRequests: data.specialRequests || null,
       scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
-      orderPassword: data.orderPassword, // 주문 비밀번호 추가
+      orderPassword: data.orderPassword,
       totalAmount,
-      status: "pending",
-      paymentStatus: "pending",
+      status: "pending" as const,
+      paymentStatus: "pending" as const,
+      shippingFee: 4000,
     };
 
     console.log("폼 데이터:", data);
@@ -645,13 +654,33 @@ export default function PublicOrder() {
                   </div>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit Buttons */}
                 <div className="space-y-4">
                   <Button 
                     type="submit" 
                     disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                    className="w-full bg-eden-brown hover:bg-eden-brown/90 text-lg py-6"
+                    className="w-full bg-eden-red hover:bg-eden-red/90 text-white text-lg py-6"
                     data-testid="button-submit-order"
+                  >
+                    {createOrderMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        주문 처리 중...
+                      </>
+                    ) : (
+                      <>
+                        <Package className="mr-2 h-4 w-4" />
+                        주문하기
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    type="submit" 
+                    disabled={createOrderMutation.isPending || calculateTotal() === 0}
+                    variant="outline"
+                    className="w-full border-eden-brown text-eden-brown hover:bg-eden-brown hover:text-white text-lg py-6"
+                    data-testid="button-guest-order"
                   >
                     {createOrderMutation.isPending ? (
                       <>
