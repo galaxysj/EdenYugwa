@@ -2003,14 +2003,6 @@ export default function Admin() {
                         ) : (
                           <div className="text-gray-400 text-xs">매니저 미처리</div>
                         )}
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
-                          onClick={() => handleSellerShipped(order.id)}
-                          disabled={!order.sellerShipped}
-                        >
-                          개별발송
-                        </Button>
                       </div>
                     </td>
                     <td className="py-2 px-2 text-center">
