@@ -9,12 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { type InsertOrder } from "@shared/schema";
-import { Loader2, Package, MapPin, User, Phone, Calendar, Gift } from "lucide-react";
+import { Loader2, Package, MapPin, User, Phone, Calendar, Gift, Lock } from "lucide-react";
 
 // Public order form schema
 const publicOrderSchema = z.object({
@@ -47,6 +48,8 @@ export default function PublicOrder() {
   const { toast } = useToast();
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string>("");
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [orderPassword, setOrderPassword] = useState("");
 
   const form = useForm<PublicOrderForm>({
     resolver: zodResolver(publicOrderSchema),
@@ -643,20 +646,30 @@ export default function PublicOrder() {
                 </div>
 
                 {/* Submit Button */}
-                <Button 
-                  type="submit" 
-                  disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                  className="w-full bg-eden-brown hover:bg-eden-brown/90 text-lg py-6"
-                >
-                  {createOrderMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      주문 처리 중...
-                    </>
-                  ) : (
-                    "주문하기"
-                  )}
-                </Button>
+                <div className="space-y-4">
+                  <Button 
+                    type="submit" 
+                    disabled={createOrderMutation.isPending || calculateTotal() === 0}
+                    className="w-full bg-eden-brown hover:bg-eden-brown/90 text-lg py-6"
+                    data-testid="button-submit-order"
+                  >
+                    {createOrderMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        주문 처리 중...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="mr-2 h-4 w-4" />
+                        비회원 주문하기
+                      </>
+                    )}
+                  </Button>
+                  
+                  <div className="text-center text-sm text-gray-500">
+                    회원가입 없이 주문할 수 있습니다. 주문 비밀번호를 잊지 마세요!
+                  </div>
+                </div>
               </form>
             </Form>
           </CardContent>
