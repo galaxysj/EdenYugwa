@@ -373,92 +373,166 @@ export default function OrderEdit() {
 
                 {/* Product Selection */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                    <div className="h-5 w-5 text-eden-brown">🎁</div>
-                    <h3 className="text-lg font-semibold text-gray-900">상품 선택</h3>
-                  </div>
+                  <h3 className="text-lg font-semibold text-black">상품 선택</h3>
                   
-                  <div className="space-y-4">
-                    {/* 한과1호 (소박스) */}
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">한과1호 (소박스)</h4>
-                        <p className="text-lg font-bold text-eden-brown">{formatPrice(prices.small)}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
+                  <div className="border-2 border-eden-beige rounded-lg p-3 md:p-4">
+                    <div className="space-y-3 md:space-y-4">
+                      {/* 한과1호 Selection */}
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h5 className="font-semibold text-black text-sm md:text-base">한과1호(약 1.1kg)</h5>
+                            <p className="text-xs text-black mt-1">약 35.5×21×11.2cm</p>
+                          </div>
+                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
+                        </div>
                         <FormField
                           control={form.control}
                           name="smallBoxQuantity"
                           render={({ field }) => (
-                            <FormItem className="flex items-center gap-2">
-                              <FormLabel className="text-sm text-gray-600 min-w-8">수량</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  min="0" 
-                                  className="w-20 text-center"
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                />
-                              </FormControl>
+                            <FormItem>
+                              <div className="flex items-center space-x-2">
+                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-1">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-12 h-7 text-center text-xs px-1"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                    </div>
 
-                    {/* 한과2호 (대박스) */}
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">한과2호 (대박스)</h4>
-                        <p className="text-lg font-bold text-eden-brown">{formatPrice(prices.large)}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      {/* Divider */}
+                      <div className="border-t border-eden-beige/50"></div>
+
+                      {/* 한과2호 Selection */}
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h5 className="font-semibold text-black text-sm md:text-base">한과2호(약 1.3kg)</h5>
+                            <p className="text-xs text-black mt-1">약 37×23×11.5cm</p>
+                          </div>
+                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
+                        </div>
                         <FormField
                           control={form.control}
                           name="largeBoxQuantity"
                           render={({ field }) => (
-                            <FormItem className="flex items-center gap-2">
-                              <FormLabel className="text-sm text-gray-600 min-w-8">수량</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  min="0" 
-                                  className="w-20 text-center"
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                />
-                              </FormControl>
+                            <FormItem>
+                              <div className="flex items-center space-x-2">
+                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-1">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-12 h-7 text-center text-xs px-1"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                    </div>
 
-                    {/* 보자기 포장 */}
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">보자기 포장</h4>
-                        <p className="text-lg font-bold text-eden-brown">{formatPrice(prices.wrapping)}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
+                      {/* Divider */}
+                      <div className="border-t border-eden-beige/50"></div>
+
+                      {/* 보자기 포장 Selection */}
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h5 className="font-semibold text-black text-sm md:text-base">보자기 수량</h5>
+                            <p className="text-xs text-black mt-1">개당 추가비용</p>
+                          </div>
+                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
+                        </div>
                         <FormField
                           control={form.control}
                           name="wrappingQuantity"
                           render={({ field }) => (
-                            <FormItem className="flex items-center gap-2">
-                              <FormLabel className="text-sm text-gray-600 min-w-8">수량</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  min="0" 
-                                  className="w-20 text-center"
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                />
-                              </FormControl>
+                            <FormItem>
+                              <div className="flex items-center space-x-2">
+                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-1">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-12 h-7 text-center text-xs px-1"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-7 h-7 p-0 text-xs"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
