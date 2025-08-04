@@ -1,17 +1,27 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { LoginForm } from "@/components/LoginForm";
+import { RegisterForm } from "@/components/RegisterForm";
 import { useAuth } from "@/hooks/useAuth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [activeTab, setActiveTab] = useState("login");
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate("/admin");
+    if (!isLoading && isAuthenticated && user) {
+      // 사용자 역할에 따라 리다이렉트
+      if (user.role === 'admin') {
+        navigate("/admin");
+      } else if (user.role === 'manager') {
+        navigate("/manager");
+      } else {
+        navigate("/"); // 일반 사용자는 홈으로
+      }
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, user, navigate]);
 
   if (isLoading) {
     return (
@@ -24,18 +34,51 @@ export default function LoginPage() {
     );
   }
 
+  const handleLoginSuccess = () => {
+    // useEffect에서 리다이렉트 처리
+  };
+
+  const handleRegisterSuccess = () => {
+    setActiveTab("login");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-orange-800 mb-2">에덴한과</h1>
-          <p className="text-orange-600">관리자 로그인</p>
+          <p className="text-orange-600">로그인 및 회원가입</p>
         </div>
         
-        <LoginForm 
-          title="관리자 로그인"
-          onSuccess={() => navigate("/admin")}
-        />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">로그인</TabsTrigger>
+            <TabsTrigger value="register">회원가입</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login" className="mt-6">
+            <LoginForm 
+              title="로그인"
+              onSuccess={handleLoginSuccess}
+            />
+            <div className="mt-4 text-center text-sm text-gray-600">
+              계정이 없으신가요?{" "}
+              <button
+                onClick={() => setActiveTab("register")}
+                className="text-orange-600 hover:text-orange-700 underline"
+              >
+                회원가입하기
+              </button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="register" className="mt-6">
+            <RegisterForm 
+              onSuccess={handleRegisterSuccess}
+              onSwitchToLogin={() => setActiveTab("login")}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -58,7 +58,7 @@ export default function Home() {
               {!isAuthenticated && (
                 <Link href="/login">
                   <Button variant="outline" className="text-eden-brown border-eden-brown hover:bg-eden-brown hover:text-white">
-                    로그인
+                    로그인/회원가입
                   </Button>
                 </Link>
               )}
@@ -82,6 +82,24 @@ export default function Home() {
                     매니저
                   </Button>
                 </Link>
+              )}
+              {isAuthenticated && user?.role === 'user' && (
+                <Button 
+                  variant="outline" 
+                  className="text-eden-brown border-eden-brown hover:bg-eden-brown hover:text-white"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/auth/logout', { method: 'POST' });
+                      if (response.ok) {
+                        window.location.reload();
+                      }
+                    } catch (error) {
+                      console.error('로그아웃 실패:', error);
+                    }
+                  }}
+                >
+                  로그아웃
+                </Button>
               )}
             </nav>
 
@@ -141,7 +159,7 @@ export default function Home() {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
                     >
-                      로그인
+                      로그인/회원가입
                     </button>
                   </Link>
                 )}
@@ -174,6 +192,24 @@ export default function Home() {
                       매니저
                     </button>
                   </Link>
+                )}
+                {isAuthenticated && user?.role === 'user' && (
+                  <button 
+                    onClick={async () => {
+                      setIsMobileMenuOpen(false);
+                      try {
+                        const response = await fetch('/api/auth/logout', { method: 'POST' });
+                        if (response.ok) {
+                          window.location.reload();
+                        }
+                      } catch (error) {
+                        console.error('로그아웃 실패:', error);
+                      }
+                    }}
+                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
+                  >
+                    로그아웃
+                  </button>
                 )}
               </div>
             </nav>

@@ -16,6 +16,41 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "사용자명과 비밀번호를 입력해주세요" });
+      }
+      
+      if (password.length < 6) {
+        return res.status(400).json({ message: "비밀번호는 최소 6자 이상이어야 합니다" });
+      }
+      
+      // Check if user already exists
+      const existingUser = await userService.findByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "이미 존재하는 사용자명입니다" });
+      }
+      
+      // Create new user
+      const newUser = await userService.createUser({ username, password, role: 'user', isActive: true });
+      
+      res.status(201).json({ 
+        message: "회원가입이 완료되었습니다", 
+        user: { 
+          id: newUser.id, 
+          username: newUser.username, 
+          role: newUser.role 
+        } 
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "회원가입 처리 중 오류가 발생했습니다" });
+    }
+  });
+
   app.post("/api/auth/login", (req, res, next) => {
     passport.authenticate('local', (err: any, user: User, info: any) => {
       if (err) {
@@ -110,11 +145,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: user.role 
         } 
       });
-    } catch (error: any) {
-      if (error.code === '23505') { // unique constraint violation
+    } catch (error) {
+      if ((error as any).code === '23505') { // unique constraint violation
         res.status(400).json({ message: "이미 존재하는 사용자명입니다" });
       } else {
-        res.status(400).json({ message: error.message || "사용자 생성에 실패했습니다" });
+        res.status(400).json({ message: (error as any).message || "사용자 생성에 실패했습니다" });
       }
     }
   });
@@ -1066,7 +1101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(customer);
     } catch (error) {
       console.error("Error creating customer:", error);
-      if (error.message?.includes("unique")) {
+      if ((error as any).message?.includes("unique")) {
         return res.status(400).json({ error: "이미 등록된 연락처입니다" });
       }
       res.status(500).json({ error: "고객 등록에 실패했습니다" });
@@ -1086,7 +1121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedCustomer);
     } catch (error) {
       console.error("Error updating customer:", error);
-      if (error.message?.includes("unique")) {
+      if ((error as any).message?.includes("unique")) {
         return res.status(400).json({ error: "이미 등록된 연락처입니다" });
       }
       res.status(500).json({ error: "고객 정보 업데이트에 실패했습니다" });

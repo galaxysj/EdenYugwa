@@ -31,6 +31,12 @@ export class UserService {
     return user;
   }
 
+  // 사용자 조회 (사용자명) - 별칭
+  async findByUsername(username: string): Promise<User | null> {
+    const user = await this.getUserByUsername(username);
+    return user || null;
+  }
+
   // 사용자 목록 조회
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
@@ -53,6 +59,27 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     const [user] = await db.update(users).set({ passwordHash: hashedPassword }).where(eq(users.id, id)).returning();
     return !!user;
+  }
+
+  // 사용자 인증
+  async authenticate(username: string, password: string): Promise<User | null> {
+    try {
+      const user = await this.getUserByUsername(username);
+      if (user && user.isActive && await bcrypt.compare(password, user.passwordHash)) {
+        // Update last login time
+        await this.updateLastLogin(user.id);
+        return user;
+      }
+      return null;
+    } catch (error) {
+      console.error("Authentication error:", error);
+      return null;
+    }
+  }
+
+  // 마지막 로그인 시간 업데이트
+  async updateLastLogin(id: number): Promise<void> {
+    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, id));
   }
 
   // 초기 관리자 계정 생성
