@@ -171,6 +171,9 @@ export class DatabaseStorage implements IStorage {
       orderNumber,
       status: "pending", // 예약날짜와 상관없이 항상 pending으로 시작
       paymentStatus: "pending",
+      // 인증 관련 필드
+      userId: insertOrder.userId,
+      orderPassword: insertOrder.orderPassword,
     };
     
     const [order] = await db
