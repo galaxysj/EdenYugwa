@@ -304,7 +304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // 로그인된 사용자인 경우 userId 설정
       if ((req as any).user?.id) {
-        console.log("로그인된 사용자 주문");
+        console.log(`로그인된 사용자 주문 (user ID: ${(req as any).user.id})`);
         req.body.userId = (req as any).user.id;
         req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
