@@ -6,9 +6,11 @@ import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Faceboo
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, isManagerOrAdmin, isAdmin } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -53,16 +55,20 @@ export default function Home() {
                   주문 조회
                 </Button>
               </Link>
-              <Link href="/admin">
-                <Button variant="ghost" className="text-eden-red hover:text-eden-brown">
-                  관리자
-                </Button>
-              </Link>
-              <Link href="/manager">
-                <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
-                  매니저
-                </Button>
-              </Link>
+              {isAuthenticated && isAdmin && (
+                <Link href="/admin">
+                  <Button variant="ghost" className="text-eden-red hover:text-eden-brown">
+                    관리자
+                  </Button>
+                </Link>
+              )}
+              {isAuthenticated && isManagerOrAdmin && (
+                <Link href="/manager">
+                  <Button variant="ghost" className="text-eden-sage hover:text-eden-brown">
+                    매니저
+                  </Button>
+                </Link>
+              )}
             </nav>
 
             {/* Mobile Menu Button */}
@@ -115,22 +121,26 @@ export default function Home() {
                     주문 조회
                   </button>
                 </Link>
-                <Link href="/admin">
-                  <button 
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left text-eden-red hover:text-eden-brown transition-colors py-2 w-full"
-                  >
-                    관리자
-                  </button>
-                </Link>
-                <Link href="/manager">
-                  <button 
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
-                  >
-                    매니저
-                  </button>
-                </Link>
+                {isAuthenticated && isAdmin && (
+                  <Link href="/admin">
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-left text-eden-red hover:text-eden-brown transition-colors py-2 w-full"
+                    >
+                      관리자
+                    </button>
+                  </Link>
+                )}
+                {isAuthenticated && isManagerOrAdmin && (
+                  <Link href="/manager">
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
+                    >
+                      매니저
+                    </button>
+                  </Link>
+                )}
               </div>
             </nav>
           )}
