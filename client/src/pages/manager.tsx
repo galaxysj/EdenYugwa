@@ -534,7 +534,6 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
                           <th className="text-center py-2 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">예약발송일</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금자</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">제품</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
@@ -598,15 +597,6 @@ export default function ManagerDashboard() {
                               {order.recipientName && order.recipientName !== order.customerName && (
                                 <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
                               )}
-                            </td>
-                            <td className="py-2 px-2">
-                              <div className="font-medium text-xs">
-                                {order.isDifferentDepositor && order.depositorName ? (
-                                  <span className="text-red-600">{order.depositorName}</span>
-                                ) : (
-                                  <span className="text-gray-400">-</span>
-                                )}
-                              </div>
                             </td>
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-1">
