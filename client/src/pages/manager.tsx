@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { ArrowLeft, Settings, Package, Truck, Eye, LogOut, Download, MessageSquare } from "lucide-react";
-import { SmsDialog } from "@/components/sms-dialog";
+// SMS 기능은 관리자 전용이므로 매니저에서는 제거
 import { AdminHeader } from "@/components/admin-header";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -257,16 +257,7 @@ export default function ManagerDashboard() {
         )}
       </div>
 
-      {/* SMS 다이얼로그 */}
-      <SmsDialog 
-        isOpen={showBulkSMSDialog}
-        onClose={() => setShowBulkSMSDialog(false)}
-        onSend={(message) => {
-          console.log('Sending SMS to selected orders:', message);
-          setShowBulkSMSDialog(false);
-        }}
-        recipientCount={selectedOrders.size}
-      />
+      {/* SMS 기능은 관리자 권한이 필요하므로 매니저에서는 제거 */}
     </div>
   );
 
@@ -415,13 +406,7 @@ export default function ManagerDashboard() {
                     </div>
                   </td>
                   <td className="py-2 px-2 text-center">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-6 px-2 text-xs"
-                    >
-                      <MessageSquare className="h-3 w-3" />
-                    </Button>
+                    <span className="text-xs text-gray-400">관리자전용</span>
                   </td>
                 </tr>
               ))}
