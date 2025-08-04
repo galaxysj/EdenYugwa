@@ -4,42 +4,12 @@ export const api = {
   orders: {
     create: async (data: any) => {
       console.log('API 요청 데이터:', data);
-      console.log('orderPassword 확인:', data.orderPassword);
-      
-      // 명시적으로 모든 필드 포함해서 전송
-      const requestData = {
-        customerName: data.customerName,
-        customerPhone: data.customerPhone,
-        zipCode: data.zipCode,
-        address1: data.address1,
-        address2: data.address2,
-        recipientName: data.recipientName,
-        recipientPhone: data.recipientPhone,
-        recipientZipCode: data.recipientZipCode,
-        recipientAddress1: data.recipientAddress1,
-        recipientAddress2: data.recipientAddress2,
-        isDifferentDepositor: data.isDifferentDepositor,
-        depositorName: data.depositorName,
-        smallBoxQuantity: data.smallBoxQuantity,
-        largeBoxQuantity: data.largeBoxQuantity,
-        wrappingQuantity: data.wrappingQuantity,
-        specialRequests: data.specialRequests,
-        scheduledDate: data.scheduledDate,
-        orderPassword: data.orderPassword, // 명시적으로 포함
-        totalAmount: data.totalAmount,
-        status: data.status,
-        paymentStatus: data.paymentStatus,
-        shippingFee: data.shippingFee,
-      };
-      
-      console.log('실제 전송 데이터:', requestData);
-      
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(data),
         credentials: 'include',
       });
       

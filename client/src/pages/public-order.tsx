@@ -9,13 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { type InsertOrder } from "@shared/schema";
-import { Loader2, Package, MapPin, User, Phone, Calendar, Gift, Lock } from "lucide-react";
+import { Loader2, Package, MapPin, User, Phone, Calendar, Gift } from "lucide-react";
 
 // Public order form schema
 const publicOrderSchema = z.object({
@@ -48,8 +47,6 @@ export default function PublicOrder() {
   const { toast } = useToast();
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string>("");
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [orderPassword, setOrderPassword] = useState("");
 
   const form = useForm<PublicOrderForm>({
     resolver: zodResolver(publicOrderSchema),
@@ -101,16 +98,6 @@ export default function PublicOrder() {
   const onSubmit = (data: PublicOrderForm) => {
     console.log("폼 데이터:", data);
     
-    // 주문 비밀번호 검증
-    if (!data.orderPassword || data.orderPassword.length < 4) {
-      toast({
-        title: "비밀번호 입력 필요",
-        description: "주문 비밀번호를 4자리 이상 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Calculate total amount
     const smallBoxPrice = 30000;
     const largeBoxPrice = 50000;
@@ -127,11 +114,13 @@ export default function PublicOrder() {
       zipCode: data.zipCode || null,
       address1: data.address1,
       address2: data.address2 || null,
+      // 받는 분 정보
       recipientName: data.recipientName || null,
       recipientPhone: data.recipientPhone || null,
       recipientZipCode: data.recipientZipCode || null,
       recipientAddress1: data.recipientAddress1 || null,
       recipientAddress2: data.recipientAddress2 || null,
+      // 입금자 정보
       isDifferentDepositor: data.isDifferentDepositor,
       depositorName: data.isDifferentDepositor ? data.depositorName || null : null,
       smallBoxQuantity: data.smallBoxQuantity,
@@ -139,16 +128,13 @@ export default function PublicOrder() {
       wrappingQuantity: data.wrappingQuantity,
       specialRequests: data.specialRequests || null,
       scheduledDate: data.scheduledDate ? new Date(data.scheduledDate) : null,
-      orderPassword: data.orderPassword,
+      orderPassword: data.orderPassword, // 주문 비밀번호 추가
       totalAmount,
-      status: "pending" as const,
-      paymentStatus: "pending" as const,
-      shippingFee: 4000,
+      status: "pending",
+      paymentStatus: "pending",
     };
 
-    console.log("폼 데이터:", data);
     console.log("전송할 주문 데이터:", orderData);
-    console.log("주문 비밀번호:", data.orderPassword);
     createOrderMutation.mutate(orderData);
   };
 
@@ -356,28 +342,6 @@ export default function PublicOrder() {
                           <Input {...field} placeholder="101동 502호" />
                         </FormControl>
                         <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="orderPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>주문 조회 비밀번호 *</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password" 
-                            {...field} 
-                            placeholder="최소 4자리 이상 입력해주세요" 
-                            data-testid="input-order-password"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        <div className="text-sm text-gray-500 mt-1">
-                          나중에 주문 조회 시 필요한 비밀번호입니다. 잊지 마세요!
-                        </div>
                       </FormItem>
                     )}
                   />
@@ -598,7 +562,30 @@ export default function PublicOrder() {
                   />
                 </div>
 
-
+                {/* Order Password */}
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="orderPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문 비밀번호 *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            {...field}
+                            placeholder="주문 수정 시 필요한 비밀번호를 설정해주세요 (최소 4자리)"
+                            maxLength={20}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <div className="text-sm text-gray-600">
+                          주문 확인 및 수정 시 필요한 비밀번호입니다. 잊지 마세요!
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* Order Summary */}
                 <div className="bg-gray-50 rounded-lg p-6">
@@ -623,26 +610,10 @@ export default function PublicOrder() {
                       </div>
                     )}
                     <div className="border-t pt-2 mt-4">
-                      <div className="flex justify-between text-lg font-semibold text-[hsl(25,65%,35%)]">
+                      <div className="flex justify-between text-lg font-semibold text-eden-brown">
                         <span>총 주문금액</span>
                         <span>{formatPrice(calculateTotal())}</span>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment Information */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">입금 안내</h3>
-                  <div className="space-y-3">
-                    <div className="text-sm text-gray-700">
-                      <div className="font-medium mb-2">입금계좌:</div>
-                      <div className="text-lg font-mono text-gray-900">
-                        농협 352-1701-3342-63 (송*연)
-                      </div>
-                    </div>
-                    <div className="text-sm text-blue-700">
-                      ※ 주문 확인 후 24시간 이내 입금 부탁드립니다.
                     </div>
                   </div>
                 </div>
@@ -651,8 +622,7 @@ export default function PublicOrder() {
                 <Button 
                   type="submit" 
                   disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                  className="w-full bg-[hsl(25,65%,35%)] hover:bg-[hsl(25,65%,30%)] text-white text-lg py-6"
-                  data-testid="button-submit-order"
+                  className="w-full bg-eden-brown hover:bg-eden-brown/90 text-lg py-6"
                 >
                   {createOrderMutation.isPending ? (
                     <>
@@ -660,39 +630,9 @@ export default function PublicOrder() {
                       주문 처리 중...
                     </>
                   ) : (
-                    <>
-                      <Package className="mr-2 h-4 w-4" />
-                      주문하기
-                    </>
+                    "주문하기"
                   )}
                 </Button>
-                
-                {/* Guest Order Button */}
-                <div className="mt-3">
-                  <Button 
-                    type="submit" 
-                    disabled={createOrderMutation.isPending || calculateTotal() === 0}
-                    variant="outline"
-                    className="w-full border-2 border-[hsl(25,65%,35%)] text-[hsl(25,65%,35%)] hover:bg-[hsl(25,65%,35%)] hover:text-white text-lg py-6"
-                    data-testid="button-guest-order"
-                  >
-                    {createOrderMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        주문 처리 중...
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="mr-2 h-4 w-4" />
-                        비회원 주문하기
-                      </>
-                    )}
-                  </Button>
-                  
-                  <div className="text-center text-sm text-gray-500 mt-2">
-                    회원가입 없이 주문할 수 있습니다. 주문 비밀번호를 잊지 마세요!
-                  </div>
-                </div>
               </form>
             </Form>
           </CardContent>

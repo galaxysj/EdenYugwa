@@ -61,13 +61,6 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
-        // Eden Hangwa specific colors
-        "eden-brown": "var(--eden-brown)",
-        "eden-cream": "var(--eden-cream)",
-        "eden-sage": "var(--eden-sage)",
-        "eden-beige": "var(--eden-beige)",
-        "eden-red": "var(--eden-red)",
-        "eden-dark": "var(--eden-dark)",
       },
       keyframes: {
         "accordion-down": {

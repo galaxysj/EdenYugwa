@@ -313,22 +313,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.scheduledDate = new Date(req.body.scheduledDate);
       }
       
-      // 로그인된 사용자인 경우 userId 설정
+      // 로그인된 사용자인 경우 userId 설정, 아닌 경우 orderPassword가 있어야 함
       if ((req as any).user?.id) {
         console.log("로그인된 사용자 주문");
         req.body.userId = (req as any).user.id;
         req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
         console.log("비로그인 사용자 주문");
-        // 비로그인 사용자는 주문 생성 시 비밀번호 선택사항
-        req.body.userId = null;
-        // orderPassword가 있으면 사용, 없으면 null
-        if (req.body.orderPassword && req.body.orderPassword.trim().length > 0) {
-          console.log("orderPassword 설정됨:", req.body.orderPassword);
-        } else {
-          req.body.orderPassword = null;
-          console.log("orderPassword 없음 - 비밀번호 없이 주문 생성");
+        // 비로그인 사용자: orderPassword 필수
+        if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
+          return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)를 입력해주세요." });
         }
+        console.log("orderPassword 설정됨:", req.body.orderPassword);
       }
       
       const validatedData = insertOrderSchema.parse(req.body);
