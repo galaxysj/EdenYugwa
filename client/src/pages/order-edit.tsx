@@ -80,10 +80,10 @@ export default function OrderEdit() {
         form.reset({
           customerName: orderData.customerName,
           customerPhone: orderData.customerPhone,
-          zipCode: orderData.zipCode || '',
+          zipCode: orderData.zipCode ?? '',
           address1: orderData.address1,
-          address2: orderData.address2 || '',
-          specialRequests: orderData.specialRequests || '',
+          address2: orderData.address2 ?? '',
+          specialRequests: orderData.specialRequests ?? '',
           smallBoxQuantity: orderData.smallBoxQuantity || 0,
           largeBoxQuantity: orderData.largeBoxQuantity || 0,
           wrappingQuantity: orderData.wrappingQuantity || 0,
@@ -258,7 +258,7 @@ export default function OrderEdit() {
                         <FormItem>
                           <FormLabel>우편번호</FormLabel>
                           <FormControl>
-                            <Input placeholder="12345" {...field} />
+                            <Input placeholder="12345" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -287,7 +287,7 @@ export default function OrderEdit() {
                       <FormItem>
                         <FormLabel>상세 주소</FormLabel>
                         <FormControl>
-                          <Input placeholder="상세 주소" {...field} />
+                          <Input placeholder="상세 주소" {...field} value={field.value || ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -331,7 +331,7 @@ export default function OrderEdit() {
                           <Textarea 
                             placeholder="배송 시 요청사항이 있으시면 입력해주세요"
                             {...field}
-                            {...field}
+                            value={field.value || ''}
                           />
                         </FormControl>
                         <FormMessage />
@@ -488,11 +488,75 @@ export default function OrderEdit() {
                     )}
                   />
 
-                  {/* Total Price */}
-                  <div className="bg-eden-cream p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-eden-brown">총 주문 금액:</span>
-                      <span className="text-xl font-bold text-eden-brown">{formatPrice(calculateTotal())}</span>
+                  {/* Order Summary */}
+                  <div className="bg-eden-cream p-6 rounded-lg border-2 border-eden-beige">
+                    <h4 className="text-lg font-semibold text-eden-brown mb-4">주문 요약</h4>
+                    <div className="space-y-3">
+                      {/* Product items */}
+                      {form.watch("smallBoxQuantity") > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">
+                            한과1호(약 1.1kg) × {form.watch("smallBoxQuantity")}개
+                          </span>
+                          <span className="font-medium">
+                            {formatPrice(form.watch("smallBoxQuantity") * prices.small)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {form.watch("largeBoxQuantity") > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">
+                            한과2호(약 1.3kg) × {form.watch("largeBoxQuantity")}개
+                          </span>
+                          <span className="font-medium">
+                            {formatPrice(form.watch("largeBoxQuantity") * prices.large)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {form.watch("wrappingQuantity") > 0 && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">
+                            보자기 포장 × {form.watch("wrappingQuantity")}개
+                          </span>
+                          <span className="font-medium">
+                            {formatPrice(form.watch("wrappingQuantity") * prices.wrapping)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Shipping fee */}
+                      {(() => {
+                        const totalQuantity = (form.watch("smallBoxQuantity") || 0) + (form.watch("largeBoxQuantity") || 0);
+                        const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+                        
+                        if (shippingFee > 0) {
+                          return (
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-700">배송비</span>
+                              <span className="font-medium">{formatPrice(shippingFee)}</span>
+                            </div>
+                          );
+                        } else if (totalQuantity >= 6) {
+                          return (
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-700">배송비</span>
+                              <span className="font-medium text-green-600">무료배송</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      
+                      {/* Divider */}
+                      <hr className="border-eden-sage" />
+                      
+                      {/* Total */}
+                      <div className="flex justify-between items-center text-lg font-bold">
+                        <span className="text-eden-brown">총 주문 금액</span>
+                        <span className="text-eden-brown">{formatPrice(calculateTotal())}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
