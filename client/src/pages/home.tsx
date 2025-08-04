@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, isManagerOrAdmin, isAdmin, isManager } = useAuth();
+  const { isAuthenticated, isManagerOrAdmin, isAdmin, isManager, user } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);

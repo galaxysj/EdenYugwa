@@ -16,7 +16,7 @@ export default function LoginPage() {
       if (user.role === 'admin') {
         navigate("/admin");
       } else if (user.role === 'manager') {
-        navigate("/manager");
+        navigate("/manager"); // 매니저는 매니저 페이지로
       } else {
         navigate("/"); // 일반 사용자는 홈으로
       }
