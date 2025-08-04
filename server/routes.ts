@@ -132,6 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(users.map(user => ({
         id: user.id,
         username: user.username,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
         role: user.role,
         isActive: user.isActive,
         createdAt: user.createdAt,

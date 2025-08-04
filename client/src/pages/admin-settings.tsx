@@ -40,6 +40,7 @@ export default function AdminSettingsPage() {
   const { data: allUsers = [], isLoading: usersLoading } = useQuery<UserType[]>({
     queryKey: ['/api/users'],
     retry: false,
+    staleTime: 0, // 항상 최신 데이터 가져오기
   });
 
   // Filter to show only admin and manager users
@@ -49,6 +50,12 @@ export default function AdminSettingsPage() {
   const [editManagerDialogOpen, setEditManagerDialogOpen] = React.useState(false);
   const [editingManager, setEditingManager] = React.useState<UserType | null>(null);
   const [selectedUserId, setSelectedUserId] = React.useState<string>("");
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('All users data:', allUsers);
+    console.log('Users loading:', usersLoading);
+  }, [allUsers, usersLoading]);
 
 
 
@@ -472,6 +479,9 @@ export default function AdminSettingsPage() {
                         {user.username} - {user.name} ({user.phoneNumber}) {user.role === 'manager' ? '(매니저)' : user.role === 'admin' ? '(관리자)' : '(일반회원)'}
                       </SelectItem>
                     ))}
+                  {allUsers.filter(user => user.id !== editingManager?.id).length === 0 && (
+                    <div className="px-2 py-1 text-sm text-gray-500">사용자를 불러오는 중...</div>
+                  )}
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
