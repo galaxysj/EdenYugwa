@@ -17,8 +17,29 @@ export function useAuth() {
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['/api/auth/user'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/auth/user', {
+          credentials: 'include',
+        });
+        
+        if (res.status === 401) {
+          return null; // 로그인되지 않음
+        }
+        
+        if (!res.ok) {
+          throw new Error('Failed to fetch user');
+        }
+        
+        return await res.json();
+      } catch (error) {
+        return null;
+      }
+    },
     retry: false,
     staleTime: 5 * 60 * 1000, // 5분
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
   });
 
   const loginMutation = useMutation({
