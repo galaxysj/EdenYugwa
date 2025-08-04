@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -2076,7 +2076,12 @@ export default function Admin() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <div className="flex flex-col gap-1">
-                        <SmsDialog order={order} />
+                        <SmsDialog order={order}>
+                          <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                            <MessageSquare className="h-3 w-3" />
+                            SMS
+                          </Button>
+                        </SmsDialog>
                         <FinancialDialog order={order} />
                         <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
@@ -2382,7 +2387,12 @@ export default function Admin() {
 
                     <div className="pt-4 border-t border-gray-100">
                       <div className="flex flex-col gap-3">
-                        <SmsDialog order={order} />
+                        <SmsDialog order={order}>
+                          <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                            <MessageSquare className="h-3 w-3" />
+                            SMS 발송
+                          </Button>
+                        </SmsDialog>
                         <ScheduledDatePicker order={order} />
                         <FinancialDialog order={order} />
                         
@@ -2719,14 +2729,6 @@ export default function Admin() {
             </div>
             <div className="flex items-center space-x-2">
               <Button 
-                onClick={handleExcelDownload}
-                variant="ghost" 
-                className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
-              >
-                <Download className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">엑셀 다운로드</span>
-              </Button>
-              <Button 
                 onClick={async () => {
                   try {
                     const response = await fetch('/api/auth/logout', {
@@ -2803,6 +2805,15 @@ export default function Admin() {
                 </Link>
                 <CostSettingsDialog />
                 <PasswordChangeDialog />
+                <Button 
+                  onClick={handleExcelDownload}
+                  variant="ghost" 
+                  size="sm"
+                  className="text-white hover:text-gray-200 bg-white/10"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  엑셀 다운로드
+                </Button>
               </div>
             </div>
 

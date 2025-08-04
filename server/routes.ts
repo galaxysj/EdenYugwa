@@ -450,6 +450,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk seller shipped update
+  app.patch("/api/orders/seller-shipped", requireManagerOrAdmin, async (req, res) => {
+    try {
+      const { orderIds } = req.body;
+      
+      if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        return res.status(400).json({ message: "주문 ID 목록이 필요합니다" });
+      }
+      
+      const results = [];
+      for (const orderId of orderIds) {
+        try {
+          const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, new Date());
+          if (updatedOrder) {
+            results.push(updatedOrder);
+          }
+        } catch (error) {
+          console.error(`Failed to update order ${orderId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        message: `${results.length}개 주문이 발송완료로 변경되었습니다`,
+        updatedOrders: results 
+      });
+    } catch (error) {
+      console.error("Bulk seller shipped update error:", error);
+      res.status(500).json({ message: "일괄 발송 업데이트에 실패했습니다" });
+    }
+  });
+
   // Update order seller shipped status (admin and manager)
   app.patch("/api/orders/:id/seller-shipped", requireManagerOrAdmin, async (req, res) => {
     try {
