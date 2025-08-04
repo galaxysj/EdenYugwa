@@ -456,6 +456,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update payment status (manager and admin only)
+  app.patch("/api/orders/:id/payment-status", requireManagerOrAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { paymentStatus } = req.body;
+      
+      if (!paymentStatus) {
+        return res.status(400).json({ message: "Payment status is required" });
+      }
+      
+      const updatedOrder = await storage.updateOrderPaymentStatus(id, paymentStatus);
+      
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update payment status" });
+    }
+  });
+
   // Update order scheduled date (admin and manager)
   app.patch("/api/orders/:id/scheduled-date", requireManagerOrAdmin, async (req, res) => {
     try {

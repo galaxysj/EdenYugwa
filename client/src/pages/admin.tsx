@@ -1984,7 +1984,7 @@ export default function Admin() {
                       <div className="flex flex-col items-center gap-2">
                         {order.sellerShipped ? (
                           <div className="text-green-600 font-medium text-xs">
-                            판매자발송완료
+                            매니저발송완료
                             {order.sellerShippedDate && (
                               <div 
                                 className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
@@ -2001,14 +2001,16 @@ export default function Admin() {
                             )}
                           </div>
                         ) : (
-                          <Button
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
-                            onClick={() => handleSellerShipped(order.id)}
-                          >
-                            발송하기
-                          </Button>
+                          <div className="text-gray-400 text-xs">매니저 미처리</div>
                         )}
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700 text-xs px-2 py-1"
+                          onClick={() => handleSellerShipped(order.id)}
+                          disabled={!order.sellerShipped}
+                        >
+                          개별발송
+                        </Button>
                       </div>
                     </td>
                     <td className="py-2 px-2 text-center">

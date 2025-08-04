@@ -197,6 +197,27 @@ export default function ManagerDashboard() {
     },
   });
 
+  // 결제 상태 변경 mutation
+  const updatePaymentStatusMutation = useMutation({
+    mutationFn: async ({ id, paymentStatus }: { id: number; paymentStatus: string }) => {
+      return api.patch(`/api/orders/${id}/payment-status`, { paymentStatus });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
+      toast({
+        title: "입금 상태 변경",
+        description: "입금 상태가 변경되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "상태 변경 실패",
+        description: error.message || "입금 상태 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // 일괄 판매자 발송 mutation
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
@@ -516,7 +537,8 @@ export default function ManagerDashboard() {
                           <th className="text-left p-3 font-medium text-gray-700">제품</th>
                           <th className="text-left p-3 font-medium text-gray-700">연락처</th>
                           <th className="text-left p-3 font-medium text-gray-700">배송지/메모</th>
-                          <th className="text-left p-3 font-medium text-gray-700">주문/결제상태</th>
+                          <th className="text-left p-3 font-medium text-gray-700">입금상태</th>
+                          <th className="text-left p-3 font-medium text-gray-700">주문상태</th>
                           <th className="text-left p-3 font-medium text-gray-700">입금확인</th>
                           <th className="text-left p-3 font-medium text-gray-700">발송상태</th>
                           <th className="text-left p-3 font-medium text-gray-700">판매자발송</th>
@@ -576,44 +598,44 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="p-3">
-                              <div className="space-y-1">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                  order.paymentStatus === 'confirmed' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : order.paymentStatus === 'partial'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : order.paymentStatus === 'refunded'
-                                    ? 'bg-red-100 text-red-800'
-                                    : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {order.paymentStatus === 'confirmed' ? '입금완료' :
-                                   order.paymentStatus === 'partial' ? '부분결제' :
-                                   order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
-                                </span>
-                                <br/>
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                  order.status === 'delivered' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : order.status === 'scheduled'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {statusLabels[order.status as keyof typeof statusLabels]}
-                                </span>
-                              </div>
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                order.paymentStatus === 'confirmed' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : order.paymentStatus === 'partial'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : order.paymentStatus === 'refunded'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {order.paymentStatus === 'confirmed' ? '입금완료' :
+                                 order.paymentStatus === 'partial' ? '부분결제' :
+                                 order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                order.status === 'delivered' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : order.status === 'scheduled'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {statusLabels[order.status as keyof typeof statusLabels]}
+                              </span>
                             </td>
                             <td className="p-3">
                               <Select
-                                value={order.status}
-                                onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                                value={order.paymentStatus}
+                                onValueChange={(value) => updatePaymentStatusMutation.mutate({ id: order.id, paymentStatus: value })}
                               >
                                 <SelectTrigger className="w-24 h-8 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="pending">주문접수</SelectItem>
-                                  <SelectItem value="scheduled">발송주문</SelectItem>
-                                  <SelectItem value="delivered">발송완료</SelectItem>
+                                  <SelectItem value="pending">입금대기</SelectItem>
+                                  <SelectItem value="confirmed">입금완료</SelectItem>
+                                  <SelectItem value="partial">부분결제</SelectItem>
+                                  <SelectItem value="refunded">환불</SelectItem>
                                 </SelectContent>
                               </Select>
                             </td>
