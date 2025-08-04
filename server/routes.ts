@@ -206,6 +206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req as any).user?.id; // 로그인된 사용자 ID
       const { phone, name, password } = req.query;
       
+      console.log("주문 조회 요청:", { userId, phone, name });
+      
       if ((!phone || typeof phone !== 'string') && (!name || typeof name !== 'string')) {
         return res.status(400).json({ message: "Phone number or name is required" });
       }
@@ -214,11 +216,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (phone && typeof phone === 'string') {
         const phoneOrders = await storage.getOrdersByPhone(phone);
+        console.log(`전화번호 ${phone}로 찾은 주문:`, phoneOrders.length);
         orders = [...orders, ...phoneOrders];
       }
       
       if (name && typeof name === 'string') {
         const nameOrders = await storage.getOrdersByName(name);
+        console.log(`이름 ${name}으로 찾은 주문:`, nameOrders.length);
         orders = [...orders, ...nameOrders];
       }
       
@@ -227,16 +231,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         index === self.findIndex(o => o.id === order.id)
       );
       
-      // 로그인된 사용자인 경우, 본인의 주문만 필터링
-      if (userId) {
-        uniqueOrders = uniqueOrders.filter(order => order.userId === userId);
-      }
-      
       if (uniqueOrders.length === 0) {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      // 로그인 여부에 관계없이 전체 정보 제공
+      // 전화번호/이름으로 조회된 모든 주문 정보 제공 (로그인 여부 무관)
       res.json(uniqueOrders);
     } catch (error) {
       res.status(500).json({ message: "Failed to lookup orders" });
