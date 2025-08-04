@@ -414,23 +414,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
-    const updateData: any = { 
-      sellerShipped,
-      sellerShippedDate: sellerShipped ? sellerShippedDate : null
-    };
-    
-    // If seller shipped is true, also update status to delivered and set delivered date
-    if (sellerShipped) {
-      updateData.status = 'delivered';
-      updateData.deliveredDate = sellerShippedDate;
+    try {
+      const updateData: any = { 
+        sellerShipped,
+        sellerShippedDate: sellerShipped ? sellerShippedDate : null
+      };
+      
+      // If seller shipped is true, also update status to delivered and set delivered date
+      if (sellerShipped) {
+        updateData.status = 'delivered';
+        updateData.deliveredDate = sellerShippedDate;
+      }
+      
+      console.log(`Updating order ${id} with data:`, updateData);
+      
+      const [order] = await db
+        .update(orders)
+        .set(updateData)
+        .where(eq(orders.id, id))
+        .returning();
+        
+      console.log(`Update result for order ${id}:`, order ? 'success' : 'not found');
+      return order || undefined;
+    } catch (error) {
+      console.error(`Error updating order ${id}:`, error);
+      throw error;
     }
-    
-    const [order] = await db
-      .update(orders)
-      .set(updateData)
-      .where(eq(orders.id, id))
-      .returning();
-    return order || undefined;
   }
 
   async createSmsNotification(insertNotification: InsertSmsNotification): Promise<SmsNotification> {

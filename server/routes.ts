@@ -455,20 +455,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { orderIds } = req.body;
       
+      console.log("Bulk seller shipped request received:", { orderIds });
+      
       if (!Array.isArray(orderIds) || orderIds.length === 0) {
         return res.status(400).json({ message: "주문 ID 목록이 필요합니다" });
       }
       
       const results = [];
+      const errors = [];
+      
       for (const orderId of orderIds) {
         try {
+          console.log(`Updating order ${orderId} to seller shipped...`);
           const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, new Date());
           if (updatedOrder) {
             results.push(updatedOrder);
+            console.log(`Successfully updated order ${orderId}`);
+          } else {
+            console.error(`Order ${orderId} not found or could not be updated`);
+            errors.push({ orderId, error: "주문을 찾을 수 없거나 업데이트할 수 없습니다" });
           }
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error);
+          errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
         }
+      }
+      
+      if (errors.length > 0) {
+        console.error("Some orders failed to update:", errors);
+        return res.status(500).json({ 
+          message: `${results.length}개 주문은 성공, ${errors.length}개 주문 실패`,
+          updatedOrders: results,
+          errors: errors
+        });
       }
       
       res.json({ 
@@ -477,7 +496,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Bulk seller shipped update error:", error);
-      res.status(500).json({ message: "일괄 발송 업데이트에 실패했습니다" });
+      res.status(500).json({ 
+        message: "일괄 발송 업데이트에 실패했습니다",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 
