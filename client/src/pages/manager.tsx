@@ -187,15 +187,7 @@ export default function ManagerDashboard() {
       return api.patch(`/api/orders/${id}/seller-shipped`, { sellerShipped });
     },
     onSuccess: async (data, { id, sellerShipped }) => {
-      // 판매자 발송 완료 시 자동으로 주문 상태를 delivered로 변경
-      if (sellerShipped) {
-        try {
-          await api.patch(`/api/orders/${id}/status`, { status: 'delivered' });
-        } catch (error) {
-          console.error('주문 상태 업데이트 실패:', error);
-        }
-      }
-      
+      // 서버에서 이미 상태를 처리하므로 별도 API 호출 제거
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       toast({
         title: "발송 상태 변경",
@@ -240,16 +232,7 @@ export default function ManagerDashboard() {
       return api.patch('/api/orders/seller-shipped', { orderIds });
     },
     onSuccess: async (data, orderIds) => {
-      // 일괄 발송 완료 시 모든 주문의 상태를 delivered로 변경
-      try {
-        const statusUpdatePromises = orderIds.map(id => 
-          api.patch(`/api/orders/${id}/status`, { status: 'delivered' })
-        );
-        await Promise.all(statusUpdatePromises);
-      } catch (error) {
-        console.error('일괄 주문 상태 업데이트 실패:', error);
-      }
-      
+      // 서버에서 이미 상태를 처리하므로 별도 API 호출 제거
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       toast({
         title: "일괄 발송 처리 완료",
