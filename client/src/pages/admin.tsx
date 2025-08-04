@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -445,128 +445,7 @@ function PaymentConfirmDialog({
   );
 }
 
-// Financial Dialog Component
-function FinancialDialog({ order }: { order: Order }) {
-  const [open, setOpen] = useState(false);
 
-  const { data: settings } = useQuery<Setting[]>({
-    queryKey: ["/api/settings"],
-  });
-  
-  // 전역 설정에서 원가 가져오기
-  const smallCostSetting = settings?.find(s => s.key === "smallBoxCost");
-  const largeCostSetting = settings?.find(s => s.key === "largeBoxCost");
-  const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
-  const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
-  
-  // 원가 계산
-  const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원 원가
-  const totalCost = (order.smallBoxQuantity * smallCost) + (order.largeBoxQuantity * largeCost) + wrappingCost;
-  const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-  const shippingFee = totalItems >= 6 ? 0 : 4000;
-  
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-
-
-  const formatPrice = (price: number | undefined | null) => {
-    if (price === undefined || price === null || isNaN(price)) return '0원';
-    return new Intl.NumberFormat('ko-KR').format(price) + '원';
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-          <PiggyBank className="h-3 w-3" />
-          매출 관리
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>매출 정보 관리</DialogTitle>
-          <DialogDescription>
-            주문 #{order.orderNumber}의 매출 정보를 관리합니다.
-            <br />
-            주문 금액: <span className="font-medium text-eden-brown">{formatPrice(order.totalAmount)}</span>
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-
-          <div className="space-y-4 border-t pt-4">
-            <Label className="text-base font-semibold">원가 정보</Label>
-            
-            <div className="p-3 bg-gray-50 rounded-md border">
-              <div className="text-sm font-medium text-gray-700 mb-2">원가 정보 (전역 설정값 자동 적용)</div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-gray-600">한과1호 원가:</div>
-                  <div className="font-medium">{formatPrice(smallCost)} × {order.smallBoxQuantity}개</div>
-                </div>
-                <div>
-                  <div className="text-gray-600">한과2호 원가:</div>
-                  <div className="font-medium">{formatPrice(largeCost)} × {order.largeBoxQuantity}개</div>
-                </div>
-              </div>
-              <div className="text-xs text-gray-500 mt-2">
-                원가는 관리자 패널 상단의 "원가 설정" 버튼에서 변경할 수 있습니다.
-              </div>
-            </div>
-
-            {(smallCost > 0 || largeCost > 0) && (
-              <div className="p-4 bg-green-50 rounded-md border border-green-200">
-                <div className="space-y-2 text-sm">
-                  <div className="font-semibold text-green-800">수익 계산</div>
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <div className="text-gray-600">총 원가:</div>
-                      {order.smallBoxQuantity > 0 && (
-                        <div className="font-medium">
-                          한과1호×{order.smallBoxQuantity}개: {formatPrice(smallCost)} × {order.smallBoxQuantity} = {formatPrice(order.smallBoxQuantity * smallCost)}
-                        </div>
-                      )}
-                      {order.largeBoxQuantity > 0 && (
-                        <div className="font-medium">
-                          한과2호×{order.largeBoxQuantity}개: {formatPrice(largeCost)} × {order.largeBoxQuantity} = {formatPrice(order.largeBoxQuantity * largeCost)}
-                        </div>
-                      )}
-                      {order.wrappingQuantity > 0 && (
-                        <div className="font-medium">
-                          보자기×{order.wrappingQuantity}개: {formatPrice(2000)} × {order.wrappingQuantity} = {formatPrice(wrappingCost)}
-                        </div>
-                      )}
-                      <div className="font-semibold text-green-700 border-t pt-1 mt-1">
-                        합계: {formatPrice(totalCost)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-gray-600">원가 합계:</div>
-                      <div>총 원가: {formatPrice(totalCost)}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        실제 수익 계산을 위해서는 입금상태를 '입금완료'로 변경하세요.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <Button 
-              type="button" 
-              onClick={() => setOpen(false)}
-            >
-              닫기
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 export default function Admin() {
   const { toast } = useToast();
@@ -2136,7 +2015,6 @@ export default function Admin() {
                             SMS
                           </Button>
                         </SmsDialog>
-                        <FinancialDialog order={order} />
                         <div className="hidden" data-order-id={order.id}>
                           <DeliveredDatePicker order={order} />
                           <SellerShippedDatePicker order={order} />
@@ -2445,7 +2323,6 @@ export default function Admin() {
                           </Button>
                         </SmsDialog>
                         <ScheduledDatePicker order={order} />
-                        <FinancialDialog order={order} />
                         
                         {/* 판매자발송 관리 */}
                         <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
