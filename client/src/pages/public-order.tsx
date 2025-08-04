@@ -134,7 +134,9 @@ export default function PublicOrder() {
       paymentStatus: "pending",
     };
 
+    console.log("폼 데이터:", data);
     console.log("전송할 주문 데이터:", orderData);
+    console.log("주문 비밀번호:", data.orderPassword);
     createOrderMutation.mutate(orderData);
   };
 
