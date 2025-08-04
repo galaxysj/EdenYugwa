@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, boolean, varchar, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, varchar, jsonb, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -195,7 +195,7 @@ export type AdminSettings = typeof adminSettings.$inferSelect;
 export const customers = pgTable("customers", {
   id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
-  customerPhone: text("customer_phone").notNull().unique(),
+  customerPhone: text("customer_phone").notNull(),
   zipCode: text("zip_code"),
   address1: text("address1"),
   address2: text("address2"),
@@ -207,7 +207,10 @@ export const customers = pgTable("customers", {
   deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  // 고객명과 전화번호 조합을 unique로 설정
+  uniqueCustomer: unique().on(table.customerName, table.customerPhone),
+}));
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({
   id: true,
