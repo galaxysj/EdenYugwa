@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ShoppingCart, Box, Calculator, Search, Calendar, AlertTriangle, User } from "lucide-react";
+import { ShoppingCart, Box, Calculator, Search, Calendar, AlertTriangle, User, RotateCcw } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";  
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -70,9 +70,16 @@ const prices = {
 export default function OrderForm() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+
   const queryClient = useQueryClient();
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
+  const [shippingFee, setShippingFee] = useState(0);
+  const [selectedAddress, setSelectedAddress] = useState<{
+    zipCode: string;
+    address: string;
+    buildingName: string;
+  } | null>(null);
 
   // Daum 우편번호 서비스 스크립트 로드
   useEffect(() => {
@@ -111,6 +118,45 @@ export default function OrderForm() {
       form.setValue("customerPhone", user.phoneNumber || "");
     }
   }, [isAuthenticated, user, form]);
+
+  // 재주문 데이터 로드
+  useEffect(() => {
+    const reorderData = localStorage.getItem('reorderData');
+    if (reorderData) {
+      try {
+        const data = JSON.parse(reorderData);
+        console.log('재주문 데이터 로드:', data);
+        
+        // 기존 주문 정보로 폼 초기화
+        form.reset(data);
+        
+        // 주소 검색 관련 상태 업데이트
+        if (data.address1) {
+          setSelectedAddress({
+            zipCode: data.zipCode,
+            address: data.address1,
+            buildingName: ""
+          });
+        }
+        
+        // 원격지역 배송 확인
+        if (data.address1 && checkRemoteArea(data.address1)) {
+          setShowShippingAlert(true);
+        }
+        
+        // 재주문 데이터 제거
+        localStorage.removeItem('reorderData');
+        
+        toast({
+          title: "재주문 정보 불러오기 완료",
+          description: "기존 주문 정보를 불러왔습니다. 상품을 선택해주세요.",
+        });
+      } catch (error) {
+        console.error('재주문 데이터 로드 실패:', error);
+        localStorage.removeItem('reorderData');
+      }
+    }
+  }, [form, toast]);
 
   const createOrderMutation = useMutation({
     mutationFn: api.orders.create,
@@ -264,7 +310,7 @@ export default function OrderForm() {
   const smallBoxTotal = prices.small * smallBoxQuantity;
   const largeBoxTotal = prices.large * largeBoxQuantity;
   const wrappingTotal = wrappingQuantity * prices.wrapping;
-  const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+  const calculatedShippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
 
   return (
     <div className="max-w-4xl mx-auto">

@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Package, MapPin, User, Calendar, Edit } from "lucide-react";
+import { ArrowLeft, Search, Package, MapPin, User, Calendar, Edit, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import type { Order } from "@shared/schema";
+import { useLocation } from "wouter";
 
 const lookupSchema = z.object({
   phoneNumber: z.string().optional(),
@@ -57,6 +58,7 @@ export default function OrderLookup() {
 
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
 
   const form = useForm<LookupFormData>({
     resolver: zodResolver(lookupSchema),
@@ -200,6 +202,35 @@ export default function OrderLookup() {
   // 가격 마스킹 함수
   const maskPrice = () => {
     return "***원";
+  };
+
+  // 재주문하기 함수
+  const handleReorder = (order: Order) => {
+    // 기존 주문 정보를 URL 파라미터로 전달하여 주문 페이지로 이동
+    const reorderData = {
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      zipCode: order.zipCode,
+      address1: order.address1,
+      address2: order.address2 || '',
+      isDifferentDepositor: order.isDifferentDepositor || false,
+      depositorName: order.depositorName || '',
+      smallBoxQuantity: order.smallBoxQuantity,
+      largeBoxQuantity: order.largeBoxQuantity,
+      wrappingQuantity: order.wrappingQuantity,
+      specialRequests: order.specialRequests || '',
+    };
+
+    // 데이터를 localStorage에 저장하여 주문 페이지에서 사용
+    localStorage.setItem('reorderData', JSON.stringify(reorderData));
+    
+    // 주문 페이지로 이동
+    setLocation('/');
+    
+    toast({
+      title: "재주문 정보 불러오기 완료",
+      description: "기존 주문 정보를 불러왔습니다. 상품을 선택해주세요.",
+    });
   };
 
 
@@ -544,6 +575,17 @@ export default function OrderLookup() {
 
                       {/* Action Buttons */}
                       <div className="flex justify-end space-x-2 pt-4 border-t">
+                        {isAuthenticated && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleReorder(order)}
+                            className="text-eden-brown border-eden-brown hover:bg-eden-cream"
+                          >
+                            <RotateCcw className="mr-2 h-4 w-4" />
+                            재주문하기
+                          </Button>
+                        )}
                         {isAuthenticated && order.status === 'pending' && order.paymentStatus === 'pending' && (
                           <Link href={`/order-edit/${order.id}`}>
                             <Button variant="outline" size="sm">
