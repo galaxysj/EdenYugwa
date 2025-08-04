@@ -727,122 +727,128 @@ export function CustomerManagement() {
 
                       return (
                         <React.Fragment key={userKey}>
-                          {/* 회원 그룹 헤더 */}
-                          <TableRow className="bg-green-50 border-t-2 border-green-200">
-                            <TableCell>
-                              <Checkbox
-                                checked={groupCustomers.every(c => selectedCustomers.has(c.id))}
-                                {...(groupCustomers.some(c => selectedCustomers.has(c.id)) && !groupCustomers.every(c => selectedCustomers.has(c.id)) ? { "data-indeterminate": true } : {})}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    groupCustomers.forEach(c => selectedCustomers.add(c.id));
-                                  } else {
-                                    groupCustomers.forEach(c => selectedCustomers.delete(c.id));
-                                  }
-                                  setSelectedCustomers(new Set(selectedCustomers));
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col gap-1">
+                          {/* 각 고객을 개별 행으로 표시하되 첫 번째 행에만 회원 정보 표시 */}
+                          {groupCustomers.map((customer, customerIndex) => (
+                            <TableRow key={customer.id} className={customerIndex === 0 ? "bg-green-50 border-t-2 border-green-200" : "bg-green-25"}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedCustomers.has(customer.id)}
+                                  onCheckedChange={() => toggleCustomerSelection(customer.id)}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                {customerIndex === 0 ? (
+                                  <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-2">
+                                      <User className="h-4 w-4 text-green-600" />
+                                      <Badge variant="outline" className="text-green-700 border-green-300">
+                                        회원통합 ({groupCustomers.length}개)
+                                      </Badge>
+                                    </div>
+                                    <div className="text-sm font-medium text-green-700">
+                                      {firstCustomer.userRegisteredName}
+                                    </div>
+                                    <div className="text-xs text-gray-600">
+                                      {formatPhoneNumber(firstCustomer.userRegisteredPhone!)}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2 pl-4">
+                                    <span className="text-xs text-gray-400">└</span>
+                                    <span className="text-xs text-gray-500">연결된 고객</span>
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell className="font-medium">
                                 <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-green-600" />
-                                  <Badge variant="outline" className="text-green-700 border-green-300">
-                                    회원통합 ({groupCustomers.length}개)
-                                  </Badge>
+                                  <User className="h-4 w-4 text-gray-500" />
+                                  {customer.customerName}
                                 </div>
-                                <div className="text-sm font-medium text-green-700">
-                                  {firstCustomer.userRegisteredName}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-gray-500" />
+                                  {formatPhoneNumber(customer.customerPhone)}
                                 </div>
-                                <div className="text-xs text-gray-600">
-                                  {formatPhoneNumber(firstCustomer.userRegisteredPhone!)}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              <div className="text-sm text-gray-600 space-y-1">
-                                {groupCustomers.map((customer, idx) => (
-                                  <div key={customer.id} className="flex items-center gap-1">
-                                    <span className="text-xs text-gray-400">•</span>
-                                    <span>{customer.customerName}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-xs text-gray-600 space-y-1">
-                                {groupCustomers.map((customer, idx) => (
-                                  <div key={customer.id} className="flex items-center gap-1">
-                                    <span className="text-xs text-gray-400">•</span>
-                                    <span>{formatPhoneNumber(customer.customerPhone)}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-xs text-gray-600 space-y-1">
-                                {groupCustomers.map((customer, idx) => (
-                                  <div key={customer.id} className="flex items-center gap-1 max-w-xs">
-                                    <span className="text-xs text-gray-400">•</span>
-                                    <span className="truncate" title={getFullAddress(customer)}>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="h-4 w-4 text-gray-500" />
+                                  <div className="flex items-center gap-2">
+                                    <span className="max-w-xs truncate" title={getFullAddress(customer)}>
                                       {getFullAddress(customer)}
                                     </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <Package className="h-4 w-4 text-gray-500" />
-                                <Badge variant="secondary" className="bg-green-100 text-green-700">
-                                  {totalOrderCount}회 (통합)
-                                </Badge>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-center font-medium text-green-700">
-                              {formatAmount(totalSpent)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {formatLastOrderDate(latestOrderDate)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <div className="flex flex-col gap-1">
-                                {groupCustomers.map((customer, idx) => (
-                                  <div key={customer.id} className="flex items-center justify-center gap-1">
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => openSmsDialog(customer)}
-                                      className="text-blue-600 hover:text-blue-700 h-6 w-6 p-0"
-                                      title={`${customer.customerName}에게 문자`}
+                                      onClick={() => openAddressDialog(customer.customerPhone)}
+                                      className="h-6 px-2 text-xs"
                                     >
-                                      <MessageSquare className="h-3 w-3" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleEdit(customer)}
-                                      className="h-6 w-6 p-0"
-                                      title={`${customer.customerName} 수정`}
-                                    >
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDelete(customer)}
-                                      className="text-red-600 hover:text-red-700 h-6 w-6 p-0"
-                                      title={`${customer.customerName} 삭제`}
-                                    >
-                                      <Trash2 className="h-3 w-3" />
+                                      <Eye className="h-3 w-3 mr-1" />
+                                      주소목록
                                     </Button>
                                   </div>
-                                ))}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                          
-
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {customerIndex === 0 ? (
+                                  <div className="flex items-center justify-center gap-1">
+                                    <Package className="h-4 w-4 text-gray-500" />
+                                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                                      {totalOrderCount}회 (통합)
+                                    </Badge>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-1">
+                                    <Package className="h-4 w-4 text-gray-500" />
+                                    <Badge variant="secondary">
+                                      {customer.orderCount}회 (개별)
+                                    </Badge>
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-center font-medium">
+                                {customerIndex === 0 ? (
+                                  <span className="text-green-700 font-bold">{formatAmount(totalSpent)}</span>
+                                ) : (
+                                  formatAmount(customer.totalSpent)
+                                )}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {customerIndex === 0 ? 
+                                  formatLastOrderDate(latestOrderDate) : 
+                                  formatLastOrderDate(customer.lastOrderDate)
+                                }
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => openSmsDialog(customer)}
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    <MessageSquare className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEdit(customer)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(customer)}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </React.Fragment>
                       );
                     })}
