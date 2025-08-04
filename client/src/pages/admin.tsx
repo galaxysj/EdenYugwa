@@ -2561,7 +2561,19 @@ export default function Admin() {
                 <span className="hidden sm:inline">엑셀 다운로드</span>
               </Button>
               <Button 
-                onClick={handleLogout}
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/auth/logout', {
+                      method: 'POST',
+                      credentials: 'include'
+                    });
+                    if (response.ok) {
+                      window.location.href = '/';
+                    }
+                  } catch (error) {
+                    console.error('로그아웃 실패:', error);
+                  }
+                }}
                 variant="ghost" 
                 className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
               >
