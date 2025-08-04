@@ -2667,8 +2667,8 @@ export default function Admin() {
                 <TabsList className="grid w-full grid-cols-8">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
-                  <TabsTrigger value="scheduled">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                  <TabsTrigger value="scheduled">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
                   <TabsTrigger value="refunded" className="text-red-600">
                     환불내역 ({refundedOrders.length})
@@ -2757,42 +2757,6 @@ export default function Admin() {
                   {renderOrdersList(pendingOrders)}
                 </TabsContent>
                 
-                <TabsContent value="scheduled" className="mt-6">
-                  {renderOrderFilters()}
-                  {selectedOrderItems.size > 0 && (
-                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-red-700">
-                          {selectedOrderItems.size}개 주문이 선택되었습니다
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedOrderItems(new Set())}
-                          >
-                            선택 해제
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
-                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
-                              }
-                            }}
-                            disabled={bulkDeleteMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            일괄 삭제
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {renderOrdersList(scheduledOrders)}
-                </TabsContent>
-                
                 <TabsContent value="seller_shipped" className="mt-6">
                   {renderOrderFilters()}
                   {selectedOrderItems.size > 0 && (
@@ -2827,6 +2791,42 @@ export default function Admin() {
                     </div>
                   )}
                   {renderOrdersList(sellerShippedOrders)}
+                </TabsContent>
+                
+                <TabsContent value="scheduled" className="mt-6">
+                  {renderOrderFilters()}
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {renderOrdersList(scheduledOrders)}
                 </TabsContent>
                 
                 <TabsContent value="delivered" className="mt-6">
