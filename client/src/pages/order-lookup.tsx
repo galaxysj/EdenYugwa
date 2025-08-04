@@ -317,8 +317,14 @@ export default function OrderLookup() {
       
       // 주문 목록 새로고침
       if (isAuthenticated) {
-        const userOrders = await api.orders.getMyOrders();
-        setOrders(userOrders);
+        // 내 주문 목록을 다시 불러오기
+        const response = await fetch('/api/my-orders', {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const userOrders = await response.json();
+          setOrders(userOrders);
+        }
       }
     } catch (error: any) {
       toast({
