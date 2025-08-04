@@ -264,6 +264,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user's own order (authenticated users)
+  app.patch("/api/my-orders/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user?.id;
+      const orderId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ message: "사용자 정보가 없습니다" });
+      }
+      
+      // First, check if the order belongs to the user
+      const existingOrder = await storage.getOrder(orderId);
+      if (!existingOrder) {
+        return res.status(404).json({ message: "주문을 찾을 수 없습니다" });
+      }
+      
+      if (existingOrder.userId !== userId) {
+        return res.status(403).json({ message: "자신의 주문만 수정할 수 있습니다" });
+      }
+      
+      // Check if order can be modified (only pending orders)
+      if (existingOrder.status !== 'pending' || existingOrder.paymentStatus !== 'pending') {
+        return res.status(400).json({ message: "이미 처리된 주문은 수정할 수 없습니다" });
+      }
+      
+      // Validate password for non-authenticated modification
+      if (existingOrder.orderPassword && req.body.orderPassword) {
+        const bcrypt = require('bcryptjs');
+        const isPasswordValid = await bcrypt.compare(req.body.orderPassword, existingOrder.orderPassword);
+        if (!isPasswordValid) {
+          return res.status(401).json({ message: "주문 비밀번호가 올바르지 않습니다" });
+        }
+      }
+      
+      const updateData = req.body;
+      delete updateData.orderPassword; // Remove password from update data
+      
+      const updatedOrder = await storage.updateOrder(orderId, updateData);
+      if (!updatedOrder) {
+        return res.status(404).json({ message: "주문 수정에 실패했습니다" });
+      }
+      
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error("Error updating user order:", error);
+      res.status(500).json({ message: "주문 수정에 실패했습니다" });
+    }
+  });
+
   // Get all orders (for admin and manager)
   app.get("/api/orders", requireManagerOrAdmin, async (req, res) => {
     try {

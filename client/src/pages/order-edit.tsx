@@ -127,7 +127,12 @@ export default function OrderEdit() {
         shippingFee,
       };
 
-      const response = await fetch(`/api/orders/${order.id}`, {
+      console.log('주문 수정 요청 데이터:', updateData);
+      
+      // Use different API endpoint based on authentication status
+      const apiUrl = isAuthenticated ? `/api/my-orders/${order.id}` : `/api/orders/${order.id}`;
+      
+      const response = await fetch(apiUrl, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -135,11 +140,15 @@ export default function OrderEdit() {
         body: JSON.stringify(updateData),
       });
 
+      console.log('응답 상태:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('수정 실패:', errorData);
         throw new Error(errorData.message || '주문 수정에 실패했습니다');
       }
 
+      console.log('주문 수정 성공, 팝업 표시');
       // 성공 팝업 표시
       setShowSuccessDialog(true);
     } catch (error) {
