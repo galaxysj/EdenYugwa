@@ -1,6 +1,6 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Order management
@@ -624,7 +624,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllCustomers(): Promise<Customer[]> {
-    return await db.select().from(customers).orderBy(desc(customers.createdAt));
+    return await db.select().from(customers)
+      .where(eq(customers.isDeleted, false))
+      .orderBy(desc(customers.createdAt));
+  }
+
+  async getTrashedCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers)
+      .where(eq(customers.isDeleted, true))
+      .orderBy(desc(customers.deletedAt));
   }
 
   async updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined> {
@@ -651,7 +659,51 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCustomer(id: number): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: true, 
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id));
+  }
+
+  async restoreCustomer(id: number): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: false, 
+        deletedAt: null,
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id));
+  }
+
+  async permanentlyDeleteCustomer(id: number): Promise<void> {
     await db.delete(customers).where(eq(customers.id, id));
+  }
+
+  async bulkDeleteCustomers(ids: number[]): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: true, 
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(inArray(customers.id, ids));
+  }
+
+  async bulkRestoreCustomers(ids: number[]): Promise<void> {
+    await db.update(customers)
+      .set({ 
+        isDeleted: false, 
+        deletedAt: null,
+        updatedAt: new Date()
+      })
+      .where(inArray(customers.id, ids));
+  }
+
+  async bulkPermanentlyDeleteCustomers(ids: number[]): Promise<void> {
+    await db.delete(customers).where(inArray(customers.id, ids));
   }
 
   async updateCustomerStats(phoneNumber: string): Promise<void> {
