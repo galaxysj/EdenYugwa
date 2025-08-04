@@ -55,6 +55,13 @@ export default function Home() {
                   주문 조회
                 </Button>
               </Link>
+              {!isAuthenticated && (
+                <Link href="/login">
+                  <Button variant="outline" className="text-eden-brown border-eden-brown hover:bg-eden-brown hover:text-white">
+                    로그인
+                  </Button>
+                </Link>
+              )}
               {isAuthenticated && isAdmin && (
                 <Link href="/admin">
                   <Button variant="ghost" className="text-eden-red hover:text-eden-brown">
@@ -121,6 +128,16 @@ export default function Home() {
                     주문 조회
                   </button>
                 </Link>
+                {!isAuthenticated && (
+                  <Link href="/login">
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
+                    >
+                      로그인
+                    </button>
+                  </Link>
+                )}
                 {isAuthenticated && isAdmin && (
                   <Link href="/admin">
                     <button 
