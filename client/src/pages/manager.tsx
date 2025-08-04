@@ -8,28 +8,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { 
-  ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, 
-  AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, 
-  Users, FileSpreadsheet, Key 
-} from "lucide-react";
-import * as XLSX from "xlsx";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
-import ScheduledDatePicker from "@/components/scheduled-date-picker";
-import { DeliveredDatePicker } from "@/components/delivered-date-picker";
-import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
-import { CustomerManagement } from "@/components/customer-management";
+import { AdminHeader } from "@/components/admin-header";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import PasswordChangeDialog from "@/components/PasswordChangeDialog";
-import { AdminHeader } from "@/components/admin-header";
-import type { Order } from "@shared/schema";
+import type { Order, Setting } from "@shared/schema";
+import * as XLSX from 'xlsx';
 
 const statusLabels = {
   pending: "주문접수",
-  seller_shipped: "발송대기",
   scheduled: "발송주문",
   delivered: "발송완료",
 };
@@ -37,7 +27,6 @@ const statusLabels = {
 const statusIcons = {
   pending: Clock,
   scheduled: Calendar,
-  seller_shipped: Truck,
   delivered: CheckCircle,
 };
 
@@ -65,58 +54,27 @@ const checkRemoteArea = (address: string) => {
   return remoteAreaKeywords.some(keyword => address.includes(keyword));
 };
 
-export default function Manager() {
-  const [activeTab, setActiveTab] = useState<"orders" | "customers">("orders");
-  const [orderViewTab, setOrderViewTab] = useState("all"); // all, scheduled, delivered
-  const [, setLocation] = useLocation();
+export default function ManagerDashboard() {
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { logout, isAdmin, isManagerOrAdmin, user } = useAuth();
 
-  // 매니저 권한 체크
-  if (!isManagerOrAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full mx-auto p-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">접근 권한이 없습니다</h2>
-            <p className="text-gray-600 mb-4">
-              매니저 페이지는 관리자가 지정한 매니저만 접근할 수 있습니다.
-            </p>
-            <button
-              onClick={() => setLocation('/')}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              홈으로 돌아가기
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // Filter states  
-  const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
-  const [orderStartDate, setOrderStartDate] = useState<string>('');
-  const [orderEndDate, setOrderEndDate] = useState<string>('');
-  const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all'); // Manager can see all payment statuses
-  const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
-  const [sellerShippedFilter, setSellerShippedFilter] = useState<string>('all');
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-
-  // States for order operations
-  const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
-  const [paymentAmount, setPaymentAmount] = useState<string>('');
-  const [selectedOrdersForBulkSMS, setSelectedOrdersForBulkSMS] = useState<Order[]>([]);
-  const [bulkSMSMessage, setBulkSMSMessage] = useState<string>('');
+  // 상태 관리
+  const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
   const [showBulkSMSDialog, setShowBulkSMSDialog] = useState(false);
+  const [bulkSMSMessage, setBulkSMSMessage] = useState('');
+  const [currentPage, setCurrentPage] = useState("orders");
 
-  // Bulk selection for SMS
-  const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
+  // 필터 상태 (관리자와 동일)
+  const [orderDateFilter, setOrderDateFilter] = useState("all");
+  const [orderStartDate, setOrderStartDate] = useState("");
+  const [orderEndDate, setOrderEndDate] = useState("");
+  const [customerNameFilter, setCustomerNameFilter] = useState("");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState("all");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [sellerShippedFilter, setSellerShippedFilter] = useState("all");
 
-  // 주문 데이터 가져오기
+  // 매니저용 주문 데이터 가져오기
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["/api/manager/orders"],
   });
@@ -125,21 +83,8 @@ export default function Manager() {
     queryKey: ["/api/admin-settings"],
   });
 
-  // 매니저는 모든 주문을 볼 수 있음 (관리자와 동일)
-  const allOrders = (orders as Order[]);
-
-  // 매니저 주문 정렬 함수 - 발송주문(scheduled) 상태를 맨 아래로
-  const managerSortedOrders = [...allOrders].sort((a, b) => {
-    // scheduled 상태를 맨 아래로
-    if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
-    if (b.status === 'scheduled' && a.status !== 'scheduled') return -1;
-    
-    // 나머지는 날짜순으로 정렬 (최신순)
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
   // 필터링 로직 (관리자와 동일)
-  const filteredOrders = allOrders.filter(order => {
+  const filteredOrders = (orders as Order[]).filter(order => {
     // 날짜 필터링
     if (orderDateFilter === 'today') {
       const today = new Date().toDateString();
@@ -195,11 +140,11 @@ export default function Manager() {
     onSuccess: () => {
       toast({
         title: "SMS 발송 완료",
-        description: `${selectedOrderItems.size}명에게 SMS가 발송되었습니다.`,
+        description: `${selectedOrders.size}명에게 SMS가 발송되었습니다.`,
       });
       setShowBulkSMSDialog(false);
       setBulkSMSMessage('');
-      setSelectedOrderItems(new Set());
+      setSelectedOrders(new Set());
     },
     onError: (error: any) => {
       toast({
@@ -255,33 +200,32 @@ export default function Manager() {
   // 일괄 판매자 발송 mutation
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      return api.patch('/api/orders/seller-shipped', { orderIds });
+      return api.post('/api/orders/bulk-seller-shipped', { orderIds });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       toast({
-        title: "일괄 발송 완료",
-        description: `${selectedOrderItems.size}개 주문이 발송 처리되었습니다.`,
+        title: "일괄 발송 처리 완료",
+        description: `${selectedOrders.size}개 주문이 발송 처리되었습니다.`,
       });
-      setSelectedOrderItems(new Set());
+      setSelectedOrders(new Set());
     },
     onError: (error: any) => {
       toast({
-        title: "일괄 발송 실패",
+        title: "일괄 발송 처리 실패",
         description: error.message || "일괄 발송 처리 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     },
   });
 
-  // Excel 다운로드 함수
-  const exportToExcel = () => {
-    const excelData = filteredOrders.map(order => ({
+  // Excel 다운로드 함수 (매니저용 - 금액 정보 제외)
+  const downloadExcel = () => {
+    const data = filteredOrders.map(order => ({
       '주문번호': order.orderNumber,
-      '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
       '고객명': order.customerName,
-      '전화번호': order.customerPhone,
-      '주소': `${order.address1} ${order.address2}`,
+      '연락처': order.customerPhone,
+      '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
       '상품': [
         order.smallBoxQuantity > 0 ? `한과1호×${order.smallBoxQuantity}개` : '',
         order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
@@ -291,275 +235,348 @@ export default function Manager() {
                  order.paymentStatus === 'partial' ? '부분결제' :
                  order.paymentStatus === 'refunded' ? '환불' : '입금대기',
       '주문상태': statusLabels[order.status as keyof typeof statusLabels],
-      '발송상태': order.sellerShipped ? '발송완료' : '발송대기',
-      '발송예정일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
-      '실제발송일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
+      '배송주소': `${order.address1} ${order.address2}`,
+      '판매자발송': order.sellerShipped ? '발송완료' : '발송대기',
+      '발송일정': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
+      '발송완료일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
       '판매자발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
-      '메모': (order as any).memo || ''
+      '메모': order.memo || ''
     }));
 
-    const ws = XLSX.utils.json_to_sheet(excelData);
+    const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "매니저_주문목록");
-    
-    const fileName = `매니저_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-    
-    toast({
-      title: "Excel 다운로드 완료",
-      description: `${fileName} 파일이 다운로드되었습니다.`,
-    });
+    XLSX.utils.book_append_sheet(wb, ws, "주문목록");
+    XLSX.writeFile(wb, `주문목록_${new Date().toLocaleDateString('ko-KR')}.xlsx`);
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-primary mx-auto"></div>
-          <p className="mt-2 text-gray-600">로딩 중...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-eden-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">로딩 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-50">
-        <AdminHeader 
-          handleExcelDownload={exportToExcel}
-          setActiveTab={(tab: string) => setActiveTab(tab as "orders" | "customers")}
-          activeTab={activeTab}
-          passwordChangeDialog={
-            <PasswordChangeDialog 
-              triggerComponent={
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Key className="h-4 w-4" />
-                  비밀번호 변경
-                </Button>
-              }
-            />
-          }
-        />
+    <div className="min-h-screen bg-gray-50">
+      <AdminHeader 
+        user={user} 
+        adminSettings={adminSettings}
+        isManager={true}
+      />
 
-        {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-6">
-            {activeTab === 'orders' && (
-              <div className="space-y-6">
-                {/* Bulk Actions */}
-                {selectedOrderItems.size > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-blue-900">
-                        {selectedOrderItems.size}개 주문이 선택되었습니다
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setShowBulkSMSDialog(true)}
-                          className="bg-white"
-                        >
-                          일괄 SMS 발송
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => bulkSellerShippedMutation.mutate(Array.from(selectedOrderItems))}
-                          disabled={bulkSellerShippedMutation.isPending}
-                          className="bg-white"
-                        >
-                          {bulkSellerShippedMutation.isPending ? '처리중...' : '일괄 발송처리'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setSelectedOrderItems(new Set())}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+      <div className="container mx-auto p-4 space-y-6">
+        {currentPage === "orders" && (
+          <>
+            {/* 상단 통계 카드들 (금액 제외) */}
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
+                  <div className="text-sm text-gray-600">총 주문수</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {(orders as Order[]).filter(o => o.paymentStatus === 'pending').length}
+                  </div>
+                  <div className="text-sm text-gray-600">입금대기</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {(orders as Order[]).filter(o => o.status === 'pending').length}
+                  </div>
+                  <div className="text-sm text-gray-600">주문접수</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {(orders as Order[]).filter(o => o.status === 'scheduled').length}
+                  </div>
+                  <div className="text-sm text-gray-600">발송예정</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {(orders as Order[]).filter(o => o.status === 'delivered').length}
+                  </div>
+                  <div className="text-sm text-gray-600">발송완료</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {(orders as Order[]).filter(o => o.sellerShipped).length}
+                  </div>
+                  <div className="text-sm text-gray-600">판매자발송</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* 주문 목록 */}
+            <Tabs defaultValue="전체(6)" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <TabsList>
+                  <TabsTrigger value="전체(6)">전체 ({filteredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="입금대기(0)">
+                    입금대기 ({filteredOrders.filter(o => o.paymentStatus === 'pending').length})
+                  </TabsTrigger>
+                  <TabsTrigger value="발송예정(1)">
+                    발송예정 ({filteredOrders.filter(o => o.status === 'scheduled').length})
+                  </TabsTrigger>
+                  <TabsTrigger value="발송완료(0)">
+                    발송완료 ({filteredOrders.filter(o => o.status === 'delivered').length})
+                  </TabsTrigger>
+                  <TabsTrigger value="환불내역(1)">
+                    환불내역 ({filteredOrders.filter(o => o.paymentStatus === 'refunded').length})
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={downloadExcel}>
+                    <Download className="h-4 w-4 mr-2" />
+                    엑셀
+                  </Button>
+                </div>
+              </div>
+
+              {/* 선택된 주문이 있을 때 일괄 작업 버튼 */}
+              {selectedOrders.size > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
+                  <span className="text-sm font-medium text-blue-900">
+                    {selectedOrders.size}개 주문이 선택되었습니다
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowBulkSMSDialog(true)}
+                      className="bg-white"
+                    >
+                      일괄 SMS 발송
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => bulkSellerShippedMutation.mutate(Array.from(selectedOrders))}
+                      disabled={bulkSellerShippedMutation.isPending}
+                      className="bg-white"
+                    >
+                      {bulkSellerShippedMutation.isPending ? '처리중...' : '일괄 발송처리'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 필터링 UI */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">주문 필터링</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* 날짜 필터 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">주문일</label>
+                      <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">전체 기간</SelectItem>
+                          <SelectItem value="today">오늘</SelectItem>
+                          <SelectItem value="week">최근 7일</SelectItem>
+                          <SelectItem value="month">최근 30일</SelectItem>
+                          <SelectItem value="custom">사용자 지정</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {orderDateFilter === 'custom' && (
+                        <div className="mt-2 space-y-2">
+                          <Input
+                            type="date"
+                            value={orderStartDate}
+                            onChange={(e) => setOrderStartDate(e.target.value)}
+                            className="h-8 text-sm"
+                            placeholder="시작일"
+                          />
+                          <Input
+                            type="date"
+                            value={orderEndDate}
+                            onChange={(e) => setOrderEndDate(e.target.value)}
+                            className="h-8 text-sm"
+                            placeholder="종료일"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 고객명 필터 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">고객명</label>
+                      <Input
+                        placeholder="고객명 검색"
+                        value={customerNameFilter}
+                        onChange={(e) => setCustomerNameFilter(e.target.value)}
+                        className="h-9"
+                      />
+                    </div>
+
+                    {/* 결제 상태 필터 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">결제 상태</label>
+                      <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">전체</SelectItem>
+                          <SelectItem value="pending">입금대기</SelectItem>
+                          <SelectItem value="confirmed">입금완료</SelectItem>
+                          <SelectItem value="partial">부분결제</SelectItem>
+                          <SelectItem value="refunded">환불</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 주문 상태 필터 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">주문 상태</label>
+                      <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">전체</SelectItem>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="scheduled">발송주문</SelectItem>
+                          <SelectItem value="delivered">발송완료</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 판매자 발송 상태 필터 */}
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">판매자 발송</label>
+                      <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">전체</SelectItem>
+                          <SelectItem value="shipped">발송완료</SelectItem>
+                          <SelectItem value="not_shipped">발송대기</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-                )}
+                </CardContent>
+              </Card>
 
-                {/* 필터링 UI */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">주문 필터링</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {/* 날짜 필터 */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">주문일</label>
-                        <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">전체 기간</SelectItem>
-                            <SelectItem value="today">오늘</SelectItem>
-                            <SelectItem value="week">최근 7일</SelectItem>
-                            <SelectItem value="month">최근 30일</SelectItem>
-                            <SelectItem value="custom">사용자 지정</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        
-                        {orderDateFilter === 'custom' && (
-                          <div className="mt-2 space-y-2">
-                            <Input
-                              type="date"
-                              value={orderStartDate}
-                              onChange={(e) => setOrderStartDate(e.target.value)}
-                              className="h-8 text-sm"
-                              placeholder="시작일"
+              {/* 주문 목록 테이블 */}
+              <TabsContent value="전체(6)" className="space-y-4">
+                <div className="bg-white border rounded-lg">
+                  <div className="p-4 border-b">
+                    <h2 className="text-lg font-semibold">주문 목록</h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="text-left p-3 font-medium text-gray-700 w-12">
+                            <input
+                              type="checkbox"
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedOrders(new Set(filteredOrders.map(o => o.id)));
+                                } else {
+                                  setSelectedOrders(new Set());
+                                }
+                              }}
+                              checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
+                              className="rounded"
                             />
-                            <Input
-                              type="date"
-                              value={orderEndDate}
-                              onChange={(e) => setOrderEndDate(e.target.value)}
-                              className="h-8 text-sm"
-                              placeholder="종료일"
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* 고객명 필터 */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">고객명</label>
-                        <Input
-                          placeholder="고객명 검색"
-                          value={customerNameFilter}
-                          onChange={(e) => setCustomerNameFilter(e.target.value)}
-                          className="h-9"
-                        />
-                      </div>
-
-                      {/* 결제 상태 필터 */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">결제 상태</label>
-                        <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">전체</SelectItem>
-                            <SelectItem value="pending">입금대기</SelectItem>
-                            <SelectItem value="confirmed">입금완료</SelectItem>
-                            <SelectItem value="partial">부분결제</SelectItem>
-                            <SelectItem value="refunded">환불</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* 주문 상태 필터 */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">주문 상태</label>
-                        <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">전체</SelectItem>
-                            <SelectItem value="pending">주문접수</SelectItem>
-                            <SelectItem value="scheduled">발송주문</SelectItem>
-                            <SelectItem value="delivered">발송완료</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* 판매자 발송 상태 필터 */}
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">판매자 발송</label>
-                        <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
-                          <SelectTrigger className="h-9">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">전체</SelectItem>
-                            <SelectItem value="shipped">발송완료</SelectItem>
-                            <SelectItem value="not_shipped">발송대기</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
-                      주문 목록 ({filteredOrders.length}건)
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="space-y-4 p-4">
-                      {filteredOrders.map((order) => {
-                        const StatusIcon = statusIcons[order.status as keyof typeof statusIcons] || Clock;
-                        return (
-                          <Card key={order.id} className={`border-l-4 ${
-                            order.paymentStatus !== 'confirmed' 
-                              ? 'border-l-red-500 bg-red-50' 
-                              : 'border-l-blue-500'
+                          </th>
+                          <th className="text-left p-3 font-medium text-gray-700">주문번호</th>
+                          <th className="text-left p-3 font-medium text-gray-700">고객정보</th>
+                          <th className="text-left p-3 font-medium text-gray-700">주문일</th>
+                          <th className="text-left p-3 font-medium text-gray-700">제품</th>
+                          <th className="text-left p-3 font-medium text-gray-700">연락처</th>
+                          <th className="text-left p-3 font-medium text-gray-700">배송지/메모</th>
+                          <th className="text-left p-3 font-medium text-gray-700">주문/결제상태</th>
+                          <th className="text-left p-3 font-medium text-gray-700">입금확인</th>
+                          <th className="text-left p-3 font-medium text-gray-700">발송상태</th>
+                          <th className="text-left p-3 font-medium text-gray-700">판매자발송</th>
+                          <th className="text-left p-3 font-medium text-gray-700">관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredOrders.map((order) => (
+                          <tr key={order.id} className={`border-b hover:bg-gray-50 ${
+                            order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
                           }`}>
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedOrderItems.has(order.id)}
-                                    onChange={(e) => {
-                                      const newSet = new Set(selectedOrderItems);
-                                      if (e.target.checked) {
-                                        newSet.add(order.id);
-                                      } else {
-                                        newSet.delete(order.id);
-                                      }
-                                      setSelectedOrderItems(newSet);
-                                    }}
-                                    className="rounded"
-                                  />
-                                  <h3 className="font-semibold text-lg">{order.customerName}</h3>
-                                  <span className="text-sm text-gray-500">#{order.orderNumber}</span>
-                                  <span className="text-sm text-gray-500">
-                                    {new Date(order.createdAt).toLocaleDateString('ko-KR')}
-                                  </span>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-sm text-gray-500">
-                                    {order.customerPhone}
-                                  </div>
-                                  {order.paymentStatus !== 'confirmed' && (
-                                    <div className="text-xs text-red-600 font-bold">미입금</div>
-                                  )}
-                                </div>
+                            <td className="p-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedOrders.has(order.id)}
+                                onChange={(e) => {
+                                  const newSet = new Set(selectedOrders);
+                                  if (e.target.checked) {
+                                    newSet.add(order.id);
+                                  } else {
+                                    newSet.delete(order.id);
+                                  }
+                                  setSelectedOrders(newSet);
+                                }}
+                                className="rounded"
+                              />
+                            </td>
+                            <td className="p-3">
+                              <div className="font-medium">{order.orderNumber}</div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString('ko-KR')}
                               </div>
-                              
-                              <div className="space-y-2 mb-3">
-                                <div>
-                                  <span className="text-sm font-medium text-gray-700">주문내용: </span>
-                                  <div className="text-sm">
-                                    {order.smallBoxQuantity > 0 && <div>한과1호×{order.smallBoxQuantity}개</div>}
-                                    {order.largeBoxQuantity > 0 && <div>한과2호×{order.largeBoxQuantity}개</div>}
-                                    {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}개</div>}
-                                  </div>
-                                </div>
-                                
-                                <div>
-                                  <span className="text-sm font-medium text-gray-700">배송주소: </span>
-                                  <span className="text-sm">
-                                    {order.address1} {order.address2}
-                                  </span>
-                                  {checkRemoteArea(order.address1) && (
-                                    <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
-                                  )}
-                                </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="font-medium">{order.customerName}</div>
+                              {order.paymentStatus !== 'confirmed' && (
+                                <div className="text-xs text-red-600 font-bold">미입금</div>
+                              )}
+                            </td>
+                            <td className="p-3">
+                              {new Date(order.createdAt).toLocaleDateString('ko-KR')}
+                            </td>
+                            <td className="p-3">
+                              <div className="space-y-1">
+                                {order.smallBoxQuantity > 0 && <div>한과1호×{order.smallBoxQuantity}</div>}
+                                {order.largeBoxQuantity > 0 && <div>한과2호×{order.largeBoxQuantity}</div>}
+                                {order.wrappingQuantity > 0 && <div className="text-eden-brown">보자기×{order.wrappingQuantity}</div>}
                               </div>
-                              
-                              <div className="flex flex-wrap gap-2 mb-3">
+                            </td>
+                            <td className="p-3">{order.customerPhone}</td>
+                            <td className="p-3">
+                              <div className="max-w-xs">
+                                <div className="truncate">{order.address1} {order.address2}</div>
+                                {checkRemoteArea(order.address1) && (
+                                  <div className="text-xs text-red-600 font-bold">배송비추가</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="space-y-1">
                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                   order.paymentStatus === 'confirmed' 
                                     ? 'bg-green-100 text-green-800' 
@@ -573,7 +590,7 @@ export default function Manager() {
                                    order.paymentStatus === 'partial' ? '부분결제' :
                                    order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
                                 </span>
-                                
+                                <br/>
                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                   order.status === 'delivered' 
                                     ? 'bg-green-100 text-green-800' 
@@ -581,114 +598,125 @@ export default function Manager() {
                                     ? 'bg-blue-100 text-blue-800'
                                     : 'bg-yellow-100 text-yellow-800'
                                 }`}>
-                                  <StatusIcon className="h-3 w-3 mr-1" />
                                   {statusLabels[order.status as keyof typeof statusLabels]}
                                 </span>
                               </div>
-                              
-                              <div className="flex gap-2">
-                                <Select
-                                  value={order.status}
-                                  onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
-                                >
-                                  <SelectTrigger className="flex-1 h-8 text-xs">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="pending">주문접수</SelectItem>
-                                    <SelectItem value="scheduled">발송주문</SelectItem>
-                                    <SelectItem value="delivered">발송완료</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                
-                                <Button
-                                  size="sm"
-                                  variant={order.sellerShipped ? "default" : "outline"}
-                                  className={`h-8 text-xs ${order.sellerShipped ? 'bg-green-600 hover:bg-green-700' : ''}`}
-                                  onClick={() => updateSellerShippedMutation.mutate({ 
-                                    id: order.id, 
-                                    sellerShipped: !order.sellerShipped 
-                                  })}
-                                  disabled={updateSellerShippedMutation.isPending}
-                                >
-                                  {order.sellerShipped ? '발송완료' : '발송하기'}
-                                </Button>
-                                
+                            </td>
+                            <td className="p-3">
+                              <Select
+                                value={order.status}
+                                onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                              >
+                                <SelectTrigger className="w-24 h-8 text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">주문접수</SelectItem>
+                                  <SelectItem value="scheduled">발송주문</SelectItem>
+                                  <SelectItem value="delivered">발송완료</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </td>
+                            <td className="p-3">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                order.sellerShipped 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {order.sellerShipped ? '발송완료' : '발송대기'}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <Button
+                                size="sm"
+                                variant={order.sellerShipped ? "default" : "outline"}
+                                onClick={() => updateSellerShippedMutation.mutate({ 
+                                  id: order.id, 
+                                  sellerShipped: !order.sellerShipped 
+                                })}
+                                className="text-xs px-2 py-1 h-7"
+                              >
+                                {order.sellerShipped ? "발송완료" : "발송처리"}
+                              </Button>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex gap-1">
                                 <SmsDialog order={order}>
-                                  <Button variant="outline" size="sm" className="h-8 text-xs">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    className="text-xs px-2 py-1 h-7"
+                                  >
                                     SMS
                                   </Button>
                                 </SmsDialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  상세 관리
+                                </Button>
                               </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    {filteredOrders.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        주문이 없습니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
 
-                              <div className="mt-3 space-y-2">
-                                <ScheduledDatePicker order={order} />
-                                <DeliveredDatePicker order={order} />
-                                <SellerShippedDatePicker order={order} />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {activeTab === 'customers' && (
-              <div className="space-y-6">
-                <CustomerManagement />
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Bulk SMS Dialog */}
-      <Dialog open={showBulkSMSDialog} onOpenChange={setShowBulkSMSDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>일괄 SMS 발송</DialogTitle>
-            <DialogDescription>
-              선택된 {selectedOrderItems.size}명의 고객에게 SMS를 발송합니다.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="bulk-sms-message">메시지</Label>
-              <Textarea
-                id="bulk-sms-message"
-                value={bulkSMSMessage}
-                onChange={(e) => setBulkSMSMessage(e.target.value)}
-                placeholder="발송할 메시지를 입력하세요..."
-                rows={4}
-                maxLength={1000}
-              />
-              <div className="text-xs text-gray-500 mt-1">
-                {bulkSMSMessage.length}/1000자
+        {/* SMS 일괄 발송 다이얼로그 */}
+        <Dialog open={showBulkSMSDialog} onOpenChange={setShowBulkSMSDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>일괄 SMS 발송</DialogTitle>
+              <DialogDescription>
+                선택된 {selectedOrders.size}명의 고객에게 SMS를 발송합니다.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="smsMessage">SMS 내용</Label>
+                <Textarea
+                  id="smsMessage"
+                  placeholder="SMS 메시지를 입력하세요..."
+                  value={bulkSMSMessage}
+                  onChange={(e) => setBulkSMSMessage(e.target.value)}
+                  rows={4}
+                />
               </div>
             </div>
-          </div>
-          
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowBulkSMSDialog(false)}>
-              취소
-            </Button>
-            <Button 
-              onClick={() => {
-                const selectedOrders = filteredOrders.filter(order => selectedOrderItems.has(order.id));
-                const phones = selectedOrders.map(order => order.customerPhone);
-                sendBulkSMSMutation.mutate({ phones, message: bulkSMSMessage });
-              }}
-              disabled={!bulkSMSMessage.trim() || sendBulkSMSMutation.isPending}
-            >
-              {sendBulkSMSMutation.isPending ? "발송 중..." : "발송"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+            
+            <div className="flex justify-end gap-2 mt-6">
+              <Button variant="outline" onClick={() => setShowBulkSMSDialog(false)}>
+                취소
+              </Button>
+              <Button 
+                onClick={() => {
+                  const selectedOrderList = filteredOrders.filter(o => selectedOrders.has(o.id));
+                  const phones = selectedOrderList.map(o => o.customerPhone);
+                  sendBulkSMSMutation.mutate({ phones, message: bulkSMSMessage });
+                }}
+                disabled={!bulkSMSMessage.trim() || sendBulkSMSMutation.isPending}
+              >
+                {sendBulkSMSMutation.isPending ? "발송 중..." : "SMS 발송"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
   );
 }
