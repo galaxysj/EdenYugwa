@@ -323,11 +323,11 @@ export default function ManagerDashboard() {
               <div className="flex items-center justify-between">
                 <TabsList>
                   <TabsTrigger value="전체보기">전체보기 ({filteredOrders.length})</TabsTrigger>
-                  <TabsTrigger value="발송주문">
-                    발송주문 ({filteredOrders.filter(o => o.status === 'scheduled').length})
+                  <TabsTrigger value="발송처리대기">
+                    발송처리대기 ({filteredOrders.filter(o => !o.sellerShipped).length})
                   </TabsTrigger>
-                  <TabsTrigger value="발송완료">
-                    발송완료 ({filteredOrders.filter(o => o.status === 'delivered').length})
+                  <TabsTrigger value="매니저발송완료">
+                    매니저발송완료 ({filteredOrders.filter(o => o.sellerShipped).length})
                   </TabsTrigger>
                 </TabsList>
 
@@ -681,11 +681,11 @@ export default function ManagerDashboard() {
                 </div>
               </TabsContent>
 
-              {/* 발송주문 탭 */}
-              <TabsContent value="발송주문" className="space-y-4">
+              {/* 발송처리대기 탭 */}
+              <TabsContent value="발송처리대기" className="space-y-4">
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b">
-                    <h2 className="text-lg font-semibold">발송주문 목록</h2>
+                    <h2 className="text-lg font-semibold">발송처리대기 목록</h2>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -695,14 +695,14 @@ export default function ManagerDashboard() {
                             <input
                               type="checkbox"
                               onChange={(e) => {
-                                const scheduledOrders = filteredOrders.filter(o => o.status === 'scheduled');
+                                const pendingOrders = filteredOrders.filter(o => !o.sellerShipped);
                                 if (e.target.checked) {
-                                  setSelectedOrders(new Set(scheduledOrders.map(o => o.id)));
+                                  setSelectedOrders(new Set(pendingOrders.map(o => o.id)));
                                 } else {
                                   setSelectedOrders(new Set());
                                 }
                               }}
-                              checked={selectedOrders.size === filteredOrders.filter(o => o.status === 'scheduled').length && filteredOrders.filter(o => o.status === 'scheduled').length > 0}
+                              checked={selectedOrders.size === filteredOrders.filter(o => !o.sellerShipped).length && filteredOrders.filter(o => !o.sellerShipped).length > 0}
                               className="rounded"
                             />
                           </th>
@@ -718,7 +718,7 @@ export default function ManagerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredOrders.filter(o => o.status === 'scheduled').map((order) => (
+                        {filteredOrders.filter(o => !o.sellerShipped).map((order) => (
                           <tr key={order.id} className={`border-b hover:bg-gray-50 ${
                             order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
                           }`}>
@@ -885,20 +885,20 @@ export default function ManagerDashboard() {
                       </tbody>
                     </table>
                     
-                    {filteredOrders.filter(o => o.status === 'scheduled').length === 0 && (
+                    {filteredOrders.filter(o => !o.sellerShipped).length === 0 && (
                       <div className="text-center py-8 text-gray-500">
-                        발송주문이 없습니다.
+                        발송처리대기 주문이 없습니다.
                       </div>
                     )}
                   </div>
                 </div>
               </TabsContent>
 
-              {/* 발송완료 탭 */}
-              <TabsContent value="발송완료" className="space-y-4">
+              {/* 매니저발송완료 탭 */}
+              <TabsContent value="매니저발송완료" className="space-y-4">
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b">
-                    <h2 className="text-lg font-semibold">발송완료 주문</h2>
+                    <h2 className="text-lg font-semibold">매니저발송완료 주문</h2>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -908,14 +908,14 @@ export default function ManagerDashboard() {
                             <input
                               type="checkbox"
                               onChange={(e) => {
-                                const deliveredOrders = filteredOrders.filter(o => o.status === 'delivered');
+                                const shippedOrders = filteredOrders.filter(o => o.sellerShipped);
                                 if (e.target.checked) {
-                                  setSelectedOrders(new Set(deliveredOrders.map(o => o.id)));
+                                  setSelectedOrders(new Set(shippedOrders.map(o => o.id)));
                                 } else {
                                   setSelectedOrders(new Set());
                                 }
                               }}
-                              checked={selectedOrders.size === filteredOrders.filter(o => o.status === 'delivered').length && filteredOrders.filter(o => o.status === 'delivered').length > 0}
+                              checked={selectedOrders.size === filteredOrders.filter(o => o.sellerShipped).length && filteredOrders.filter(o => o.sellerShipped).length > 0}
                               className="rounded"
                             />
                           </th>
@@ -931,7 +931,7 @@ export default function ManagerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredOrders.filter(o => o.status === 'delivered').map((order) => (
+                        {filteredOrders.filter(o => o.sellerShipped).map((order) => (
                           <tr key={order.id} className={`border-b hover:bg-gray-50 ${
                             order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
                           }`}>
@@ -1098,9 +1098,9 @@ export default function ManagerDashboard() {
                       </tbody>
                     </table>
                     
-                    {filteredOrders.filter(o => o.status === 'delivered').length === 0 && (
+                    {filteredOrders.filter(o => o.sellerShipped).length === 0 && (
                       <div className="text-center py-8 text-gray-500">
-                        발송완료된 주문이 없습니다.
+                        매니저발송완료된 주문이 없습니다.
                       </div>
                     )}
                   </div>
