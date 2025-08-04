@@ -131,7 +131,7 @@ export default function AdminSettingsPage() {
 
   const handleEditManagerUsername = (manager: UserType) => {
     setEditingManager(manager);
-    setSelectedUserId(manager.id.toString());
+    setSelectedUserId(""); // 빈 값으로 시작하여 사용자가 선택하도록 함
     setEditManagerDialogOpen(true);
   };
 
@@ -423,9 +423,9 @@ export default function AdminSettingsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleEditManagerUsername(user)}
-                              disabled={updateUserRoleMutation.isPending}
+                              disabled={updateUserRoleMutation.isPending || updateManagerUsernameMutation.isPending}
                             >
-                              수정
+                              사용자 변경
                             </Button>
                           )}
                         </div>
@@ -446,27 +446,33 @@ export default function AdminSettingsPage() {
       <Dialog open={editManagerDialogOpen} onOpenChange={setEditManagerDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>매니저 사용자 정보 변경</DialogTitle>
+            <DialogTitle>매니저 사용자 교체</DialogTitle>
             <DialogDescription>
-              매니저 "{editingManager?.username}"의 사용자 정보를 다른 회원가입자로 변경합니다.
+              현재 매니저 "{editingManager?.username}"를 다른 회원가입자로 교체합니다. 
+              기존 매니저는 일반 사용자로 변경되고, 선택한 사용자가 새로운 매니저가 됩니다.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">변경할 사용자 선택</label>
+              <label className="text-sm font-medium">새 매니저로 지정할 사용자 선택</label>
               <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                 <SelectTrigger className="w-full mt-1">
-                  <SelectValue placeholder="사용자를 선택하세요" />
+                  <SelectValue placeholder="일반 사용자를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id.toString()}>
-                      {user.username} - {user.name} ({user.phoneNumber})
-                    </SelectItem>
-                  ))}
+                  {allUsers
+                    .filter(user => user.role === 'user' && user.id !== editingManager?.id)
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.username} - {user.name} ({user.phoneNumber})
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                일반 사용자 권한을 가진 회원만 매니저로 지정할 수 있습니다.
+              </p>
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
@@ -480,7 +486,7 @@ export default function AdminSettingsPage() {
                 onClick={handleSaveManagerUsername}
                 disabled={!selectedUserId || updateManagerUsernameMutation.isPending}
               >
-                {updateManagerUsernameMutation.isPending ? "변경 중..." : "변경"}
+                {updateManagerUsernameMutation.isPending ? "교체 중..." : "매니저 교체"}
               </Button>
             </div>
           </div>

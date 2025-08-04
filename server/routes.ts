@@ -222,13 +222,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get the current manager
-      const currentManager = await userService.getUser(managerId);
+      const currentManager = await userService.getUserById(managerId);
       if (!currentManager || currentManager.role !== 'manager') {
         return res.status(404).json({ message: "매니저를 찾을 수 없습니다" });
       }
 
       // Get the target user
-      const targetUser = await userService.getUser(newUserId);
+      const targetUser = await userService.getUserById(newUserId);
       if (!targetUser) {
         return res.status(404).json({ message: "대상 사용자를 찾을 수 없습니다" });
       }
