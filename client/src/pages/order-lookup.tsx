@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Package, MapPin, User, Calendar, Edit, RotateCcw } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Search, Package, MapPin, User, Calendar, Edit, RotateCcw, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
@@ -24,6 +27,43 @@ const lookupSchema = z.object({
 });
 
 type LookupFormData = z.infer<typeof lookupSchema>;
+
+// 재주문 스키마
+const reorderSchema = z.object({
+  customerName: z.string().min(1, "이름을 입력해주세요"),
+  customerPhone: z.string().min(1, "전화번호를 입력해주세요"),
+  zipCode: z.string().optional(),
+  address1: z.string().min(1, "주소를 입력해주세요"),
+  address2: z.string().optional(),
+  specialRequests: z.string().optional(),
+  smallBoxQuantity: z.number().min(0, "소박스 수량은 0개 이상이어야 합니다"),
+  largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
+  wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
+  isDifferentDepositor: z.boolean().default(false),
+  depositorName: z.string().optional(),
+}).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
+  message: "최소 1개 이상의 상품을 선택해주세요",
+  path: ["smallBoxQuantity"],
+}).refine((data) => data.wrappingQuantity <= data.smallBoxQuantity + data.largeBoxQuantity, {
+  message: "보자기 포장 수량은 전체 수량보다 클 수 없습니다",
+  path: ["wrappingQuantity"],
+}).refine((data) => !data.isDifferentDepositor || data.depositorName, {
+  message: "입금자 이름을 입력해주세요",
+  path: ["depositorName"],
+});
+
+type ReorderFormData = z.infer<typeof reorderSchema>;
+
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('ko-KR').format(price) + '원';
+};
+
+const prices = {
+  small: 19000, // 한과1호
+  large: 21000, // 한과2호
+  wrapping: 1000,
+  shipping: 4000,
+};
 
 const statusLabels = {
   pending: "주문접수",
@@ -55,6 +95,8 @@ export default function OrderLookup() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
@@ -206,31 +248,85 @@ export default function OrderLookup() {
 
   // 재주문하기 함수
   const handleReorder = (order: Order) => {
-    // 기존 주문 정보를 URL 파라미터로 전달하여 주문 페이지로 이동
-    const reorderData = {
-      customerName: order.customerName,
-      customerPhone: order.customerPhone,
-      zipCode: order.zipCode,
-      address1: order.address1,
-      address2: order.address2 || '',
-      isDifferentDepositor: order.isDifferentDepositor || false,
-      depositorName: order.depositorName || '',
-      smallBoxQuantity: order.smallBoxQuantity,
-      largeBoxQuantity: order.largeBoxQuantity,
-      wrappingQuantity: order.wrappingQuantity,
-      specialRequests: order.specialRequests || '',
-    };
+    setSelectedOrder(order);
+    setReorderDialogOpen(true);
+  };
 
-    // 데이터를 localStorage에 저장하여 주문 페이지에서 사용
-    localStorage.setItem('reorderData', JSON.stringify(reorderData));
-    
-    // 주문 페이지로 이동
-    setLocation('/');
-    
-    toast({
-      title: "재주문 정보 불러오기 완료",
-      description: "기존 주문 정보를 불러왔습니다. 상품을 선택해주세요.",
-    });
+  // 재주문 폼
+  const reorderForm = useForm<ReorderFormData>({
+    resolver: zodResolver(reorderSchema),
+    defaultValues: {
+      customerName: "",
+      customerPhone: "",
+      zipCode: "",
+      address1: "",
+      address2: "",
+      specialRequests: "",
+      smallBoxQuantity: 0,
+      largeBoxQuantity: 0,
+      wrappingQuantity: 0,
+      isDifferentDepositor: false,
+      depositorName: "",
+    },
+  });
+
+  // 선택된 주문이 변경될 때 폼 데이터 업데이트
+  useEffect(() => {
+    if (selectedOrder) {
+      reorderForm.reset({
+        customerName: selectedOrder.customerName,
+        customerPhone: selectedOrder.customerPhone,
+        zipCode: selectedOrder.zipCode || "",
+        address1: selectedOrder.address1,
+        address2: selectedOrder.address2 || "",
+        specialRequests: selectedOrder.specialRequests || "",
+        smallBoxQuantity: selectedOrder.smallBoxQuantity,
+        largeBoxQuantity: selectedOrder.largeBoxQuantity,
+        wrappingQuantity: selectedOrder.wrappingQuantity,
+        isDifferentDepositor: selectedOrder.isDifferentDepositor || false,
+        depositorName: selectedOrder.depositorName || "",
+      });
+    }
+  }, [selectedOrder, reorderForm]);
+
+  // 재주문 제출
+  const onReorderSubmit = async (data: ReorderFormData) => {
+    try {
+      const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
+      const shippingFee = totalQuantity >= 6 ? 0 : prices.shipping;
+      
+      const orderData = {
+        ...data,
+        shippingFee,
+        totalAmount: (data.smallBoxQuantity * prices.small) + 
+                     (data.largeBoxQuantity * prices.large) + 
+                     (data.wrappingQuantity * prices.wrapping) + 
+                     shippingFee,
+      };
+
+      const newOrder = await api.orders.create(orderData);
+      
+      toast({
+        title: "재주문 완료",
+        description: `주문번호 ${newOrder.orderNumber}로 접수되었습니다. 감사합니다!`,
+      });
+      
+      setReorderDialogOpen(false);
+      setSelectedOrder(null);
+      reorderForm.reset();
+      
+      // 주문 목록 새로고침
+      if (isAuthenticated) {
+        const userOrders = await api.orders.getMyOrders();
+        setOrders(userOrders);
+      }
+    } catch (error: any) {
+      toast({
+        title: "재주문 실패",
+        description: error.message || "재주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    }
   };
 
 
@@ -611,6 +707,359 @@ export default function OrderLookup() {
           </div>
         )}
       </div>
+
+      {/* 재주문 팝업 */}
+      <Dialog open={reorderDialogOpen} onOpenChange={setReorderDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-korean">재주문하기</DialogTitle>
+          </DialogHeader>
+          
+          {selectedOrder && (
+            <Form {...reorderForm}>
+              <form onSubmit={reorderForm.handleSubmit(onReorderSubmit)} className="space-y-6">
+                {/* 고객 정보 */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">주문자 정보</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={reorderForm.control}
+                      name="customerName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>이름</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={reorderForm.control}
+                      name="customerPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>전화번호</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* 배송 정보 */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">배송 정보</h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-4">
+                      <FormField
+                        control={reorderForm.control}
+                        name="zipCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>우편번호</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="우편번호" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={reorderForm.control}
+                      name="address1"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>주소</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="주소" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={reorderForm.control}
+                      name="address2"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>상세 주소</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="상세 주소" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* 상품 선택 */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">상품 선택</h3>
+                  <div className="space-y-4">
+                    {/* 한과1호 */}
+                    <div className="flex justify-between items-center p-4 border rounded">
+                      <div>
+                        <h4 className="font-medium">한과1호(약 1.1kg)</h4>
+                        <p className="text-sm text-gray-600">{formatPrice(prices.small)}</p>
+                      </div>
+                      <FormField
+                        control={reorderForm.control}
+                        name="smallBoxQuantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="flex items-center space-x-2">
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  className="w-16 text-center"
+                                />
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => field.onChange(field.value + 1)}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* 한과2호 */}
+                    <div className="flex justify-between items-center p-4 border rounded">
+                      <div>
+                        <h4 className="font-medium">한과2호(약 1.3kg)</h4>
+                        <p className="text-sm text-gray-600">{formatPrice(prices.large)}</p>
+                      </div>
+                      <FormField
+                        control={reorderForm.control}
+                        name="largeBoxQuantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="flex items-center space-x-2">
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  className="w-16 text-center"
+                                />
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => field.onChange(field.value + 1)}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* 보자기 포장 */}
+                    <div className="flex justify-between items-center p-4 border rounded">
+                      <div>
+                        <h4 className="font-medium">보자기 포장</h4>
+                        <p className="text-sm text-gray-600">{formatPrice(prices.wrapping)}</p>
+                      </div>
+                      <FormField
+                        control={reorderForm.control}
+                        name="wrappingQuantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="flex items-center space-x-2">
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  {...field}
+                                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                  className="w-16 text-center"
+                                />
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => field.onChange(field.value + 1)}
+                                  className="w-8 h-8 p-0"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 입금자 정보 */}
+                <div className="space-y-4">
+                  <FormField
+                    control={reorderForm.control}
+                    name="isDifferentDepositor"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          예금자가 다릅니다
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {reorderForm.watch("isDifferentDepositor") && (
+                    <FormField
+                      control={reorderForm.control}
+                      name="depositorName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>입금자 이름</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="입금자 이름" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+
+                {/* 배송 요청사항 */}
+                <FormField
+                  control={reorderForm.control}
+                  name="specialRequests"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>배송 요청사항</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} placeholder="배송 시 요청사항이 있으시면 입력해주세요" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* 가격 정보 */}
+                <div className="bg-gray-50 p-4 rounded">
+                  <div className="space-y-2">
+                    {reorderForm.watch("smallBoxQuantity") > 0 && (
+                      <div className="flex justify-between">
+                        <span>한과1호 × {reorderForm.watch("smallBoxQuantity")}</span>
+                        <span>{formatPrice(reorderForm.watch("smallBoxQuantity") * prices.small)}</span>
+                      </div>
+                    )}
+                    {reorderForm.watch("largeBoxQuantity") > 0 && (
+                      <div className="flex justify-between">
+                        <span>한과2호 × {reorderForm.watch("largeBoxQuantity")}</span>
+                        <span>{formatPrice(reorderForm.watch("largeBoxQuantity") * prices.large)}</span>
+                      </div>
+                    )}
+                    {reorderForm.watch("wrappingQuantity") > 0 && (
+                      <div className="flex justify-between">
+                        <span>보자기 × {reorderForm.watch("wrappingQuantity")}</span>
+                        <span>{formatPrice(reorderForm.watch("wrappingQuantity") * prices.wrapping)}</span>
+                      </div>
+                    )}
+                    {(() => {
+                      const total = reorderForm.watch("smallBoxQuantity") + reorderForm.watch("largeBoxQuantity");
+                      const shippingFee = total >= 6 ? 0 : prices.shipping;
+                      if (shippingFee > 0) {
+                        return (
+                          <div className="flex justify-between">
+                            <span>배송비</span>
+                            <span>{formatPrice(shippingFee)}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                    <div className="border-t pt-2 flex justify-between font-bold text-lg">
+                      <span>총 금액</span>
+                      <span className="text-eden-brown">
+                        {(() => {
+                          const smallTotal = reorderForm.watch("smallBoxQuantity") * prices.small;
+                          const largeTotal = reorderForm.watch("largeBoxQuantity") * prices.large;
+                          const wrappingTotal = reorderForm.watch("wrappingQuantity") * prices.wrapping;
+                          const totalQuantity = reorderForm.watch("smallBoxQuantity") + reorderForm.watch("largeBoxQuantity");
+                          const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+                          const total = smallTotal + largeTotal + wrappingTotal + shippingFee;
+                          return formatPrice(total);
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 버튼 */}
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setReorderDialogOpen(false)}>
+                    취소
+                  </Button>
+                  <Button type="submit" className="bg-eden-brown hover:bg-eden-brown/90">
+                    재주문하기
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
