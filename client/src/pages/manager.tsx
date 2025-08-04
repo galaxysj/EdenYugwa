@@ -369,16 +369,13 @@ export default function ManagerDashboard() {
 
               {/* 필터링 UI */}
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">주문 필터링</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex flex-wrap items-center gap-4">
                     {/* 날짜 필터 */}
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">주문일</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium whitespace-nowrap">주문일:</label>
                       <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-8 w-32 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -391,19 +388,19 @@ export default function ManagerDashboard() {
                       </Select>
                       
                       {orderDateFilter === 'custom' && (
-                        <div className="mt-2 space-y-2">
+                        <div className="flex gap-1">
                           <Input
                             type="date"
                             value={orderStartDate}
                             onChange={(e) => setOrderStartDate(e.target.value)}
-                            className="h-8 text-sm"
+                            className="h-8 w-32 text-xs"
                             placeholder="시작일"
                           />
                           <Input
                             type="date"
                             value={orderEndDate}
                             onChange={(e) => setOrderEndDate(e.target.value)}
-                            className="h-8 text-sm"
+                            className="h-8 w-32 text-xs"
                             placeholder="종료일"
                           />
                         </div>
@@ -411,21 +408,21 @@ export default function ManagerDashboard() {
                     </div>
 
                     {/* 고객명 필터 */}
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">고객명</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium whitespace-nowrap">고객명:</label>
                       <Input
                         placeholder="고객명 검색"
                         value={customerNameFilter}
                         onChange={(e) => setCustomerNameFilter(e.target.value)}
-                        className="h-9"
+                        className="h-8 w-32 text-xs"
                       />
                     </div>
 
                     {/* 결제 상태 필터 */}
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">결제 상태</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium whitespace-nowrap">결제상태:</label>
                       <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-8 w-28 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -439,10 +436,10 @@ export default function ManagerDashboard() {
                     </div>
 
                     {/* 주문 상태 필터 */}
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">주문 상태</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium whitespace-nowrap">주문상태:</label>
                       <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-8 w-28 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -455,10 +452,10 @@ export default function ManagerDashboard() {
                     </div>
 
                     {/* 판매자 발송 상태 필터 */}
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">판매자 발송</label>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium whitespace-nowrap">판매자발송:</label>
                       <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-8 w-28 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -712,6 +709,7 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
@@ -799,6 +797,19 @@ export default function ManagerDashboard() {
                                 </div>
                                 {checkRemoteArea(order.address1) && (
                                   <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="text-xs">
+                                {order.paymentStatus === 'confirmed' ? (
+                                  <span className="text-green-600 font-medium">입금완료</span>
+                                ) : order.paymentStatus === 'partial' ? (
+                                  <span className="text-orange-600 font-medium">부분결제</span>
+                                ) : order.paymentStatus === 'refunded' ? (
+                                  <span className="text-red-600 font-medium">환불</span>
+                                ) : (
+                                  <span className="text-red-600 font-medium">미입금</span>
                                 )}
                               </div>
                             </td>
@@ -925,6 +936,7 @@ export default function ManagerDashboard() {
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
                           <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
                           <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
@@ -1012,6 +1024,19 @@ export default function ManagerDashboard() {
                                 </div>
                                 {checkRemoteArea(order.address1) && (
                                   <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="text-xs">
+                                {order.paymentStatus === 'confirmed' ? (
+                                  <span className="text-green-600 font-medium">입금완료</span>
+                                ) : order.paymentStatus === 'partial' ? (
+                                  <span className="text-orange-600 font-medium">부분결제</span>
+                                ) : order.paymentStatus === 'refunded' ? (
+                                  <span className="text-red-600 font-medium">환불</span>
+                                ) : (
+                                  <span className="text-red-600 font-medium">미입금</span>
                                 )}
                               </div>
                             </td>
