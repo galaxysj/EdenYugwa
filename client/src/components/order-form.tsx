@@ -264,7 +264,7 @@ export default function OrderForm() {
             {/* Product Selection */}
             <Card className="shadow-lg">
               <CardContent className="p-4 md:p-6 lg:p-8">
-                <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-4 md:mb-6 font-korean">
+                <h4 className="text-lg md:text-xl font-semibold section-title mb-4 md:mb-6 font-korean">
                   <Box className="inline mr-2 h-4 w-4 md:h-5 md:w-5" />
                   상품 선택
                 </h4>
@@ -495,7 +495,7 @@ export default function OrderForm() {
 
                   {/* 배송 안내 - 데스크톱에서만 표시 */}
                   <div className="hidden md:block mt-3 p-3 md:p-4 bg-gradient-to-r from-eden-cream/40 to-eden-beige/20 rounded-lg border border-eden-brown/10">
-                    <h4 className="text-base md:text-lg font-bold text-eden-brown mb-2 md:mb-3 text-center font-korean">에덴한과 배송</h4>
+                    <h4 className="text-base md:text-lg font-bold section-title mb-2 md:mb-3 text-center font-korean">에덴한과 배송</h4>
                     <div className="space-y-2">
                       <div className="flex items-start space-x-3">
                         <span className="text-eden-brown font-bold">•</span>
@@ -528,7 +528,7 @@ export default function OrderForm() {
               {/* Customer Info */}
               <Card className="shadow-lg">
                 <CardContent className="p-4 md:p-6 lg:p-8">
-                  <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-3 md:mb-4 font-korean">
+                  <h4 className="text-lg md:text-xl font-semibold section-title mb-3 md:mb-4 font-korean">
                     고객 정보
                   </h4>
                   
@@ -691,7 +691,7 @@ export default function OrderForm() {
               {/* Order Summary */}
               <Card>
                 <CardContent className="p-4 md:p-6 lg:p-8">
-                  <h4 className="text-lg md:text-xl font-semibold text-eden-brown mb-4 md:mb-6 font-korean">
+                  <h4 className="text-lg md:text-xl font-semibold section-title mb-4 md:mb-6 font-korean">
                     <Calculator className="inline mr-2 h-4 w-4 md:h-5 md:w-5" />
                     주문 요약
                   </h4>
