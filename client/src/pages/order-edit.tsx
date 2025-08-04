@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft, Save, AlertTriangle, Lock } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Save, AlertTriangle, Lock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
@@ -43,6 +44,7 @@ export default function OrderEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [needsPassword, setNeedsPassword] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
@@ -138,12 +140,8 @@ export default function OrderEdit() {
         throw new Error(errorData.message || '주문 수정에 실패했습니다');
       }
 
-      toast({
-        title: "수정 완료",
-        description: "주문이 성공적으로 수정되었습니다.",
-      });
-      
-      setLocation('/order-lookup');
+      // 성공 팝업 표시
+      setShowSuccessDialog(true);
     } catch (error) {
       toast({
         title: "수정 실패",
@@ -581,6 +579,43 @@ export default function OrderEdit() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <CheckCircle className="h-16 w-16 text-green-500" />
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold text-eden-brown">
+              수정이 완료되었습니다!
+            </DialogTitle>
+            <DialogDescription className="text-center text-gray-600 mt-2">
+              주문 정보가 성공적으로 수정되었습니다.
+              <br />
+              주문 조회 페이지로 이동하시겠습니까?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              onClick={() => {
+                setShowSuccessDialog(false);
+                setLocation('/order-lookup');
+              }}
+              className="bg-eden-brown hover:bg-eden-dark text-white flex-1"
+            >
+              주문 조회로 이동
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowSuccessDialog(false)}
+              className="text-eden-brown border-eden-brown flex-1"
+            >
+              여기서 계속
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
