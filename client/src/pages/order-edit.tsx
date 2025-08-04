@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Save, AlertTriangle, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { insertOrderSchema, type Order } from "@shared/schema";
 import { z } from "zod";
@@ -20,6 +21,7 @@ const editOrderSchema = insertOrderSchema.extend({
   smallBoxQuantity: z.number().min(0, "소박스 수량은 0개 이상이어야 합니다"),
   largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
   wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
+  orderPassword: z.string().optional(), // 비로그인 사용자를 위한 비밀번호
 }).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
   message: "최소 1개 이상의 상품을 선택해주세요",
   path: ["smallBoxQuantity"],
@@ -40,7 +42,9 @@ export default function OrderEdit() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [needsPassword, setNeedsPassword] = useState(false);
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   const form = useForm<EditOrderFormData>({
     resolver: zodResolver(editOrderSchema),
@@ -67,6 +71,11 @@ export default function OrderEdit() {
           return;
         }
 
+        // 비로그인 사용자이고 주문에 비밀번호가 있으면 비밀번호 입력 필요
+        if (!isAuthenticated && orderData.orderPassword) {
+          setNeedsPassword(true);
+        }
+
         // Set form values
         form.reset({
           customerName: orderData.customerName,
@@ -78,6 +87,7 @@ export default function OrderEdit() {
           smallBoxQuantity: orderData.smallBoxQuantity || 0,
           largeBoxQuantity: orderData.largeBoxQuantity || 0,
           wrappingQuantity: orderData.wrappingQuantity || 0,
+          orderPassword: '',
         });
       } catch (error) {
         toast({
@@ -94,7 +104,7 @@ export default function OrderEdit() {
     if (id) {
       fetchOrder();
     }
-  }, [id, toast, setLocation, form]);
+  }, [id, toast, setLocation, form, isAuthenticated]);
 
   const onSubmit = async (data: EditOrderFormData) => {
     if (!order) return;
@@ -104,27 +114,40 @@ export default function OrderEdit() {
       const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
       const shippingFee = totalQuantity >= 6 ? 0 : prices.shipping;
       const totalAmount = 
-        data.smallBoxQuantity * prices.small + 
-        data.largeBoxQuantity * prices.large + 
-        data.wrappingQuantity * prices.wrapping + 
+        (data.smallBoxQuantity * prices.small) +
+        (data.largeBoxQuantity * prices.large) +
+        (data.wrappingQuantity * prices.wrapping) +
         shippingFee;
 
-      await api.orders.update(order.id, {
+      const updateData = {
         ...data,
-        shippingFee,
         totalAmount,
+        shippingFee,
+      };
+
+      const response = await fetch(`/api/orders/${order.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '주문 수정에 실패했습니다');
+      }
 
       toast({
         title: "수정 완료",
-        description: "주문 정보가 성공적으로 수정되었습니다.",
+        description: "주문이 성공적으로 수정되었습니다.",
       });
       
       setLocation('/order-lookup');
     } catch (error) {
       toast({
         title: "수정 실패",
-        description: "주문 수정 중 오류가 발생했습니다. 다시 시도해주세요.",
+        description: error instanceof Error ? error.message : "주문 수정 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     } finally {
@@ -271,6 +294,33 @@ export default function OrderEdit() {
                     )}
                   />
 
+                  {/* 비로그인 사용자를 위한 주문 비밀번호 입력 */}
+                  {needsPassword && (
+                    <FormField
+                      control={form.control}
+                      name="orderPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2">
+                            <Lock className="h-4 w-4" />
+                            주문 비밀번호 *
+                          </FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="주문 시 설정한 비밀번호를 입력해주세요"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <div className="text-sm text-gray-600">
+                            주문을 수정하려면 주문 시 설정한 비밀번호가 필요합니다.
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
                   <FormField
                     control={form.control}
                     name="specialRequests"
@@ -280,6 +330,7 @@ export default function OrderEdit() {
                         <FormControl>
                           <Textarea 
                             placeholder="배송 시 요청사항이 있으시면 입력해주세요"
+                            {...field}
                             {...field}
                           />
                         </FormControl>

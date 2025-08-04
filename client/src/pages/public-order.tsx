@@ -37,6 +37,8 @@ const publicOrderSchema = z.object({
   wrappingQuantity: z.number().min(0).default(0),
   specialRequests: z.string().optional(),
   scheduledDate: z.string().optional(),
+  // 주문 비밀번호 (비로그인 주문용)
+  orderPassword: z.string().min(4, "주문 비밀번호는 최소 4자리 이상 입력해주세요"),
 });
 
 type PublicOrderForm = z.infer<typeof publicOrderSchema>;
@@ -66,6 +68,7 @@ export default function PublicOrder() {
       wrappingQuantity: 0,
       specialRequests: "",
       scheduledDate: "",
+      orderPassword: "",
     },
   });
 
@@ -550,6 +553,31 @@ export default function PublicOrder() {
                           />
                         </FormControl>
                         <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Order Password */}
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="orderPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문 비밀번호 *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            {...field}
+                            placeholder="주문 수정 시 필요한 비밀번호를 설정해주세요 (최소 4자리)"
+                            maxLength={20}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <div className="text-sm text-gray-600">
+                          주문 확인 및 수정 시 필요한 비밀번호입니다. 잊지 마세요!
+                        </div>
                       </FormItem>
                     )}
                   />

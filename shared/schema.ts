@@ -40,6 +40,8 @@ export const orders = pgTable("orders", {
   sellerShippedDate: timestamp("seller_shipped_date"),
   paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'confirmed', 'refunded'
   paymentConfirmedAt: timestamp("payment_confirmed_at"),
+  orderPassword: text("order_password"), // 비로그인 주문 시 설정하는 비밀번호
+  userId: integer("user_id"), // 로그인한 사용자의 ID (로그인 주문 시에만 설정)
   isDeleted: boolean("is_deleted").notNull().default(false),
   deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

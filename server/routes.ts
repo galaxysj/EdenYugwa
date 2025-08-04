@@ -203,6 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Lookup orders by phone number or name (must come before /api/orders/:id)
   app.get("/api/orders/lookup", async (req, res) => {
     try {
+      const userId = (req as any).user?.id; // 로그인된 사용자 ID
       const { phone, name } = req.query;
       
       if ((!phone || typeof phone !== 'string') && (!name || typeof name !== 'string')) {
@@ -222,9 +223,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Remove duplicates if searching by both phone and name
-      const uniqueOrders = orders.filter((order, index, self) => 
+      let uniqueOrders = orders.filter((order, index, self) => 
         index === self.findIndex(o => o.id === order.id)
       );
+      
+      // 로그인된 사용자인 경우, 본인의 주문만 필터링
+      if (userId) {
+        uniqueOrders = uniqueOrders.filter(order => order.userId === userId);
+      }
       
       if (uniqueOrders.length === 0) {
         return res.status(404).json({ message: "Order not found" });
@@ -274,6 +280,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const validatedData = insertOrderSchema.parse(req.body);
+      
+      // 로그인된 사용자인 경우 userId 설정, 아닌 경우 orderPassword가 있어야 함
+      if ((req as any).user?.id) {
+        (validatedData as any).userId = (req as any).user.id;
+        (validatedData as any).orderPassword = null; // 로그인 사용자는 비밀번호 불필요
+      } else if (!(validatedData as any).orderPassword) {
+        return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호가 필요합니다." });
+      }
       
       // Automatically register or update customer
       await storage.autoRegisterCustomer({
@@ -500,10 +514,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/orders/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      const userId = (req as any).user?.id;
+      const { orderPassword } = req.body;
+      
       const order = await storage.getOrder(id);
       
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
+      }
+      
+      // 권한 체크: 로그인 사용자는 본인 주문만, 비로그인은 비밀번호 확인
+      if (userId) {
+        // 로그인된 사용자: 본인 주문만 수정 가능
+        if (order.userId !== userId) {
+          return res.status(403).json({ message: "본인의 주문만 수정할 수 있습니다." });
+        }
+      } else {
+        // 비로그인 주문: 비밀번호 확인 필요
+        if (!orderPassword || order.orderPassword !== orderPassword) {
+          return res.status(403).json({ message: "주문 비밀번호가 올바르지 않습니다." });
+        }
       }
       
       // Only allow editing if order is still pending and payment not confirmed
