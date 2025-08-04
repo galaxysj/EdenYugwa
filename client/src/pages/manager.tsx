@@ -323,6 +323,9 @@ export default function ManagerDashboard() {
               <div className="flex items-center justify-between">
                 <TabsList>
                   <TabsTrigger value="전체보기">전체보기 ({filteredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="발송주문">
+                    발송주문 ({filteredOrders.filter(o => o.status === 'scheduled').length})
+                  </TabsTrigger>
                   <TabsTrigger value="발송완료">
                     발송완료 ({filteredOrders.filter(o => o.status === 'delivered').length})
                   </TabsTrigger>
@@ -672,6 +675,105 @@ export default function ManagerDashboard() {
                     {filteredOrders.length === 0 && (
                       <div className="text-center py-8 text-gray-500">
                         주문이 없습니다.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* 발송주문 탭 */}
+              <TabsContent value="발송주문" className="space-y-4">
+                <div className="bg-white border rounded-lg">
+                  <div className="p-4 border-b">
+                    <h2 className="text-lg font-semibold">발송주문 목록</h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50 border-b">
+                        <tr>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
+                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">예약발송일</th>
+                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">발송처리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredOrders.filter(o => o.status === 'scheduled').map((order) => (
+                          <tr key={order.id} className="border-b hover:bg-gray-50">
+                            <td className="py-2 px-2">
+                              <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
+                              <div className="text-xs text-gray-500">
+                                <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                              </div>
+                            </td>
+                            <td className="py-2 px-2">
+                              <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                              {order.recipientName && order.recipientName !== order.customerName && (
+                                <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                              )}
+                            </td>
+                            <td className="py-2 px-2 min-w-[80px]">
+                              <div className="text-xs space-y-1">
+                                {order.smallBoxQuantity > 0 && (
+                                  <div className="text-gray-900">한과1호×{order.smallBoxQuantity}개</div>
+                                )}
+                                {order.largeBoxQuantity > 0 && (
+                                  <div className="text-gray-900">한과2호×{order.largeBoxQuantity}개</div>
+                                )}
+                                {order.wrappingQuantity > 0 && (
+                                  <div className="text-gray-900">보자기×{order.wrappingQuantity}개</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2">
+                              <div className="text-xs text-gray-900">{order.customerPhone}</div>
+                            </td>
+                            <td className="py-2 px-2 max-w-xs">
+                              <div>
+                                <div className="text-xs text-gray-900 truncate">
+                                  {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
+                                </div>
+                                {checkRemoteArea(order.address1) && (
+                                  <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              <div className="text-xs text-blue-600 font-medium">
+                                {order.scheduledDate ? 
+                                  new Date(order.scheduledDate).toLocaleDateString('ko-KR') :
+                                  '날짜 미설정'
+                                }
+                              </div>
+                            </td>
+                            <td className="py-2 px-2 text-center">
+                              {order.sellerShipped ? (
+                                <div className="text-xs text-green-600 font-medium">발송완료</div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => updateSellerShippedMutation.mutate({ 
+                                    id: order.id, 
+                                    sellerShipped: true 
+                                  })}
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  발송처리
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    {filteredOrders.filter(o => o.status === 'scheduled').length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        발송주문이 없습니다.
                       </div>
                     )}
                   </div>
