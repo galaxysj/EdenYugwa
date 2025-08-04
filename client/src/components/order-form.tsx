@@ -277,10 +277,10 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-eden-brown text-sm md:text-base">한과1호(약 1.1kg)</h5>
-                            <p className="text-xs text-eden-dark mt-1">약 35.5×21×11.2cm</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">한과1호(약 1.1kg)</h5>
+                            <p className="text-xs text-black mt-1">약 35.5×21×11.2cm</p>
                           </div>
-                          <span className="text-lg md:text-xl font-bold text-eden-brown whitespace-nowrap">{formatPrice(prices.small)}</span>
+                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
                         </div>
                         <FormField
                           control={form.control}
@@ -332,10 +332,10 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-eden-brown text-sm md:text-base">한과2호(약 1.3kg)</h5>
-                            <p className="text-xs text-eden-dark mt-1">약 37×23×11.5cm</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">한과2호(약 1.3kg)</h5>
+                            <p className="text-xs text-black mt-1">약 37×23×11.5cm</p>
                           </div>
-                          <span className="text-lg md:text-xl font-bold text-eden-brown whitespace-nowrap">{formatPrice(prices.large)}</span>
+                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
                         </div>
                         <FormField
                           control={form.control}
@@ -387,10 +387,10 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-eden-brown text-sm md:text-base">보자기</h5>
-                            <p className="text-xs text-eden-dark mt-1">개당 +1,000원</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">보자기</h5>
+                            <p className="text-xs text-black mt-1">개당 +1,000원</p>
                           </div>
-                          <span className="text-lg md:text-xl font-bold text-eden-brown whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
+                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
                         </div>
                         <FormField
                           control={form.control}
