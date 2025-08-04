@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/orders/lookup", async (req, res) => {
     try {
       const userId = (req as any).user?.id; // 로그인된 사용자 ID
-      const { phone, name } = req.query;
+      const { phone, name, password } = req.query;
       
       if ((!phone || typeof phone !== 'string') && (!name || typeof name !== 'string')) {
         return res.status(400).json({ message: "Phone number or name is required" });
@@ -236,7 +236,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      res.json(uniqueOrders);
+      // 비로그인 사용자의 경우 비밀번호 검증 및 정보 마스킹
+      if (!userId) {
+        if (password && typeof password === 'string') {
+          // 비밀번호가 제공된 경우: 일치하는 주문만 필터링하고 전체 정보 제공
+          const authenticatedOrders = uniqueOrders.filter(order => order.orderPassword === password);
+          if (authenticatedOrders.length > 0) {
+            res.json(authenticatedOrders);
+            return;
+          }
+        }
+        
+        // 비밀번호가 없거나 일치하지 않는 경우: 마스킹된 정보 제공
+        const maskedOrders = uniqueOrders.map(order => ({
+          ...order,
+          customerPhone: order.customerPhone.substring(0, 4) + '***',
+          address1: order.address1.split(' ').slice(0, 2).join(' ') + ' ***',
+          address2: order.address2 ? '***' : null,
+          totalAmount: null, // 가격 숨김
+          actualPaidAmount: null,
+          recipientName: order.recipientName ? order.recipientName.charAt(0) + '***' : null,
+          recipientPhone: order.recipientPhone ? order.recipientPhone.substring(0, 4) + '***' : null,
+          recipientAddress1: order.recipientAddress1 ? order.recipientAddress1.split(' ').slice(0, 2).join(' ') + ' ***' : null,
+          recipientAddress2: order.recipientAddress2 ? '***' : null,
+        }));
+        res.json(maskedOrders);
+      } else {
+        res.json(uniqueOrders);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to lookup orders" });
     }
@@ -293,8 +320,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
         console.log("비로그인 사용자 주문");
-        // 비로그인 사용자: orderPassword 처리 (임시로 기본값 설정)
-        req.body.orderPassword = req.body.orderPassword || "0000";
+        // 비로그인 사용자: orderPassword 필수
+        if (!req.body.orderPassword || req.body.orderPassword.trim().length < 4) {
+          return res.status(400).json({ message: "비로그인 주문 시 주문 비밀번호(최소 4자리)를 입력해주세요." });
+        }
         console.log("orderPassword 설정됨:", req.body.orderPassword);
       }
       
