@@ -125,11 +125,11 @@ export default function Manager() {
     queryKey: ["/api/admin-settings"],
   });
 
-  // 입금 확인된 주문만 필터링 (매니저는 입금 확인된 주문만 볼 수 있음)
-  const allConfirmedOrders = (orders as Order[]).filter(order => order.paymentStatus === 'confirmed');
+  // 매니저는 전체 주문을 볼 수 있음 (금액 정보는 서버에서 제거됨)
+  const allOrders = (orders as Order[]);
 
   // 매니저 주문 정렬 함수 - 발송주문(scheduled) 상태를 맨 아래로
-  const managerSortedOrders = [...allConfirmedOrders].sort((a, b) => {
+  const managerSortedOrders = [...allOrders].sort((a, b) => {
     // scheduled 상태를 맨 아래로
     if (a.status === 'scheduled' && b.status !== 'scheduled') return 1;
     if (b.status === 'scheduled' && a.status !== 'scheduled') return -1;
@@ -223,7 +223,7 @@ export default function Manager() {
         order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
         order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
       ].filter(Boolean).join(', '),
-      '총금액': `${order.totalAmount?.toLocaleString() || 0}원`,
+
       '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
                  order.paymentStatus === 'partial' ? '부분결제' :
                  order.paymentStatus === 'refunded' ? '환불' : '입금대기',
@@ -232,7 +232,7 @@ export default function Manager() {
       '발송예정일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
       '실제발송일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
       '판매자발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
-      '메모': order.memo || ''
+      '메모': (order as any).memo || ''
     }));
 
     const ws = XLSX.utils.json_to_sheet(excelData);
@@ -264,7 +264,7 @@ export default function Manager() {
       <div className="min-h-screen bg-gray-50">
         <AdminHeader 
           handleExcelDownload={exportToExcel}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab: string) => setActiveTab(tab as "orders" | "customers")}
           activeTab={activeTab}
           passwordChangeDialog={
             <PasswordChangeDialog 
@@ -319,7 +319,7 @@ export default function Manager() {
                     onClick={() => setOrderViewTab('all')}
                     className="h-8 text-xs"
                   >
-                    전체보기 ({allConfirmedOrders.length})
+                    전체보기 ({allOrders.length})
                   </Button>
                   <Button
                     variant={orderViewTab === 'scheduled' ? 'default' : 'ghost'}
@@ -327,7 +327,7 @@ export default function Manager() {
                     onClick={() => setOrderViewTab('scheduled')}
                     className="h-8 text-xs"
                   >
-                    발송주문 ({allConfirmedOrders.filter(o => o.status === 'scheduled').length})
+                    발송주문 ({allOrders.filter(o => o.status === 'scheduled').length})
                   </Button>
                   <Button
                     variant={orderViewTab === 'delivered' ? 'default' : 'ghost'}
@@ -335,7 +335,7 @@ export default function Manager() {
                     onClick={() => setOrderViewTab('delivered')}
                     className="h-8 text-xs"
                   >
-                    발송완료 ({allConfirmedOrders.filter(o => o.status === 'delivered').length})
+                    발송완료 ({allOrders.filter(o => o.status === 'delivered').length})
                   </Button>
                 </div>
 
@@ -377,9 +377,6 @@ export default function Manager() {
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="text-lg font-bold text-eden-primary">
-                                    {order.totalAmount?.toLocaleString() || 0}원
-                                  </div>
                                   <div className="text-sm text-gray-500">
                                     {order.customerPhone}
                                   </div>
