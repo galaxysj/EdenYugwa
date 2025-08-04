@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
@@ -58,6 +58,13 @@ export interface IStorage {
   updateCustomerStats(customerPhone: string): Promise<void>;
   autoRegisterCustomer(customerData: {name: string, phone: string, address?: string, zipCode?: string}): Promise<Customer | null>;
   bulkCreateCustomers(customers: InsertCustomer[]): Promise<Customer[]>;
+  
+  // User management
+  getUserById(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUserRole(id: number, role: string): Promise<User | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -853,6 +860,46 @@ export class DatabaseStorage implements IStorage {
       address,
       orderCount: count
     })).sort((a, b) => b.orderCount - a.orderCount);
+  }
+
+  // User management methods
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    
+    const [user] = await db.insert(users).values({
+      username: userData.username,
+      passwordHash: hashedPassword,
+      name: userData.name,
+      phoneNumber: userData.phoneNumber,
+      role: userData.role || 'user',
+      isActive: userData.isActive ?? true
+    }).returning();
+    
+    return user;
+  }
+
+  async updateUserRole(id: number, role: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 }
 

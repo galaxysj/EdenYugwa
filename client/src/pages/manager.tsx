@@ -178,7 +178,30 @@ function Manager() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { logout, isAdmin } = useAuth();
+  const { logout, isAdmin, isManagerOrAdmin, user } = useAuth();
+
+  // 매니저 권한 체크
+  if (!isManagerOrAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full mx-auto p-8">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">접근 권한이 없습니다</h2>
+            <p className="text-gray-600 mb-4">
+              매니저 페이지는 관리자가 지정한 매니저만 접근할 수 있습니다.
+            </p>
+            <button
+              onClick={() => setLocation('/')}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              홈으로 돌아가기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Filter states
   const [orderDateFilter, setOrderDateFilter] = useState<string>('all');

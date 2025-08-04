@@ -14,6 +14,7 @@ import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
 import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
+import { UserManagement } from "@/components/user-management";
 import PasswordChangeDialog from "@/components/PasswordChangeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -487,6 +488,7 @@ export default function Admin() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
   const [showCustomerManagement, setShowCustomerManagement] = useState(false);
+  const [showUserManagement, setShowUserManagement] = useState(false);
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
   const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [dateFilter, setDateFilter] = useState<string>('all');
@@ -2623,22 +2625,6 @@ export default function Admin() {
       </div>
 
       <div className="container mx-auto p-4 sm:p-6">
-        {showCustomerManagement ? (
-          <div className="bg-white rounded-lg p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">고객 관리</h3>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCustomerManagement(false)}
-              >
-                <X className="h-4 w-4 mr-2" />
-                닫기
-              </Button>
-            </div>
-            <CustomerManagement />
-          </div>
-        ) : (
-          <>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-6 sm:mb-8">
@@ -2707,7 +2693,7 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-8">
+                <TabsList className="grid w-full grid-cols-10">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -2719,6 +2705,14 @@ export default function Admin() {
                   <TabsTrigger value="revenue" className="text-purple-600">
                     <DollarSign className="h-4 w-4 mr-1" />
                     매출관리
+                  </TabsTrigger>
+                  <TabsTrigger value="users" className="text-blue-600">
+                    <Users className="h-4 w-4 mr-1" />
+                    회원관리
+                  </TabsTrigger>
+                  <TabsTrigger value="customers" className="text-green-600">
+                    <Users className="h-4 w-4 mr-1" />
+                    고객관리
                   </TabsTrigger>
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
@@ -2956,6 +2950,14 @@ export default function Admin() {
                   {renderRevenueReport()}
                 </TabsContent>
                 
+                <TabsContent value="users" className="mt-6">
+                  <UserManagement />
+                </TabsContent>
+
+                <TabsContent value="customers" className="mt-6">
+                  <CustomerManagement />
+                </TabsContent>
+
                 <TabsContent value="trash" className="mt-6">
                   {isLoadingTrash ? (
                     <div className="text-center py-8">
@@ -2975,8 +2977,7 @@ export default function Admin() {
             )}
           </CardContent>
         </Card>
-          </>
-        )}
+
       </div>
 
       {/* Payment Confirmation Dialog */}

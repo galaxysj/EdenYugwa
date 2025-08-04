@@ -1309,6 +1309,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Management API routes (admin only)
+  
+  // Get all users (admin only)
+  app.get("/api/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Remove password hash from response
+      const safeUsers = users.map(user => ({
+        id: user.id,
+        username: user.username,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        lastLoginAt: user.lastLoginAt
+      }));
+      res.json(safeUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "사용자 목록 조회에 실패했습니다" });
+    }
+  });
+
+  // Update user role (admin only)
+  app.patch("/api/users/:id/role", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { role } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "유효하지 않은 사용자 ID입니다" });
+      }
+      
+      if (!role || !['user', 'manager'].includes(role)) {
+        return res.status(400).json({ message: "유효하지 않은 역할입니다. 'user' 또는 'manager'만 가능합니다" });
+      }
+      
+      const user = await storage.getUserById(id);
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+      
+      const updatedUser = await storage.updateUserRole(id, role);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "역할 업데이트에 실패했습니다" });
+      }
+      
+      // Remove password hash from response
+      const safeUser = {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        name: updatedUser.name,
+        phoneNumber: updatedUser.phoneNumber,
+        role: updatedUser.role,
+        isActive: updatedUser.isActive,
+        createdAt: updatedUser.createdAt,
+        lastLoginAt: updatedUser.lastLoginAt
+      };
+      
+      res.json(safeUser);
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "역할 업데이트에 실패했습니다" });
+    }
+  });
+
   // Get customer addresses
   app.get("/api/customers/:phone/addresses", async (req, res) => {
     try {
