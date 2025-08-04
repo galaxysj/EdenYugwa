@@ -190,22 +190,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user's own orders (authenticated users)
-  app.get("/api/my-orders", requireAuth, async (req, res) => {
-    try {
-      const userId = (req as any).user?.id;
-      if (!userId) {
-        return res.status(401).json({ message: "사용자 정보가 없습니다" });
-      }
-      
-      const orders = await storage.getOrdersByUserId(userId);
-      res.json(orders);
-    } catch (error) {
-      console.error("Error fetching user orders:", error);
-      res.status(500).json({ message: "주문 조회에 실패했습니다" });
-    }
-  });
-
   // Get all orders (for admin and manager)
   app.get("/api/orders", requireManagerOrAdmin, async (req, res) => {
     try {
@@ -222,8 +206,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req as any).user?.id; // 로그인된 사용자 ID
       const { phone, name, password } = req.query;
       
-      console.log("주문 조회 요청:", { userId, phone, name });
-      
       if ((!phone || typeof phone !== 'string') && (!name || typeof name !== 'string')) {
         return res.status(400).json({ message: "Phone number or name is required" });
       }
@@ -232,13 +214,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (phone && typeof phone === 'string') {
         const phoneOrders = await storage.getOrdersByPhone(phone);
-        console.log(`전화번호 ${phone}로 찾은 주문:`, phoneOrders.length);
         orders = [...orders, ...phoneOrders];
       }
       
       if (name && typeof name === 'string') {
         const nameOrders = await storage.getOrdersByName(name);
-        console.log(`이름 ${name}으로 찾은 주문:`, nameOrders.length);
         orders = [...orders, ...nameOrders];
       }
       
@@ -247,12 +227,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         index === self.findIndex(o => o.id === order.id)
       );
       
+      // 로그인된 사용자인 경우, 본인의 주문만 필터링
+      if (userId) {
+        uniqueOrders = uniqueOrders.filter(order => order.userId === userId);
+      }
+      
       if (uniqueOrders.length === 0) {
         return res.status(404).json({ message: "Order not found" });
       }
       
-      // 전화번호/이름으로 조회된 모든 주문 정보 제공 (로그인 여부 무관)
-      res.json(uniqueOrders);
+      // 비로그인 사용자의 경우 비밀번호 검증 및 정보 마스킹
+      if (!userId) {
+        if (password && typeof password === 'string') {
+          // 비밀번호가 제공된 경우: 일치하는 주문만 필터링하고 전체 정보 제공
+          const authenticatedOrders = uniqueOrders.filter(order => order.orderPassword === password);
+          if (authenticatedOrders.length > 0) {
+            res.json(authenticatedOrders);
+            return;
+          }
+        }
+        
+        // 비밀번호가 없거나 일치하지 않는 경우: 마스킹된 정보 제공
+        const maskedOrders = uniqueOrders.map(order => ({
+          ...order,
+          customerPhone: order.customerPhone.substring(0, 4) + '***',
+          address1: order.address1.split(' ').slice(0, 2).join(' ') + ' ***',
+          address2: order.address2 ? '***' : null,
+          totalAmount: null, // 가격 숨김
+          actualPaidAmount: null,
+          recipientName: order.recipientName ? order.recipientName.charAt(0) + '***' : null,
+          recipientPhone: order.recipientPhone ? order.recipientPhone.substring(0, 4) + '***' : null,
+          recipientAddress1: order.recipientAddress1 ? order.recipientAddress1.split(' ').slice(0, 2).join(' ') + ' ***' : null,
+          recipientAddress2: order.recipientAddress2 ? '***' : null,
+        }));
+        res.json(maskedOrders);
+      } else {
+        res.json(uniqueOrders);
+      }
     } catch (error) {
       res.status(500).json({ message: "Failed to lookup orders" });
     }
@@ -304,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // 로그인된 사용자인 경우 userId 설정
       if ((req as any).user?.id) {
-        console.log(`로그인된 사용자 주문 (user ID: ${(req as any).user.id})`);
+        console.log("로그인된 사용자 주문");
         req.body.userId = (req as any).user.id;
         req.body.orderPassword = null; // 로그인 사용자는 비밀번호 불필요
       } else {
@@ -322,8 +333,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertOrderSchema.parse(req.body);
       
-      console.log("주문 생성 전 validatedData.userId:", validatedData.userId);
-      
       // Automatically register or update customer
       await storage.autoRegisterCustomer({
         name: validatedData.customerName,
@@ -333,7 +342,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const order = await storage.createOrder(validatedData);
-      console.log("주문 생성 후 order.userId:", order?.userId);
       
       // Update customer statistics after creating order
       await storage.updateCustomerStats(validatedData.customerPhone);

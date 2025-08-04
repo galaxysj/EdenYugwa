@@ -498,7 +498,6 @@ export default function Admin() {
   const [customerNameFilter, setCustomerNameFilter] = useState<string>('');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
-  const [sellerShippedFilter, setSellerShippedFilter] = useState<string>('all');
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
@@ -832,15 +831,6 @@ export default function Admin() {
     // Order status filter
     if (orderStatusFilter !== 'all') {
       filtered = filtered.filter(order => order.status === orderStatusFilter);
-    }
-
-    // Seller shipped status filter
-    if (sellerShippedFilter !== 'all') {
-      if (sellerShippedFilter === 'shipped') {
-        filtered = filtered.filter(order => order.sellerShipped === true);
-      } else if (sellerShippedFilter === 'not_shipped') {
-        filtered = filtered.filter(order => !order.sellerShipped);
-      }
     }
 
     // Apply sorting
@@ -1429,14 +1419,13 @@ export default function Admin() {
     setCustomerNameFilter('');
     setPaymentStatusFilter('all');
     setOrderStatusFilter('all');
-    setSellerShippedFilter('all');
     setSortOrder('latest');
   };
 
   // Render filter UI
   const renderOrderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
         {/* Date Filter - Simplified */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
@@ -1533,20 +1522,6 @@ export default function Admin() {
             <option value="seller_shipped">발송대기</option>
             <option value="scheduled">발송주문</option>
             <option value="delivered">발송완료</option>
-          </select>
-        </div>
-
-        {/* Seller Shipped Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">판매자발송</label>
-          <select
-            value={sellerShippedFilter}
-            onChange={(e) => setSellerShippedFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
-          >
-            <option value="all">전체</option>
-            <option value="shipped">발송완료</option>
-            <option value="not_shipped">미발송</option>
           </select>
         </div>
       </div>
@@ -1852,18 +1827,12 @@ export default function Admin() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <Select
-                        key={`payment-${order.id}-${order.paymentStatus}`}
                         value={
                           order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
                             ? 'partial'
                             : order.paymentStatus || 'pending'
                         }
-                        onValueChange={(newPaymentStatus) => {
-                          // Portal 오류 방지를 위한 지연된 상태 업데이트
-                          setTimeout(() => {
-                            handlePaymentStatusChange(order.id, newPaymentStatus);
-                          }, 0);
-                        }}
+                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                         disabled={updatePaymentMutation.isPending}
                       >
                         <SelectTrigger className="w-24 h-6 text-xs">
@@ -1899,14 +1868,8 @@ export default function Admin() {
                     </td>
                     <td className="py-2 px-2 text-center">
                       <Select
-                        key={`status-${order.id}-${order.status}`}
                         value={order.status}
-                        onValueChange={(newStatus) => {
-                          // Portal 오류 방지를 위한 지연된 상태 업데이트
-                          setTimeout(() => {
-                            handleStatusChange(order.id, newStatus);
-                          }, 0);
-                        }}
+                        onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
                         disabled={updateStatusMutation.isPending}
                       >
                         <SelectTrigger className="w-24 h-6 text-xs">
@@ -2598,19 +2561,7 @@ export default function Admin() {
                 <span className="hidden sm:inline">엑셀 다운로드</span>
               </Button>
               <Button 
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/auth/logout', {
-                      method: 'POST',
-                      credentials: 'include'
-                    });
-                    if (response.ok) {
-                      window.location.href = '/';
-                    }
-                  } catch (error) {
-                    console.error('로그아웃 실패:', error);
-                  }
-                }}
+                onClick={handleLogout}
                 variant="ghost" 
                 className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2"
               >

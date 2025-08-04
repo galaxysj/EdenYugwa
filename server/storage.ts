@@ -171,9 +171,6 @@ export class DatabaseStorage implements IStorage {
       orderNumber,
       status: "pending", // 예약날짜와 상관없이 항상 pending으로 시작
       paymentStatus: "pending",
-      // 인증 관련 필드
-      userId: insertOrder.userId,
-      orderPassword: insertOrder.orderPassword,
     };
     
     const [order] = await db
@@ -289,12 +286,6 @@ export class DatabaseStorage implements IStorage {
   async getOrdersByName(name: string): Promise<Order[]> {
     return await db.select().from(orders)
       .where(and(eq(orders.customerName, name), eq(orders.isDeleted, false)))
-      .orderBy(desc(orders.createdAt));
-  }
-
-  async getOrdersByUserId(userId: number): Promise<Order[]> {
-    return await db.select().from(orders)
-      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
