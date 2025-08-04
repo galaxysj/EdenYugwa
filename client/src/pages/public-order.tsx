@@ -345,6 +345,28 @@ export default function PublicOrder() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="orderPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>주문 조회 비밀번호 *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="password" 
+                            {...field} 
+                            placeholder="최소 4자리 이상 입력해주세요" 
+                            data-testid="input-order-password"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <div className="text-sm text-gray-500 mt-1">
+                          나중에 주문 조회 시 필요한 비밀번호입니다. 잊지 마세요!
+                        </div>
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Recipient Information */}
