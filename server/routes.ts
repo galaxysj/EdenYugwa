@@ -18,31 +18,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const { username, password, name, phoneNumber } = req.body;
-      
-      if (!username || !password || !name || !phoneNumber) {
-        return res.status(400).json({ message: "모든 필드를 입력해주세요" });
-      }
-      
-      if (password.length < 4) {
-        return res.status(400).json({ message: "비밀번호는 최소 4자 이상이어야 합니다" });
-      }
+      // Use schema validation for consistency
+      const userData = insertUserSchema.parse({
+        ...req.body,
+        role: 'user',
+        isActive: true
+      });
       
       // Check if user already exists
-      const existingUser = await userService.findByUsername(username);
+      const existingUser = await userService.findByUsername(userData.username);
       if (existingUser) {
         return res.status(400).json({ message: "이미 존재하는 사용자명입니다" });
       }
       
       // Create new user
-      const newUser = await userService.createUser({ 
-        username, 
-        password, 
-        name, 
-        phoneNumber, 
-        role: 'user', 
-        isActive: true 
-      });
+      const newUser = await userService.createUser(userData);
       
       res.status(201).json({ 
         message: "회원가입이 완료되었습니다", 
@@ -56,7 +46,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Registration error:", error);
-      res.status(500).json({ message: "회원가입 처리 중 오류가 발생했습니다" });
+      if ((error as any).issues) {
+        // Zod validation error
+        const firstError = (error as any).issues[0];
+        res.status(400).json({ message: firstError.message });
+      } else if ((error as any).code === '23505') {
+        // Unique constraint violation
+        res.status(400).json({ message: "이미 존재하는 사용자명입니다" });
+      } else {
+        res.status(500).json({ message: "회원가입 처리 중 오류가 발생했습니다" });
+      }
     }
   });
 
