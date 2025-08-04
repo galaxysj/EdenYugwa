@@ -572,6 +572,14 @@ export default function ManagerDashboard() {
                                 <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                                 <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                               </div>
+                              {order.scheduledDate ? (
+                                <div 
+                                  className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                                  title="클릭하여 예약발송일 수정"
+                                >
+                                  {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                                </div>
+                              ) : null}
                             </td>
                             <td className="py-2 px-2">
                               {order.scheduledDate ? (
