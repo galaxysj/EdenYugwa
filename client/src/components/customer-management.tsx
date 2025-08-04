@@ -683,6 +683,7 @@ export function CustomerManagement() {
                       </TableHead>
                       <TableHead>고객명</TableHead>
                       <TableHead>연락처</TableHead>
+                      <TableHead>회원연결</TableHead>
                       <TableHead>주소</TableHead>
                       <TableHead className="text-center">주문횟수</TableHead>
                       <TableHead className="text-center">총주문금액</TableHead>
@@ -710,6 +711,30 @@ export function CustomerManagement() {
                             <Phone className="h-4 w-4 text-gray-500" />
                             {formatPhoneNumber(customer.customerPhone)}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          {customer.userId ? (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <User className="h-4 w-4 text-green-600" />
+                                <Badge variant="outline" className="text-green-700 border-green-300">
+                                  회원연결
+                                </Badge>
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {customer.userRegisteredName && customer.userRegisteredPhone && (
+                                  <div>
+                                    {customer.userRegisteredName} ({formatPhoneNumber(customer.userRegisteredPhone)})
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-gray-400" />
+                              <span className="text-gray-500 text-sm">비회원</span>
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

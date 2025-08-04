@@ -830,22 +830,42 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async autoRegisterCustomer(customerData: {name: string, phone: string, address?: string, zipCode?: string}): Promise<Customer | null> {
+  async autoRegisterCustomer(customerData: {
+    name: string, 
+    phone: string, 
+    address?: string, 
+    zipCode?: string,
+    userId?: number,
+    userRegisteredName?: string,
+    userRegisteredPhone?: string
+  }): Promise<Customer | null> {
     try {
       // Check if customer already exists
       const existingCustomer = await this.getCustomerByPhone(customerData.phone);
       if (existingCustomer) {
-        // Update address if provided and different
+        // Update customer with user info if provided and not already linked
+        const updateData: any = {};
+        
         if (customerData.address && customerData.address !== existingCustomer.address1) {
-          await this.updateCustomer(existingCustomer.id, {
-            address1: customerData.address,
-            zipCode: customerData.zipCode
-          });
+          updateData.address1 = customerData.address;
+          updateData.zipCode = customerData.zipCode;
         }
+        
+        // Link user info if provided and not already linked
+        if (customerData.userId && !existingCustomer.userId) {
+          updateData.userId = customerData.userId;
+          updateData.userRegisteredName = customerData.userRegisteredName;
+          updateData.userRegisteredPhone = customerData.userRegisteredPhone;
+        }
+        
+        if (Object.keys(updateData).length > 0) {
+          await this.updateCustomer(existingCustomer.id, updateData);
+        }
+        
         return existingCustomer;
       }
 
-      // Create new customer
+      // Create new customer with user link if provided
       const [newCustomer] = await db.insert(customers).values({
         customerName: customerData.name,
         customerPhone: customerData.phone,
@@ -855,7 +875,10 @@ export class DatabaseStorage implements IStorage {
         orderCount: 0,
         totalSpent: 0,
         lastOrderDate: null,
-        notes: null
+        notes: null,
+        userId: customerData.userId || null,
+        userRegisteredName: customerData.userRegisteredName || null,
+        userRegisteredPhone: customerData.userRegisteredPhone || null
       }).returning();
 
       return newCustomer;

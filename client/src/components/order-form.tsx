@@ -11,12 +11,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { ShoppingCart, Box, Calculator, Search, Calendar, AlertTriangle } from "lucide-react";
+import { ShoppingCart, Box, Calculator, Search, Calendar, AlertTriangle, User } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";  
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { z } from "zod";
 
@@ -68,6 +69,7 @@ const prices = {
 
 export default function OrderForm() {
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
@@ -101,6 +103,14 @@ export default function OrderForm() {
       depositorName: "",
     },
   });
+
+  // 로그인된 사용자의 정보로 폼 초기화
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      form.setValue("customerName", user.name || "");
+      form.setValue("customerPhone", user.phoneNumber || "");
+    }
+  }, [isAuthenticated, user, form]);
 
   const createOrderMutation = useMutation({
     mutationFn: api.orders.create,
