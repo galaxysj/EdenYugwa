@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -176,6 +177,7 @@ function Manager() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logout } = useAuth();
   
   // Filter states
   const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
@@ -193,6 +195,10 @@ function Manager() {
     setActiveTab(newTab);
     setSelectedOrderItems(new Set());
     setSelectedTrashItems(new Set());
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   // Bulk selection states
@@ -537,13 +543,7 @@ function Manager() {
     },
   });
 
-  // Logout function
-  const logout = () => {
-    // Clear any stored authentication data
-    localStorage.removeItem('manager-auth');
-    // Redirect to login
-    setLocation('/manager-login');
-  };
+
 
   // Bulk selection functions
   const toggleOrderSelection = (orderId: number) => {
@@ -1153,7 +1153,7 @@ function Manager() {
                 </Button>
               </div>
               <AdminSettingsDialog />
-              <Button variant="ghost" size="sm" onClick={logout} className="gap-2">
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
                 <LogOut className="h-4 w-4" />
                 로그아웃
               </Button>

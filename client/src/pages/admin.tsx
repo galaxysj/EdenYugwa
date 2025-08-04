@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
@@ -481,6 +482,7 @@ function FinancialDialog({ order }: { order: Order }) {
 export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
   const [showCustomerManagement, setShowCustomerManagement] = useState(false);
@@ -507,11 +509,7 @@ export default function Admin() {
   };
 
   const handleLogout = () => {
-    toast({
-      title: "로그아웃",
-      description: "관리자 페이지에서 로그아웃되었습니다.",
-    });
-    setLocation("/admin/login");
+    logout();
   };
 
   const { data: orders = [], isLoading, error } = useQuery({

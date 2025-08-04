@@ -1,7 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import passport from "./auth";
+import { requireAuth, requireAdmin, requireManagerOrAdmin } from "./auth";
+import { userService } from "./user-service";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, type Order, type InsertCustomer } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, type Order, type InsertCustomer, type User } from "@shared/schema";
 import * as XLSX from "xlsx";
 import multer from "multer";
 
@@ -12,8 +15,137 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all orders (for admin)
-  app.get("/api/orders", async (req, res) => {
+  // Authentication routes
+  app.post("/api/auth/login", (req, res, next) => {
+    passport.authenticate('local', (err: any, user: User, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: "서버 오류가 발생했습니다" });
+      }
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "로그인에 실패했습니다" });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+        }
+        return res.json({ 
+          message: "로그인 성공", 
+          user: { 
+            id: user.id, 
+            username: user.username, 
+            role: user.role 
+          } 
+        });
+      });
+    })(req, res, next);
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ message: "로그아웃 처리 중 오류가 발생했습니다" });
+      }
+      res.json({ message: "로그아웃 성공" });
+    });
+  });
+
+  app.get("/api/auth/user", requireAuth, (req, res) => {
+    const user = req.user as User;
+    res.json({ 
+      id: user.id, 
+      username: user.username, 
+      role: user.role 
+    });
+  });
+
+  // User management routes (admin only)
+  app.get("/api/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await userService.getAllUsers();
+      res.json(users.map(user => ({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        lastLoginAt: user.lastLoginAt
+      })));
+    } catch (error) {
+      res.status(500).json({ message: "사용자 목록 조회에 실패했습니다" });
+    }
+  });
+
+  app.post("/api/users", requireAdmin, async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      const user = await userService.createUser(userData);
+      res.json({ 
+        message: "사용자가 생성되었습니다", 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          role: user.role 
+        } 
+      });
+    } catch (error: any) {
+      if (error.code === '23505') { // unique constraint violation
+        res.status(400).json({ message: "이미 존재하는 사용자명입니다" });
+      } else {
+        res.status(400).json({ message: error.message || "사용자 생성에 실패했습니다" });
+      }
+    }
+  });
+
+  app.put("/api/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const user = await userService.updateUser(id, updates);
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+      res.json({ message: "사용자 정보가 업데이트되었습니다", user });
+    } catch (error) {
+      res.status(500).json({ message: "사용자 업데이트에 실패했습니다" });
+    }
+  });
+
+  app.delete("/api/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await userService.deactivateUser(id);
+      if (!user) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다" });
+      }
+      res.json({ message: "사용자가 비활성화되었습니다" });
+    } catch (error) {
+      res.status(500).json({ message: "사용자 비활성화에 실패했습니다" });
+    }
+  });
+
+  // Change password route
+  app.post("/api/auth/change-password", requireAuth, async (req, res) => {
+    try {
+      const { newPassword } = req.body;
+      const user = req.user as User;
+      
+      if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ message: "비밀번호는 최소 6자 이상이어야 합니다" });
+      }
+      
+      const success = await userService.changePassword(user.id, newPassword);
+      if (success) {
+        res.json({ message: "비밀번호가 변경되었습니다" });
+      } else {
+        res.status(500).json({ message: "비밀번호 변경에 실패했습니다" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "비밀번호 변경 중 오류가 발생했습니다" });
+    }
+  });
+  // Get all orders (for admin and manager)
+  app.get("/api/orders", requireManagerOrAdmin, async (req, res) => {
     try {
       const orders = await storage.getAllOrders();
       res.json(orders);
@@ -121,8 +253,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update order status
-  // Update entire order
-  app.patch("/api/orders/:id", async (req, res) => {
+  // Update entire order (admin and manager)
+  app.patch("/api/orders/:id", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = req.body;
@@ -138,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/orders/:id/status", async (req, res) => {
+  app.patch("/api/orders/:id/status", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
@@ -159,8 +291,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update order scheduled date
-  app.patch("/api/orders/:id/scheduled-date", async (req, res) => {
+  // Update order scheduled date (admin and manager)
+  app.patch("/api/orders/:id/scheduled-date", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { scheduledDate } = req.body;
@@ -180,8 +312,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update order delivered date
-  app.patch("/api/orders/:id/delivered-date", async (req, res) => {
+  // Update order delivered date (admin and manager)
+  app.patch("/api/orders/:id/delivered-date", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { deliveredDate } = req.body;
@@ -201,8 +333,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update order seller shipped date
-  app.patch("/api/orders/:id/seller-shipped-date", async (req, res) => {
+  // Update order seller shipped date (admin and manager)
+  app.patch("/api/orders/:id/seller-shipped-date", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { sellerShippedDate } = req.body;
@@ -222,8 +354,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update order seller shipped status
-  app.patch("/api/orders/:id/seller-shipped", async (req, res) => {
+  // Update order seller shipped status (admin and manager)
+  app.patch("/api/orders/:id/seller-shipped", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { sellerShipped, sellerShippedDate } = req.body;
@@ -244,8 +376,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update payment status with actual paid amount
-  app.patch("/api/orders/:id/payment", async (req, res) => {
+  // Update payment status with actual paid amount (admin and manager)
+  app.patch("/api/orders/:id/payment", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { paymentStatus, actualPaidAmount, discountReason } = req.body;
@@ -270,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update order financial information (admin only)
-  app.patch('/api/orders/:id/financial', async (req, res) => {
+  app.patch('/api/orders/:id/financial', requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const { actualPaidAmount, discountAmount, discountReason, smallBoxCost, largeBoxCost } = req.body;
@@ -350,8 +482,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Send SMS notification
-  app.post("/api/sms/send", async (req, res) => {
+  // Send SMS notification (admin and manager)
+  app.post("/api/sms/send", requireManagerOrAdmin, async (req, res) => {
     try {
       const { orderId, phoneNumber, message } = req.body;
       
@@ -391,8 +523,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Send SMS to customer (without order ID)
-  app.post("/api/sms/send-customer", async (req, res) => {
+  // Send SMS to customer (without order ID) (admin and manager)
+  app.post("/api/sms/send-customer", requireManagerOrAdmin, async (req, res) => {
     try {
       const { phoneNumber, message } = req.body;
       
@@ -427,8 +559,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get SMS notifications for an order
-  app.get("/api/orders/:id/sms", async (req, res) => {
+  // Get SMS notifications for an order (admin and manager)
+  app.get("/api/orders/:id/sms", requireManagerOrAdmin, async (req, res) => {
     try {
       const orderId = parseInt(req.params.id);
       const notifications = await storage.getSmsNotificationsByOrderId(orderId);
@@ -438,79 +570,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin login
-  app.post("/api/admin/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "아이디와 비밀번호를 모두 입력해주세요" });
+  // Legacy admin/manager login routes (replaced by /api/auth/login)
+  app.post("/api/admin/login", (req, res, next) => {
+    req.body.username = req.body.username;
+    req.body.password = req.body.password;
+    
+    passport.authenticate('local', (err: any, user: User, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: "서버 오류가 발생했습니다" });
       }
-      
-      const admin = await storage.getAdminByUsername(username);
-      
-      if (!admin || admin.password !== password) {
+      if (!user || user.role !== 'admin') {
         return res.status(401).json({ message: "아이디나 비밀번호가 틀렸습니다" });
       }
       
-      // In a real app, you would use proper session management or JWT
-      res.json({ 
-        success: true, 
-        message: "로그인 성공",
-        admin: {
-          id: admin.id,
-          username: admin.username
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
         }
+        return res.json({ 
+          success: true,
+          message: "로그인 성공",
+          admin: { 
+            id: user.id, 
+            username: user.username 
+          } 
+        });
       });
-    } catch (error) {
-      res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
-    }
+    })(req, res, next);
   });
 
   // Check admin authentication status
-  app.get("/api/admin/check", async (req, res) => {
-    // Simple check - in a real app you would validate JWT or session
-    res.json({ authenticated: true });
-  });
-
-  // Manager login
-  app.post("/api/manager/login", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ message: "아이디와 비밀번호를 모두 입력해주세요" });
-      }
-      
-      const manager = await storage.getManagerByUsername(username);
-      
-      if (!manager || manager.password !== password) {
-        return res.status(401).json({ message: "아이디나 비밀번호가 틀렸습니다" });
-      }
-      
-      // In a real app, you would use proper session management or JWT
-      res.json({ 
-        success: true, 
-        message: "로그인 성공",
-        manager: {
-          id: manager.id,
-          username: manager.username
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+  app.get("/api/admin/check", (req, res) => {
+    if (req.isAuthenticated() && (req.user as User)?.role === 'admin') {
+      res.json({ authenticated: true });
+    } else {
+      res.json({ authenticated: false });
     }
   });
 
-  // Check manager authentication status
-  app.get("/api/manager/check", async (req, res) => {
-    // Simple check - in a real app you would validate JWT or session
-    res.json({ authenticated: true });
+  // Manager login
+  app.post("/api/manager/login", (req, res, next) => {
+    req.body.username = req.body.username;
+    req.body.password = req.body.password;
+    
+    passport.authenticate('local', (err: any, user: User, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: "서버 오류가 발생했습니다" });
+      }
+      if (!user || (user.role !== 'admin' && user.role !== 'manager')) {
+        return res.status(401).json({ message: "아이디나 비밀번호가 틀렸습니다" });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+        }
+        return res.json({ 
+          success: true,
+          message: "로그인 성공",
+          manager: { 
+            id: user.id, 
+            username: user.username 
+          } 
+        });
+      });
+    })(req, res, next);
   });
 
-  // Manager management endpoints
+  // Check manager authentication status
+  app.get("/api/manager/check", (req, res) => {
+    const user = req.user as User;
+    if (req.isAuthenticated() && user && (user.role === 'admin' || user.role === 'manager')) {
+      res.json({ authenticated: true });
+    } else {
+      res.json({ authenticated: false });
+    }
+  });
+
+  // Manager management endpoints (admin only)
   // Get all managers
-  app.get("/api/managers", async (req, res) => {
+  app.get("/api/managers", requireAdmin, async (req, res) => {
     try {
       const managers = await storage.getAllManagers();
       res.json(managers);
@@ -520,8 +659,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new manager
-  app.post("/api/managers", async (req, res) => {
+  // Create new manager (admin only)
+  app.post("/api/managers", requireAdmin, async (req, res) => {
     try {
       const result = insertManagerSchema.safeParse(req.body);
       if (!result.success) {
@@ -545,8 +684,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update manager
-  app.patch("/api/managers/:id", async (req, res) => {
+  // Update manager (admin only)
+  app.patch("/api/managers/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -592,8 +731,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete manager
-  app.delete("/api/managers/:id", async (req, res) => {
+  // Delete manager (admin only)
+  app.delete("/api/managers/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -614,8 +753,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Export orders to Excel
-  app.get("/api/orders/export/excel", async (req, res) => {
+  // Export orders to Excel (admin and manager)
+  app.get("/api/orders/export/excel", requireManagerOrAdmin, async (req, res) => {
     try {
       const orders = await storage.getAllOrders();
       
@@ -760,8 +899,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Soft delete order (move to trash)
-  app.delete("/api/orders/:id", async (req, res) => {
+  // Soft delete order (move to trash) (admin and manager)
+  app.delete("/api/orders/:id", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -784,8 +923,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Restore order from trash
-  app.post("/api/orders/:id/restore", async (req, res) => {
+  // Restore order from trash (admin and manager)
+  app.post("/api/orders/:id/restore", requireManagerOrAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -806,8 +945,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Permanently delete order
-  app.delete("/api/orders/:id/permanent", async (req, res) => {
+  // Permanently delete order (admin only)
+  app.delete("/api/orders/:id/permanent", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -846,7 +985,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/settings", async (req, res) => {
+  app.post("/api/settings", requireAdmin, async (req, res) => {
     try {
       const { key, value, description } = req.body;
       if (!key || !value) {
@@ -861,8 +1000,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin settings API
-  app.get("/api/admin-settings", async (req, res) => {
+  // Admin settings API (admin and manager)
+  app.get("/api/admin-settings", requireManagerOrAdmin, async (req, res) => {
     try {
       let adminSettings = await storage.getAdminSettings();
       
@@ -885,7 +1024,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin-settings", async (req, res) => {
+  app.post("/api/admin-settings", requireAdmin, async (req, res) => {
     try {
       const adminSettings = req.body;
       console.log("Admin settings update request:", adminSettings);
@@ -905,83 +1044,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manager management API endpoints
-  app.get("/api/managers", async (req, res) => {
-    try {
-      const managers = await storage.getAllManagers();
-      // Remove password from response for security
-      const safeManagers = managers.map(({ password, ...manager }) => manager);
-      res.json(safeManagers);
-    } catch (error) {
-      console.error("Error fetching managers:", error);
-      res.status(500).json({ error: "매니저 목록을 불러오는데 실패했습니다" });
-    }
-  });
+  // Note: Manager endpoints are already defined above with proper authentication
 
-  app.post("/api/managers", async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      if (!username || !password) {
-        return res.status(400).json({ error: "아이디와 비밀번호는 필수 항목입니다" });
-      }
-
-      if (password.length < 4) {
-        return res.status(400).json({ error: "비밀번호는 최소 4자 이상이어야 합니다" });
-      }
-
-      const manager = await storage.createManager({ username, password });
-      // Remove password from response
-      const { password: _, ...safeManager } = manager;
-      res.json(safeManager);
-    } catch (error) {
-      console.error("Error creating manager:", error);
-      if (error.message?.includes("unique")) {
-        return res.status(400).json({ error: "이미 존재하는 아이디입니다" });
-      }
-      res.status(500).json({ error: "매니저 생성에 실패했습니다" });
-    }
-  });
-
-  app.patch("/api/managers/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const updates = req.body;
-      
-      if (updates.password && updates.password.length < 4) {
-        return res.status(400).json({ error: "비밀번호는 최소 4자 이상이어야 합니다" });
-      }
-
-      const updatedManager = await storage.updateManager(id, updates);
-      if (!updatedManager) {
-        return res.status(404).json({ error: "매니저를 찾을 수 없습니다" });
-      }
-
-      // Remove password from response
-      const { password: _, ...safeManager } = updatedManager;
-      res.json(safeManager);
-    } catch (error) {
-      console.error("Error updating manager:", error);
-      if (error.message?.includes("unique")) {
-        return res.status(400).json({ error: "이미 존재하는 아이디입니다" });
-      }
-      res.status(500).json({ error: "매니저 업데이트에 실패했습니다" });
-    }
-  });
-
-  app.delete("/api/managers/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteManager(id);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting manager:", error);
-      res.status(500).json({ error: "매니저 삭제에 실패했습니다" });
-    }
-  });
-
-  // Customer management API endpoints
-  app.get("/api/customers", async (req, res) => {
+  // Customer management API endpoints (admin and manager)
+  app.get("/api/customers", requireManagerOrAdmin, async (req, res) => {
     try {
       const customers = await storage.getAllCustomers();
       res.json(customers);
@@ -991,7 +1057,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/customers", async (req, res) => {
+  app.post("/api/customers", requireManagerOrAdmin, async (req, res) => {
     try {
       const customerData = insertCustomerSchema.parse(req.body);
       const customer = await storage.createCustomer(customerData);

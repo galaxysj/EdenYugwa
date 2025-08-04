@@ -18,6 +18,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/admin/login" component={Login} />
       <Route path="/admin">
         <ProtectedRoute>
@@ -25,7 +26,7 @@ function Router() {
         </ProtectedRoute>
       </Route>
       <Route path="/admin-settings">
-        <ProtectedRoute>
+        <ProtectedRoute requiredRole="admin">
           <AdminSettings />
         </ProtectedRoute>
       </Route>

@@ -1,10 +1,36 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import passport from "./auth";
+import { userService } from "./user-service";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// 세션 설정
+const pgStore = connectPg(session);
+app.use(session({
+  store: new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    tableName: 'sessions',
+  }),
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000, // 24시간
+    secure: false, // development에서는 false
+    httpOnly: true,
+  },
+}));
+
+// Passport 초기화
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -37,6 +63,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // 초기 관리자/매니저 계정 생성
+  await userService.createInitialAccounts();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

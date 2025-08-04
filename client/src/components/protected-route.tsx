@@ -1,51 +1,69 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: 'admin' | 'manager';
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [, setLocation] = useLocation();
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  const [, navigate] = useLocation();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/admin/check");
-        if (response.ok) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-          setLocation("/admin/login");
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        setIsAuthenticated(false);
-        setLocation("/admin/login");
+    if (!isLoading && !isAuthenticated) {
+      navigate("/admin/login");
+      return;
+    }
+
+    if (!isLoading && isAuthenticated && requiredRole) {
+      if (requiredRole === 'admin' && user?.role !== 'admin') {
+        navigate("/admin/login");
+        return;
       }
-    };
+      if (requiredRole === 'manager' && user?.role !== 'manager' && user?.role !== 'admin') {
+        navigate("/admin/login");
+        return;
+      }
+    }
+  }, [isAuthenticated, isLoading, user, requiredRole, navigate]);
 
-    checkAuth();
-  }, [setLocation]);
-
-  if (isAuthenticated === null) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-eden-cream">
-        <Card className="w-full max-w-md">
-          <CardContent className="flex items-center justify-center p-8">
-            <Loader2 className="animate-spin h-8 w-8 text-eden-brown" />
-            <span className="ml-2 text-eden-brown">인증 확인 중...</span>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">로딩 중...</p>
+        </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return null; // Will redirect to login
+    return null;
+  }
+
+  if (requiredRole && requiredRole === 'admin' && user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">접근 권한이 없습니다</h1>
+          <p className="text-gray-600">관리자만 접근할 수 있는 페이지입니다.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (requiredRole && requiredRole === 'manager' && user?.role !== 'manager' && user?.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">접근 권한이 없습니다</h1>
+          <p className="text-gray-600">매니저 이상의 권한이 필요합니다.</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
