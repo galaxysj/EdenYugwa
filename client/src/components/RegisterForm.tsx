@@ -34,8 +34,8 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       return;
     }
 
-    if (password.length < 6) {
-      setError("비밀번호는 최소 6자 이상이어야 합니다");
+    if (password.length < 4) {
+      setError("비밀번호는 최소 4자 이상이어야 합니다");
       return;
     }
 
@@ -105,7 +105,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요 (최소 6자)"
+                placeholder="비밀번호를 입력하세요 (최소 4자)"
                 required
                 data-testid="input-password"
               />

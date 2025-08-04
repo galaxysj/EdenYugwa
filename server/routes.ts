@@ -24,8 +24,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "모든 필드를 입력해주세요" });
       }
       
-      if (password.length < 6) {
-        return res.status(400).json({ message: "비밀번호는 최소 6자 이상이어야 합니다" });
+      if (password.length < 4) {
+        return res.status(400).json({ message: "비밀번호는 최소 4자 이상이어야 합니다" });
       }
       
       // Check if user already exists

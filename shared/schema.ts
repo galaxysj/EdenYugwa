@@ -101,7 +101,7 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
   lastLoginAt: true,
 }).extend({
-  password: z.string().min(6, "비밀번호는 최소 6자 이상이어야 합니다"),
+  password: z.string().min(4, "비밀번호는 최소 4자 이상이어야 합니다"),
   name: z.string().min(1, "이름을 입력해주세요"),
   phoneNumber: z.string().min(1, "전화번호를 입력해주세요"),
 });
