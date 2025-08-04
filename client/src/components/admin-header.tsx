@@ -62,6 +62,19 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
               {location === '/admin' && setActiveTab && (
                 <>
                   <Button 
+                    onClick={() => setActiveTab('revenue')}
+                    variant="ghost" 
+                    size="sm"
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                      activeTab === 'revenue' 
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    매출관리
+                  </Button>
+                  <Button 
                     onClick={() => setActiveTab('customers')}
                     variant="ghost" 
                     size="sm"
