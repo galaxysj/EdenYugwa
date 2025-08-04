@@ -61,6 +61,92 @@ const checkRemoteArea = (address: string) => {
   return remoteAreaKeywords.some(keyword => address.includes(keyword));
 };
 
+// Payment Details Dialog Component
+function PaymentDetailsDialog({ order, onUpdate }: { order: Order; onUpdate: (orderId: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || order.totalAmount.toString());
+  const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || "0");
+
+  const formatPriceLocal = (price: number | undefined | null) => {
+    if (price === undefined || price === null || isNaN(price) || price < 0) return '0원';
+    return `${Math.round(price).toLocaleString()}원`;
+  };
+
+  const handleSubmit = () => {
+    const paidAmount = Number(actualPaidAmount);
+    const discount = Number(discountAmount);
+    
+    if (isNaN(paidAmount) || paidAmount < 0) {
+      alert('올바른 입금액을 입력해주세요.');
+      return;
+    }
+    
+    if (isNaN(discount) || discount < 0) {
+      alert('올바른 할인액을 입력해주세요.');
+      return;
+    }
+    
+    onUpdate(order.id, 'confirmed', paidAmount, discount);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <div className="flex items-center space-x-1 cursor-pointer">
+          <DollarSign className="h-3 w-3 text-green-500" />
+          <span>입금완료</span>
+        </div>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>입금 내역 입력</DialogTitle>
+          <DialogDescription>
+            주문번호: {order.orderNumber} | 총 주문금액: {formatPriceLocal(order.totalAmount)}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="actualPaidAmount">실제 입금액</Label>
+            <Input
+              id="actualPaidAmount"
+              type="number"
+              value={actualPaidAmount}
+              onChange={(e) => setActualPaidAmount(e.target.value)}
+              placeholder="실제 입금된 금액을 입력하세요"
+            />
+          </div>
+          <div>
+            <Label htmlFor="discountAmount">할인액 (선택사항)</Label>
+            <Input
+              id="discountAmount"
+              type="number"
+              value={discountAmount}
+              onChange={(e) => setDiscountAmount(e.target.value)}
+              placeholder="할인 금액이 있으면 입력하세요"
+            />
+          </div>
+          <div className="text-sm text-gray-600">
+            <div>실입금: {formatPriceLocal(Number(actualPaidAmount) || 0)}</div>
+            <div>할인액: {formatPriceLocal(Number(discountAmount) || 0)}</div>
+            <div className="font-medium">
+              미입금: {formatPriceLocal(Math.max(0, order.totalAmount - (Number(actualPaidAmount) || 0) - (Number(discountAmount) || 0)))}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={handleSubmit} className="flex-1">
+              확인
+            </Button>
+            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
+              취소
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Cost Settings Dialog Component
 function CostSettingsDialog() {
   const [open, setOpen] = useState(false);
@@ -1951,12 +2037,7 @@ export default function Admin() {
                               <span>입금대기</span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="confirmed">
-                            <div className="flex items-center space-x-1">
-                              <DollarSign className="h-3 w-3 text-green-500" />
-                              <span>입금완료</span>
-                            </div>
-                          </SelectItem>
+                          <PaymentDetailsDialog order={order} onUpdate={handlePaymentStatusChange} />
                           <SelectItem value="partial">
                             <div className="flex items-center space-x-1">
                               <AlertCircle className="h-3 w-3 text-red-500" />
@@ -2489,8 +2570,8 @@ export default function Admin() {
   });
 
   const updatePaymentMutation = useMutation({
-    mutationFn: ({ id, paymentStatus, actualPaidAmount, discountReason }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountReason?: string }) => 
-      api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountReason),
+    mutationFn: ({ id, paymentStatus, actualPaidAmount, discountAmount }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountAmount?: number }) => 
+      api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountAmount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({
@@ -2530,20 +2611,18 @@ export default function Admin() {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
-  const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string, actualAmount?: number) => {
+  const handlePaymentStatusChange = (orderId: number, newPaymentStatus: string, actualAmount?: number, discountAmount?: number) => {
     if (actualAmount !== undefined) {
       // 실제 입금 금액이 제공된 경우 바로 업데이트
       updatePaymentMutation.mutate({ 
         id: orderId, 
         paymentStatus: newPaymentStatus,
-        actualPaidAmount: actualAmount
+        actualPaidAmount: actualAmount,
+        discountAmount: discountAmount
       });
     } else if (newPaymentStatus === 'confirmed') {
-      // 입금완료 선택시 실제 입금금액 입력 다이얼로그 열기
-      const order = orders.find((o: Order) => o.id === orderId);
-      if (order) {
-        openPaymentDialog(order);
-      }
+      // 입금완료 선택시 - PaymentDetailsDialog가 처리함
+      return;
     } else if (newPaymentStatus === 'partial') {
       // 부분결제 선택시도 실제 입금금액 입력 다이얼로그 열기
       const order = orders.find((o: Order) => o.id === orderId);
