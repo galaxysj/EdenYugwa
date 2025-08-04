@@ -345,6 +345,29 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
+  // PaymentDetailsDialog에서 직접 전달받은 할인액을 사용하는 메서드
+  async updatePaymentWithDiscount(id: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number): Promise<Order | undefined> {
+    const updateData: any = { 
+      paymentStatus,
+      paymentConfirmedAt: paymentStatus === 'confirmed' ? new Date() : null
+    };
+
+    if (actualPaidAmount !== undefined) {
+      updateData.actualPaidAmount = actualPaidAmount;
+    }
+
+    if (discountAmount !== undefined) {
+      updateData.discountAmount = discountAmount;
+    }
+
+    const [order] = await db
+      .update(orders)
+      .set(updateData)
+      .where(eq(orders.id, id))
+      .returning();
+    return order || undefined;
+  }
+
   async updatePaymentStatus(id: number, paymentStatus: string, actualPaidAmount?: number, discountReason?: string): Promise<Order | undefined> {
     const updateData: any = { 
       paymentStatus,

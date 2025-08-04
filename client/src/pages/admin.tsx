@@ -3026,8 +3026,6 @@ export default function Admin() {
                   )}
                 </TabsContent>
                 
-
-                
                 <TabsContent value="customers" className="mt-6">
                   <CustomerManagement />
                 </TabsContent>
