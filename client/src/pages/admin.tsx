@@ -2001,7 +2001,7 @@ export default function Admin() {
                               <span>발송주문</span>
                             </div>
                           </SelectItem>
-                          <SelectItem value="delivered">
+                          <SelectItem value="delivered" disabled={!order.sellerShipped}>
                             <div className="flex items-center space-x-1">
                               <CheckCircle className="h-3 w-3 text-green-500" />
                               <span>발송완료</span>
@@ -2315,7 +2315,7 @@ export default function Admin() {
                                 <span>발송주문</span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="delivered">
+                            <SelectItem value="delivered" disabled={!order.sellerShipped}>
                               <div className="flex items-center space-x-2">
                                 <CheckCircle className="h-4 w-4 text-green-500" />
                                 <span>발송완료</span>
