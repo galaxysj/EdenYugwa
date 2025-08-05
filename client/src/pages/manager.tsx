@@ -486,43 +486,53 @@ export default function ManagerDashboard() {
 
               {/* 주문 목록 테이블 */}
               <TabsContent value="전체보기" className="space-y-4">
-                {/* 선택된 주문 일괄 작업 */}
-                {selectedOrders.size > 0 && (
+                {/* 전체보기 일괄 작업 */}
+                {filteredOrders.length > 0 && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-                    <span className="text-sm font-medium text-blue-900">
-                      {selectedOrders.size}개 주문 선택됨
-                    </span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium text-blue-900">
+                        전체 주문 {filteredOrders.length}개
+                      </span>
+                      {selectedOrders.size > 0 && (
+                        <span className="text-sm font-medium text-orange-900">
+                          ({selectedOrders.size}개 선택됨)
+                        </span>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setSelectedOrders(new Set())}
+                        onClick={() => setSelectedOrders(new Set(filteredOrders.map(o => o.id)))}
                         className="bg-white"
                       >
-                        선택 해제
+                        전체 선택
                       </Button>
+                      {selectedOrders.size > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedOrders(new Set())}
+                          className="bg-white"
+                        >
+                          선택 해제
+                        </Button>
+                      )}
+                      {selectedOrders.size > 0 && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const selectedOrderIds = Array.from(selectedOrders);
+                            bulkSellerShippedMutation.mutate(selectedOrderIds);
+                          }}
+                          disabled={bulkSellerShippedMutation.isPending}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
-                        onClick={() => {
-                          const selectedOrderIds = Array.from(selectedOrders);
-                          bulkSellerShippedMutation.mutate(selectedOrderIds);
-                        }}
-                        disabled={bulkSellerShippedMutation.isPending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
                         onClick={() => {
                           const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
@@ -532,16 +542,22 @@ export default function ManagerDashboard() {
                       >
                         {bulkSellerShippedMutation.isPending ? "처리중..." : "전체 발송처리"}
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => exportToExcel(filteredOrders, "전체주문목록")}
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        엑셀 다운로드
-                      </Button>
                     </div>
+                  </div>
+                )}
+
+                <div className="bg-white border rounded-lg">
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(filteredOrders, "전체주문목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full manager-table">
@@ -753,42 +769,19 @@ export default function ManagerDashboard() {
 
               {/* 발송처리대기 탭 */}
               <TabsContent value="발송처리대기" className="space-y-4">
-                {/* 선택된 주문 일괄 작업 */}
-                {selectedOrders.size > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-                    <span className="text-sm font-medium text-blue-900">
-                      {selectedOrders.size}개 주문 선택됨
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedOrders(new Set())}
-                        className="bg-white"
-                      >
-                        선택 해제
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          const selectedOrderIds = Array.from(selectedOrders);
-                          bulkSellerShippedMutation.mutate(selectedOrderIds);
-                        }}
-                        disabled={bulkSellerShippedMutation.isPending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* 발송처리대기 주문에 대한 일괄 작업 버튼 */}
+                {/* 발송처리 일괄 작업 */}
                 {filteredOrders.filter(o => !o.sellerShipped).length > 0 && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between">
-                    <span className="text-sm font-medium text-orange-900">
-                      발송처리대기 주문 {filteredOrders.filter(o => !o.sellerShipped).length}개
-                    </span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium text-orange-900">
+                        발송처리대기 주문 {filteredOrders.filter(o => !o.sellerShipped).length}개
+                      </span>
+                      {selectedOrders.size > 0 && (
+                        <span className="text-sm font-medium text-blue-900">
+                          ({selectedOrders.size}개 선택됨)
+                        </span>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
@@ -801,6 +794,29 @@ export default function ManagerDashboard() {
                       >
                         전체 선택
                       </Button>
+                      {selectedOrders.size > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setSelectedOrders(new Set())}
+                          className="bg-white"
+                        >
+                          선택 해제
+                        </Button>
+                      )}
+                      {selectedOrders.size > 0 && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const selectedOrderIds = Array.from(selectedOrders);
+                            bulkSellerShippedMutation.mutate(selectedOrderIds);
+                          }}
+                          disabled={bulkSellerShippedMutation.isPending}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         onClick={() => {
@@ -808,7 +824,7 @@ export default function ManagerDashboard() {
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
                         disabled={bulkSellerShippedMutation.isPending}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
                       >
                         {bulkSellerShippedMutation.isPending ? '처리중...' : '전체 발송처리'}
                       </Button>
