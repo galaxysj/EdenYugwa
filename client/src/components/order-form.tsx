@@ -933,7 +933,7 @@ export default function OrderForm() {
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-brown font-bold">•</span>
-            <p className="text-sm text-eden-dark leading-relaxed">주문 접수 후 3일 이내 미도착시 반드시 연락주세요.</p>
+            <p className="text-eden-dark text-[13px]">주문 접수 후 3일 이내 미도착시 반드시 연락주세요.</p>
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-red font-bold">•</span>
