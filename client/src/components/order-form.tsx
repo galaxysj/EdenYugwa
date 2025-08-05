@@ -925,7 +925,7 @@ export default function OrderForm() {
         <div className="space-y-2">
           <div className="flex items-start space-x-3">
             <span className="text-eden-brown font-bold">•</span>
-            <p className="text-sm text-eden-dark leading-relaxed">물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
+            <p className="text-eden-dark text-[13px]">물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-brown font-bold">•</span>
