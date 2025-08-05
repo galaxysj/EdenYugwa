@@ -1843,31 +1843,11 @@ export default function Admin() {
 
                     <td className="col-order-number">
                       <div className="font-semibold text-gray-900 no-wrap text-xs">#{order.orderNumber}</div>
-                      <div className="text-xs text-gray-500 no-wrap">
-                        {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                      </div>
-                      <div className="text-xs text-gray-500 no-wrap">
-                        {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                      {order.scheduledDate && (
-                        <div className="text-xs text-red-600 font-bold no-wrap">
-                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                        </div>
-                      )}
                     </td>
                     <td className="col-date text-center">
                       {order.scheduledDate ? (
-                        <div 
-                          className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-1 py-1 rounded no-wrap"
-                          onClick={() => {
-                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
-                            if (scheduledDatePicker) {
-                              (scheduledDatePicker as HTMLElement).click();
-                            }
-                          }}
-                          title="클릭하여 예약발송일 수정"
-                        >
-                          {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        <div className="text-xs text-blue-600 font-medium no-wrap">
+                          {new Date(order.scheduledDate).getMonth() + 1}/{new Date(order.scheduledDate).getDate()}
                         </div>
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
@@ -1889,16 +1869,12 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-order-details">
-                      <div className="text-xs">
-                        {order.smallBoxQuantity > 0 && (
-                          <div className="text-gray-900 no-wrap">한과1호×{order.smallBoxQuantity}개</div>
-                        )}
-                        {order.largeBoxQuantity > 0 && (
-                          <div className="text-gray-900 no-wrap">한과2호×{order.largeBoxQuantity}개</div>
-                        )}
-                        {order.wrappingQuantity > 0 && (
-                          <div className="text-gray-900 no-wrap">보자기×{order.wrappingQuantity}개</div>
-                        )}
+                      <div className="text-xs no-wrap">
+                        {[
+                          order.smallBoxQuantity > 0 && `1호×${order.smallBoxQuantity}`,
+                          order.largeBoxQuantity > 0 && `2호×${order.largeBoxQuantity}`,
+                          order.wrappingQuantity > 0 && `보×${order.wrappingQuantity}`
+                        ].filter(Boolean).join(',')}
                       </div>
                     </td>
                     <td className="col-phone">
