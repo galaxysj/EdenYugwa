@@ -154,8 +154,6 @@ function CostSettingsDialog() {
   const [smallBoxCost, setSmallBoxCost] = useState("");
   const [largeBoxCost, setLargeBoxCost] = useState("");
   const [wrappingCost, setWrappingCost] = useState("");
-  const [shippingFee, setShippingFee] = useState("");
-  const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
   
   // Load existing settings when dialog opens
   useEffect(() => {
@@ -163,14 +161,10 @@ function CostSettingsDialog() {
       const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
       const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
       const wrappingCostSetting = settings.find(s => s.key === "wrappingCost");
-      const shippingFeeSetting = settings.find(s => s.key === "shippingFee");
-      const thresholdSetting = settings.find(s => s.key === "freeShippingThreshold");
       
       setSmallBoxCost(smallCostSetting?.value || "");
       setLargeBoxCost(largeCostSetting?.value || "");
       setWrappingCost(wrappingCostSetting?.value || "");
-      setShippingFee(shippingFeeSetting?.value || "");
-      setFreeShippingThreshold(thresholdSetting?.value || "");
     }
   }, [settings]);
   
@@ -197,10 +191,10 @@ function CostSettingsDialog() {
   });
   
   const handleSave = async () => {
-    if (!smallBoxCost || !largeBoxCost || !wrappingCost || !shippingFee || !freeShippingThreshold) {
+    if (!smallBoxCost || !largeBoxCost || !wrappingCost) {
       toast({
         title: "입력 오류",
-        description: "모든 설정 정보를 입력해주세요.",
+        description: "모든 원가 정보를 입력해주세요.",
         variant: "destructive",
       });
       return;
@@ -224,20 +218,8 @@ function CostSettingsDialog() {
         value: wrappingCost,
         description: "보자기 원가"
       });
-      
-      await updateCostMutation.mutateAsync({
-        key: "shippingFee",
-        value: shippingFee,
-        description: "배송비 (6개 미만 주문 시)"
-      });
-      
-      await updateCostMutation.mutateAsync({
-        key: "freeShippingThreshold",
-        value: freeShippingThreshold,
-        description: "무료배송 최소 수량"
-      });
     } catch (error) {
-      console.error("Settings update error:", error);
+      console.error("Cost settings update error:", error);
     }
   };
   
@@ -251,9 +233,9 @@ function CostSettingsDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>전역 원가 및 배송비 설정</DialogTitle>
+          <DialogTitle>전역 원가 설정</DialogTitle>
           <DialogDescription>
-            모든 주문에 적용할 기본 원가와 배송비 정책을 설정합니다.
+            모든 주문에 적용할 기본 원가를 설정합니다.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -286,34 +268,6 @@ function CostSettingsDialog() {
               onChange={(e) => setWrappingCost(e.target.value)}
               placeholder="원가 입력 (원)"
             />
-          </div>
-          <div className="border-t border-gray-200 pt-4">
-            <div className="mb-3">
-              <h4 className="font-medium text-gray-900">배송비 설정</h4>
-              <p className="text-sm text-gray-600">주문 폼의 배송비 계산에 적용됩니다</p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="shippingFee">배송비</Label>
-                <Input
-                  id="shippingFee"
-                  type="number"
-                  value={shippingFee}
-                  onChange={(e) => setShippingFee(e.target.value)}
-                  placeholder="배송비 입력 (원)"
-                />
-              </div>
-              <div>
-                <Label htmlFor="freeShippingThreshold">무료배송 최소 수량</Label>
-                <Input
-                  id="freeShippingThreshold"
-                  type="number"
-                  value={freeShippingThreshold}
-                  onChange={(e) => setFreeShippingThreshold(e.target.value)}
-                  placeholder="개수 입력"
-                />
-              </div>
-            </div>
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-6">
@@ -1789,7 +1743,7 @@ export default function Admin() {
           <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="col-checkbox text-center">
+                <th className="w-8 py-2 px-2 text-center">
                   <input
                     type="checkbox"
                     checked={selectedOrderItems.size === ordersList.length && ordersList.length > 0}
@@ -1800,26 +1754,26 @@ export default function Admin() {
                         setSelectedOrderItems(new Set());
                       }
                     }}
-                    className="rounded border-gray-300 w-4 h-4"
+                    className="rounded border-gray-300"
                     title="삭제용 선택"
                   />
                 </th>
 
-                <th className="col-order-number text-left">주문번호</th>
-                <th className="col-date text-center">예약발송일</th>
-                <th className="col-customer-name text-left">주문자</th>
-                <th className="col-customer-name text-left">예금자</th>
-                <th className="col-order-details text-left">주문내역</th>
-                <th className="col-phone text-left">연락처</th>
-                <th className="col-address text-left">배송주소</th>
-                <th className="col-address text-left">메모</th>
-                <th className="col-amount text-center text-blue-700">매출</th>
-                <th className="col-amount text-center text-green-700">실입금</th>
-                <th className="col-amount text-center text-red-700">할인/미입금</th>
-                <th className="col-status text-center">입금상태</th>
-                <th className="col-status text-center">주문상태</th>
-                <th className="col-status text-center">판매자발송</th>
-                <th className="col-actions text-center">관리</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">주문번호</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">예약발송일</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">주문자</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">예금자</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">주문내역</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">연락처</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">배송주소</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">메모</th>
+                <th className="text-center py-3 px-3 font-semibold text-blue-700 text-sm">매출</th>
+                <th className="text-center py-3 px-3 font-semibold text-green-700 text-sm">실입금</th>
+                <th className="text-center py-3 px-3 font-semibold text-red-700 text-sm">할인/미입금</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">입금상태</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">주문상태</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">판매자발송</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -1831,36 +1785,76 @@ export default function Admin() {
                     order.status === 'seller_shipped' ? 'bg-blue-50 hover:bg-blue-100' : 
                     'hover:bg-gray-50'
                   }`} data-order-id={order.id}>
-                    <td className="col-checkbox text-center">
+                    <td className="py-2 px-2 text-center">
                       <input
                         type="checkbox"
                         checked={selectedOrderItems.has(order.id)}
                         onChange={() => toggleOrderSelection(order.id)}
-                        className="rounded border-gray-300 w-4 h-4"
+                        className="rounded border-gray-300"
                         title="삭제용 선택"
                       />
                     </td>
 
-                    <td className="col-order-number">
-                      <div className="font-semibold text-gray-900 no-wrap text-xs">#{order.orderNumber}</div>
-                    </td>
-                    <td className="col-date text-center">
+                    <td className="py-3 px-3">
+                      <div className="font-semibold text-gray-900 text-sm">#{order.orderNumber}</div>
+                      <div className="text-sm text-gray-600">
+                        <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                        <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
                       {order.scheduledDate ? (
-                        <div className="text-xs text-blue-600 font-medium no-wrap">
-                          {new Date(order.scheduledDate).getMonth() + 1}/{new Date(order.scheduledDate).getDate()}
+                        <div 
+                          className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 발송예약일 수정"
+                        >
+                          발송예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">-</span>
+                        <div 
+                          className="text-blue-600 font-bold text-sm cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 발송예약일 설정"
+                        >
+                          + 발송예약
+                        </div>
                       )}
                     </td>
-                    <td className="col-customer-name">
-                      <div className="font-medium text-xs no-wrap">
-                        {order.recipientName && order.recipientName !== order.customerName ? 
-                          order.recipientName : order.customerName}
-                      </div>
+                    <td className="py-3 px-3 text-center">
+                      {order.scheduledDate ? (
+                        <div 
+                          className="text-sm text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 예약발송일 수정"
+                        >
+                          {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">-</span>
+                      )}
                     </td>
-                    <td className="col-customer-name">
-                      <div className="text-xs no-wrap">
+                    <td className="py-3 px-3">
+                      <div className="font-medium text-gray-900 text-sm">{order.customerName}</div>
+                      {order.recipientName && order.recipientName !== order.customerName && (
+                        <div className="text-sm text-blue-600">받는분: {order.recipientName}</div>
+                      )}
+                    </td>
+                    <td className="py-2 px-2">
+                      <div className="font-medium text-xs">
                         {order.isDifferentDepositor && order.depositorName ? (
                           <span className="text-red-600">{order.depositorName}</span>
                         ) : (
@@ -1868,30 +1862,34 @@ export default function Admin() {
                         )}
                       </div>
                     </td>
-                    <td className="col-order-details">
-                      <div className="text-xs no-wrap">
-                        {[
-                          order.smallBoxQuantity > 0 && `1호×${order.smallBoxQuantity}`,
-                          order.largeBoxQuantity > 0 && `2호×${order.largeBoxQuantity}`,
-                          order.wrappingQuantity > 0 && `보×${order.wrappingQuantity}`
-                        ].filter(Boolean).join(',')}
+                    <td className="py-2 px-2 min-w-[80px]">
+                      <div className="text-xs space-y-1">
+                        {order.smallBoxQuantity > 0 && (
+                          <div className="text-gray-900">한과1호×{order.smallBoxQuantity}개</div>
+                        )}
+                        {order.largeBoxQuantity > 0 && (
+                          <div className="text-gray-900">한과2호×{order.largeBoxQuantity}개</div>
+                        )}
+                        {order.wrappingQuantity > 0 && (
+                          <div className="text-gray-900">보자기×{order.wrappingQuantity}개</div>
+                        )}
                       </div>
                     </td>
-                    <td className="col-phone">
-                      <div className="text-xs no-wrap">{order.customerPhone}</div>
+                    <td className="py-2 px-2">
+                      <div className="text-xs text-gray-900">{order.customerPhone}</div>
                     </td>
-                    <td className="col-address">
+                    <td className="py-2 px-2 max-w-xs">
                       <Dialog>
                         <DialogTrigger asChild>
                           <div>
                             <div 
-                              className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded no-wrap"
+                              className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
                               title="클릭하여 전체 주소 보기"
                             >
-                              {order.address1.length > 8 ? `${order.address1.substring(0, 8)}...` : order.address1}
+                              {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
                             </div>
                             {checkRemoteArea(order.address1) && (
-                              <div className="text-xs text-red-600 font-bold">추가</div>
+                              <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
                             )}
                           </div>
                         </DialogTrigger>
@@ -1918,22 +1916,20 @@ export default function Admin() {
                         </DialogContent>
                       </Dialog>
                     </td>
-                    <td className="col-address">
-                      <div className="text-xs text-gray-600 no-wrap">{order.specialRequests ? 
-                        (order.specialRequests.length > 6 ? `${order.specialRequests.substring(0, 6)}...` : order.specialRequests) 
-                        : '-'}</div>
+                    <td className="py-2 px-2">
+                      <div className="text-xs text-gray-600 truncate max-w-[100px]">{order.specialRequests || '-'}</div>
                     </td>
                     {/* 매출 */}
-                    <td className="col-amount text-center">
-                      <div className="text-xs font-medium text-blue-700 no-wrap">
+                    <td className="py-2 px-2 text-center">
+                      <div className="text-xs font-medium text-blue-700">
                         {formatPrice(order.totalAmount)}
                       </div>
                     </td>
                     {/* 실입금 */}
-                    <td className="col-amount text-center">
+                    <td className="py-2 px-2 text-center">
                       {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
                         <div
-                          className="text-xs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 no-wrap"
+                          className="text-xs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200"
                           onClick={() => {
                             const currentAmount = order.actualPaidAmount || order.totalAmount;
                             const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
@@ -1943,56 +1939,151 @@ export default function Admin() {
                           }}
                           title="클릭하여 실제 입금금액 수정"
                         >
-                          {formatPrice(order.actualPaidAmount || order.totalAmount)}
+                          {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
                         </div>
                       ) : (
                         <div className="text-xs text-gray-400">-</div>
                       )}
                     </td>
                     {/* 할인/미입금 */}
-                    <td className="col-amount text-center">
-                      <div className="text-xs no-wrap">
+                    <td className="py-2 px-2 text-center">
+                      <div className="text-xs">
                         {order.discountAmount && order.discountAmount > 0 ? (
                           <span className="text-blue-600 font-medium">
-                            -{formatPrice(Math.abs(order.discountAmount))}
+                            할인<br/>-{formatPrice(Math.abs(order.discountAmount))}
                           </span>
                         ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
                           <span className="text-red-600 font-medium">
-                            {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
+                            미입금<br/>{formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
                           </span>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
                       </div>
                     </td>
-                    <td className="col-status text-center">
-                      <div className="text-xs no-wrap">
-                        {order.paymentStatus === 'confirmed' ? '완료' : 
-                         order.paymentStatus === 'partial' ? '부분' : 
-                         order.paymentStatus === 'refunded' ? '환불' : '대기'}
-                      </div>
+                    <td className="py-2 px-2 text-center">
+                      <Select
+                        key={`payment-${order.id}-${order.paymentStatus}`}
+                        value={
+                          order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                            ? 'partial'
+                            : order.paymentStatus || 'pending'
+                        }
+                        onValueChange={(newPaymentStatus) => {
+                          // Portal 오류 방지를 위한 지연된 상태 업데이트
+                          setTimeout(() => {
+                            handlePaymentStatusChange(order.id, newPaymentStatus);
+                          }, 0);
+                        }}
+                        disabled={updatePaymentMutation.isPending}
+                      >
+                        <SelectTrigger className="w-24 h-6 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center space-x-1">
+                              <AlertCircle className="h-3 w-3 text-orange-500" />
+                              <span>입금대기</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="confirmed">
+                            <div className="flex items-center space-x-1">
+                              <DollarSign className="h-3 w-3 text-green-500" />
+                              <span>입금완료</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="partial">
+                            <div className="flex items-center space-x-1">
+                              <AlertCircle className="h-3 w-3 text-red-500" />
+                              <span className="text-red-500">부분결제</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="refunded">
+                            <div className="flex items-center space-x-1">
+                              <AlertCircle className="h-3 w-3 text-red-500" />
+                              <span>환불</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
-                    <td className="col-status text-center">
-                      <div className="text-xs no-wrap">
-                        {order.status === 'delivered' ? '완료' :
-                         order.status === 'scheduled' ? '주문' :
-                         order.status === 'seller_shipped' ? '대기' : '접수'}
-                      </div>
+                    <td className="py-2 px-2 text-center">
+                      <Select
+                        key={`status-${order.id}-${order.status}`}
+                        value={order.status}
+                        onValueChange={(newStatus) => {
+                          // Portal 오류 방지를 위한 지연된 상태 업데이트
+                          setTimeout(() => {
+                            handleStatusChange(order.id, newStatus);
+                          }, 0);
+                        }}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="w-24 h-6 text-xs">
+                          <SelectValue>
+                            {order.scheduledDate && order.status === 'pending' ? "주문접수" : statusLabels[order.status as keyof typeof statusLabels]}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3 text-yellow-500" />
+                              <span>주문접수</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="seller_shipped">
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3 text-orange-500" />
+                              <span>발송대기</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="scheduled">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3 text-blue-500" />
+                              <span>발송주문</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="delivered" disabled={!order.sellerShipped}>
+                            <div className="flex items-center space-x-1">
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                              <span>발송완료</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
-                    <td className="col-status text-center">
-                      <div className="text-xs no-wrap">
+                    <td className="py-2 px-2 text-center">
+                      <div className="flex flex-col items-center gap-2">
                         {order.sellerShipped ? (
-                          <div className="text-green-600 font-medium">완료</div>
+                          <div className="text-green-600 font-medium text-xs">
+                            매니저발송완료
+                            {order.sellerShippedDate && (
+                              <div 
+                                className="text-gray-500 mt-1 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                onClick={() => {
+                                  const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                                  if (sellerShippedDatePicker) {
+                                    (sellerShippedDatePicker as HTMLElement).click();
+                                  }
+                                }}
+                                title="클릭하여 판매자발송일 수정"
+                              >
+                                {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                              </div>
+                            )}
+                          </div>
                         ) : (
-                          <div className="text-gray-400">미처리</div>
+                          <div className="text-gray-400 text-xs">매니저 미처리</div>
                         )}
                       </div>
                     </td>
-                    <td className="col-actions text-center">
-                      <div className="flex gap-1">
+                    <td className="py-2 px-2 text-center">
+                      <div className="flex flex-col gap-1">
                         <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="h-5 text-xs px-1">
-                            S
+                          <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                            <MessageSquare className="h-3 w-3" />
+                            SMS
                           </Button>
                         </SmsDialog>
                         <div className="hidden" data-order-id={order.id}>
@@ -2005,7 +2096,7 @@ export default function Admin() {
                           variant="destructive"
                           onClick={() => handleDeleteOrder(order.id)}
                           disabled={deleteOrderMutation.isPending}
-                          className="h-5 text-xs px-1"
+                          className="flex items-center gap-1 h-6 text-xs px-1"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
