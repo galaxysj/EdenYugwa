@@ -929,7 +929,7 @@ export default function OrderForm() {
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-brown font-bold">•</span>
-            <p className="text-sm text-eden-dark leading-relaxed">설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.</p>
+            <p className="text-eden-dark text-[13px]">설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.</p>
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-brown font-bold">•</span>
