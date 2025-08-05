@@ -203,57 +203,54 @@ export function UserManagement() {
             </table>
           </div>
 
-          {/* 모바일 카드 뷰 */}
-          <div className="md:hidden space-y-4">
+          {/* 모바일 리스트 뷰 */}
+          <div className="md:hidden space-y-2">
             {users.map((user) => (
-              <Card key={user.id} className="p-4">
-                <div className="space-y-3">
-                  {/* 상단: 이름과 권한 */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-lg">{user.name}</h3>
-                      <p className="text-sm text-gray-600">@{user.username}</p>
+              <div key={user.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  {/* 왼쪽: 사용자 정보 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-sm truncate">{user.name}</h3>
+                      {getRoleBadge(user.role)}
                     </div>
-                    {getRoleBadge(user.role)}
-                  </div>
-                  
-                  {/* 중간: 연락처와 상태 */}
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span>{user.phoneNumber}</span>
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <span>@{user.username}</span>
+                      <span className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {user.phoneNumber}
+                      </span>
                     </div>
-                    {user.isActive ? (
-                      <Badge variant="outline" className="gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        활성
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        비활성
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2 mt-1">
+                      {user.isActive ? (
+                        <Badge variant="outline" className="gap-1 text-xs px-1 py-0">
+                          <CheckCircle className="h-2 w-2" />
+                          활성
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="gap-1 text-xs px-1 py-0">
+                          <AlertTriangle className="h-2 w-2" />
+                          비활성
+                        </Badge>
+                      )}
+                      <span className="text-xs text-gray-400">
+                        가입: {formatDate(user.createdAt)}
+                      </span>
+                    </div>
                   </div>
                   
-                  {/* 하단: 날짜 정보와 작업 버튼 */}
-                  <div className="space-y-2 text-xs text-gray-500">
-                    <div>가입일: {formatDate(user.createdAt)}</div>
-                    <div>최근 로그인: {formatDate(user.lastLoginAt)}</div>
-                  </div>
-                  
-                  {/* 작업 버튼 */}
-                  {user.role !== 'admin' && (
-                    <div className="pt-2 border-t">
-                      {user.role === 'user' ? (
+                  {/* 오른쪽: 작업 버튼 */}
+                  <div className="flex-shrink-0 ml-2">
+                    {user.role !== 'admin' ? (
+                      user.role === 'user' ? (
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'manager')}
                           disabled={updateRoleMutation.isPending}
-                          className="w-full"
+                          className="text-xs px-2 py-1 h-auto"
                         >
-                          매니저로 승격
+                          승격
                         </Button>
                       ) : (
                         <Button
@@ -261,20 +258,17 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'user')}
                           disabled={updateRoleMutation.isPending}
-                          className="w-full"
+                          className="text-xs px-2 py-1 h-auto"
                         >
-                          일반사용자로 변경
+                          일반
                         </Button>
-                      )}
-                    </div>
-                  )}
-                  {user.role === 'admin' && (
-                    <div className="pt-2 border-t text-center text-sm text-gray-400">
-                      최고 관리자 (변경 불가)
-                    </div>
-                  )}
+                      )
+                    ) : (
+                      <span className="text-xs text-gray-400">최고관리자</span>
+                    )}
+                  </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
 

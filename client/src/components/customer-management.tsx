@@ -540,59 +540,58 @@ export function CustomerManagement() {
                   </Table>
                 </div>
 
-                {/* 모바일 카드 뷰 */}
-                <div className="md:hidden space-y-4">
+                {/* 모바일 리스트 뷰 */}
+                <div className="md:hidden space-y-2">
                   {customers.map((customer) => (
-                    <Card key={customer.id} className="p-4">
-                      <div className="space-y-3">
-                        {/* 상단: 이름과 연락처 */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium text-lg">{customer.customerName}</h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Phone className="h-4 w-4" />
-                              <span>{formatPhoneNumber(customer.customerPhone)}</span>
-                            </div>
-                          </div>
-                          <div className="text-right text-sm">
-                            <div className="text-gray-600">주문 {customer.orderCount || 0}회</div>
-                            <div className="font-medium">{formatAmount(customer.totalOrderAmount || 0)}</div>
-                          </div>
-                        </div>
-                        
-                        {/* 중간: 주소 */}
-                        {customer.address1 && (
-                          <div className="flex items-start gap-2 text-sm text-gray-600">
-                            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                            <span className="break-all">
-                              {`${customer.address1} ${customer.address2 || ''}`.trim()}
+                    <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        {/* 왼쪽: 고객 정보 */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-sm truncate">{customer.customerName}</h3>
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                              {customer.orderCount || 0}회
                             </span>
                           </div>
-                        )}
+                          <div className="flex items-center gap-1 text-xs text-gray-600 mb-1">
+                            <Phone className="h-3 w-3" />
+                            <span>{formatPhoneNumber(customer.customerPhone)}</span>
+                            <span className="mx-1">•</span>
+                            <span className="font-medium text-green-600">
+                              {formatAmount(customer.totalOrderAmount || 0)}
+                            </span>
+                          </div>
+                          {customer.address1 && (
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
+                              <MapPin className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">
+                                {`${customer.address1} ${customer.address2 || ''}`.trim()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                         
-                        {/* 하단: 작업 버튼 */}
-                        <div className="flex gap-2 pt-2 border-t">
+                        {/* 오른쪽: 작업 버튼 */}
+                        <div className="flex gap-1 ml-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(customer)}
-                            className="flex-1"
+                            className="text-xs px-2 py-1 h-auto"
                           >
-                            <Edit className="h-4 w-4 mr-2" />
-                            수정
+                            <Edit className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => deleteCustomerMutation.mutate(customer.id)}
-                            className="flex-1"
+                            className="text-xs px-2 py-1 h-auto text-red-600 hover:text-red-700"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            삭제
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               </>
@@ -645,40 +644,42 @@ export function CustomerManagement() {
                   </Table>
                 </div>
 
-                {/* 모바일 카드 뷰 */}
-                <div className="md:hidden space-y-4">
+                {/* 모바일 리스트 뷰 */}
+                <div className="md:hidden space-y-2">
                   {trashedCustomers.map((customer) => (
-                    <Card key={customer.id} className="p-4 bg-gray-50">
-                      <div className="space-y-3">
-                        {/* 상단: 이름과 연락처 */}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium text-lg text-gray-600">{customer.customerName}</h3>
-                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                              <Phone className="h-4 w-4" />
-                              <span>{formatPhoneNumber(customer.customerPhone)}</span>
-                            </div>
+                    <div key={customer.id} className="bg-gray-50 border border-gray-300 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        {/* 왼쪽: 고객 정보 */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-medium text-sm text-gray-600 truncate">{customer.customerName}</h3>
+                            <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">
+                              삭제됨
+                            </span>
                           </div>
-                          <div className="text-right text-sm text-gray-500">
-                            <div>삭제일</div>
-                            <div>{customer.deletedAt ? formatLastOrderDate(customer.deletedAt) : '-'}</div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                            <Phone className="h-3 w-3" />
+                            <span>{formatPhoneNumber(customer.customerPhone)}</span>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            삭제일: {customer.deletedAt ? formatLastOrderDate(customer.deletedAt) : '-'}
                           </div>
                         </div>
                         
-                        {/* 하단: 복구 버튼 */}
-                        <div className="pt-2 border-t">
+                        {/* 오른쪽: 복구 버튼 */}
+                        <div className="ml-2">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => restoreCustomerMutation.mutate(customer.id)}
-                            className="w-full"
+                            className="text-xs px-2 py-1 h-auto"
                           >
-                            <RefreshCw className="h-4 w-4 mr-2" />
+                            <RefreshCw className="h-3 w-3 mr-1" />
                             복구
                           </Button>
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               </>
