@@ -6,6 +6,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
+// 전화번호 자동 포맷팅 함수
+const formatPhoneNumber = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, '');
+  
+  if (numbers.length <= 3) {
+    return numbers;
+  } else if (numbers.length <= 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else if (numbers.length <= 11) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+  } else {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  }
+};
+
 interface RegisterFormProps {
   onSuccess?: () => void;
   onSwitchToLogin?: () => void;
@@ -158,8 +173,11 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
               id="phoneNumber"
               type="tel"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="전화번호를 입력하세요 (예: 010-1234-5678)"
+              onChange={(e) => {
+                const formatted = formatPhoneNumber(e.target.value);
+                setPhoneNumber(formatted);
+              }}
+              placeholder="010-0000-0000"
               required
               data-testid="input-phone-number"
             />

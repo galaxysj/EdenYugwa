@@ -58,6 +58,24 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat('ko-KR').format(price) + '원';
 };
 
+// 전화번호 자동 포맷팅 함수
+const formatPhoneNumber = (value: string) => {
+  // 숫자만 추출
+  const numbers = value.replace(/[^\d]/g, '');
+  
+  // 길이에 따라 포맷 적용
+  if (numbers.length <= 3) {
+    return numbers;
+  } else if (numbers.length <= 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else if (numbers.length <= 11) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+  } else {
+    // 11자리 초과시 11자리까지만
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  }
+};
+
 const prices = {
   small: 19000, // 한과1호
   large: 21000, // 한과2호
@@ -682,6 +700,10 @@ export default function OrderForm() {
                             <Input 
                               placeholder="010-0000-0000"
                               {...field}
+                              onChange={(e) => {
+                                const formatted = formatPhoneNumber(e.target.value);
+                                field.onChange(formatted);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />

@@ -15,6 +15,21 @@ import { api } from "@/lib/api";
 import { insertOrderSchema, type Order } from "@shared/schema";
 import { z } from "zod";
 
+// 전화번호 자동 포맷팅 함수
+const formatPhoneNumber = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, '');
+  
+  if (numbers.length <= 3) {
+    return numbers;
+  } else if (numbers.length <= 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else if (numbers.length <= 11) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+  } else {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  }
+};
+
 const editOrderSchema = insertOrderSchema.pick({
   customerName: true,
   customerPhone: true,
@@ -279,7 +294,14 @@ export default function OrderEdit() {
                         <FormItem>
                           <FormLabel>전화번호 *</FormLabel>
                           <FormControl>
-                            <Input placeholder="010-0000-0000" {...field} />
+                            <Input 
+                              placeholder="010-0000-0000" 
+                              {...field}
+                              onChange={(e) => {
+                                const formatted = formatPhoneNumber(e.target.value);
+                                field.onChange(formatted);
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

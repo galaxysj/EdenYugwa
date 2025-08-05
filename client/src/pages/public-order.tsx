@@ -17,6 +17,21 @@ import { queryClient } from "@/lib/queryClient";
 import { type InsertOrder } from "@shared/schema";
 import { Loader2, Package, MapPin, User, Phone, Calendar, Gift, Lock } from "lucide-react";
 
+// 전화번호 자동 포맷팅 함수
+const formatPhoneNumber = (value: string) => {
+  const numbers = value.replace(/[^\d]/g, '');
+  
+  if (numbers.length <= 3) {
+    return numbers;
+  } else if (numbers.length <= 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else if (numbers.length <= 11) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+  } else {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  }
+};
+
 // Public order form schema
 const publicOrderSchema = z.object({
   customerName: z.string().min(1, "고객명을 입력해주세요"),
@@ -307,7 +322,14 @@ export default function PublicOrder() {
                       <FormItem>
                         <FormLabel>주문자 연락처 *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="010-1234-5678" />
+                          <Input 
+                            {...field} 
+                            placeholder="010-0000-0000"
+                            onChange={(e) => {
+                              const formatted = formatPhoneNumber(e.target.value);
+                              field.onChange(formatted);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -412,7 +434,14 @@ export default function PublicOrder() {
                         <FormItem>
                           <FormLabel>받는 분 연락처</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="010-9876-5432" />
+                            <Input 
+                              {...field} 
+                              placeholder="010-0000-0000"
+                              onChange={(e) => {
+                                const formatted = formatPhoneNumber(e.target.value);
+                                field.onChange(formatted);
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
