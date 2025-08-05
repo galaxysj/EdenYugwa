@@ -28,20 +28,20 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <Leaf className="text-eden-sage text-2xl" />
               <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-              
-              {/* 모바일 헤더 버튼들 */}
-              <div className="flex md:hidden gap-2 ml-3">
-                <Link href="/order-lookup">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    주문조회
-                  </button>
-                </Link>
-                <Link href="/login">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    회원가입
-                  </button>
-                </Link>
-              </div>
+            </div>
+            
+            {/* 모바일 헤더 버튼들 - 오른쪽으로 이동 */}
+            <div className="flex md:hidden gap-2">
+              <Link href="/order-lookup">
+                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                  주문조회
+                </button>
+              </Link>
+              <Link href="/login">
+                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                  회원가입
+                </button>
+              </Link>
             </div>
             
             {/* Desktop Navigation */}
