@@ -2108,195 +2108,90 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
-        {/* Mobile Cards */}
-        <div className="lg:hidden space-y-4">
+        {/* Mobile Cards - 요약된 버전 */}
+        <div className="lg:hidden space-y-3">
           {ordersList.map((order: Order) => {
             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
             return (
               <Card key={order.id} className={`border ${
-                order.paymentStatus === 'pending' ? 'border-red-400 bg-red-100' : 
+                order.paymentStatus === 'pending' ? 'border-red-400 bg-red-50' : 
                 order.status === 'seller_shipped' ? 'border-blue-300 bg-blue-50' : 
                 'border-gray-200'
               }`}>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-start gap-3">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {/* 헤더 - 주문번호, 상태, 체크박스 */}
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
                           checked={selectedOrderItems.has(order.id)}
                           onChange={() => toggleOrderSelection(order.id)}
-                          className="rounded border-gray-300 mt-1"
+                          className="rounded border-gray-300"
                           title="삭제용 선택"
                         />
-                        <div>
-                          <div className="font-medium text-gray-900 text-sm md:text-lg">#{order.orderNumber}</div>
-                        <div className="text-sm text-gray-500">
-                          <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                          <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
-                        </div>
-                        {order.scheduledDate && (
-                          <div className="mt-1">
-                            <div className="text-red-600 font-bold text-base">
-                              고객 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                                year: 'numeric',
-                                month: '2-digit', 
-                                day: '2-digit',
-                                weekday: 'short'
-                              })}
-                            </div>
-                          </div>
-                        )}
-                        {order.status === 'scheduled' && !order.scheduledDate && (
-                          <div className="mt-1">
-                            <div className="text-orange-600 font-bold text-base">
-                              발송예약 (날짜 미설정)
-                            </div>
-                          </div>
-                        )}
-                        {order.status === 'delivered' && order.deliveredDate && (
-                          <div className="mt-1">
-                            <div className="text-green-600 font-bold text-base">
-                              ✅ 발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
-                                year: 'numeric',
-                                month: '2-digit', 
-                                day: '2-digit',
-                                weekday: 'short'
-                              })}
-                            </div>
-                          </div>
-                        )}
+                        <div className="font-bold text-gray-900 text-base">#{order.orderNumber}</div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                         </div>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        {StatusIcon && <StatusIcon className="h-5 w-5 text-blue-500" />}
-                        <span className="text-sm font-medium text-blue-600">
-                          {order.scheduledDate && order.status === 'pending' ? "주문접수" : statusLabels[order.status as keyof typeof statusLabels]}
+                      <div className="flex items-center gap-1">
+                        {StatusIcon && <StatusIcon className="h-4 w-4 text-blue-500" />}
+                        <span className="text-xs font-medium text-blue-600 px-2 py-1 bg-blue-100 rounded">
+                          {order.scheduledDate && order.status === 'pending' ? "예약발송" : statusLabels[order.status as keyof typeof statusLabels]}
                         </span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-xs md:text-sm">
-                      <div>
-                        <div className="text-gray-500 mb-1">주문자</div>
-                        <div className="font-medium">{order.customerName}</div>
-                        
-                        <div className="text-gray-500 mb-1 mt-2">예금자</div>
-                        {order.isDifferentDepositor && order.depositorName ? (
-                          <div className="font-medium text-red-600">{order.depositorName}</div>
-                        ) : (
-                          <div className="font-medium text-gray-500">{order.customerName}</div>
-                        )}
-                        
-                        {order.recipientName && order.recipientName !== order.customerName && (
-                          <>
-                            <div className="text-gray-500 mb-1 mt-2">받는분</div>
-                            <div className="font-medium text-blue-600">{order.recipientName}</div>
-                          </>
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-gray-500 mb-1">연락처</div>
-                        <div className="font-medium">{order.customerPhone}</div>
-                        {order.recipientPhone && order.recipientPhone !== order.customerPhone && (
-                          <>
-                            <div className="text-gray-500 mb-1 mt-2">받는분 연락처</div>
-                            <div className="font-medium text-blue-600">{order.recipientPhone}</div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="text-sm">
-                      <div className="text-gray-500 mb-1">주문자 주소</div>
-                      <div>
-                        [{order.zipCode}] {order.address1} {order.address2}
-                      </div>
-                      {checkRemoteArea(order.address1) && (
-                        <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
-                      )}
-                      {order.recipientAddress1 && (
-                        <>
-                          <div className="text-gray-500 mb-1 mt-2">받는분 주소</div>
-                          <div className="text-blue-600">
-                            [{order.recipientZipCode}] {order.recipientAddress1} {order.recipientAddress2}
-                          </div>
-                          {checkRemoteArea(order.recipientAddress1) && (
-                            <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
-                          )}
-                        </>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-gray-500 mb-2">주문상품</div>
-                        <div className="space-y-1">
-                          {order.smallBoxQuantity > 0 && (
-                            <div className="font-medium">한과1호×{order.smallBoxQuantity}개</div>
-                          )}
-                          {order.largeBoxQuantity > 0 && (
-                            <div className="font-medium">한과2호×{order.largeBoxQuantity}개</div>
-                          )}
-                          {order.wrappingQuantity > 0 && (
-                            <div className="font-medium text-eden-brown">보자기×{order.wrappingQuantity}개</div>
-                          )}
+                    {/* 핵심 정보 한 줄 */}
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-900">{order.customerName}</span>
+                          <div className="text-xs text-gray-600">{order.customerPhone}</div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-gray-500 mb-2">매출정보</div>
-                        <div className="text-xs space-y-1">
-                          <div className="text-blue-700 font-medium">
-                            매출: {formatPrice(order.totalAmount)}
-                          </div>
-                          <div className="text-green-700 font-medium">
-                            실입금: 
-                            {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
-                              <span
-                                className="cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 ml-1"
-                                onClick={() => {
-                                  const currentAmount = order.actualPaidAmount || order.totalAmount;
-                                  const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
-                                  if (newAmount && !isNaN(Number(newAmount))) {
-                                    handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
-                                  }
-                                }}
-                                title="클릭하여 실제 입금금액 수정"
-                              >
-                                {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 ml-1">-</span>
-                            )}
-                          </div>
-                          <div>
-                            {order.discountAmount && order.discountAmount > 0 ? (
-                              <span className="text-blue-600 font-medium">
-                                할인: -{formatPrice(Math.abs(order.discountAmount))}
-                              </span>
-                            ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
-                              <span className="text-red-600 font-medium">
-                                미입금: {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
+                        <div className="text-right">
+                          <div className="font-bold text-blue-600">{formatPrice(order.totalAmount)}</div>
+                          <div className="text-xs text-gray-600">
+                            {order.smallBoxQuantity > 0 && `1호×${order.smallBoxQuantity}`}
+                            {order.largeBoxQuantity > 0 && ` 2호×${order.largeBoxQuantity}`}
+                            {order.wrappingQuantity > 0 && ` 보자기×${order.wrappingQuantity}`}
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* 메모 표시 */}
-                    {order.notes && (
-                      <div className="text-xs bg-yellow-50 p-2 rounded border border-yellow-200">
-                        <div className="text-gray-500 mb-1">메모</div>
-                        <div className="text-gray-700">{order.notes}</div>
+                    {/* 예약발송일 또는 특별 상태 */}
+                    {order.scheduledDate && (
+                      <div className="bg-red-50 p-2 rounded border border-red-200">
+                        <div className="text-red-700 font-medium text-sm text-center">
+                          📅 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                            month: 'short', day: 'numeric', weekday: 'short'
+                          })}
+                        </div>
                       </div>
                     )}
 
-                    <div className="grid grid-cols-4 gap-2">
+                    {order.status === 'delivered' && order.deliveredDate && (
+                      <div className="bg-green-50 p-2 rounded border border-green-200">
+                        <div className="text-green-700 font-medium text-sm text-center">
+                          ✅ 발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
+                            month: 'short', day: 'numeric'
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 메모 표시 */}
+                    {order.specialRequests && (
+                      <div className="bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <div className="text-yellow-800 font-medium text-sm">📝 {order.specialRequests}</div>
+                      </div>
+                    )}
+
+                    {/* 입금 상태와 주요 관리 기능 */}
+                    <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <div className="text-gray-500 mb-2">입금상태</div>
                         <Select
                           value={
                             order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
@@ -2306,248 +2201,72 @@ export default function Admin() {
                           onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                           disabled={updatePaymentMutation.isPending}
                         >
-                          <SelectTrigger className="w-full text-xs">
+                          <SelectTrigger className="w-full text-xs h-8">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">
-                              <div className="flex items-center space-x-2">
-                                <AlertCircle className="h-4 w-4 text-orange-500" />
-                                <span>입금대기</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="confirmed">
-                              <div className="flex items-center space-x-2">
-                                <DollarSign className="h-4 w-4 text-green-500" />
-                                <span>입금완료</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="partial">
-                              <div className="flex items-center space-x-2">
-                                <AlertCircle className="h-4 w-4 text-red-500" />
-                                <span className="text-red-500">부분결제</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="refunded">
-                              <div className="flex items-center space-x-2">
-                                <AlertCircle className="h-4 w-4 text-red-500" />
-                                <span>환불</span>
-                              </div>
-                            </SelectItem>
+                            <SelectItem value="pending">입금대기</SelectItem>
+                            <SelectItem value="confirmed">입금완료</SelectItem>
+                            <SelectItem value="partial">부분결제</SelectItem>
+                            <SelectItem value="refunded">환불</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div>
-                        <div className="text-gray-500 mb-2 text-xs md:text-sm">주문상태</div>
                         <Select
                           value={order.status}
-                          onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                          onValueChange={(newStatus) => updateStatusMutation.mutate({ id: order.id, status: newStatus })}
                           disabled={updateStatusMutation.isPending}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full text-xs h-8">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">
-                              <div className="flex items-center space-x-2">
-                                <Clock className="h-4 w-4 text-yellow-500" />
-                                <span>주문접수</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="seller_shipped">
-                              <div className="flex items-center space-x-2">
-                                <Clock className="h-4 w-4 text-orange-500" />
-                                <span>발송대기</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="scheduled">
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-blue-500" />
-                                <span>발송주문</span>
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="delivered" disabled={!order.sellerShipped}>
-                              <div className="flex items-center space-x-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <span>발송완료</span>
-                              </div>
-                            </SelectItem>
+                            <SelectItem value="pending">주문접수</SelectItem>
+                            <SelectItem value="scheduled">발송예약</SelectItem>
+                            <SelectItem value="seller_shipped">발송대기</SelectItem>
+                            <SelectItem value="delivered">발송완료</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <div className="text-gray-500 mb-2 text-xs md:text-sm">예약발송일</div>
-                        {order.scheduledDate ? (
-                          <div 
-                            className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
-                            onClick={() => {
-                              const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
-                              if (scheduledDatePicker) {
-                                (scheduledDatePicker as HTMLElement).click();
-                              }
-                            }}
-                            title="클릭하여 예약발송일 수정"
-                          >
-                            {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-gray-400 text-center py-1">-</span>
-                        )}
-                      </div>
-
                     </div>
 
-                    {/* 원가 및 수익 정보 */}
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="text-gray-500 mb-2 text-xs">원가 및 수익 정보</div>
-                      <div className="grid grid-cols-2 gap-2 mb-3">
-                        <div className="bg-purple-50 p-2 rounded text-xs">
-                          <div className="space-y-1">
-                            {(() => {
-                              const settings = queryClient.getQueryData<any[]>(['api/settings']);
-                              const smallBoxCost = settings?.find(s => s.key === "smallBoxCost")?.value ? 
-                                parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
-                              const largeBoxCost = settings?.find(s => s.key === "largeBoxCost")?.value ? 
-                                parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
-                              const wrappingCost = settings?.find(s => s.key === "wrappingCost")?.value ? 
-                                parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
-                              
-                              const smallBoxesCost = order.smallBoxQuantity * smallBoxCost;
-                              const largeBoxesCost = order.largeBoxQuantity * largeBoxCost;
-                              const wrappingsCost = order.wrappingQuantity * wrappingCost;
-                              const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                              const shippingFee = totalItems >= 6 ? 0 : 4000;
-                              const totalCost = smallBoxesCost + largeBoxesCost + wrappingsCost + shippingFee;
-                              
-                              return (
-                                <>
-                                  {order.smallBoxQuantity > 0 && (
-                                    <div className="text-purple-600">
-                                      한과1호: {formatPrice(smallBoxesCost)}
-                                    </div>
-                                  )}
-                                  {order.largeBoxQuantity > 0 && (
-                                    <div className="text-purple-600">
-                                      한과2호: {formatPrice(largeBoxesCost)}
-                                    </div>
-                                  )}
-                                  {order.wrappingQuantity > 0 && (
-                                    <div className="text-purple-600">
-                                      보자기: {formatPrice(wrappingsCost)}
-                                    </div>
-                                  )}
-                                  {shippingFee > 0 && (
-                                    <div className="text-purple-600">
-                                      배송비: {formatPrice(shippingFee)}
-                                    </div>
-                                  )}
-                                  <div className="font-semibold text-purple-700 border-t border-purple-300 pt-1 mt-1">
-                                    총원가: {formatPrice(totalCost)}
-                                  </div>
-                                </>
-                              );
-                            })()}
-                          </div>
-                        </div>
-                        <div className="bg-emerald-50 p-2 rounded text-xs">
-                          {(() => {
-                            const settings = queryClient.getQueryData<any[]>(['api/settings']);
-                            const smallBoxCost = settings?.find(s => s.key === "smallBoxCost")?.value ? 
-                              parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
-                            const largeBoxCost = settings?.find(s => s.key === "largeBoxCost")?.value ? 
-                              parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
-                            const wrappingCost = settings?.find(s => s.key === "wrappingCost")?.value ? 
-                              parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
-                            
-                            const smallBoxesCost = order.smallBoxQuantity * smallBoxCost;
-                            const largeBoxesCost = order.largeBoxQuantity * largeBoxCost;
-                            const wrappingsCost = order.wrappingQuantity * wrappingCost;
-                            const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                            const shippingFee = totalItems >= 6 ? 0 : 4000;
-                            const totalCost = smallBoxesCost + largeBoxesCost + wrappingsCost + shippingFee;
-                            
-                            const discountAmount = order.discountAmount || 0;
-                            const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
-                              ? (order.totalAmount - order.actualPaidAmount) : 0;
-                            
-                            const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
-                            
-                            return (
-                              <div className="text-center">
-                                <div className={`font-bold text-sm ${actualProfit >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                                  {formatPrice(actualProfit)}
-                                </div>
-                                <div className="text-xs text-emerald-600 mt-1">
-                                  순수익
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-100">
-                      <div className="flex flex-col gap-3">
-                        <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                            <MessageSquare className="h-3 w-3" />
-                            SMS 발송
-                          </Button>
-                        </SmsDialog>
-                        <ScheduledDatePicker order={order} />
-                        
-                        {/* 판매자발송 관리 */}
-                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={selectedShippingItems.has(order.id)}
-                              onChange={() => toggleShippingSelection(order.id)}
-                              className="rounded border-blue-300"
-                              disabled={order.sellerShipped || false}
-                              title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
-                            />
-                            <span className="text-sm font-medium text-blue-700">발송 선택</span>
-                          </div>
-                          {!order.sellerShipped && (
-                            <Button
-                              size="sm"
-                              className="bg-blue-600 hover:bg-blue-700 flex-1"
-                              onClick={() => handleSellerShipped(order.id)}
-                            >
-                              <Truck className="h-3 w-3 mr-1" />
-                              발송하기
-                            </Button>
-                          )}
-                          {order.sellerShipped && (
-                            <div className="flex-1 text-sm text-green-600 font-medium">
-                              ✅ 발송완료
-                              {order.sellerShippedDate && (
-                                <div className="text-xs text-gray-500">
-                                  {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR')}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="hidden" data-order-id={order.id}>
-                          <DeliveredDatePicker order={order} />
-                          <SellerShippedDatePicker order={order} />
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteOrder(order.id)}
-                          disabled={deleteOrderMutation.isPending}
-                          className="flex items-center gap-1"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          삭제
+                    {/* 간단한 액션 버튼들 */}
+                    <div className="flex gap-2">
+                      <SmsDialog order={order}>
+                        <Button size="sm" variant="outline" className="flex-1 text-xs h-8">
+                          SMS
                         </Button>
-                      </div>
+                      </SmsDialog>
+                      
+                      <input
+                        type="checkbox"
+                        checked={selectedShippingItems.has(order.id)}
+                        onChange={() => toggleShippingSelection(order.id)}
+                        className="rounded border-gray-300"
+                        disabled={order.sellerShipped || false}
+                        title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
+                      />
+                      
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteOrder(order.id)}
+                        disabled={deleteOrderMutation.isPending}
+                        className="text-xs h-8 px-2"
+                      >
+                        삭제
+                      </Button>
                     </div>
+
+                    {/* 숨겨진 date picker들 */}
+                    <div className="hidden" data-order-id={order.id}>
+                      <DeliveredDatePicker order={order} />
+                      <SellerShippedDatePicker order={order} />
+                      <ScheduledDatePicker order={order} />
+                    </div>
+
+
                   </div>
                 </CardContent>
               </Card>
