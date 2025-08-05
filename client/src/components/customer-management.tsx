@@ -55,7 +55,7 @@ export function CustomerManagement() {
 
   const { data: customers = [], isLoading } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
-    refetchInterval: 10000, // 10초마다 자동 새로고침
+    refetchInterval: 10000,
   });
 
   const { data: trashedCustomers = [], isLoading: isLoadingTrash } = useQuery<Customer[]>({
@@ -79,11 +79,12 @@ export function CustomerManagement() {
         description: "새 고객이 성공적으로 등록되었습니다.",
       });
       resetForm();
+      setIsDialogOpen(false);
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
-        title: "고객 등록 실패",
-        description: error.response?.data?.error || "고객 등록 중 오류가 발생했습니다.",
+        title: "등록 실패",
+        description: "고객 등록에 실패했습니다.",
         variant: "destructive",
       });
     },
@@ -99,11 +100,12 @@ export function CustomerManagement() {
         description: "고객 정보가 성공적으로 수정되었습니다.",
       });
       resetForm();
+      setIsDialogOpen(false);
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
-        title: "고객 정보 수정 실패",
-        description: error.response?.data?.error || "고객 정보 수정 중 오류가 발생했습니다.",
+        title: "수정 실패",
+        description: "고객 정보 수정에 실패했습니다.",
         variant: "destructive",
       });
     },
@@ -113,41 +115,23 @@ export function CustomerManagement() {
     mutationFn: (id: number) => api.delete(`/api/customers/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers/trash"] });
       toast({
-        title: "고객 삭제 완료",
+        title: "고객 삭제",
         description: "고객이 휴지통으로 이동되었습니다.",
       });
     },
     onError: () => {
       toast({
-        title: "고객 삭제 실패",
-        description: "고객 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const bulkDeleteCustomersMutation = useMutation({
-    mutationFn: (ids: number[]) => api.post("/api/customers/bulk-delete", { ids }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      setSelectedCustomers(new Set());
-      toast({
-        title: "일괄 삭제 완료",
-        description: data.message || "선택된 고객들이 휴지통으로 이동되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "일괄 삭제 실패",
-        description: error.response?.data?.error || "고객 일괄 삭제 중 오류가 발생했습니다.",
+        title: "삭제 실패",
+        description: "고객 삭제에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
 
   const restoreCustomerMutation = useMutation({
-    mutationFn: (id: number) => api.post(`/api/customers/${id}/restore`, {}),
+    mutationFn: (id: number) => api.post(`/api/customers/${id}/restore`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       queryClient.invalidateQueries({ queryKey: ["/api/customers/trash"] });
@@ -156,118 +140,80 @@ export function CustomerManagement() {
         description: "고객이 성공적으로 복구되었습니다.",
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
-        title: "고객 복구 실패",
-        description: error.response?.data?.error || "고객 복구 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const permanentDeleteCustomerMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/api/customers/${id}/permanent`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers/trash"] });
-      toast({
-        title: "고객 영구 삭제 완료",
-        description: "고객이 영구적으로 삭제되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "고객 영구 삭제 실패",
-        description: error.response?.data?.error || "고객 영구 삭제 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const bulkRestoreCustomersMutation = useMutation({
-    mutationFn: (ids: number[]) => api.post("/api/customers/bulk-restore", { ids }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/customers/trash"] });
-      setSelectedTrashCustomers(new Set());
-      toast({
-        title: "일괄 복구 완료",
-        description: data.message || "선택된 고객들이 복구되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "일괄 복구 실패",
-        description: error.response?.data?.error || "고객 일괄 복구 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const bulkPermanentDeleteCustomersMutation = useMutation({
-    mutationFn: (ids: number[]) => api.post("/api/customers/bulk-permanent-delete", { ids }),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers/trash"] });
-      setSelectedTrashCustomers(new Set());
-      toast({
-        title: "일괄 영구 삭제 완료",
-        description: data.message || "선택된 고객들이 영구적으로 삭제되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "일괄 영구 삭제 실패",
-        description: error.response?.data?.error || "고객 일괄 영구 삭제 중 오류가 발생했습니다.",
+        title: "복구 실패",
+        description: "고객 복구에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
 
   const refreshStatsMutation = useMutation({
-    mutationFn: () => api.post("/api/customers/refresh-stats", {}),
+    mutationFn: () => api.post('/api/customers/refresh-stats'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({
         title: "통계 업데이트 완료",
-        description: "모든 고객의 주문횟수와 통계가 업데이트되었습니다.",
+        description: "고객 통계가 업데이트되었습니다.",
       });
     },
-    onError: (error: any) => {
+    onError: () => {
       toast({
-        title: "통계 업데이트 실패",
-        description: error.response?.data?.error || "통계 업데이트 중 오류가 발생했습니다.",
+        title: "업데이트 실패",
+        description: "통계 업데이트에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
 
   const uploadCustomersMutation = useMutation({
-    mutationFn: (file: File) => {
+    mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      return fetch('/api/customers/upload', {
+      const response = await fetch('/api/customers/upload', {
         method: 'POST',
         body: formData,
-      }).then(async (res) => {
-        if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error || '파일 업로드에 실패했습니다');
-        }
-        return res.json();
       });
+      if (!response.ok) {
+        throw new Error('업로드 실패');
+      }
+      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
       toast({
         title: "엑셀 업로드 완료",
-        description: `${data.message} (신규등록: ${data.created}명, 중복제외: ${data.skipped}명)`,
+        description: `${data.count}개의 고객이 업로드되었습니다.`,
       });
       setIsUploadDialogOpen(false);
       setUploadFile(null);
     },
-    onError: (error: Error) => {
+    onError: () => {
       toast({
-        title: "엑셀 업로드 실패",
-        description: error.message,
+        title: "업로드 실패",
+        description: "엑셀 파일 업로드에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const sendSmsMutation = useMutation({
+    mutationFn: ({ phoneNumber, message }: { phoneNumber: string; message: string }) =>
+      api.post('/api/sms/send', { phoneNumber, message }),
+    onSuccess: () => {
+      toast({
+        title: "SMS 전송 완료",
+        description: "SMS가 성공적으로 전송되었습니다.",
+      });
+      setIsSmsDialogOpen(false);
+      setSmsMessage("");
+      setSelectedCustomerForSms(null);
+    },
+    onError: () => {
+      toast({
+        title: "SMS 전송 실패",
+        description: "SMS 전송에 실패했습니다.",
         variant: "destructive",
       });
     },
@@ -283,199 +229,60 @@ export function CustomerManagement() {
       notes: "",
     });
     setEditingCustomer(null);
-    setIsDialogOpen(false);
-  };
-
-  const openAddressDialog = (customerPhone: string) => {
-    setSelectedCustomerPhone(customerPhone);
-    setIsAddressDialogOpen(true);
-  };
-
-  const getFullAddress = (customer: Customer) => {
-    const parts = [customer.zipCode, customer.address1, customer.address2].filter(Boolean);
-    return parts.length > 0 ? parts.join(' ') : '주소 없음';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.customerName || !formData.customerPhone) {
-      toast({
-        title: "필수 정보 누락",
-        description: "고객명과 연락처는 필수 입력 항목입니다.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const customerData: InsertCustomer = {
-      customerName: formData.customerName,
-      customerPhone: formData.customerPhone,
-      zipCode: formData.zipCode || null,
-      address1: formData.address1 || null,
-      address2: formData.address2 || null,
-      notes: formData.notes || null,
-    };
-
     if (editingCustomer) {
-      updateCustomerMutation.mutate({ id: editingCustomer.id, data: customerData });
+      updateCustomerMutation.mutate({
+        id: editingCustomer.id,
+        data: formData,
+      });
     } else {
-      createCustomerMutation.mutate(customerData);
+      createCustomerMutation.mutate(formData);
     }
   };
 
   const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
     setFormData({
-      customerName: customer.customerName,
-      customerPhone: customer.customerPhone,
+      customerName: customer.customerName || "",
+      customerPhone: customer.customerPhone || "",
       zipCode: customer.zipCode || "",
       address1: customer.address1 || "",
       address2: customer.address2 || "",
       notes: customer.notes || "",
     });
-    setEditingCustomer(customer);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (customer: Customer) => {
-    if (window.confirm(`${customer.customerName} 고객 정보를 휴지통으로 이동하시겠습니까?`)) {
-      deleteCustomerMutation.mutate(customer.id);
-    }
-  };
-
-  // Selection helper functions
-  const toggleCustomerSelection = (customerId: number) => {
-    const newSelected = new Set(selectedCustomers);
-    if (newSelected.has(customerId)) {
-      newSelected.delete(customerId);
-    } else {
-      newSelected.add(customerId);
-    }
-    setSelectedCustomers(newSelected);
-  };
-
-  const toggleTrashCustomerSelection = (customerId: number) => {
-    const newSelected = new Set(selectedTrashCustomers);
-    if (newSelected.has(customerId)) {
-      newSelected.delete(customerId);
-    } else {
-      newSelected.add(customerId);
-    }
-    setSelectedTrashCustomers(newSelected);
-  };
-
-  const selectAllCustomers = () => {
-    setSelectedCustomers(new Set(customers.map(c => c.id)));
-  };
-
-  const selectAllTrashCustomers = () => {
-    setSelectedTrashCustomers(new Set(trashedCustomers.map(c => c.id)));
-  };
-
-  const clearAllSelections = () => {
-    setSelectedCustomers(new Set());
-    setSelectedTrashCustomers(new Set());
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedCustomers.size === 0) return;
-    
-    if (window.confirm(`선택된 ${selectedCustomers.size}개 고객을 휴지통으로 이동하시겠습니까?`)) {
-      bulkDeleteCustomersMutation.mutate(Array.from(selectedCustomers));
-    }
-  };
-
-  const handleBulkRestore = () => {
-    if (selectedTrashCustomers.size === 0) return;
-    
-    if (window.confirm(`선택된 ${selectedTrashCustomers.size}개 고객을 복구하시겠습니까?`)) {
-      bulkRestoreCustomersMutation.mutate(Array.from(selectedTrashCustomers));
-    }
-  };
-
-  const handleBulkPermanentDelete = () => {
-    if (selectedTrashCustomers.size === 0) return;
-    
-    if (window.confirm(`선택된 ${selectedTrashCustomers.size}개 고객을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
-      bulkPermanentDeleteCustomersMutation.mutate(Array.from(selectedTrashCustomers));
-    }
-  };
-
-  const openSmsDialog = (customer: Customer) => {
-    setSelectedCustomerForSms(customer);
-    setSmsMessage("");
-    setIsSmsDialogOpen(true);
-  };
-
-  const sendSmsMutation = useMutation({
-    mutationFn: ({ phoneNumber, message }: { phoneNumber: string; message: string }) => 
-      api.post("/api/sms/send-customer", { phoneNumber, message }),
-    onSuccess: () => {
-      toast({
-        title: "문자 전송 완료",
-        description: "고객에게 문자가 성공적으로 전송되었습니다.",
-      });
-      setIsSmsDialogOpen(false);
-      setSmsMessage("");
-      setSelectedCustomerForSms(null);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "문자 전송 실패",
-        description: error.response?.data?.error || "문자 전송 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const formatPhoneNumber = (phone: string) => {
-    return phone.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
-  };
-
-  const formatAddress = (customer: Customer) => {
-    const parts = [];
-    if (customer.zipCode) parts.push(`[${customer.zipCode}]`);
-    if (customer.address1) parts.push(customer.address1);
-    if (customer.address2) parts.push(customer.address2);
-    return parts.join(" ") || "-";
-  };
-
-  const formatLastOrderDate = (date: string | Date | null) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("ko-KR");
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 11) {
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
+    }
+    return phone;
   };
 
   const formatAmount = (amount: number) => {
-    return amount.toLocaleString() + "원";
+    return `${amount.toLocaleString()}원`;
   };
 
-  // 회원별로 고객을 그룹화하는 함수
-  const groupCustomersByUser = (customers: Customer[]) => {
-    const userGroups: { [key: string]: Customer[] } = {};
-    const nonMembers: Customer[] = [];
-
-    customers.forEach(customer => {
-      if (customer.userId && customer.userRegisteredName && customer.userRegisteredPhone) {
-        const userKey = `${customer.userId}-${customer.userRegisteredName}-${customer.userRegisteredPhone}`;
-        if (!userGroups[userKey]) {
-          userGroups[userKey] = [];
-        }
-        userGroups[userKey].push(customer);
-      } else {
-        nonMembers.push(customer);
-      }
+  const formatLastOrderDate = (date: string | null) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
-
-    return { userGroups, nonMembers };
   };
-
-  const { userGroups, nonMembers } = groupCustomersByUser(customers || []);
 
   return (
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
             <User className="h-5 w-5" />
             고객관리
           </CardTitle>
@@ -485,469 +292,243 @@ export function CustomerManagement() {
               size="sm"
               onClick={() => refreshStatsMutation.mutate()}
               disabled={refreshStatsMutation.isPending}
-              className="flex-1 sm:flex-none"
+              className="flex-1 sm:flex-none text-xs md:text-sm"
             >
               {refreshStatsMutation.isPending ? "업데이트중..." : "통계 새로고침"}
             </Button>
+            
             <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs md:text-sm">
                   <Upload className="h-4 w-4 mr-2" />
                   엑셀 업로드
                 </Button>
               </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>엑셀 파일로 고객 일괄 등록</DialogTitle>
-                <DialogDescription>
-                  엑셀 파일을 업로드하여 여러 고객을 한번에 등록할 수 있습니다.
-                  <br />
-                  필수 컬럼: 고객명, 연락처 | 선택 컬럼: 우편번호, 주소1, 주소2, 발송주소, 메모
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="file">엑셀 파일 (.xlsx, .xls)</Label>
-                  <Input
-                    id="file"
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                    className="mt-1"
-                  />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="text-lg md:text-xl">엑셀 파일로 고객 일괄 등록</DialogTitle>
+                  <DialogDescription className="text-sm md:text-base">
+                    엑셀 파일을 업로드하여 여러 고객을 한번에 등록할 수 있습니다.
+                    <br />
+                    필수 컬럼: 고객명, 연락처 | 선택 컬럼: 우편번호, 주소1, 주소2, 발송주소, 메모
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="file" className="text-sm md:text-base">엑셀 파일 (.xlsx, .xls)</Label>
+                    <Input
+                      id="file"
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                      className="mt-1 text-sm md:text-base"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setIsUploadDialogOpen(false);
+                        setUploadFile(null);
+                      }}
+                      className="text-sm md:text-base"
+                    >
+                      취소
+                    </Button>
+                    <Button 
+                      onClick={() => uploadFile && uploadCustomersMutation.mutate(uploadFile)}
+                      disabled={!uploadFile || uploadCustomersMutation.isPending}
+                      className="text-sm md:text-base"
+                    >
+                      {uploadCustomersMutation.isPending ? (
+                        <>처리중...</>
+                      ) : (
+                        <>
+                          <FileSpreadsheet className="h-4 w-4 mr-2" />
+                          업로드
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setIsUploadDialogOpen(false);
-                      setUploadFile(null);
-                    }}
-                  >
-                    취소
-                  </Button>
-                  <Button 
-                    onClick={() => uploadFile && uploadCustomersMutation.mutate(uploadFile)}
-                    disabled={!uploadFile || uploadCustomersMutation.isPending}
-                  >
-                    {uploadCustomersMutation.isPending ? (
-                      <>처리중...</>
-                    ) : (
-                      <>
-                        <FileSpreadsheet className="h-4 w-4 mr-2" />
-                        업로드
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => resetForm()} size="sm" className="flex-1 sm:flex-none">
-                <Plus className="h-4 w-4 mr-2" />
-                고객 등록
-              </Button>
-            </DialogTrigger>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => resetForm()} size="sm" className="flex-1 sm:flex-none text-xs md:text-sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  고객 등록
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-lg md:text-xl">
+                    {editingCustomer ? "고객 정보 수정" : "새 고객 등록"}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm md:text-base">
+                    {editingCustomer 
+                      ? "고객 정보를 수정해주세요." 
+                      : "새로운 고객 정보를 입력해주세요."
+                    }
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="customerName" className="text-sm md:text-base">고객명 *</Label>
+                      <Input
+                        id="customerName"
+                        value={formData.customerName}
+                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                        placeholder="홍길동"
+                        required
+                        className="text-sm md:text-base"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="customerPhone" className="text-sm md:text-base">연락처 *</Label>
+                      <Input
+                        id="customerPhone"
+                        value={formData.customerPhone}
+                        onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                        placeholder="010-1234-5678"
+                        required
+                        className="text-sm md:text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="zipCode" className="text-sm md:text-base">우편번호</Label>
+                      <Input
+                        id="zipCode"
+                        value={formData.zipCode}
+                        onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+                        placeholder="12345"
+                        className="text-sm md:text-base"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="address1" className="text-sm md:text-base">주소</Label>
+                      <Input
+                        id="address1"
+                        value={formData.address1}
+                        onChange={(e) => setFormData({ ...formData, address1: e.target.value })}
+                        placeholder="서울시 강남구 테헤란로 123"
+                        className="text-sm md:text-base"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="address2" className="text-sm md:text-base">상세주소</Label>
+                    <Input
+                      id="address2"
+                      value={formData.address2}
+                      onChange={(e) => setFormData({ ...formData, address2: e.target.value })}
+                      placeholder="101호"
+                      className="text-sm md:text-base"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="notes" className="text-sm md:text-base">메모</Label>
+                    <Textarea
+                      id="notes"
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      placeholder="배송 관련 특이사항 등"
+                      className="min-h-[80px] text-sm md:text-base"
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => setIsDialogOpen(false)}
+                      className="flex-1 text-sm md:text-base"
+                    >
+                      취소
+                    </Button>
+                    <Button 
+                      type="submit"
+                      disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending}
+                      className="flex-1 text-sm md:text-base"
+                    >
+                      {(createCustomerMutation.isPending || updateCustomerMutation.isPending) ? (
+                        "처리중..."
+                      ) : (
+                        editingCustomer ? "수정" : "등록"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </CardHeader>
       
       <CardContent>
-        {/* 고객 등록/수정 다이얼로그 */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>
-                {editingCustomer ? "고객 정보 수정" : "새 고객 등록"}
-              </DialogTitle>
-              <DialogDescription>
-                {editingCustomer 
-                  ? "고객 정보를 수정해주세요." 
-                  : "새로운 고객 정보를 입력해주세요."
-                }
-              </DialogDescription>
-            </DialogHeader>
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="customerName">고객명 *</Label>
-                  <Input
-                    id="customerName"
-                    value={formData.customerName}
-                    onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                    placeholder="홍길동"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="customerPhone">연락처 *</Label>
-                  <Input
-                    id="customerPhone"
-                    value={formData.customerPhone}
-                    onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                    placeholder="010-1234-5678"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="zipCode">우편번호</Label>
-                  <Input
-                    id="zipCode"
-                    value={formData.zipCode}
-                    onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                    placeholder="12345"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Label htmlFor="address1">주소</Label>
-                  <Input
-                    id="address1"
-                    value={formData.address1}
-                    onChange={(e) => setFormData({ ...formData, address1: e.target.value })}
-                    placeholder="서울시 강남구 테헤란로 123"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="address2">상세주소</Label>
-                <Input
-                  id="address2"
-                  value={formData.address2}
-                  onChange={(e) => setFormData({ ...formData, address2: e.target.value })}
-                  placeholder="101동 502호"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="notes">메모</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="고객 관련 메모를 입력하세요"
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  취소
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createCustomerMutation.isPending || updateCustomerMutation.isPending}
-                >
-                  {editingCustomer ? "수정" : "등록"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-        </div>
-      </CardHeader>
-      
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)}>
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "customers" | "trash")} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="customers">활성 고객</TabsTrigger>
-            <TabsTrigger value="trash">휴지통</TabsTrigger>
+            <TabsTrigger value="customers" className="text-sm md:text-base">고객 목록 ({customers.length})</TabsTrigger>
+            <TabsTrigger value="trash" className="text-sm md:text-base">휴지통 ({trashedCustomers.length})</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="customers" className="mt-4">
-            {/* 일괄 삭제 버튼 영역 */}
-            {selectedCustomers.size > 0 && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-blue-800">
-                    {selectedCustomers.size}개 고객이 선택됨
-                  </span>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={clearAllSelections}
-                    >
-                      선택 해제
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive"
-                      onClick={handleBulkDelete}
-                      disabled={bulkDeleteCustomersMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      선택된 고객 삭제
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
+          <TabsContent value="customers" className="mt-6">
             {isLoading ? (
-              <div className="text-center py-8">로딩 중...</div>
+              <div className="text-center py-8">
+                <div className="text-sm md:text-base">로딩 중...</div>
+              </div>
             ) : customers.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                등록된 고객이 없습니다. 첫 고객을 등록해보세요.
+                <div className="text-sm md:text-base">등록된 고객이 없습니다. 첫 고객을 등록해보세요.</div>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedCustomers.size === customers.length && customers.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              selectAllCustomers();
-                            } else {
-                              clearAllSelections();
-                            }
-                          }}
-                        />
-                      </TableHead>
-                      <TableHead>회원연결</TableHead>
-                      <TableHead>고객명</TableHead>
-                      <TableHead>연락처</TableHead>
-                      <TableHead>주소</TableHead>
-                      <TableHead className="text-center">주문횟수</TableHead>
-                      <TableHead className="text-center">총주문금액</TableHead>
-                      <TableHead className="text-center">마지막주문일</TableHead>
-                      <TableHead className="text-center">작업</TableHead>
+                      <TableHead className="text-xs md:text-sm">고객명</TableHead>
+                      <TableHead className="text-xs md:text-sm">연락처</TableHead>
+                      <TableHead className="hidden md:table-cell text-xs md:text-sm">주소</TableHead>
+                      <TableHead className="text-xs md:text-sm">주문수</TableHead>
+                      <TableHead className="hidden sm:table-cell text-xs md:text-sm">총금액</TableHead>
+                      <TableHead className="text-xs md:text-sm">액션</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* 회원별 그룹 렌더링 */}
-                    {Object.entries(userGroups).map(([userKey, groupCustomers], groupIndex) => {
-                      const firstCustomer = groupCustomers[0];
-                      const totalOrderCount = groupCustomers.reduce((sum, c) => sum + c.orderCount, 0);
-                      const totalSpent = groupCustomers.reduce((sum, c) => sum + c.totalSpent, 0);
-                      const latestOrderDate = groupCustomers.reduce((latest, c) => {
-                        if (!latest) return c.lastOrderDate;
-                        if (!c.lastOrderDate) return latest;
-                        return new Date(c.lastOrderDate) > new Date(latest) ? c.lastOrderDate : latest;
-                      }, null as string | Date | null);
-
-                      return (
-                        <React.Fragment key={userKey}>
-                          {/* 각 고객을 개별 행으로 표시하되 첫 번째 행에만 회원 정보 표시 */}
-                          {groupCustomers.map((customer, customerIndex) => (
-                            <TableRow key={customer.id} className={customerIndex === 0 ? "bg-green-50 border-t-2 border-green-200" : "bg-green-25"}>
-                              <TableCell>
-                                <Checkbox
-                                  checked={selectedCustomers.has(customer.id)}
-                                  onCheckedChange={() => toggleCustomerSelection(customer.id)}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {customerIndex === 0 ? (
-                                  <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-2">
-                                      <User className="h-4 w-4 text-green-600" />
-                                      <Badge variant="outline" className="text-green-700 border-green-300">
-                                        회원통합 ({groupCustomers.length}개)
-                                      </Badge>
-                                    </div>
-                                    <div className="text-sm font-medium text-green-700">
-                                      {firstCustomer.userRegisteredName}
-                                    </div>
-                                    <div className="text-xs text-gray-600">
-                                      {formatPhoneNumber(firstCustomer.userRegisteredPhone!)}
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2 pl-4">
-                                    <span className="text-xs text-gray-400">└</span>
-                                    <span className="text-xs text-gray-500">연결된 고객</span>
-                                  </div>
-                                )}
-                              </TableCell>
-                              <TableCell className="font-medium">
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-gray-500" />
-                                  {customer.customerName}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <Phone className="h-4 w-4 text-gray-500" />
-                                  {formatPhoneNumber(customer.customerPhone)}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-gray-500" />
-                                  <div className="flex items-center gap-2">
-                                    <span className="max-w-xs truncate" title={getFullAddress(customer)}>
-                                      {getFullAddress(customer)}
-                                    </span>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => openAddressDialog(customer.customerPhone)}
-                                      className="h-6 px-2 text-xs"
-                                    >
-                                      <Eye className="h-3 w-3 mr-1" />
-                                      주소목록
-                                    </Button>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {customerIndex === 0 ? (
-                                  <div className="flex items-center justify-center gap-1">
-                                    <Package className="h-4 w-4 text-gray-500" />
-                                    <Badge variant="secondary" className="bg-green-100 text-green-700">
-                                      {totalOrderCount}회 (통합)
-                                    </Badge>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center justify-center gap-1">
-                                    <Package className="h-4 w-4 text-gray-500" />
-                                    <Badge variant="secondary">
-                                      {customer.orderCount}회 (개별)
-                                    </Badge>
-                                  </div>
-                                )}
-                              </TableCell>
-                              <TableCell className="text-center font-medium">
-                                {customerIndex === 0 ? (
-                                  <span className="text-green-700 font-bold">{formatAmount(totalSpent)}</span>
-                                ) : (
-                                  formatAmount(customer.totalSpent)
-                                )}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {customerIndex === 0 ? 
-                                  formatLastOrderDate(latestOrderDate) : 
-                                  formatLastOrderDate(customer.lastOrderDate)
-                                }
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="flex items-center justify-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => openSmsDialog(customer)}
-                                    className="text-blue-600 hover:text-blue-700"
-                                  >
-                                    <MessageSquare className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleEdit(customer)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDelete(customer)}
-                                    className="text-red-600 hover:text-red-700"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </React.Fragment>
-                      );
-                    })}
-
-                    {/* 비회원 고객들 */}
-                    {nonMembers.map((customer) => (
+                    {customers.map((customer) => (
                       <TableRow key={customer.id}>
+                        <TableCell className="text-xs md:text-sm font-medium">{customer.customerName}</TableCell>
+                        <TableCell className="text-xs md:text-sm">{formatPhoneNumber(customer.customerPhone)}</TableCell>
+                        <TableCell className="hidden md:table-cell text-xs md:text-sm max-w-[200px] truncate">
+                          {customer.address1 ? `${customer.address1} ${customer.address2 || ''}`.trim() : '-'}
+                        </TableCell>
+                        <TableCell className="text-xs md:text-sm">{customer.orderCount || 0}</TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs md:text-sm">{formatAmount(customer.totalOrderAmount || 0)}</TableCell>
                         <TableCell>
-                          <Checkbox
-                            checked={selectedCustomers.has(customer.id)}
-                            onCheckedChange={() => toggleCustomerSelection(customer.id)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-400" />
-                            <span className="text-gray-500 text-sm">비회원</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-500" />
-                            {customer.customerName}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-500" />
-                            {formatPhoneNumber(customer.customerPhone)}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-gray-500" />
-                            <div className="flex items-center gap-2">
-                              <span className="max-w-xs truncate" title={getFullAddress(customer)}>
-                                {getFullAddress(customer)}
-                              </span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openAddressDialog(customer.customerPhone)}
-                                className="h-6 px-2 text-xs"
-                              >
-                                <Eye className="h-3 w-3 mr-1" />
-                                주소목록
-                              </Button>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            <Package className="h-4 w-4 text-gray-500" />
-                            <Badge variant="secondary">
-                              {customer.orderCount}회 (2년)
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center font-medium">
-                          {formatAmount(customer.totalSpent)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {formatLastOrderDate(customer.lastOrderDate)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex gap-1">
                             <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openSmsDialog(customer)}
-                              className="text-blue-600 hover:text-blue-700"
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => handleEdit(customer)}
+                              className="text-xs"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-3 w-3" />
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              onClick={() => handleDelete(customer)}
-                              className="text-red-600 hover:text-red-700"
+                              onClick={() => deleteCustomerMutation.mutate(customer.id)}
+                              className="text-xs text-red-600 hover:text-red-700"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
                         </TableCell>
@@ -959,124 +540,43 @@ export function CustomerManagement() {
             )}
           </TabsContent>
           
-          {/* 휴지통 탭 */}
-          <TabsContent value="trash" className="mt-4">
-            {/* 일괄 복구/삭제 버튼 영역 */}
-            {selectedTrashCustomers.size > 0 && (
-              <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-orange-800">
-                    {selectedTrashCustomers.size}개 고객이 선택됨
-                  </span>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={clearAllSelections}
-                    >
-                      선택 해제
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="default"
-                      onClick={handleBulkRestore}
-                      disabled={bulkRestoreCustomersMutation.isPending}
-                    >
-                      <RefreshCw className="h-4 w-4 mr-1" />
-                      선택된 고객 복구
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="destructive"
-                      onClick={handleBulkPermanentDelete}
-                      disabled={bulkPermanentDeleteCustomersMutation.isPending}
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      영구 삭제
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
+          <TabsContent value="trash" className="mt-6">
             {isLoadingTrash ? (
-              <div className="text-center py-8">로딩 중...</div>
+              <div className="text-center py-8">
+                <div className="text-sm md:text-base">로딩 중...</div>
+              </div>
             ) : trashedCustomers.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                휴지통이 비어있습니다.
+                <div className="text-sm md:text-base">휴지통이 비어있습니다.</div>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-12">
-                        <Checkbox
-                          checked={selectedTrashCustomers.size === trashedCustomers.length && trashedCustomers.length > 0}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              selectAllTrashCustomers();
-                            } else {
-                              clearAllSelections();
-                            }
-                          }}
-                        />
-                      </TableHead>
-                      <TableHead>고객명</TableHead>
-                      <TableHead>연락처</TableHead>
-                      <TableHead>삭제일</TableHead>
-                      <TableHead className="text-center">작업</TableHead>
+                      <TableHead className="text-xs md:text-sm">고객명</TableHead>
+                      <TableHead className="text-xs md:text-sm">연락처</TableHead>
+                      <TableHead className="hidden md:table-cell text-xs md:text-sm">삭제일</TableHead>
+                      <TableHead className="text-xs md:text-sm">액션</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {trashedCustomers.map((customer) => (
                       <TableRow key={customer.id}>
+                        <TableCell className="text-xs md:text-sm font-medium">{customer.customerName}</TableCell>
+                        <TableCell className="text-xs md:text-sm">{formatPhoneNumber(customer.customerPhone)}</TableCell>
+                        <TableCell className="hidden md:table-cell text-xs md:text-sm">
+                          {customer.deletedAt ? formatLastOrderDate(customer.deletedAt) : '-'}
+                        </TableCell>
                         <TableCell>
-                          <Checkbox
-                            checked={selectedTrashCustomers.has(customer.id)}
-                            onCheckedChange={() => toggleTrashCustomerSelection(customer.id)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium text-gray-500">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-gray-400" />
-                            {customer.customerName}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-500">
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-gray-400" />
-                            {formatPhoneNumber(customer.customerPhone)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-gray-500">
-                          {customer.deletedAt ? new Date(customer.deletedAt).toLocaleDateString("ko-KR") : "-"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => restoreCustomerMutation.mutate(customer.id)}
-                              className="text-green-600 hover:text-green-700"
-                              disabled={restoreCustomerMutation.isPending}
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                if (window.confirm(`${customer.customerName} 고객을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
-                                  permanentDeleteCustomerMutation.mutate(customer.id);
-                                }
-                              }}
-                              className="text-red-600 hover:text-red-700"
-                              disabled={permanentDeleteCustomerMutation.isPending}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => restoreCustomerMutation.mutate(customer.id)}
+                            className="text-xs"
+                          >
+                            복구
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1087,118 +587,6 @@ export function CustomerManagement() {
           </TabsContent>
         </Tabs>
       </CardContent>
-
-      {/* Address Dialog */}
-      <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>고객 주소 목록</DialogTitle>
-            <DialogDescription>
-              이 고객이 주문할 때 사용한 모든 주소입니다.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            {customerAddresses.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
-                주소 정보가 없습니다.
-              </div>
-            ) : (
-              customerAddresses.map((addressInfo, index) => (
-                <div key={index} className="p-3 border rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {addressInfo.address}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {addressInfo.orderCount}개의 주문에서 사용
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="ml-2">
-                      {addressInfo.orderCount}회
-                    </Badge>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* SMS Dialog */}
-      <Dialog open={isSmsDialogOpen} onOpenChange={setIsSmsDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>문자 메시지 전송</DialogTitle>
-            <DialogDescription>
-              {selectedCustomerForSms && `${selectedCustomerForSms.customerName} (${formatPhoneNumber(selectedCustomerForSms.customerPhone)})님에게 문자를 전송합니다.`}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="sms-message">메시지 내용</Label>
-              <textarea
-                id="sms-message"
-                className="w-full min-h-[120px] p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="전송할 메시지를 입력하세요..."
-                value={smsMessage}
-                onChange={(e) => setSmsMessage(e.target.value)}
-                maxLength={1000}
-              />
-              <div className="text-right text-sm text-gray-500 mt-1">
-                {smsMessage.length}/1000자
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setIsSmsDialogOpen(false);
-                  setSmsMessage("");
-                  setSelectedCustomerForSms(null);
-                }}
-              >
-                취소
-              </Button>
-              <Button 
-                onClick={() => {
-                  if (selectedCustomerForSms && smsMessage.trim()) {
-                    sendSmsMutation.mutate({ 
-                      phoneNumber: selectedCustomerForSms.customerPhone, 
-                      message: smsMessage.trim() 
-                    });
-                  }
-                }}
-                disabled={!smsMessage.trim() || sendSmsMutation.isPending}
-              >
-                {sendSmsMutation.isPending ? "전송 중..." : "전송"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
-}
-
-// Helper functions
-function formatPhoneNumber(phone: string): string {
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 11) {
-    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`;
-  }
-  return phone;
-}
-
-function formatAmount(amount: number): string {
-  return `${amount.toLocaleString()}원`;
-}
-
-function formatLastOrderDate(date: string | null): string {
-  if (!date) return '-';
-  return new Date(date).toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
 }

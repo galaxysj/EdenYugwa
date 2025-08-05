@@ -1509,7 +1509,7 @@ export default function Admin() {
                         삭제일: {order.deletedAt ? new Date(order.deletedAt).toLocaleDateString('ko-KR') : '-'}
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs md:text-sm">
                       <div>
                         <span className="font-medium">고객명:</span> {order.customerName}
                       </div>
@@ -2124,7 +2124,7 @@ export default function Admin() {
                           title="삭제용 선택"
                         />
                         <div>
-                          <div className="font-medium text-gray-900 text-lg">#{order.orderNumber}</div>
+                          <div className="font-medium text-gray-900 text-sm md:text-lg">#{order.orderNumber}</div>
                         <div className="text-sm text-gray-500">
                           <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                           <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
@@ -2170,7 +2170,7 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-xs md:text-sm">
                       <div>
                         <div className="text-gray-500 mb-1">주문자</div>
                         <div className="font-medium">{order.customerName}</div>
@@ -2324,7 +2324,7 @@ export default function Admin() {
                         </Select>
                       </div>
                       <div>
-                        <div className="text-gray-500 mb-2">주문상태</div>
+                        <div className="text-gray-500 mb-2 text-xs md:text-sm">주문상태</div>
                         <Select
                           value={order.status}
                           onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
@@ -2362,7 +2362,7 @@ export default function Admin() {
                         </Select>
                       </div>
                       <div>
-                        <div className="text-gray-500 mb-2">예약발송일</div>
+                        <div className="text-gray-500 mb-2 text-xs md:text-sm">예약발송일</div>
                         {order.scheduledDate ? (
                           <div 
                             className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
@@ -2722,7 +2722,7 @@ export default function Admin() {
         {/* Orders List with Tabs */}
         <Card>
           <CardHeader>
-            <CardTitle className="font-korean">주문 목록</CardTitle>
+            <CardTitle className="font-korean text-lg md:text-xl">주문 목록</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -2793,14 +2793,14 @@ export default function Admin() {
                 <TabsContent value="all" className="mt-6">
                   {renderOrderFilters()}
                   <div className="flex justify-between items-center mb-4">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs md:text-sm text-gray-600">
                       총 {allOrders.length}개 주문
                     </div>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => exportToExcel(allOrders, "전체주문목록")}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 text-xs md:text-sm"
                     >
                       <Download className="h-4 w-4" />
                       엑셀 다운로드
