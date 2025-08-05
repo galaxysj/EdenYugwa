@@ -2675,7 +2675,7 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                {/* 모바일에서는 2줄로 나누어 표시 */}
+                {/* 모바일에서는 3줄로 나누어 표시 - 설정 탭 추가 */}
                 <div className="block md:hidden">
                   <TabsList className="grid w-full grid-cols-4 mb-2">
                     <TabsTrigger value="all" className="text-xs px-1">전체 ({allOrders.length})</TabsTrigger>
@@ -2683,7 +2683,7 @@ export default function Admin() {
                     <TabsTrigger value="seller_shipped" className="text-xs px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
                     <TabsTrigger value="scheduled" className="text-xs px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-4">
+                  <TabsList className="grid w-full grid-cols-4 mb-2">
                     <TabsTrigger value="delivered" className="text-xs px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
                     <TabsTrigger value="refunded" className="text-red-600 text-xs px-1">
                       환불내역 ({refundedOrders.length})
@@ -2697,10 +2697,24 @@ export default function Admin() {
                       휴지통 ({deletedOrders.length})
                     </TabsTrigger>
                   </TabsList>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
+                      <Users className="h-3 w-3 mr-1" />
+                      고객관리
+                    </TabsTrigger>
+                    <TabsTrigger value="users" className="text-green-600 text-xs px-1">
+                      <Users className="h-3 w-3 mr-1" />
+                      사용자관리
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
+                      <Cog className="h-3 w-3 mr-1" />
+                      설정
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-                <TabsList className="hidden md:grid w-full grid-cols-8">
+                <TabsList className="hidden md:grid w-full grid-cols-9">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -2716,6 +2730,18 @@ export default function Admin() {
                   <TabsTrigger value="trash" className="text-red-600">
                     <Trash2 className="h-4 w-4 mr-1" />
                     휴지통 ({deletedOrders.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="customers" className="text-blue-600">
+                    <Users className="h-4 w-4 mr-1" />
+                    고객관리
+                  </TabsTrigger>
+                  <TabsTrigger value="users" className="text-green-600">
+                    <Users className="h-4 w-4 mr-1" />
+                    사용자관리
+                  </TabsTrigger>
+                  <TabsTrigger value="settings" className="text-orange-600">
+                    <Cog className="h-4 w-4 mr-1" />
+                    설정
                   </TabsTrigger>
                 </TabsList>
                 
@@ -3104,6 +3130,74 @@ export default function Admin() {
                   ) : (
                     renderTrashOrdersList(deletedOrders)
                   )}
+                </TabsContent>
+
+                <TabsContent value="settings" className="mt-6">
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                          <Cog className="h-5 w-5" />
+                          시스템 설정
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* 원가 설정 */}
+                          <div className="space-y-3">
+                            <h3 className="text-sm font-medium text-gray-900">원가 설정</h3>
+                            <div className="border rounded-lg p-4 bg-gray-50">
+                              <div className="text-center">
+                                <CostSettingsDialog />
+                                <p className="text-xs text-gray-500 mt-2">
+                                  한과 가격, 포장비, 배송비 등을 설정할 수 있습니다
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 시스템 관리 */}
+                          <div className="space-y-3">
+                            <h3 className="text-sm font-medium text-gray-900">시스템 관리</h3>
+                            <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+                              <div className="text-center">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => window.location.reload()}
+                                  className="w-full"
+                                >
+                                  <RefreshCw className="h-4 w-4 mr-2" />
+                                  시스템 새로고침
+                                </Button>
+                              </div>
+                              <div className="text-center">
+                                <PasswordChangeDialog />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 현재 설정 값 표시 - 모바일 최적화 */}
+                        <div className="mt-6 pt-6 border-t">
+                          <h3 className="text-sm font-medium text-gray-900 mb-4">현재 설정값</h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {settings && settings.map((setting) => (
+                              <div key={setting.id} className="bg-white border rounded-lg p-3">
+                                <div className="text-xs text-gray-500">{setting.description}</div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {setting.key.includes('Cost') || setting.key.includes('Fee') || setting.key.includes('Threshold') 
+                                    ? `${parseInt(setting.value).toLocaleString()}원`
+                                    : setting.value
+                                  }
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
               </Tabs>
             )}
