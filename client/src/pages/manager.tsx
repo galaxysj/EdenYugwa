@@ -718,6 +718,39 @@ export default function ManagerDashboard() {
 
               {/* 발송처리대기 탭 */}
               <TabsContent value="발송처리대기" className="space-y-4">
+                {/* 발송처리대기 주문에 대한 일괄 작업 버튼 */}
+                {filteredOrders.filter(o => !o.sellerShipped).length > 0 && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between">
+                    <span className="text-sm font-medium text-orange-900">
+                      발송처리대기 주문 {filteredOrders.filter(o => !o.sellerShipped).length}개
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
+                          setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
+                        }}
+                        className="bg-white"
+                      >
+                        전체 선택
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
+                          bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
+                        }}
+                        disabled={bulkSellerShippedMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {bulkSellerShippedMutation.isPending ? '처리중...' : '전체 발송처리'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b flex justify-between items-center">
                     <h2 className="text-lg font-semibold">발송처리대기 목록 (총 {filteredOrders.filter(o => !o.sellerShipped).length}개)</h2>
