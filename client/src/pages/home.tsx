@@ -25,87 +25,54 @@ export default function Home() {
       <header className="bg-white shadow-sm border-b border-eden-beige sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            {/* 데스크톱 왼쪽: 네비게이션 + 로고 */}
-            <div className="flex items-center space-x-6">
-              {/* Desktop Navigation - 왼쪽으로 이동 */}
-              <nav className="hidden md:flex space-x-6">
-                <button 
-                  onClick={() => scrollToSection('home')}
-                  className="text-eden-dark hover:text-eden-brown transition-colors"
-                >
-                  홈
-                </button>
-                <button 
-                  onClick={() => scrollToSection('about')}
-                  className="text-eden-dark hover:text-eden-brown transition-colors"
-                >
-                  소개
-                </button>
-                <button 
-                  onClick={() => scrollToSection('order')}
-                  className="text-eden-dark hover:text-eden-brown transition-colors"
-                >
-                  주문하기
-                </button>
-              </nav>
-              
-              {/* 로고 */}
-              <div className="flex items-center space-x-3">
-                <Leaf className="text-eden-sage text-2xl" />
-                <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-              </div>
+            <div className="flex items-center space-x-3">
+              <Leaf className="text-eden-sage text-2xl" />
+              <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
             </div>
             
-            {/* 모바일 레이아웃 */}
-            <div className="flex md:hidden items-center justify-between w-full">
-              {/* 모바일 왼쪽: 네비게이션 버튼들 */}
-              <div className="flex gap-1">
-                <button 
-                  onClick={() => scrollToSection('home')}
-                  className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors"
-                >
-                  홈
+            {/* 모바일 헤더 버튼들 - 오른쪽으로 이동 */}
+            <div className="flex md:hidden gap-2">
+              <Link href="/order-lookup">
+                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                  주문조회
                 </button>
-                <button 
-                  onClick={() => scrollToSection('about')}
-                  className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors"
-                >
-                  소개
+              </Link>
+              <Link href="/login">
+                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                  회원가입
                 </button>
-                <button 
-                  onClick={() => scrollToSection('order')}
-                  className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors"
-                >
-                  주문하기
-                </button>
-              </div>
-              
-              {/* 모바일 오른쪽: 주문조회/회원가입 */}
-              <div className="flex gap-1">
-                <Link href="/order-lookup">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    주문조회
-                  </button>
-                </Link>
-                <Link href="/login">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    회원가입
-                  </button>
-                </Link>
-              </div>
+              </Link>
             </div>
             
-            {/* 데스크톱 오른쪽: 주문조회/회원가입 */}
-            <nav className="hidden md:flex space-x-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              <button 
+                onClick={() => scrollToSection('home')}
+                className="text-eden-dark hover:text-eden-brown transition-colors"
+              >
+                홈
+              </button>
+              <button 
+                onClick={() => scrollToSection('about')}
+                className="text-eden-dark hover:text-eden-brown transition-colors"
+              >
+                소개
+              </button>
+              <button 
+                onClick={() => scrollToSection('order')}
+                className="text-eden-dark hover:text-eden-brown transition-colors"
+              >
+                주문하기
+              </button>
               <Link href="/order-lookup">
                 <Button variant="ghost" className="text-eden-brown hover:text-eden-dark text-[16px]">
-                  주문조회
+                  주문 조회
                 </Button>
               </Link>
               {!isAuthenticated && (
                 <Link href="/login">
                   <Button variant="outline" className="text-eden-brown border-eden-brown hover:bg-eden-brown hover:text-white">
-                    회원가입
+                    로그인/회원가입
                   </Button>
                 </Link>
               )}
@@ -144,6 +111,7 @@ export default function Home() {
                   로그아웃
                 </Button>
               )}
+
             </nav>
 
             {/* Mobile Menu Button */}
