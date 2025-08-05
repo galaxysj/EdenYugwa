@@ -305,10 +305,32 @@ export default function ManagerDashboard() {
       const results = [];
       const errors = [];
       
-      // 각 주문을 개별적으로 처리
+      // 각 주문을 개별적으로 처리 (이미 발송완료된 주문은 건너뛰기)
       for (const orderId of orderIds) {
         try {
           console.log(`주문 ${orderId} 개별 발송 처리 시작`);
+          
+          // 먼저 현재 주문 상태 확인
+          const orderCheckResponse = await fetch(`/api/orders/${orderId}`, {
+            method: 'GET',
+            credentials: 'include',
+          });
+          
+          if (orderCheckResponse.ok) {
+            const currentOrder = await orderCheckResponse.json();
+            
+            // 이미 매니저발송완료된 주문은 건너뛰기
+            if (currentOrder.sellerShipped) {
+              console.log(`주문 ${orderId}는 이미 매니저발송완료 상태입니다. 건너뜁니다.`);
+              continue;
+            }
+            
+            // 주문상태가 발송완료인 경우도 건너뛰기
+            if (currentOrder.status === 'delivered') {
+              console.log(`주문 ${orderId}는 이미 발송완료 상태입니다. 건너뜁니다.`);
+              continue;
+            }
+          }
           
           // 개별 주문 발송 처리 API 호출
           const response = await fetch(`/api/orders/${orderId}/seller-shipped`, {
@@ -329,7 +351,7 @@ export default function ManagerDashboard() {
           
           const result = await response.json();
           results.push(result);
-          console.log(`주문 ${orderId} 발송 처리 성공`);
+          console.log(`주문 ${orderId} 매니저발송완료 처리 성공`);
           
           // 발송 완료 시 주문 상태도 delivered로 변경
           try {
@@ -360,7 +382,7 @@ export default function ManagerDashboard() {
         failed: errors.length,
         results,
         errors,
-        message: `${results.length}개 주문 발송완료, ${errors.length}개 주문 실패`
+        message: `${results.length}개 주문 매니저발송완료, ${errors.length}개 주문 실패`
       };
     },
     onSuccess: async (data, orderIds) => {
@@ -377,7 +399,7 @@ export default function ManagerDashboard() {
       } else {
         toast({
           title: "일괄 발송 처리 완료",
-          description: `${data.success}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
+          description: `${data.success}개 주문이 매니저발송완료 처리되고 주문상태가 발송완료로 변경되었습니다.`,
         });
       }
       setSelectedOrders(new Set());
