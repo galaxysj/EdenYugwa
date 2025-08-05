@@ -108,11 +108,21 @@
   word-wrap: break-word;
 }
 
-/* 나머지 컬럼은 기본 nowrap 유지 */
-.admin-table td:not(.col-status), .manager-table td:not(.col-status) {
+/* 주문번호, 금액만 nowrap 유지 */
+.admin-table .col-order-number, .manager-table .col-order-number,
+.admin-table .col-amount, .manager-table .col-amount,
+.admin-table .col-checkbox, .manager-table .col-checkbox,
+.admin-table .col-actions, .manager-table .col-actions {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+/* 주소 컬럼은 전체 텍스트 표시 */
+.admin-table .col-address, .manager-table .col-address {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: visible;
 }
 
 .admin-table tbody tr:hover, .manager-table tbody tr:hover {
@@ -141,21 +151,27 @@
 .admin-table .col-customer-name, .manager-table .col-customer-name {
   width: 8%;
   min-width: 90px;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
   width: 12%;
   min-width: 140px;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {
-  width: 10%;
+  width: 9%;
   min-width: 110px;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .admin-table .col-address, .manager-table .col-address {
-  width: 18%;
-  min-width: 180px;
+  width: 20%;
+  min-width: 200px;
 }
 
 .admin-table .col-amount, .manager-table .col-amount {
