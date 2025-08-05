@@ -212,8 +212,8 @@ export default function Home() {
               진안에서 온 <span className="text-eden-brown">정성 가득</span> 유과
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2">
-              부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과<br />
-              달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^
+              에덴한과에서 직접 만드는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
+              달지 않고 고소한 맛이 일품으로 선물로도 완벽합니다.
             </p>
           </div>
 
@@ -238,13 +238,15 @@ export default function Home() {
           </div>
 
           {/* Bank Account Information */}
-          <div className="max-w-lg mx-auto mb-6 md:mb-8">
-            <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-3 md:p-4 border border-eden-brown/20 mx-2 md:mx-0">
+          <div className="max-w-4xl mx-auto mb-6 md:mb-8">
+            <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-4 md:p-6 border border-eden-brown/20 mx-2 md:mx-0">
               <div className="text-center">
-                <div className="text-sm md:text-base font-bold text-eden-red break-keep">
-                  입금계좌 농협 352-1701-3342-63 (예금주: 손*진)
+                <h4 className="text-xl md:text-2xl lg:text-3xl font-bold text-eden-red mb-2 md:mb-3 font-korean">입금계좌</h4>
+                <div className="text-lg md:text-xl lg:text-2xl font-bold text-eden-red break-keep">
+                  농협 352-1701-3342-63<br />
+                  (예금주: 손*진)
                 </div>
-                <p className="text-xs text-gray-600 mt-1">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
+                <p className="text-xs md:text-sm text-gray-600 mt-2 px-2">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
               </div>
             </div>
           </div>
