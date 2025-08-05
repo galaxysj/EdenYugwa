@@ -1579,8 +1579,115 @@ export default function Admin() {
 
   // Render filter UI
   const renderOrderFilters = () => (
-    <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+    <div className="mb-4 p-3 md:p-4 bg-gray-50 rounded-lg border">
+      {/* 모바일 최적화 레이아웃 */}
+      <div className="lg:hidden space-y-3">
+        {/* 기간 필터 - 모바일 */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">기간</label>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'all' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('all')}
+              className="flex-1 h-7 text-xs"
+            >
+              전체
+            </Button>
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'today' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('today')}
+              className="flex-1 h-7 text-xs"
+            >
+              오늘
+            </Button>
+            <Button
+              size="sm"
+              variant={orderDateFilter === 'week' ? 'default' : 'outline'}
+              onClick={() => setOrderDateFilter('week')}
+              className="flex-1 h-7 text-xs"
+            >
+              7일
+            </Button>
+          </div>
+        </div>
+
+        {/* 검색과 정렬 - 모바일 2열 */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">고객명</label>
+            <input
+              type="text"
+              placeholder="고객명"
+              value={customerNameFilter}
+              onChange={(e) => setCustomerNameFilter(e.target.value)}
+              className="w-full px-2 py-1 border border-gray-300 rounded text-xs h-7"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
+            <div className="flex gap-1">
+              <Button
+                size="sm"
+                variant={sortOrder === 'latest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('latest')}
+                className="flex-1 h-7 text-xs"
+              >
+                최신
+              </Button>
+              <Button
+                size="sm"
+                variant={sortOrder === 'oldest' ? 'default' : 'outline'}
+                onClick={() => setSortOrder('oldest')}
+                className="flex-1 h-7 text-xs"
+              >
+                오래된
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* 상태 필터 - 모바일 2열 */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">입금상태</label>
+            <select
+              value={paymentStatusFilter}
+              onChange={(e) => setPaymentStatusFilter(e.target.value)}
+              className="w-full px-2 py-1 border border-gray-300 rounded text-xs h-7"
+            >
+              <option value="all">전체</option>
+              <option value="pending">입금대기</option>
+              <option value="confirmed">입금완료</option>
+              <option value="partial">부분결제</option>
+              <option value="refunded">환불</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">주문상태</label>
+            <select
+              value={orderStatusFilter}
+              onChange={(e) => {
+                const newStatus = e.target.value;
+                setOrderStatusFilter(newStatus);
+                if (newStatus === 'seller_shipped') {
+                  setActiveTab('seller_shipped');
+                }
+              }}
+              className="w-full px-2 py-1 border border-gray-300 rounded text-xs h-7"
+            >
+              <option value="all">전체</option>
+              <option value="scheduled">발송주문</option>
+              <option value="delivered">발송완료</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 데스크탑 기존 레이아웃 */}
+      <div className="hidden lg:block">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
         {/* Date Filter - Simplified */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
@@ -1691,9 +1798,9 @@ export default function Admin() {
             <option value="not_shipped">미발송</option>
           </select>
         </div>
-      </div>
-      
-      {/* Sort Options */}
+        </div>
+        
+        {/* Sort Options */}
       <div className="mt-3 pt-3 border-t border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -1772,6 +1879,7 @@ export default function Admin() {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
