@@ -1861,7 +1861,7 @@ export default function Admin() {
                     <td className="col-scheduled-date">
                       {order.scheduledDate ? (
                         <div 
-                          className="text-xs text-red-600 font-bold cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200 no-wrap"
+                          className="text-xs text-red-600 font-bold cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
                           onClick={() => {
                             const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
                             if (scheduledDatePicker) {
@@ -1869,6 +1869,7 @@ export default function Admin() {
                             }
                           }}
                           title="클릭하여 예약발송일 수정"
+                          style={{ whiteSpace: 'nowrap', minWidth: '70px' }}
                         >
                           {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { 
                             year: '2-digit',
@@ -1877,7 +1878,7 @@ export default function Admin() {
                           })}
                         </div>
                       ) : (
-                        <div className="text-xs text-gray-400 no-wrap">-</div>
+                        <div className="text-xs text-gray-400" style={{ whiteSpace: 'nowrap' }}>-</div>
                       )}
                     </td>
 
