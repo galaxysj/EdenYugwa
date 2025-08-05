@@ -686,21 +686,12 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col gap-1">
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                    <MessageSquare className="h-3 w-3" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs px-2 py-1 h-7"
-                                >
-                                  수정
+                              <SmsDialog order={order}>
+                                <Button size="sm" variant="outline" className="flex items-center gap-1">
+                                  <MessageSquare className="h-3 w-3" />
+                                  SMS
                                 </Button>
-                              </div>
+                              </SmsDialog>
                             </td>
                           </tr>
                         ))}
@@ -955,21 +946,12 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col gap-1">
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                    <MessageSquare className="h-3 w-3" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs px-2 py-1 h-7"
-                                >
-                                  수정
+                              <SmsDialog order={order}>
+                                <Button size="sm" variant="outline" className="flex items-center gap-1">
+                                  <MessageSquare className="h-3 w-3" />
+                                  SMS
                                 </Button>
-                              </div>
+                              </SmsDialog>
                             </td>
                           </tr>
                         ))}
@@ -1191,21 +1173,12 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col gap-1">
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                    <MessageSquare className="h-3 w-3" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs px-2 py-1 h-7"
-                                >
-                                  수정
+                              <SmsDialog order={order}>
+                                <Button size="sm" variant="outline" className="flex items-center gap-1">
+                                  <MessageSquare className="h-3 w-3" />
+                                  SMS
                                 </Button>
-                              </div>
+                              </SmsDialog>
                             </td>
                           </tr>
                         ))}
