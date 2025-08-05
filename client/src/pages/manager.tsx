@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import { AdminHeader } from "@/components/admin-header";
@@ -225,34 +224,13 @@ export default function ManagerDashboard() {
   // 판매자 발송 상태 변경 mutation
   const updateSellerShippedMutation = useMutation({
     mutationFn: async ({ id, sellerShipped }: { id: number; sellerShipped: boolean }) => {
-      const response = await fetch(`/api/orders/${id}/seller-shipped`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sellerShipped }),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || '발송 상태 변경에 실패했습니다');
-      }
-      
-      return response.json();
+      return api.patch(`/api/orders/${id}/seller-shipped`, { sellerShipped });
     },
     onSuccess: async (data, { id, sellerShipped }) => {
       // 판매자 발송 완료 시 자동으로 주문 상태를 delivered로 변경
       if (sellerShipped) {
         try {
-          const response = await fetch(`/api/orders/${id}/status`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ status: 'delivered' }),
-            credentials: 'include',
-          });
+          await api.patch(`/api/orders/${id}/status`, { status: 'delivered' });
         } catch (error) {
           console.error('주문 상태 업데이트 실패:', error);
         }
@@ -296,116 +274,30 @@ export default function ManagerDashboard() {
     },
   });
 
-  // 일괄 판매자 발송 mutation (개별 처리 방식)
+  // 일괄 판매자 발송 mutation
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      console.log('일괄 발송 처리 요청 (개별 처리 방식):', { orderIds });
-      console.log('현재 사용자:', user);
-      
-      const results = [];
-      const errors = [];
-      
-      // 각 주문을 개별적으로 처리 (이미 발송완료된 주문은 건너뛰기)
-      for (const orderId of orderIds) {
-        try {
-          console.log(`주문 ${orderId} 개별 발송 처리 시작`);
-          
-          // 먼저 현재 주문 상태 확인
-          const orderCheckResponse = await fetch(`/api/orders/${orderId}`, {
-            method: 'GET',
-            credentials: 'include',
-          });
-          
-          if (orderCheckResponse.ok) {
-            const currentOrder = await orderCheckResponse.json();
-            
-            // 이미 매니저발송완료된 주문은 건너뛰기
-            if (currentOrder.sellerShipped) {
-              console.log(`주문 ${orderId}는 이미 매니저발송완료 상태입니다. 건너뜁니다.`);
-              continue;
-            }
-            
-            // 주문상태가 발송완료인 경우도 건너뛰기
-            if (currentOrder.status === 'delivered') {
-              console.log(`주문 ${orderId}는 이미 발송완료 상태입니다. 건너뜁니다.`);
-              continue;
-            }
-          }
-          
-          // 개별 주문 발송 처리 API 호출
-          const response = await fetch(`/api/orders/${orderId}/seller-shipped`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ sellerShipped: true }),
-            credentials: 'include',
-          });
-          
-          if (!response.ok) {
-            const errorText = await response.text();
-            console.error(`주문 ${orderId} 발송 처리 실패:`, errorText);
-            errors.push({ orderId, error: errorText });
-            continue;
-          }
-          
-          const result = await response.json();
-          results.push(result);
-          console.log(`주문 ${orderId} 매니저발송완료 처리 성공`);
-          
-          // 발송 완료 시 주문 상태도 delivered로 변경
-          try {
-            const statusResponse = await fetch(`/api/orders/${orderId}/status`, {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ status: 'delivered' }),
-              credentials: 'include',
-            });
-            
-            if (statusResponse.ok) {
-              console.log(`주문 ${orderId} 상태 delivered로 변경 완료`);
-            }
-          } catch (statusError) {
-            console.error(`주문 ${orderId} 상태 변경 실패:`, statusError);
-          }
-          
-        } catch (error) {
-          console.error(`주문 ${orderId} 처리 중 오류:`, error);
-          errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
-        }
-      }
-      
-      return {
-        success: results.length,
-        failed: errors.length,
-        results,
-        errors,
-        message: `${results.length}개 주문 매니저발송완료, ${errors.length}개 주문 실패`
-      };
+      return api.patch('/api/orders/seller-shipped', { orderIds });
     },
     onSuccess: async (data, orderIds) => {
-      console.log('일괄 발송 처리 성공:', data);
+      // 일괄 발송 완료 시 모든 주문의 상태를 delivered로 변경
+      try {
+        const statusUpdatePromises = orderIds.map(id => 
+          api.patch(`/api/orders/${id}/status`, { status: 'delivered' })
+        );
+        await Promise.all(statusUpdatePromises);
+      } catch (error) {
+        console.error('일괄 주문 상태 업데이트 실패:', error);
+      }
       
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
-      
-      if (data.failed > 0) {
-        toast({
-          title: "일괄 발송 처리 부분 완료",
-          description: data.message,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "일괄 발송 처리 완료",
-          description: `${data.success}개 주문이 매니저발송완료 처리되고 주문상태가 발송완료로 변경되었습니다.`,
-        });
-      }
+      toast({
+        title: "일괄 발송 처리 완료",
+        description: `${selectedOrders.size}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
+      });
       setSelectedOrders(new Set());
     },
     onError: (error: any) => {
-      console.error('일괄 발송 처리 실패:', error);
       toast({
         title: "일괄 발송 처리 실패",
         description: error.message || "일괄 발송 처리 중 오류가 발생했습니다.",
@@ -433,22 +325,15 @@ export default function ManagerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader />
+      <AdminHeader 
+        adminSettings={adminSettings}
+        isManager={true}
+      />
 
       <div className="container mx-auto p-4 space-y-6">
         {currentPage === "orders" && (
           <>
             {/* 주문 목록 */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <h2 className="text-lg font-semibold text-gray-900">주문 목록</h2>
-                <Button variant="outline" onClick={downloadExcel}>
-                  <Download className="h-4 w-4 mr-2" />
-                  엑셀
-                </Button>
-              </div>
-            </div>
-            
             <Tabs defaultValue="전체보기" className="space-y-4">
               <div className="flex items-center justify-between">
                 <TabsList>
@@ -460,6 +345,13 @@ export default function ManagerDashboard() {
                     매니저발송완료 ({filteredOrders.filter(o => o.sellerShipped).length})
                   </TabsTrigger>
                 </TabsList>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={downloadExcel}>
+                    <Download className="h-4 w-4 mr-2" />
+                    엑셀
+                  </Button>
+                </div>
               </div>
 
               {/* 선택된 주문이 있을 때 일괄 작업 버튼 */}
@@ -594,56 +486,6 @@ export default function ManagerDashboard() {
 
               {/* 주문 목록 테이블 */}
               <TabsContent value="전체보기" className="space-y-4">
-                {/* 전체보기 일괄 작업 */}
-                {filteredOrders.length > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium text-blue-900">
-                        전체 주문 {filteredOrders.length}개
-                      </span>
-                      {selectedOrders.size > 0 && (
-                        <span className="text-sm font-medium text-orange-900">
-                          ({selectedOrders.size}개 선택됨)
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedOrders(new Set(filteredOrders.map(o => o.id)))}
-                        className="bg-white min-w-[80px]"
-                      >
-                        전체 선택
-                      </Button>
-                      {selectedOrders.size > 0 && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedOrders(new Set())}
-                          className="bg-white min-w-[80px]"
-                        >
-                          선택 해제
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
-                          console.log('전체 발송처리 대상 주문:', waitingOrders.map(o => o.id));
-                          // 전체 발송처리 시 대상 주문들을 선택 상태로 만들기
-                          setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
-                          bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
-                        }}
-                        disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
-                        className="bg-orange-600 hover:bg-orange-700 text-white min-w-[120px]"
-                      >
-                        {bulkSellerShippedMutation.isPending ? "처리중..." : `전체 발송처리 (${filteredOrders.filter(o => !o.sellerShipped).length}개)`}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b flex justify-between items-center">
                     <h2 className="text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
@@ -844,12 +686,21 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1">
-                                  <MessageSquare className="h-3 w-3" />
-                                  SMS
+                              <div className="flex flex-col gap-1">
+                                <SmsDialog order={order}>
+                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                    <MessageSquare className="h-3 w-3" />
+                                    SMS
+                                  </Button>
+                                </SmsDialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  수정
                                 </Button>
-                              </SmsDialog>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -867,59 +718,6 @@ export default function ManagerDashboard() {
 
               {/* 발송처리대기 탭 */}
               <TabsContent value="발송처리대기" className="space-y-4">
-                {/* 발송처리 일괄 작업 */}
-                {filteredOrders.filter(o => !o.sellerShipped).length > 0 && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium text-orange-900">
-                        발송처리대기 주문 {filteredOrders.filter(o => !o.sellerShipped).length}개
-                      </span>
-                      {selectedOrders.size > 0 && (
-                        <span className="text-sm font-medium text-blue-900">
-                          ({selectedOrders.size}개 선택됨)
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
-                          setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
-                        }}
-                        className="bg-white min-w-[80px]"
-                      >
-                        전체 선택
-                      </Button>
-                      {selectedOrders.size > 0 && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setSelectedOrders(new Set())}
-                          className="bg-white min-w-[80px]"
-                        >
-                          선택 해제
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
-                          console.log('발송처리대기 탭 전체 발송처리 대상:', waitingOrders.map(o => o.id));
-                          // 전체 발송처리 시 대상 주문들을 선택 상태로 만들기
-                          setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
-                          bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
-                        }}
-                        disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
-                        className="bg-orange-600 hover:bg-orange-700 text-white min-w-[120px]"
-                      >
-                        {bulkSellerShippedMutation.isPending ? '처리중...' : `전체 발송처리 (${filteredOrders.filter(o => !o.sellerShipped).length}개)`}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b flex justify-between items-center">
                     <h2 className="text-lg font-semibold">발송처리대기 목록 (총 {filteredOrders.filter(o => !o.sellerShipped).length}개)</h2>
@@ -935,9 +733,9 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full manager-table">
-                      <thead className="bg-gray-50 border-b-2 border-gray-200 manager-table">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
-                          <th className="col-checkbox">
+                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -952,16 +750,16 @@ export default function ManagerDashboard() {
                               className="rounded"
                             />
                           </th>
-                          <th className="col-order-number">주문번호</th>
-                          <th className="col-date text-center">예약발송일</th>
-                          <th className="col-customer-name">주문자</th>
-                          <th className="col-order-details">주문내역</th>
-                          <th className="col-phone">연락처</th>
-                          <th className="col-address">배송지</th>
-                          <th className="col-status text-center">입금상태</th>
-                          <th className="col-status text-center">주문상태</th>
-                          <th className="col-status text-center">판매자발송</th>
-                          <th className="col-actions text-center">작업</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>
+                          <th className="text-center py-3 px-3 text-sm font-semibold text-gray-700 min-w-[70px]">예약발송일</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[70px]">주문자</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문내역</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">연락처</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">배송지</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1124,12 +922,21 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1">
-                                  <MessageSquare className="h-3 w-3" />
-                                  SMS
+                              <div className="flex flex-col gap-1">
+                                <SmsDialog order={order}>
+                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                    <MessageSquare className="h-3 w-3" />
+                                    SMS
+                                  </Button>
+                                </SmsDialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  수정
                                 </Button>
-                              </SmsDialog>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1147,32 +954,6 @@ export default function ManagerDashboard() {
 
               {/* 매니저발송완료 탭 */}
               <TabsContent value="매니저발송완료" className="space-y-4">
-                {/* 선택된 주문 일괄 작업 */}
-                {selectedOrders.size > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
-                    <span className="text-sm font-medium text-blue-900">
-                      {selectedOrders.size}개 주문 선택됨
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setSelectedOrders(new Set())}
-                        className="bg-white"
-                      >
-                        선택 해제
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => setShowBulkSMSDialog(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        선택 주문 SMS 발송
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b flex justify-between items-center">
                     <h2 className="text-lg font-semibold">매니저발송완료 주문 (총 {filteredOrders.filter(o => o.sellerShipped).length}개)</h2>
@@ -1377,12 +1158,21 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1">
-                                  <MessageSquare className="h-3 w-3" />
-                                  SMS
+                              <div className="flex flex-col gap-1">
+                                <SmsDialog order={order}>
+                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                    <MessageSquare className="h-3 w-3" />
+                                    SMS
+                                  </Button>
+                                </SmsDialog>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  수정
                                 </Button>
-                              </SmsDialog>
+                              </div>
                             </td>
                           </tr>
                         ))}

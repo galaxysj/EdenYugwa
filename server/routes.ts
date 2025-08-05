@@ -613,16 +613,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk seller shipped update
   app.patch("/api/orders/seller-shipped", requireManagerOrAdmin, async (req, res) => {
     try {
-      console.log("=== Bulk seller shipped request started ===");
-      console.log("Request body:", req.body);
-      console.log("User:", req.user);
-      
       const { orderIds } = req.body;
       
-      console.log("Extracted orderIds:", orderIds);
+      console.log("Bulk seller shipped request received:", { orderIds });
       
       if (!Array.isArray(orderIds) || orderIds.length === 0) {
-        console.log("Invalid orderIds array");
         return res.status(400).json({ message: "주문 ID 목록이 필요합니다" });
       }
       
@@ -632,54 +627,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const orderId of orderIds) {
         try {
           console.log(`Updating order ${orderId} to seller shipped...`);
-          
-          // 먼저 해당 주문이 존재하는지 확인
-          const existingOrder = await storage.getOrder(orderId);
-          if (!existingOrder) {
-            console.error(`Order ${orderId} not found`);
-            errors.push({ orderId, error: "주문을 찾을 수 없습니다" });
-            continue;
-          }
-          
-          // 이미 발송된 주문인지 확인
-          if (existingOrder.sellerShipped) {
-            console.log(`Order ${orderId} already shipped, skipping`);
-            continue;
-          }
-          
           const currentDate = new Date();
           const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, currentDate);
           if (updatedOrder) {
             results.push(updatedOrder);
             console.log(`Successfully updated order ${orderId}`);
           } else {
-            console.error(`Order ${orderId} could not be updated`);
-            errors.push({ orderId, error: "주문을 업데이트할 수 없습니다" });
+            console.error(`Order ${orderId} not found or could not be updated`);
+            errors.push({ orderId, error: "주문을 찾을 수 없거나 업데이트할 수 없습니다" });
           }
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error);
-          console.error(`Error stack:`, error instanceof Error ? error.stack : error);
+          console.error(`Error details:`, error);
           errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
         }
       }
       
-      console.log(`Bulk update summary: ${results.length} successful, ${errors.length} failed`);
-      
-      if (errors.length > 0 && results.length === 0) {
-        // 모든 주문이 실패한 경우에만 500 오류 반환
-        console.error("All orders failed to update:", errors);
+      if (errors.length > 0) {
+        console.error("Some orders failed to update:", errors);
         return res.status(500).json({ 
-          message: `모든 주문 업데이트 실패: ${errors.map(e => e.error).join(', ')}`,
-          errors: errors
-        });
-      } else if (errors.length > 0) {
-        // 일부만 실패한 경우 성공으로 처리하되 오류 정보도 포함
-        console.warn("Some orders failed to update:", errors);
-        return res.status(200).json({ 
-          message: `${results.length}개 주문 성공, ${errors.length}개 주문 실패`,
+          message: `${results.length}개 주문은 성공, ${errors.length}개 주문 실패`,
           updatedOrders: results,
-          errors: errors,
-          partialSuccess: true
+          errors: errors
         });
       }
       
@@ -688,16 +657,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedOrders: results 
       });
     } catch (error) {
-      console.error("=== Bulk seller shipped update MAIN ERROR ===");
-      console.error("Error type:", typeof error);
-      console.error("Error instanceof Error:", error instanceof Error);
-      console.error("Error message:", error instanceof Error ? error.message : String(error));
-      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
-      console.error("Full error object:", error);
+      console.error("Bulk seller shipped update error:", error);
       res.status(500).json({ 
         message: "일괄 발송 업데이트에 실패했습니다",
-        error: error instanceof Error ? error.message : String(error),
-        details: error instanceof Error ? error.stack : String(error)
+        error: error instanceof Error ? error.message : String(error)
       });
     }
   });
