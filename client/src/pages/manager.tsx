@@ -673,7 +673,7 @@ export default function ManagerDashboard() {
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                 disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-24 h-6 text-xs">
+                                <SelectTrigger className="w-28 h-6 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -946,7 +946,7 @@ export default function ManagerDashboard() {
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                 disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-24 h-6 text-xs">
+                                <SelectTrigger className="w-28 h-6 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1175,7 +1175,7 @@ export default function ManagerDashboard() {
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                 disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-24 h-6 text-xs">
+                                <SelectTrigger className="w-28 h-6 text-xs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
