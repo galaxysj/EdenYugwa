@@ -9,6 +9,7 @@ import Admin from "@/pages/admin";
 import AdminSettings from "@/pages/admin-settings";
 import Manager from "@/pages/manager";
 import Login from "@/pages/login";
+import Register from "@/pages/register";
 import OrderLookup from "@/pages/order-lookup";
 import OrderEdit from "@/pages/order-edit";
 import PublicOrder from "@/pages/public-order";
@@ -19,6 +20,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/admin/login" component={Login} />
       <Route path="/admin">
         <ProtectedRoute requiredRole="admin">
