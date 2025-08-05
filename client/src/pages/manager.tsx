@@ -477,9 +477,9 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b">
+                      <thead className="bg-gray-100 border-b-2 border-gray-300">
                         <tr>
-                          <th className="text-left p-3 font-medium text-gray-700 w-12">
+                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -493,21 +493,21 @@ export default function ManagerDashboard() {
                               className="rounded"
                             />
                           </th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
-                          <th className="text-center py-2 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">예약발송일</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>
+                          <th className="text-center py-3 px-3 text-sm font-semibold text-gray-700 min-w-[70px]">예약발송일</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[70px]">주문자</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문내역</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">연락처</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">배송지</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredOrders.map((order) => (
-                          <tr key={order.id} className={`border-b hover:bg-gray-50 ${
+                          <tr key={order.id} className={`border-b border-gray-200 hover:bg-gray-50 ${
                             order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
                           }`}>
                             <td className="p-3">
@@ -526,15 +526,15 @@ export default function ManagerDashboard() {
                                 className="rounded"
                               />
                             </td>
-                            <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
-                              <div className="text-xs text-gray-500">
-                                <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                                <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <td className="py-3 px-3">
+                              <div className="font-semibold text-gray-900 text-sm">#{order.orderNumber}</div>
+                              <div className="text-sm text-gray-600">
+                                <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                                <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                               </div>
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                                  className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200 mt-1"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -701,9 +701,9 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b">
+                      <thead className="bg-gray-100 border-b-2 border-gray-300">
                         <tr>
-                          <th className="text-left p-3 font-medium text-gray-700 w-12">
+                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -718,16 +718,16 @@ export default function ManagerDashboard() {
                               className="rounded"
                             />
                           </th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
-                          <th className="text-center py-2 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">예약발송일</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>
+                          <th className="text-center py-3 px-3 text-sm font-semibold text-gray-700 min-w-[70px]">예약발송일</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[70px]">주문자</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문내역</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">연락처</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">배송지</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -928,9 +928,9 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b">
+                      <thead className="bg-gray-100 border-b-2 border-gray-300">
                         <tr>
-                          <th className="text-left p-3 font-medium text-gray-700 w-12">
+                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -945,16 +945,16 @@ export default function ManagerDashboard() {
                               className="rounded"
                             />
                           </th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문번호</th>
-                          <th className="text-center py-2 px-2 text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">예약발송일</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[70px]">주문자</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">주문내역</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">연락처</th>
-                          <th className="py-2 px-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">배송지</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">입금상태</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[60px]">주문상태</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">판매자발송</th>
-                          <th className="py-2 px-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">작업</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>
+                          <th className="text-center py-3 px-3 text-sm font-semibold text-gray-700 min-w-[70px]">예약발송일</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[70px]">주문자</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문내역</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">연락처</th>
+                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">배송지</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
+                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>

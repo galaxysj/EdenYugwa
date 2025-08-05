@@ -1146,16 +1146,16 @@ export default function Admin() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200 text-sm">
-                      <th className="text-left py-2 px-3 font-medium text-gray-600">주문번호</th>
-                      <th className="text-left py-2 px-3 font-medium text-gray-600">고객명</th>
-                      <th className="text-left py-2 px-3 font-medium text-gray-600">주문일</th>
-                      <th className="text-left py-2 px-3 font-medium text-gray-600">주문내역</th>
-                      <th className="text-right py-2 px-3 font-medium text-blue-600 bg-blue-50">매출정보</th>
-                      <th className="text-right py-2 px-3 font-medium text-green-600 bg-green-50">입금정보</th>
-                      <th className="text-right py-2 px-3 font-medium text-red-600 bg-red-50">할인/미입금</th>
-                      <th className="text-right py-2 px-3 font-medium text-purple-600 bg-purple-50">원가분석</th>
-                      <th className="text-right py-2 px-3 font-medium text-emerald-600 bg-emerald-50">순수익</th>
+                    <tr className="border-b-2 border-gray-300 bg-gray-50">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문번호</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">고객명</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문일</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문내역</th>
+                      <th className="text-right py-3 px-4 font-semibold text-blue-700 bg-blue-50 text-sm">매출정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-green-700 bg-green-50 text-sm">입금정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-red-700 bg-red-50 text-sm">할인/미입금</th>
+                      <th className="text-right py-3 px-4 font-semibold text-purple-700 bg-purple-50 text-sm">원가분석</th>
+                      <th className="text-right py-3 px-4 font-semibold text-emerald-700 bg-emerald-50 text-sm">순수익</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1188,23 +1188,23 @@ export default function Admin() {
                         ? (order.totalAmount - order.actualPaidAmount) : 0;
                       
                       return (
-                        <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4 font-medium">#{order.orderNumber}</td>
-                          <td className="py-3 px-4">{order.customerName}</td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
-                            <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                            <div className="text-xs">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="py-4 px-4 font-semibold text-gray-900 text-sm">#{order.orderNumber}</td>
+                          <td className="py-4 px-4 font-medium text-gray-900 text-sm">{order.customerName}</td>
+                          <td className="py-4 px-4 text-sm text-gray-700">
+                            <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
+                            <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                           </td>
-                          <td className="py-3 px-4 text-sm">
+                          <td className="py-4 px-4 text-sm">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div>한과1호×{order.smallBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">한과1호×{order.smallBoxQuantity}개</div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div>한과2호×{order.largeBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">한과2호×{order.largeBoxQuantity}개</div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div>보자기×{order.wrappingQuantity}개</div>
+                                <div className="font-medium text-gray-800">보자기×{order.wrappingQuantity}개</div>
                               )}
                             </div>
                           </td>
