@@ -780,7 +780,10 @@ export default function OrderForm() {
                           <div className="text-right">
                             <span className="whitespace-nowrap">{shippingFee === 0 ? "무료" : formatPrice(shippingFee)}</span>
                             {addressValue && checkRemoteArea(addressValue) && (
-                              <div className="text-red-600 text-xs mt-1">제주/도서산간 추가요금 발생</div>
+                              <div className="text-red-600 text-xs mt-1">
+                                <div>제주/도서산간 추가요금 발생</div>
+                                <div className="mt-0.5">판매자에게 문의해주세요</div>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -805,7 +808,8 @@ export default function OrderForm() {
                           <p>6개 미만: <span className="text-orange-600 font-semibold">배송비 4,000원</span></p>
                         </div>
                         <p className="text-xs text-red-600 mt-2 font-medium">
-                          * 제주도, 도서산간지역은 추가비용 발생
+                          * 제주도, 도서산간지역은 추가비용 발생<br/>
+                          &nbsp;&nbsp;판매자에게 문의해주세요
                         </p>
                       </div>
                     )}
@@ -845,7 +849,8 @@ export default function OrderForm() {
                           <p>6개 미만: <span className="text-orange-600 font-semibold">배송비 4,000원</span></p>
                         </div>
                         <p className="text-xs text-red-600 mt-2 font-medium">
-                          * 제주도, 도서산간지역은 추가비용 발생
+                          * 제주도, 도서산간지역은 추가비용 발생<br/>
+                          &nbsp;&nbsp;판매자에게 문의해주세요
                         </p>
                       </div>
                     )}
