@@ -602,7 +602,7 @@ export default function OrderForm() {
                     <div className="space-y-2">
                       <div className="flex items-start space-x-3">
                         <span className="text-eden-brown font-bold">•</span>
-                        <p className="text-sm text-eden-dark leading-relaxed">물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
+                        <p className="text-xs md:text-sm text-eden-dark leading-relaxed">물건은 입금 확인 후 1~2일 이내 발송합니다.</p>
                       </div>
                       <div className="flex items-start space-x-3">
                         <span className="text-eden-brown font-bold">•</span>
@@ -614,7 +614,7 @@ export default function OrderForm() {
                       </div>
                       <div className="flex items-start space-x-3">
                         <span className="text-eden-red font-bold">•</span>
-                        <p className="text-sm text-eden-dark leading-relaxed">설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
+                        <p className="text-xs md:text-sm text-eden-dark leading-relaxed">설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
                       </div>
                       <div className="flex items-start space-x-3">
                         <span className="text-eden-red font-bold">•</span>
