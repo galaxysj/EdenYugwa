@@ -366,32 +366,32 @@ export default function OrderForm() {
           <div className="grid lg:grid-cols-2 gap-6 lg:gap-12">
             {/* Product Selection */}
             <Card className="shadow-lg">
-              <CardContent className="p-4 md:p-6 lg:p-8">
-                <h4 className="text-lg md:text-xl font-semibold section-title mb-4 md:mb-6 font-korean">
-                  <Box className="inline mr-2 h-4 w-4 md:h-5 md:w-5" />
+              <CardContent className="p-2 md:p-3">
+                <h4 className="text-sm md:text-base font-semibold section-title mb-2 md:mb-3 font-korean">
+                  <Box className="inline mr-1 h-3 w-3 md:h-4 md:w-4" />
                   상품 선택
                 </h4>
                 
-                <div className="space-y-3 md:space-y-4">
+                <div className="space-y-2 md:space-y-3">
                   {/* Product Selection - All in One Interface */}
-                  <div className="border-2 border-eden-beige rounded-lg p-3 md:p-4">
-                    <div className="space-y-3 md:space-y-4">
+                  <div className="border-2 border-eden-beige rounded-lg p-2 md:p-3">
+                    <div className="space-y-2 md:space-y-3">
                       {/* 한과1호 Selection */}
                       <div>
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex justify-between items-start mb-1">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">한과1호(약 1.1kg)</h5>
-                            <p className="text-xs text-black mt-1">약 35.5×21×11.2cm</p>
+                            <h5 className="font-semibold text-black text-xs md:text-sm">한과1호(약 1.1kg)</h5>
+                            <p className="text-xs text-black mt-0.5">약 35.5×21×11.2cm</p>
                           </div>
-                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
+                          <span className="text-sm md:text-base font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
                         </div>
                         <FormField
                           control={form.control}
                           name="smallBoxQuantity"
                           render={({ field }) => (
                             <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                              <div className="flex items-center space-x-1">
+                                <FormLabel className="text-xs font-medium">수량</FormLabel>
                                 <FormControl>
                                   <div className="flex items-center space-x-1">
                                     <Button 
@@ -399,7 +399,7 @@ export default function OrderForm() {
                                       variant="outline" 
                                       size="sm"
                                       onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-7 h-7 p-0 text-xs"
+                                      className="w-6 h-6 p-0 text-xs"
                                     >
                                       -
                                     </Button>
@@ -408,14 +408,14 @@ export default function OrderForm() {
                                       min="0"
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-12 h-7 text-center text-xs px-1"
+                                      className="w-10 h-6 text-center text-xs px-1"
                                     />
                                     <Button 
                                       type="button"
                                       variant="outline" 
                                       size="sm"
                                       onClick={() => field.onChange(field.value + 1)}
-                                      className="w-7 h-7 p-0 text-xs"
+                                      className="w-6 h-6 p-0 text-xs"
                                     >
                                       +
                                     </Button>
@@ -433,20 +433,20 @@ export default function OrderForm() {
 
                       {/* 한과2호 Selection */}
                       <div>
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex justify-between items-start mb-1">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">한과2호(약 1.3kg)</h5>
-                            <p className="text-xs text-black mt-1">약 37×23×11.5cm</p>
+                            <h5 className="font-semibold text-black text-xs md:text-sm">한과2호(약 1.3kg)</h5>
+                            <p className="text-xs text-black mt-0.5">약 37×23×11.5cm</p>
                           </div>
-                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
+                          <span className="text-sm md:text-base font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
                         </div>
                         <FormField
                           control={form.control}
                           name="largeBoxQuantity"
                           render={({ field }) => (
                             <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                              <div className="flex items-center space-x-1">
+                                <FormLabel className="text-xs font-medium">수량</FormLabel>
                                 <FormControl>
                                   <div className="flex items-center space-x-1">
                                     <Button 
@@ -454,7 +454,7 @@ export default function OrderForm() {
                                       variant="outline" 
                                       size="sm"
                                       onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-7 h-7 p-0 text-xs"
+                                      className="w-6 h-6 p-0 text-xs"
                                     >
                                       -
                                     </Button>
@@ -463,14 +463,14 @@ export default function OrderForm() {
                                       min="0"
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-12 h-7 text-center text-xs px-1"
+                                      className="w-10 h-6 text-center text-xs px-1"
                                     />
                                     <Button 
                                       type="button"
                                       variant="outline" 
                                       size="sm"
                                       onClick={() => field.onChange(field.value + 1)}
-                                      className="w-7 h-7 p-0 text-xs"
+                                      className="w-6 h-6 p-0 text-xs"
                                     >
                                       +
                                     </Button>
@@ -488,20 +488,20 @@ export default function OrderForm() {
 
                       {/* 보자기 Selection */}
                       <div>
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex justify-between items-start mb-1">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">보자기</h5>
-                            <p className="text-xs text-black mt-1">개당 +1,000원</p>
+                            <h5 className="font-semibold text-black text-xs md:text-sm">보자기</h5>
+                            <p className="text-xs text-black mt-0.5">개당 +1,000원</p>
                           </div>
-                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
+                          <span className="text-sm md:text-base font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
                         </div>
                         <FormField
                           control={form.control}
                           name="wrappingQuantity"
                           render={({ field }) => (
                             <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormLabel className="text-sm font-medium">수량</FormLabel>
+                              <div className="flex items-center space-x-1">
+                                <FormLabel className="text-xs font-medium">수량</FormLabel>
                                 <FormControl>
                                   <div className="flex items-center space-x-1">
                                     <Button 
@@ -509,7 +509,7 @@ export default function OrderForm() {
                                       variant="outline" 
                                       size="sm"
                                       onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-7 h-7 p-0 text-xs"
+                                      className="w-6 h-6 p-0 text-xs"
                                     >
                                       -
                                     </Button>
@@ -519,14 +519,14 @@ export default function OrderForm() {
                                       max={totalQuantity}
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-12 h-7 text-center text-xs px-1"
+                                      className="w-10 h-6 text-center text-xs px-1"
                                     />
                                     <Button 
                                       type="button"
                                       variant="outline" 
                                       size="sm"
                                       onClick={() => field.onChange(field.value + 1)}
-                                      className="w-7 h-7 p-0 text-xs"
+                                      className="w-6 h-6 p-0 text-xs"
                                     >
                                       +
                                     </Button>
