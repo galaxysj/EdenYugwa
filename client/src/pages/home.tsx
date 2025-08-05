@@ -31,18 +31,25 @@ export default function Home() {
             </div>
             
             {/* 모바일 헤더 버튼들 - 오른쪽으로 이동 */}
-            <div className="flex md:hidden gap-2">
+            <div className="flex md:hidden gap-1">
               <Link href="/order-lookup">
                 <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
                   주문조회
                 </button>
               </Link>
               {!isAuthenticated ? (
-                <Link href="/register">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    회원가입
-                  </button>
-                </Link>
+                <>
+                  <Link href="/login">
+                    <button className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded border border-blue-300 hover:bg-blue-200 transition-colors">
+                      로그인
+                    </button>
+                  </Link>
+                  <Link href="/register">
+                    <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                      회원가입
+                    </button>
+                  </Link>
+                </>
               ) : (
                 <button 
                   onClick={async () => {
