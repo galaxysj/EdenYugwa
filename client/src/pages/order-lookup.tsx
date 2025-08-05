@@ -97,6 +97,7 @@ export default function OrderLookup() {
   const [hasSearched, setHasSearched] = useState(false);
   const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [reorderScheduledDate, setReorderScheduledDate] = useState<string>('');
 
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
@@ -249,6 +250,7 @@ export default function OrderLookup() {
   // 재주문하기 함수
   const handleReorder = (order: Order) => {
     setSelectedOrder(order);
+    setReorderScheduledDate(order.scheduledDate ? new Date(order.scheduledDate).toISOString().split('T')[0] : '');
     setReorderDialogOpen(true);
   };
 
@@ -302,6 +304,7 @@ export default function OrderLookup() {
                      (data.largeBoxQuantity * prices.large) + 
                      (data.wrappingQuantity * prices.wrapping) + 
                      shippingFee,
+        scheduledDate: reorderScheduledDate ? new Date(reorderScheduledDate) : null,
       };
 
       const newOrder = await api.orders.create(orderData);
@@ -313,6 +316,7 @@ export default function OrderLookup() {
       
       setReorderDialogOpen(false);
       setSelectedOrder(null);
+      setReorderScheduledDate('');
       reorderForm.reset();
       
       // 주문 목록 새로고침
@@ -476,8 +480,8 @@ export default function OrderLookup() {
                               {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                             </div>
                             {order.scheduledDate && (
-                              <div className="text-xs ml-5 mt-1 text-blue-600 font-medium">
-                                예약발송일: {formatDate(order.scheduledDate)}
+                              <div className="text-sm ml-5 mt-2 text-blue-700 font-semibold bg-blue-50 px-2 py-1 rounded inline-block">
+                                📅 예약발송일: {formatDate(order.scheduledDate)}
                               </div>
                             )}
                           </div>
@@ -887,6 +891,36 @@ export default function OrderLookup() {
                       )}
                     />
                   )}
+                </div>
+
+                {/* 예약발송일 */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">예약발송일 (선택사항)</h3>
+                  <p className="text-sm text-gray-600">발송은 순차적으로 진행하며, 원하는 발송일이 있으시면 선택해주세요</p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      발송 예정일
+                    </label>
+                    <input
+                      type="date"
+                      value={reorderScheduledDate}
+                      onChange={(e) => setReorderScheduledDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-eden-brown focus:border-transparent"
+                    />
+                    {reorderScheduledDate && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReorderScheduledDate('')}
+                        className="mt-2"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        날짜 선택 해제
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 {/* 배송 요청사항 */}
