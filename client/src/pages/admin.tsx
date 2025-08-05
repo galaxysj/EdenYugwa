@@ -1879,12 +1879,16 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-order-details">
-                      <div className="text-xs no-wrap">
-                        {[
-                          order.smallBoxQuantity > 0 && `한과1호×${order.smallBoxQuantity}개`,
-                          order.largeBoxQuantity > 0 && `한과2호×${order.largeBoxQuantity}개`,
-                          order.wrappingQuantity > 0 && `보자기×${order.wrappingQuantity}개`
-                        ].filter(Boolean).join(', ')}
+                      <div className="text-xs space-y-0.5">
+                        {order.smallBoxQuantity > 0 && (
+                          <div>한과1호×{order.smallBoxQuantity}개</div>
+                        )}
+                        {order.largeBoxQuantity > 0 && (
+                          <div>한과2호×{order.largeBoxQuantity}개</div>
+                        )}
+                        {order.wrappingQuantity > 0 && (
+                          <div>보자기×{order.wrappingQuantity}개</div>
+                        )}
                       </div>
                     </td>
                     <td className="col-phone">
