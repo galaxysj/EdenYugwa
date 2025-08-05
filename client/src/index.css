@@ -121,6 +121,25 @@
   width: 110px !important;
 }
 
+/* 관리자 페이지 필터 드롭다운 스타일 */
+.admin-filter-grid {
+  grid-template-columns: 1fr minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr);
+}
+
+.admin-filter-grid select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 140px !important;
+  padding-right: 30px !important;
+}
+
+@media (max-width: 1024px) {
+  .admin-filter-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+}
+
 /* 주문번호, 금액만 nowrap 유지 */
 .admin-table .col-order-number, .manager-table .col-order-number,
 .admin-table .col-amount, .manager-table .col-amount,

@@ -1574,7 +1574,7 @@ export default function Admin() {
   // Render filter UI
   const renderOrderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end admin-filter-grid">
         {/* Date Filter - Simplified */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
