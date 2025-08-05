@@ -114,11 +114,11 @@ export default function Home() {
 
             </nav>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Desktop only */}
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="hidden md:block"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -174,26 +174,7 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                {isAuthenticated && user?.role === 'admin' && (
-                  <Link href="/admin">
-                    <button 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-white bg-red-600 hover:bg-red-700 transition-colors py-3 px-4 w-full rounded-lg border"
-                    >
-                      👨‍💼 관리자 대시보드
-                    </button>
-                  </Link>
-                )}
-                {isAuthenticated && (user?.role === 'admin' || user?.role === 'manager') && (
-                  <Link href="/manager">
-                    <button 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-white bg-green-600 hover:bg-green-700 transition-colors py-3 px-4 w-full rounded-lg border"
-                    >
-                      📊 매니저 대시보드
-                    </button>
-                  </Link>
-                )}
+
                 {isAuthenticated && (
                   <button 
                     className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
