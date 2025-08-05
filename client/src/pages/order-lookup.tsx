@@ -458,7 +458,7 @@ export default function OrderLookup() {
                   <p className="text-gray-500 mb-4">
                     입력하신 전화번호로 등록된 주문을 찾을 수 없습니다.
                   </p>
-                  <div className="text-sm text-gray-400 space-y-2 text-left w-full px-4">
+                  <div className="text-sm text-gray-400 space-y-2 text-center w-full px-4">
                     <p className="whitespace-nowrap">• 전화번호를 정확히 입력했는지 확인해 주세요</p>
                     <p className="whitespace-nowrap">• 주문 시 사용한 번호와 동일한지 확인해 주세요</p>
                   </div>
