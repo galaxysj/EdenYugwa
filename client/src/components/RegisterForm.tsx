@@ -91,14 +91,14 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto" data-testid="register-form">
-      <CardHeader>
-        <CardTitle className="text-center text-2xl font-bold text-orange-800" data-testid="register-title">
+    <Card className="w-full mx-auto shadow-lg" data-testid="register-form">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-center text-lg md:text-2xl font-bold text-orange-800" data-testid="register-title">
           회원가입
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="pt-0">
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">아이디</Label>
             <Input

@@ -43,17 +43,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-orange-800 mb-2">에덴한과</h1>
-          <p className="text-orange-600">로그인 및 회원가입</p>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-start md:items-center justify-center p-2 md:p-4">
+      <div className="w-full max-w-md mt-4 md:mt-0">
+        <div className="text-center mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-orange-800 mb-2">에덴한과</h1>
+          <p className="text-sm md:text-base text-orange-600">로그인 및 회원가입</p>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">로그인</TabsTrigger>
-            <TabsTrigger value="register">회원가입</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="login" className="text-sm md:text-base">로그인</TabsTrigger>
+            <TabsTrigger value="register" className="text-sm md:text-base">회원가입</TabsTrigger>
           </TabsList>
           
           <TabsContent value="login" className="mt-6">
