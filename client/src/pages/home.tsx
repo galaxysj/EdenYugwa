@@ -28,6 +28,20 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <Leaf className="text-eden-sage text-2xl" />
               <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
+              
+              {/* 모바일 헤더 버튼들 */}
+              <div className="flex md:hidden gap-2 ml-3">
+                <Link href="/order-lookup">
+                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                    주문조회
+                  </button>
+                </Link>
+                <Link href="/login">
+                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                    회원가입
+                  </button>
+                </Link>
+              </div>
             </div>
             
             {/* Desktop Navigation */}
@@ -210,21 +224,7 @@ export default function Home() {
       {/* Order Section - Main Content */}
       <section id="home" className="relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 py-6 md:py-12">
-          {/* 모바일 상단 버튼들 */}
-          <div className="block md:hidden mb-2">
-            <div className="flex justify-center gap-2">
-              <Link href="/order-lookup">
-                <button className="text-xs bg-white text-gray-700 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                  📋 주문조회
-                </button>
-              </Link>
-              <Link href="/login">
-                <button className="text-xs bg-white text-gray-700 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                  👤 회원가입
-                </button>
-              </Link>
-            </div>
-          </div>
+
 
           <div className="text-center mb-6 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto">
