@@ -326,7 +326,6 @@ export default function ManagerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader 
-        adminSettings={adminSettings}
         isManager={true}
       />
 
@@ -504,7 +503,7 @@ export default function ManagerDashboard() {
                         size="sm"
                         variant="outline"
                         onClick={() => setSelectedOrders(new Set(filteredOrders.map(o => o.id)))}
-                        className="bg-white"
+                        className="bg-white min-w-[80px]"
                       >
                         전체 선택
                       </Button>
@@ -513,7 +512,7 @@ export default function ManagerDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedOrders(new Set())}
-                          className="bg-white"
+                          className="bg-white min-w-[80px]"
                         >
                           선택 해제
                         </Button>
@@ -526,7 +525,7 @@ export default function ManagerDashboard() {
                             bulkSellerShippedMutation.mutate(selectedOrderIds);
                           }}
                           disabled={bulkSellerShippedMutation.isPending}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
                         >
                           {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
                         </Button>
@@ -538,7 +537,7 @@ export default function ManagerDashboard() {
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
                         disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
-                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        className="bg-orange-600 hover:bg-orange-700 text-white min-w-[120px]"
                       >
                         {bulkSellerShippedMutation.isPending ? "처리중..." : "전체 발송처리"}
                       </Button>
@@ -790,7 +789,7 @@ export default function ManagerDashboard() {
                           const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
                           setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
                         }}
-                        className="bg-white"
+                        className="bg-white min-w-[80px]"
                       >
                         전체 선택
                       </Button>
@@ -799,7 +798,7 @@ export default function ManagerDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => setSelectedOrders(new Set())}
-                          className="bg-white"
+                          className="bg-white min-w-[80px]"
                         >
                           선택 해제
                         </Button>
@@ -812,7 +811,7 @@ export default function ManagerDashboard() {
                             bulkSellerShippedMutation.mutate(selectedOrderIds);
                           }}
                           disabled={bulkSellerShippedMutation.isPending}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
                         >
                           {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
                         </Button>
@@ -824,7 +823,7 @@ export default function ManagerDashboard() {
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
                         disabled={bulkSellerShippedMutation.isPending}
-                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        className="bg-orange-600 hover:bg-orange-700 text-white min-w-[120px]"
                       >
                         {bulkSellerShippedMutation.isPending ? '처리중...' : '전체 발송처리'}
                       </Button>
