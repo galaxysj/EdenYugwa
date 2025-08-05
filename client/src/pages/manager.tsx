@@ -225,13 +225,34 @@ export default function ManagerDashboard() {
   // 판매자 발송 상태 변경 mutation
   const updateSellerShippedMutation = useMutation({
     mutationFn: async ({ id, sellerShipped }: { id: number; sellerShipped: boolean }) => {
-      return api.patch(`/api/orders/${id}/seller-shipped`, { sellerShipped });
+      const response = await fetch(`/api/orders/${id}/seller-shipped`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sellerShipped }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || '발송 상태 변경에 실패했습니다');
+      }
+      
+      return response.json();
     },
     onSuccess: async (data, { id, sellerShipped }) => {
       // 판매자 발송 완료 시 자동으로 주문 상태를 delivered로 변경
       if (sellerShipped) {
         try {
-          await api.patch(`/api/orders/${id}/status`, { status: 'delivered' });
+          const response = await fetch(`/api/orders/${id}/status`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: 'delivered' }),
+            credentials: 'include',
+          });
         } catch (error) {
           console.error('주문 상태 업데이트 실패:', error);
         }
@@ -279,6 +300,9 @@ export default function ManagerDashboard() {
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
       console.log('일괄 발송 처리 요청:', { orderIds });
+      console.log('현재 사용자:', user);
+      
+      // 선택된 주문만 발송처리
       const response = await fetch('/api/orders/seller-shipped', {
         method: 'PATCH',
         headers: {
@@ -288,12 +312,17 @@ export default function ManagerDashboard() {
         credentials: 'include',
       });
       
+      console.log('API 응답 상태:', response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Request failed' }));
-        throw new Error(errorData.message || '일괄 발송 처리에 실패했습니다');
+        const errorText = await response.text();
+        console.error('API 오류 응답:', errorText);
+        throw new Error(errorText || '일괄 발송 처리에 실패했습니다');
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('API 성공 응답:', result);
+      return result;
     },
     onSuccess: async (data, orderIds) => {
       console.log('일괄 발송 처리 성공:', data);
@@ -544,12 +573,13 @@ export default function ManagerDashboard() {
                         size="sm"
                         onClick={() => {
                           const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
+                          console.log('전체 발송처리 대상 주문:', waitingOrders.map(o => o.id));
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
                         disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
                         className="bg-orange-600 hover:bg-orange-700 text-white min-w-[120px]"
                       >
-                        {bulkSellerShippedMutation.isPending ? "처리중..." : "전체 발송처리"}
+                        {bulkSellerShippedMutation.isPending ? "처리중..." : `전체 발송처리 (${filteredOrders.filter(o => !o.sellerShipped).length}개)`}
                       </Button>
                     </div>
                   </div>
@@ -830,12 +860,13 @@ export default function ManagerDashboard() {
                         size="sm"
                         onClick={() => {
                           const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
+                          console.log('발송처리대기 탭 전체 발송처리 대상:', waitingOrders.map(o => o.id));
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
-                        disabled={bulkSellerShippedMutation.isPending}
+                        disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
                         className="bg-orange-600 hover:bg-orange-700 text-white min-w-[120px]"
                       >
-                        {bulkSellerShippedMutation.isPending ? '처리중...' : '전체 발송처리'}
+                        {bulkSellerShippedMutation.isPending ? '처리중...' : `전체 발송처리 (${filteredOrders.filter(o => !o.sellerShipped).length}개)`}
                       </Button>
                     </div>
                   </div>
