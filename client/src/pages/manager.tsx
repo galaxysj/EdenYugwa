@@ -184,7 +184,7 @@ export default function ManagerDashboard() {
       '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
       '발송완료일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
       '매니저발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
-      '메모': order.memo || ''
+      '메모': order.specialRequests || ''
     }));
 
     const ws = XLSX.utils.json_to_sheet(excelData);
@@ -326,7 +326,6 @@ export default function ManagerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader 
-        user={user} 
         adminSettings={adminSettings}
         isManager={true}
       />
@@ -502,9 +501,9 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full manager-table">
-                      <thead className="bg-gray-50 border-b-2 border-gray-200">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200 manager-table">
                         <tr>
-                          <th className="text-left p-4 font-semibold text-gray-800 w-12">
+                          <th className="col-checkbox">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -518,16 +517,16 @@ export default function ManagerDashboard() {
                               className="rounded w-4 h-4"
                             />
                           </th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문번호</th>
-                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[90px]">예약발송일</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[90px]">주문자</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문내역</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">연락처</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">배송지</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">입금상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">주문상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">판매자발송</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">작업</th>
+                          <th className="col-order-number">주문번호</th>
+                          <th className="col-date text-center">예약발송일</th>
+                          <th className="col-customer-name">주문자</th>
+                          <th className="col-order-details">주문내역</th>
+                          <th className="col-phone">연락처</th>
+                          <th className="col-address">배송지</th>
+                          <th className="col-status text-center">입금상태</th>
+                          <th className="col-status text-center">주문상태</th>
+                          <th className="col-status text-center">판매자발송</th>
+                          <th className="col-actions text-center">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -535,7 +534,7 @@ export default function ManagerDashboard() {
                           <tr key={order.id} className={`border-b border-gray-200 hover:bg-gray-50 ${
                             order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
                           }`}>
-                            <td className="p-3">
+                            <td className="col-checkbox">
                               <input
                                 type="checkbox"
                                 checked={selectedOrders.has(order.id)}
