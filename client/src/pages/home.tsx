@@ -28,20 +28,20 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <Leaf className="text-eden-sage text-2xl" />
               <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-              
-              {/* 모바일 헤더 버튼들 */}
-              <div className="flex md:hidden gap-2 ml-3">
-                <Link href="/order-lookup">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    주문조회
-                  </button>
-                </Link>
-                <Link href="/login">
-                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                    회원가입
-                  </button>
-                </Link>
-              </div>
+            </div>
+            
+            {/* 모바일 헤더 버튼들 - 오른쪽으로 이동 */}
+            <div className="flex md:hidden gap-2">
+              <Link href="/order-lookup">
+                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                  주문조회
+                </button>
+              </Link>
+              <Link href="/login">
+                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                  회원가입
+                </button>
+              </Link>
             </div>
             
             {/* Desktop Navigation */}
@@ -114,11 +114,11 @@ export default function Home() {
 
             </nav>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - Desktop only */}
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="hidden md:block"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -174,26 +174,7 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-                {isAuthenticated && user?.role === 'admin' && (
-                  <Link href="/admin">
-                    <button 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-white bg-red-600 hover:bg-red-700 transition-colors py-3 px-4 w-full rounded-lg border"
-                    >
-                      👨‍💼 관리자 대시보드
-                    </button>
-                  </Link>
-                )}
-                {isAuthenticated && (user?.role === 'admin' || user?.role === 'manager') && (
-                  <Link href="/manager">
-                    <button 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-white bg-green-600 hover:bg-green-700 transition-colors py-3 px-4 w-full rounded-lg border"
-                    >
-                      📊 매니저 대시보드
-                    </button>
-                  </Link>
-                )}
+
                 {isAuthenticated && (
                   <button 
                     className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
@@ -231,8 +212,8 @@ export default function Home() {
               진안에서 온 <span className="text-eden-brown">정성 가득</span> 유과
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2">
-              에덴한과에서 직접 만드는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
-              달지 않고 고소한 맛이 일품으로 선물로도 완벽합니다.
+              부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과<br />
+              달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^
             </p>
           </div>
 
@@ -257,15 +238,13 @@ export default function Home() {
           </div>
 
           {/* Bank Account Information */}
-          <div className="max-w-4xl mx-auto mb-6 md:mb-8">
-            <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-4 md:p-6 border border-eden-brown/20 mx-2 md:mx-0">
+          <div className="max-w-lg mx-auto mb-6 md:mb-8">
+            <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-3 md:p-4 border border-eden-brown/20 mx-2 md:mx-0">
               <div className="text-center">
-                <h4 className="text-xl md:text-2xl lg:text-3xl font-bold text-eden-red mb-2 md:mb-3 font-korean">입금계좌</h4>
-                <div className="text-lg md:text-xl lg:text-2xl font-bold text-eden-red break-keep">
-                  농협 352-1701-3342-63<br />
-                  (예금주: 손*진)
+                <div className="text-sm md:text-base font-bold text-eden-red break-keep">
+                  입금계좌 농협 352-1701-3342-63 (예금주: 손*진)
                 </div>
-                <p className="text-xs md:text-sm text-gray-600 mt-2 px-2">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
+                <p className="text-xs text-gray-600 mt-1">주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다</p>
               </div>
             </div>
           </div>
