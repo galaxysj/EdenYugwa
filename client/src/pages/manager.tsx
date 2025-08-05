@@ -656,14 +656,16 @@ export default function ManagerDashboard() {
                             </td>
                             <td className="py-2 px-2 text-center">
                               <div className="text-xs">
-                                {order.paymentStatus === 'confirmed' ? (
+                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
+                                  <span className="text-yellow-600 font-medium">부분결제</span>
+                                ) : order.paymentStatus === 'confirmed' ? (
                                   <span className="text-green-600 font-medium">입금완료</span>
                                 ) : order.paymentStatus === 'partial' ? (
                                   <span className="text-yellow-600 font-medium">부분결제</span>
                                 ) : order.paymentStatus === 'refunded' ? (
                                   <span className="text-red-600 font-medium">환불</span>
                                 ) : (
-                                  <span className="text-red-600 font-medium">미입금</span>
+                                  <span className="text-red-600 font-medium">입금대기</span>
                                 )}
                               </div>
                             </td>
@@ -929,14 +931,16 @@ export default function ManagerDashboard() {
                             </td>
                             <td className="py-2 px-2 text-center">
                               <div className="text-xs">
-                                {order.paymentStatus === 'confirmed' ? (
+                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
+                                  <span className="text-yellow-600 font-medium">부분결제</span>
+                                ) : order.paymentStatus === 'confirmed' ? (
                                   <span className="text-green-600 font-medium">입금완료</span>
                                 ) : order.paymentStatus === 'partial' ? (
-                                  <span className="text-orange-600 font-medium">부분결제</span>
+                                  <span className="text-yellow-600 font-medium">부분결제</span>
                                 ) : order.paymentStatus === 'refunded' ? (
                                   <span className="text-red-600 font-medium">환불</span>
                                 ) : (
-                                  <span className="text-red-600 font-medium">미입금</span>
+                                  <span className="text-red-600 font-medium">입금대기</span>
                                 )}
                               </div>
                             </td>
@@ -1158,14 +1162,16 @@ export default function ManagerDashboard() {
                             </td>
                             <td className="py-2 px-2 text-center">
                               <div className="text-xs">
-                                {order.paymentStatus === 'confirmed' ? (
+                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
+                                  <span className="text-yellow-600 font-medium">부분결제</span>
+                                ) : order.paymentStatus === 'confirmed' ? (
                                   <span className="text-green-600 font-medium">입금완료</span>
                                 ) : order.paymentStatus === 'partial' ? (
-                                  <span className="text-orange-600 font-medium">부분결제</span>
+                                  <span className="text-yellow-600 font-medium">부분결제</span>
                                 ) : order.paymentStatus === 'refunded' ? (
                                   <span className="text-red-600 font-medium">환불</span>
                                 ) : (
-                                  <span className="text-red-600 font-medium">미입금</span>
+                                  <span className="text-red-600 font-medium">입금대기</span>
                                 )}
                               </div>
                             </td>
