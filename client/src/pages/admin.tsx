@@ -141,6 +141,172 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
   );
 }
 
+// Admin Info Settings Dialog Component
+function AdminInfoSettingsDialog() {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const { data: adminSettings } = useQuery<any>({
+    queryKey: ["/api/admin-settings"],
+  });
+  
+  const [adminName, setAdminName] = useState("");
+  const [adminPhone, setAdminPhone] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [businessAddress, setBusinessAddress] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  
+  // Load existing settings when dialog opens
+  useEffect(() => {
+    if (adminSettings) {
+      setAdminName(adminSettings.adminName || "");
+      setAdminPhone(adminSettings.adminPhone || "");
+      setBusinessName(adminSettings.businessName || "에덴한과");
+      setBusinessAddress(adminSettings.businessAddress || "");
+      setBusinessPhone(adminSettings.businessPhone || "");
+      setBankAccount(adminSettings.bankAccount || "농협 352-1701-3342-63 (예금주: 손*진)");
+    }
+  }, [adminSettings]);
+  
+  const updateAdminMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch('/api/admin-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) {
+        throw new Error('관리자 정보 업데이트 실패');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin-settings"] });
+      toast({
+        title: "관리자 정보 업데이트 완료",
+        description: "관리자 정보가 성공적으로 업데이트되었습니다.",
+      });
+      setOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "오류 발생",
+        description: "관리자 정보 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const handleSave = async () => {
+    if (!adminName || !adminPhone || !businessName) {
+      toast({
+        title: "입력 오류",
+        description: "관리자명, 전화번호, 사업체명은 필수 항목입니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    updateAdminMutation.mutate({
+      adminName,
+      adminPhone,
+      businessName,
+      businessAddress,
+      businessPhone,
+      bankAccount
+    });
+  };
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Settings className="w-4 h-4" />
+          관리자 정보
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>관리자 정보 설정</DialogTitle>
+          <DialogDescription>
+            관리자 및 사업체 정보를 설정합니다.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="adminName">관리자명 *</Label>
+            <Input
+              id="adminName"
+              value={adminName}
+              onChange={(e) => setAdminName(e.target.value)}
+              placeholder="관리자 이름을 입력하세요"
+            />
+          </div>
+          <div>
+            <Label htmlFor="adminPhone">관리자 전화번호 *</Label>
+            <Input
+              id="adminPhone"
+              value={adminPhone}
+              onChange={(e) => setAdminPhone(e.target.value)}
+              placeholder="010-0000-0000"
+            />
+          </div>
+          <div>
+            <Label htmlFor="businessName">사업체명 *</Label>
+            <Input
+              id="businessName"
+              value={businessName}
+              onChange={(e) => setBusinessName(e.target.value)}
+              placeholder="사업체 이름을 입력하세요"
+            />
+          </div>
+          <div>
+            <Label htmlFor="businessAddress">사업체 주소</Label>
+            <Input
+              id="businessAddress"
+              value={businessAddress}
+              onChange={(e) => setBusinessAddress(e.target.value)}
+              placeholder="사업체 주소를 입력하세요"
+            />
+          </div>
+          <div>
+            <Label htmlFor="businessPhone">사업체 전화번호</Label>
+            <Input
+              id="businessPhone"
+              value={businessPhone}
+              onChange={(e) => setBusinessPhone(e.target.value)}
+              placeholder="사업체 전화번호를 입력하세요"
+            />
+          </div>
+          <div>
+            <Label htmlFor="bankAccount">계좌 정보</Label>
+            <Input
+              id="bankAccount"
+              value={bankAccount}
+              onChange={(e) => setBankAccount(e.target.value)}
+              placeholder="은행명 계좌번호 (예금주명)"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-6">
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            취소
+          </Button>
+          <Button 
+            onClick={handleSave}
+            disabled={updateAdminMutation.isPending}
+          >
+            {updateAdminMutation.isPending ? "저장 중..." : "저장"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // Cost Settings Dialog Component
 function CostSettingsDialog() {
   const [open, setOpen] = useState(false);
@@ -244,12 +410,12 @@ function CostSettingsDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="text-white hover:text-gray-200 p-2 sm:px-4 sm:py-2">
-          <Cog className="w-4 h-4 sm:mr-2" />
-          <span className="hidden sm:inline">원가 설정</span>
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <Cog className="w-4 h-4" />
+          원가 설정
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>전역 원가 및 배송비 설정</DialogTitle>
           <DialogDescription>
@@ -3145,7 +3311,15 @@ export default function Admin() {
                         {/* 컴팩트한 설정 버튼들 */}
                         <div className="flex flex-wrap gap-3 mb-6">
                           <CostSettingsDialog />
-                          <PasswordChangeDialog />
+                          <AdminInfoSettingsDialog />
+                          <PasswordChangeDialog 
+                            triggerComponent={
+                              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                                <Key className="h-4 w-4" />
+                                비밀번호 변경
+                              </Button>
+                            }
+                          />
                           <Button 
                             variant="outline" 
                             size="sm"
