@@ -100,24 +100,7 @@ export default function LoginPage() {
             </button>
           </div>
           
-          {/* 관리자/매니저 빠른 접근 */}
-          <div className="border-t pt-4 mt-6">
-            <p className="text-sm text-gray-600 text-center mb-3">관리자/매니저 빠른 접근</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={() => navigate("/admin")}
-                className="bg-red-50 text-red-700 py-2 px-3 rounded-lg hover:bg-red-100 transition-colors border border-red-200 text-sm"
-              >
-                👨‍💼 관리자
-              </button>
-              <button
-                onClick={() => navigate("/manager")}
-                className="bg-green-50 text-green-700 py-2 px-3 rounded-lg hover:bg-green-100 transition-colors border border-green-200 text-sm"
-              >
-                📊 매니저
-              </button>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
