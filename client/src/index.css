@@ -122,9 +122,9 @@
 }
 
 .admin-table .col-order-number, .manager-table .col-order-number {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
 }
 
 .admin-table .col-customer-name, .manager-table .col-customer-name {
@@ -134,9 +134,9 @@
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {

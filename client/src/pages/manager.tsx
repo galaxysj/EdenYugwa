@@ -551,20 +551,19 @@ export default function ManagerDashboard() {
                                 className="rounded"
                               />
                             </td>
-                            <td className="py-4 px-4">
-                              <div className="font-semibold text-gray-900 text-base">#{order.orderNumber}</div>
-                              <div className="text-sm text-gray-600">
-                                <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                                <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <td className="col-order-number">
+                              <div className="font-semibold text-gray-900 no-wrap text-xs">#{order.orderNumber}</div>
+                              <div className="text-xs text-gray-500 no-wrap">
+                                {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                               </div>
-                              {order.scheduledDate ? (
-                                <div 
-                                  className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200 mt-1"
-                                  title="클릭하여 예약발송일 수정"
-                                >
-                                  {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                              <div className="text-xs text-gray-500 no-wrap">
+                                {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                              {order.scheduledDate && (
+                                <div className="text-xs text-red-600 font-bold no-wrap">
+                                  예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                                 </div>
-                              ) : null}
+                              )}
                             </td>
                             <td className="py-2 px-2">
                               {order.scheduledDate ? (
