@@ -279,7 +279,20 @@ export default function ManagerDashboard() {
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
       console.log('일괄 발송 처리 요청:', { orderIds });
-      const response = await apiRequest('PATCH', '/api/orders/seller-shipped', { orderIds });
+      const response = await fetch('/api/orders/seller-shipped', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderIds }),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Request failed' }));
+        throw new Error(errorData.message || '일괄 발송 처리에 실패했습니다');
+      }
+      
       return response.json();
     },
     onSuccess: async (data, orderIds) => {
@@ -327,6 +340,16 @@ export default function ManagerDashboard() {
         {currentPage === "orders" && (
           <>
             {/* 주문 목록 */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <h2 className="text-lg font-semibold text-gray-900">주문 목록</h2>
+                <Button variant="outline" onClick={downloadExcel}>
+                  <Download className="h-4 w-4 mr-2" />
+                  엑셀
+                </Button>
+              </div>
+            </div>
+            
             <Tabs defaultValue="전체보기" className="space-y-4">
               <div className="flex items-center justify-between">
                 <TabsList>
@@ -338,13 +361,6 @@ export default function ManagerDashboard() {
                     매니저발송완료 ({filteredOrders.filter(o => o.sellerShipped).length})
                   </TabsTrigger>
                 </TabsList>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={downloadExcel}>
-                    <Download className="h-4 w-4 mr-2" />
-                    엑셀
-                  </Button>
-                </div>
               </div>
 
               {/* 선택된 주문이 있을 때 일괄 작업 버튼 */}
