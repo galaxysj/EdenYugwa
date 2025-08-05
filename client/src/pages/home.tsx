@@ -56,18 +56,43 @@ export default function Home() {
               </div>
             </div>
             
-            {/* 모바일 헤더 버튼들 - 오른쪽 */}
-            <div className="flex md:hidden gap-2">
-              <Link href="/order-lookup">
-                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                  주문조회
+            {/* 모바일 레이아웃 */}
+            <div className="flex md:hidden items-center justify-between w-full">
+              {/* 모바일 왼쪽: 네비게이션 버튼들 */}
+              <div className="flex gap-1">
+                <button 
+                  onClick={() => scrollToSection('home')}
+                  className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  홈
                 </button>
-              </Link>
-              <Link href="/login">
-                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                  회원가입
+                <button 
+                  onClick={() => scrollToSection('about')}
+                  className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  소개
                 </button>
-              </Link>
+                <button 
+                  onClick={() => scrollToSection('order')}
+                  className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  주문하기
+                </button>
+              </div>
+              
+              {/* 모바일 오른쪽: 주문조회/회원가입 */}
+              <div className="flex gap-1">
+                <Link href="/order-lookup">
+                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                    주문조회
+                  </button>
+                </Link>
+                <Link href="/login">
+                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                    회원가입
+                  </button>
+                </Link>
+              </div>
             </div>
             
             {/* 데스크톱 오른쪽: 주문조회/회원가입 */}
