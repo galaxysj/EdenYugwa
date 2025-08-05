@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, Shield, User, Crown, CheckCircle, AlertTriangle } from "lucide-react";
+import { Users, Shield, User, Crown, CheckCircle, AlertTriangle, Phone } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface User {
@@ -132,7 +132,8 @@ export function UserManagement() {
             총 {users.length}명의 회원이 등록되어 있습니다.
           </div>
           
-          <div className="overflow-x-auto">
+          {/* 데스크탑 테이블 뷰 */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
@@ -200,6 +201,81 @@ export function UserManagement() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* 모바일 카드 뷰 */}
+          <div className="md:hidden space-y-4">
+            {users.map((user) => (
+              <Card key={user.id} className="p-4">
+                <div className="space-y-3">
+                  {/* 상단: 이름과 권한 */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-lg">{user.name}</h3>
+                      <p className="text-sm text-gray-600">@{user.username}</p>
+                    </div>
+                    {getRoleBadge(user.role)}
+                  </div>
+                  
+                  {/* 중간: 연락처와 상태 */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <span>{user.phoneNumber}</span>
+                    </div>
+                    {user.isActive ? (
+                      <Badge variant="outline" className="gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        활성
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        비활성
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {/* 하단: 날짜 정보와 작업 버튼 */}
+                  <div className="space-y-2 text-xs text-gray-500">
+                    <div>가입일: {formatDate(user.createdAt)}</div>
+                    <div>최근 로그인: {formatDate(user.lastLoginAt)}</div>
+                  </div>
+                  
+                  {/* 작업 버튼 */}
+                  {user.role !== 'admin' && (
+                    <div className="pt-2 border-t">
+                      {user.role === 'user' ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRoleChange(user, 'manager')}
+                          disabled={updateRoleMutation.isPending}
+                          className="w-full"
+                        >
+                          매니저로 승격
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRoleChange(user, 'user')}
+                          disabled={updateRoleMutation.isPending}
+                          className="w-full"
+                        >
+                          일반사용자로 변경
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  {user.role === 'admin' && (
+                    <div className="pt-2 border-t text-center text-sm text-gray-400">
+                      최고 관리자 (변경 불가)
+                    </div>
+                  )}
+                </div>
+              </Card>
+            ))}
           </div>
 
           {users.length === 0 && (
