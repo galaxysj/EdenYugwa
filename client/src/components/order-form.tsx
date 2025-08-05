@@ -919,7 +919,6 @@ export default function OrderForm() {
           </div>
         </form>
       </Form>
-      
       {/* 모바일용 배송 안내 - 하단에 표시 */}
       <div className="md:hidden mt-6 p-3 bg-gradient-to-r from-eden-cream/40 to-eden-beige/20 rounded-lg border border-eden-brown/10 mx-2">
         <h4 className="text-base font-bold text-eden-brown mb-2 text-center font-korean">에덴한과 배송</h4>
@@ -942,7 +941,7 @@ export default function OrderForm() {
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-red font-bold">•</span>
-            <p className="text-sm text-eden-dark leading-relaxed">미리 주문 시 예약발송 가능합니다.</p>
+            <p className="text-eden-dark text-[13px]">미리 주문 시 예약발송 가능합니다.</p>
           </div>
         </div>
       </div>
