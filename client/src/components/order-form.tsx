@@ -937,7 +937,7 @@ export default function OrderForm() {
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-red font-bold">•</span>
-            <p className="text-sm text-eden-dark leading-relaxed">설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
+            <p className="text-eden-dark text-[13px]">설날 명절 2주 전에는 미리 주문 부탁드려요.</p>
           </div>
           <div className="flex items-start space-x-3">
             <span className="text-eden-red font-bold">•</span>
