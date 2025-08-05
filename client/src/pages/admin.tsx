@@ -1990,7 +1990,7 @@ export default function Admin() {
                         }}
                         disabled={updatePaymentMutation.isPending}
                       >
-                        <SelectTrigger className="w-20 h-6 text-xs">
+                        <SelectTrigger className="w-24 h-6 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

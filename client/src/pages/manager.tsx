@@ -630,16 +630,12 @@ export default function ManagerDashboard() {
                               )}
                             </td>
                             <td className="py-2 px-2 min-w-[80px]">
-                              <div className="text-xs space-y-1">
-                                {order.smallBoxQuantity > 0 && (
-                                  <div className="text-gray-900">한과1호×{order.smallBoxQuantity}개</div>
-                                )}
-                                {order.largeBoxQuantity > 0 && (
-                                  <div className="text-gray-900">한과2호×{order.largeBoxQuantity}개</div>
-                                )}
-                                {order.wrappingQuantity > 0 && (
-                                  <div className="text-gray-900">보자기×{order.wrappingQuantity}개</div>
-                                )}
+                              <div className="text-xs no-wrap">
+                                {[
+                                  order.smallBoxQuantity > 0 && `한과1호×${order.smallBoxQuantity}개`,
+                                  order.largeBoxQuantity > 0 && `한과2호×${order.largeBoxQuantity}개`,
+                                  order.wrappingQuantity > 0 && `보자기×${order.wrappingQuantity}개`
+                                ].filter(Boolean).join(', ')}
                               </div>
                             </td>
                             <td className="py-2 px-2">
