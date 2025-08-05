@@ -214,10 +214,20 @@ export default function Home() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto">
               진안에서 온 <span className="text-eden-brown">정성 가득</span> 유과
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2">
-              에덴한과에서 직접 만드는 찹쌀유과로 100% 국내산 찹쌀로 만든 한과입니다.<br className="hidden sm:block" />
-              달지 않고 고소한 맛이 일품으로 선물로도 완벽한 에덴한과입니다.
-            </p>
+            <div className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-4">
+              <p className="mb-3 sm:mb-2">
+                <span className="font-semibold text-eden-brown">에덴한과에서 직접 만드는</span><br className="sm:hidden" />
+                <span className="sm:ml-2">찹쌀유과로</span>
+              </p>
+              <p className="mb-3 sm:mb-2">
+                <span className="font-semibold text-eden-brown">100% 국내산 찹쌀</span>로<br className="sm:hidden" />
+                <span className="sm:ml-2">만든 한과입니다</span>
+              </p>
+              <p className="text-center sm:text-left">
+                <span className="font-semibold text-eden-red">달지 않고 고소한 맛</span>이 일품으로<br className="sm:hidden" />
+                <span className="sm:ml-2 font-semibold text-eden-red">선물로도 완벽한</span> 에덴한과입니다
+              </p>
+            </div>
           </div>
 
           {/* Product Images */}
