@@ -28,20 +28,20 @@ export default function Home() {
             <div className="flex items-center space-x-3">
               <Leaf className="text-eden-sage text-2xl" />
               <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-            </div>
-            
-            {/* 모바일 헤더 버튼들 - 오른쪽으로 이동 */}
-            <div className="flex md:hidden gap-2">
-              <Link href="/order-lookup">
-                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                  주문조회
-                </button>
-              </Link>
-              <Link href="/login">
-                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                  회원가입
-                </button>
-              </Link>
+              
+              {/* 모바일 헤더 버튼들 */}
+              <div className="flex md:hidden gap-2 ml-3">
+                <Link href="/order-lookup">
+                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                    주문조회
+                  </button>
+                </Link>
+                <Link href="/login">
+                  <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                    회원가입
+                  </button>
+                </Link>
+              </div>
             </div>
             
             {/* Desktop Navigation */}
@@ -114,11 +114,11 @@ export default function Home() {
 
             </nav>
 
-            {/* Mobile Menu Button - Desktop only */}
+            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="sm"
-              className="hidden md:block"
+              className="md:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -174,7 +174,26 @@ export default function Home() {
                     </button>
                   </Link>
                 )}
-
+                {isAuthenticated && user?.role === 'admin' && (
+                  <Link href="/admin">
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-left text-white bg-red-600 hover:bg-red-700 transition-colors py-3 px-4 w-full rounded-lg border"
+                    >
+                      👨‍💼 관리자 대시보드
+                    </button>
+                  </Link>
+                )}
+                {isAuthenticated && (user?.role === 'admin' || user?.role === 'manager') && (
+                  <Link href="/manager">
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-left text-white bg-green-600 hover:bg-green-700 transition-colors py-3 px-4 w-full rounded-lg border"
+                    >
+                      📊 매니저 대시보드
+                    </button>
+                  </Link>
+                )}
                 {isAuthenticated && (
                   <button 
                     className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
