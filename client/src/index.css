@@ -77,21 +77,29 @@
 /* Enhanced table styles for better readability */
 .admin-table, .manager-table {
   font-size: 0.875rem; /* text-sm */
+  table-layout: fixed;
+  width: 100%;
 }
 
 .admin-table th, .manager-table th {
   font-size: 0.875rem; /* text-sm */
   font-weight: 600; /* font-semibold */
   color: rgb(31 41 55); /* text-gray-800 */
-  padding: 1rem; /* py-4 px-4 */
+  padding: 0.75rem 0.5rem; /* py-3 px-2 */
   background-color: rgb(249 250 251); /* bg-gray-50 */
   border-bottom: 2px solid rgb(229 231 235); /* border-b-2 border-gray-200 */
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .admin-table td, .manager-table td {
   font-size: 0.875rem; /* text-sm */
-  padding: 1rem; /* py-4 px-4 */
+  padding: 0.75rem 0.5rem; /* py-3 px-2 */
   border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .admin-table tbody tr:hover, .manager-table tbody tr:hover {
@@ -104,6 +112,79 @@
 
 .admin-table .font-semibold, .manager-table .font-semibold {
   font-weight: 600;
+}
+
+/* 특정 컬럼 너비 설정 */
+.admin-table .col-checkbox, .manager-table .col-checkbox {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+}
+
+.admin-table .col-order-number, .manager-table .col-order-number {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+.admin-table .col-customer-name, .manager-table .col-customer-name {
+  width: 85px;
+  min-width: 85px;
+  max-width: 85px;
+}
+
+.admin-table .col-order-details, .manager-table .col-order-details {
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
+}
+
+.admin-table .col-phone, .manager-table .col-phone {
+  width: 110px;
+  min-width: 110px;
+  max-width: 110px;
+}
+
+.admin-table .col-address, .manager-table .col-address {
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
+}
+
+.admin-table .col-date, .manager-table .col-date {
+  width: 75px;
+  min-width: 75px;
+  max-width: 75px;
+}
+
+.admin-table .col-amount, .manager-table .col-amount {
+  width: 75px;
+  min-width: 75px;
+  max-width: 75px;
+}
+
+.admin-table .col-status, .manager-table .col-status {
+  width: 85px;
+  min-width: 85px;
+  max-width: 85px;
+}
+
+.admin-table .col-actions, .manager-table .col-actions {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+/* 텍스트 줄바꿈 방지 및 정렬 */
+.no-wrap {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-center-nowrap {
+  text-align: center;
+  white-space: nowrap !important;
 }
 .eden-red { color: var(--eden-red); }
 
