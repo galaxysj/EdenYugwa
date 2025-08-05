@@ -38,33 +38,13 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      // 이미 로그인된 사용자는 홈으로 리다이렉트
-      navigate("/");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
+  // 로그인 상태 확인은 하지만 리다이렉트하지 않음
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-orange-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-2 text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 이미 로그인된 사용자는 회원가입 페이지에 접근할 수 없음
-  if (isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-orange-50">
-        <div className="text-center p-6 bg-white rounded-lg shadow-lg">
-          <h2 className="text-xl font-bold text-orange-800 mb-4">이미 로그인되어 있습니다</h2>
-          <Button onClick={() => navigate("/")} className="bg-orange-600 hover:bg-orange-700">
-            홈으로 이동
-          </Button>
         </div>
       </div>
     );
@@ -149,6 +129,12 @@ export default function RegisterPage() {
         </CardHeader>
         
         <CardContent className="pt-0 pb-6">
+          {isAuthenticated && (
+            <Alert className="mb-4 bg-blue-50 text-blue-800 border-blue-300">
+              <AlertDescription>이미 로그인되어 있습니다. 다른 계정으로 가입하려면 먼저 로그아웃해주세요.</AlertDescription>
+            </Alert>
+          )}
+          
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
@@ -245,13 +231,15 @@ export default function RegisterPage() {
             <Button 
               type="submit" 
               className="w-full h-11 bg-orange-600 hover:bg-orange-700 text-white mt-6"
-              disabled={loading}
+              disabled={loading || isAuthenticated}
             >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   가입 중...
                 </>
+              ) : isAuthenticated ? (
+                "이미 로그인됨"
               ) : (
                 "회원가입"
               )}
