@@ -456,7 +456,8 @@ export default function OrderLookup() {
                   <Package className="mx-auto h-16 w-16 text-gray-300 mb-6" />
                   <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-3">주문 내역이 없습니다</h3>
                   <p className="text-sm md:text-base text-gray-500 mb-4">
-                    입력하신 전화번호로 등록된 주문을 찾을 수 없습니다.
+                    입력하신 전화번호로<br />
+                    등록된 주문을 찾을 수 없습니다.
                   </p>
                   <div className="text-xs md:text-sm text-gray-400 space-y-1">
                     <p>• 전화번호를 정확히 입력했는지 확인해 주세요</p>
