@@ -8,7 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function LoginPage() {
   const [, navigate] = useLocation();
   const { isAuthenticated, isLoading, user } = useAuth();
-  const [activeTab, setActiveTab] = useState("login");
+  
+  // URL 파라미터에서 tab 값을 읽어서 초기 탭 설정
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam === 'register' ? 'register' : 'login');
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {

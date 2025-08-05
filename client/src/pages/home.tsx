@@ -37,7 +37,7 @@ export default function Home() {
                   주문조회
                 </button>
               </Link>
-              <Link href="/login">
+              <Link href="/login?tab=register">
                 <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
                   회원가입
                 </button>
