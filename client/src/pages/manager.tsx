@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import { AdminHeader } from "@/components/admin-header";
@@ -277,27 +278,22 @@ export default function ManagerDashboard() {
   // 일괄 판매자 발송 mutation
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      return api.patch('/api/orders/seller-shipped', { orderIds });
+      console.log('일괄 발송 처리 요청:', { orderIds });
+      const response = await apiRequest('PATCH', '/api/orders/seller-shipped', { orderIds });
+      return response.json();
     },
     onSuccess: async (data, orderIds) => {
-      // 일괄 발송 완료 시 모든 주문의 상태를 delivered로 변경
-      try {
-        const statusUpdatePromises = orderIds.map(id => 
-          api.patch(`/api/orders/${id}/status`, { status: 'delivered' })
-        );
-        await Promise.all(statusUpdatePromises);
-      } catch (error) {
-        console.error('일괄 주문 상태 업데이트 실패:', error);
-      }
+      console.log('일괄 발송 처리 성공:', data);
       
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       toast({
         title: "일괄 발송 처리 완료",
-        description: `${selectedOrders.size}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
+        description: `${orderIds.length}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
       });
       setSelectedOrders(new Set());
     },
     onError: (error: any) => {
+      console.error('일괄 발송 처리 실패:', error);
       toast({
         title: "일괄 발송 처리 실패",
         description: error.message || "일괄 발송 처리 중 오류가 발생했습니다.",
@@ -325,9 +321,7 @@ export default function ManagerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader 
-        isManager={true}
-      />
+      <AdminHeader />
 
       <div className="container mx-auto p-4 space-y-6">
         {currentPage === "orders" && (
