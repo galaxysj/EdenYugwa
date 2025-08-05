@@ -2493,168 +2493,164 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
-        {/* Mobile Cards - 요약된 버전 */}
-        <div className="lg:hidden space-y-3">
+        {/* Mobile List - 리스트 버전 */}
+        <div className="lg:hidden space-y-2">
           {ordersList.map((order: Order) => {
             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
             return (
-              <Card key={order.id} className={`border ${
+              <div key={order.id} className={`bg-white border rounded-lg p-3 ${
                 order.paymentStatus === 'pending' ? 'border-red-400 bg-red-50' : 
                 order.status === 'seller_shipped' ? 'border-blue-300 bg-blue-50' : 
                 'border-gray-200'
               }`}>
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    {/* 헤더 - 주문번호, 상태, 체크박스 */}
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedOrderItems.has(order.id)}
-                          onChange={() => toggleOrderSelection(order.id)}
-                          className="rounded border-gray-300"
-                          title="삭제용 선택"
-                        />
-                        <div className="font-bold text-gray-900 text-base">#{order.orderNumber}</div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {StatusIcon && <StatusIcon className="h-4 w-4 text-blue-500" />}
-                        <span className="text-xs font-medium text-blue-600 px-2 py-1 bg-blue-100 rounded">
-                          {order.scheduledDate && order.status === 'pending' ? "예약발송" : statusLabels[order.status as keyof typeof statusLabels]}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 핵심 정보 한 줄 */}
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-900">{order.customerName}</span>
-                          <div className="text-xs text-gray-600">{order.customerPhone}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold text-blue-600">{formatPrice(order.totalAmount)}</div>
-                          <div className="text-xs text-gray-600">
-                            {order.smallBoxQuantity > 0 && `1호×${order.smallBoxQuantity}`}
-                            {order.largeBoxQuantity > 0 && ` 2호×${order.largeBoxQuantity}`}
-                            {order.wrappingQuantity > 0 && ` 보자기×${order.wrappingQuantity}`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 예약발송일 또는 특별 상태 */}
-                    {order.scheduledDate && (
-                      <div className="bg-red-50 p-2 rounded border border-red-200">
-                        <div className="text-red-700 font-medium text-sm text-center">
-                          📅 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
-                            month: 'short', day: 'numeric', weekday: 'short'
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {order.status === 'delivered' && order.deliveredDate && (
-                      <div className="bg-green-50 p-2 rounded border border-green-200">
-                        <div className="text-green-700 font-medium text-sm text-center">
-                          ✅ 발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
-                            month: 'short', day: 'numeric'
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 메모 표시 */}
-                    {order.specialRequests && (
-                      <div className="bg-yellow-50 p-2 rounded border border-yellow-200">
-                        <div className="text-yellow-800 font-medium text-sm">📝 {order.specialRequests}</div>
-                      </div>
-                    )}
-
-                    {/* 입금 상태와 주요 관리 기능 */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Select
-                          value={
-                            order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
-                              ? 'partial'
-                              : order.paymentStatus || 'pending'
-                          }
-                          onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
-                          disabled={updatePaymentMutation.isPending}
-                        >
-                          <SelectTrigger className="w-full text-xs h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">입금대기</SelectItem>
-                            <SelectItem value="confirmed">입금완료</SelectItem>
-                            <SelectItem value="partial">부분결제</SelectItem>
-                            <SelectItem value="refunded">환불</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Select
-                          value={order.status}
-                          onValueChange={(newStatus) => updateStatusMutation.mutate({ id: order.id, status: newStatus })}
-                          disabled={updateStatusMutation.isPending}
-                        >
-                          <SelectTrigger className="w-full text-xs h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">주문접수</SelectItem>
-                            <SelectItem value="scheduled">발송예약</SelectItem>
-                            <SelectItem value="seller_shipped">발송대기</SelectItem>
-                            <SelectItem value="delivered">발송완료</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    {/* 간단한 액션 버튼들 */}
-                    <div className="flex gap-2">
-                      <SmsDialog order={order}>
-                        <Button size="sm" variant="outline" className="flex-1 text-xs h-8">
-                          SMS
-                        </Button>
-                      </SmsDialog>
-                      
+                <div className="space-y-2">
+                  {/* 첫 번째 줄: 주문번호, 고객명, 상태 */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={selectedShippingItems.has(order.id)}
-                        onChange={() => toggleShippingSelection(order.id)}
+                        checked={selectedOrderItems.has(order.id)}
+                        onChange={() => toggleOrderSelection(order.id)}
                         className="rounded border-gray-300"
-                        disabled={order.sellerShipped || false}
-                        title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
+                        title="삭제용 선택"
                       />
-                      
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteOrder(order.id)}
-                        disabled={deleteOrderMutation.isPending}
-                        className="text-xs h-8 px-2"
-                      >
-                        삭제
-                      </Button>
+                      <span className="font-bold text-sm text-gray-900">#{order.orderNumber}</span>
+                      <span className="text-sm text-gray-600">{order.customerName}</span>
                     </div>
-
-                    {/* 숨겨진 date picker들 */}
-                    <div className="hidden" data-order-id={order.id}>
-                      <DeliveredDatePicker order={order} />
-                      <SellerShippedDatePicker order={order} />
-                      <ScheduledDatePicker order={order} />
+                    <div className="flex items-center gap-1">
+                      {StatusIcon && <StatusIcon className="h-3 w-3 text-blue-500" />}
+                      <span className="text-xs font-medium text-blue-600 px-2 py-0.5 bg-blue-100 rounded">
+                        {order.scheduledDate && order.status === 'pending' ? "예약발송" : statusLabels[order.status as keyof typeof statusLabels]}
+                      </span>
                     </div>
-
-
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* 두 번째 줄: 연락처, 주문내역, 금액 */}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">{order.customerPhone}</span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-blue-600">{formatPrice(order.totalAmount)}</div>
+                      <div className="text-gray-600">
+                        {order.smallBoxQuantity > 0 && `1호×${order.smallBoxQuantity}`}
+                        {order.largeBoxQuantity > 0 && ` 2호×${order.largeBoxQuantity}`}
+                        {order.wrappingQuantity > 0 && ` 보자기×${order.wrappingQuantity}`}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 세 번째 줄: 주소 */}
+                  <div className="text-xs text-gray-500 truncate">
+                    📍 {order.address1} {order.address2}
+                  </div>
+
+                  {/* 특별 상태 표시 */}
+                  {order.scheduledDate && (
+                    <div className="bg-red-100 px-2 py-1 rounded text-xs text-red-700 text-center">
+                      📅 예약발송: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', {
+                        month: '2-digit', day: '2-digit', weekday: 'short'
+                      })}
+                    </div>
+                  )}
+
+                  {order.status === 'delivered' && order.deliveredDate && (
+                    <div className="bg-green-100 px-2 py-1 rounded text-xs text-green-700 text-center">
+                      ✅ 발송완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', {
+                        month: '2-digit', day: '2-digit'
+                      })}
+                    </div>
+                  )}
+
+                  {/* 메모 표시 */}
+                  {order.specialRequests && (
+                    <div className="bg-yellow-100 px-2 py-1 rounded text-xs text-yellow-800">
+                      📝 {order.specialRequests}
+                    </div>
+                  )}
+
+                  {/* 네 번째 줄: 관리 기능 */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <Select
+                        value={
+                          order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                            ? 'partial'
+                            : order.paymentStatus || 'pending'
+                        }
+                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                        disabled={updatePaymentMutation.isPending}
+                      >
+                        <SelectTrigger className="w-full text-xs h-7">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">입금대기</SelectItem>
+                          <SelectItem value="confirmed">입금완료</SelectItem>
+                          <SelectItem value="partial">부분결제</SelectItem>
+                          <SelectItem value="refunded">환불</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Select
+                        value={order.status}
+                        onValueChange={(newStatus) => updateStatusMutation.mutate({ id: order.id, status: newStatus })}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="w-full text-xs h-7">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="scheduled">발송예약</SelectItem>
+                          <SelectItem value="seller_shipped">발송대기</SelectItem>
+                          <SelectItem value="delivered">발송완료</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* 다섯 번째 줄: 액션 버튼들 */}
+                  <div className="flex gap-2 items-center">
+                    <SmsDialog order={order}>
+                      <Button size="sm" variant="outline" className="flex-1 text-xs h-7 px-2">
+                        SMS
+                      </Button>
+                    </SmsDialog>
+                    
+                    <input
+                      type="checkbox"
+                      checked={selectedShippingItems.has(order.id)}
+                      onChange={() => toggleShippingSelection(order.id)}
+                      className="rounded border-gray-300"
+                      disabled={order.sellerShipped || false}
+                      title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
+                    />
+                    
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteOrder(order.id)}
+                      disabled={deleteOrderMutation.isPending}
+                      className="text-xs h-7 px-2"
+                    >
+                      삭제
+                    </Button>
+                  </div>
+
+                  {/* 숨겨진 date picker들 */}
+                  <div className="hidden" data-order-id={order.id}>
+                    <DeliveredDatePicker order={order} />
+                    <SellerShippedDatePicker order={order} />
+                    <ScheduledDatePicker order={order} />
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>
