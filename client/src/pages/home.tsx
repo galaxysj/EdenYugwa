@@ -51,24 +51,42 @@ export default function Home() {
                   </Link>
                 </>
               ) : (
-                <button 
-                  onClick={async () => {
-                    try {
-                      const response = await fetch('/api/auth/logout', {
-                        method: 'POST',
-                        credentials: 'include'
-                      });
-                      if (response.ok) {
-                        window.location.reload();
+                <>
+                  {/* 관리자 패널 버튼 - 모바일 */}
+                  {user?.role === 'admin' && (
+                    <Link href="/admin">
+                      <button className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-300 hover:bg-red-200 transition-colors">
+                        관리자
+                      </button>
+                    </Link>
+                  )}
+                  {/* 매니저 패널 버튼 - 모바일 */}
+                  {(user?.role === 'admin' || user?.role === 'manager') && (
+                    <Link href="/manager">
+                      <button className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded border border-green-300 hover:bg-green-200 transition-colors">
+                        매니저
+                      </button>
+                    </Link>
+                  )}
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const response = await fetch('/api/auth/logout', {
+                          method: 'POST',
+                          credentials: 'include'
+                        });
+                        if (response.ok) {
+                          window.location.reload();
+                        }
+                      } catch (error) {
+                        console.error('로그아웃 오류:', error);
                       }
-                    } catch (error) {
-                      console.error('로그아웃 오류:', error);
-                    }
-                  }}
-                  className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-300 hover:bg-red-200 transition-colors"
-                >
-                  로그아웃
-                </button>
+                    }}
+                    className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-200 transition-colors"
+                  >
+                    로그아웃
+                  </button>
+                </>
               )}
             </div>
             
