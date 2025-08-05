@@ -30,65 +30,83 @@ export default function Home() {
               <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
             </div>
             
-            {/* 모바일 헤더 버튼들 - 오른쪽으로 이동 */}
-            <div className="flex md:hidden gap-1">
+            {/* 모바일 메뉴 버튼 */}
+            <div className="flex md:hidden items-center gap-2">
+              {/* 주문조회 버튼 - 항상 표시 */}
               <Link href="/order-lookup">
-                <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
+                <button className="text-xs bg-eden-sage text-white px-3 py-1.5 rounded-full hover:bg-eden-brown transition-colors">
                   주문조회
                 </button>
               </Link>
-              {!isAuthenticated ? (
-                <>
-                  <Link href="/login">
-                    <button className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded border border-blue-300 hover:bg-blue-200 transition-colors">
-                      로그인
-                    </button>
-                  </Link>
-                  <Link href="/register">
-                    <button className="text-xs bg-white text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
-                      회원가입
-                    </button>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  {/* 관리자 패널 버튼 - 모바일 */}
-                  {user?.role === 'admin' && (
-                    <Link href="/admin">
-                      <button className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-300 hover:bg-red-200 transition-colors">
-                        관리자
-                      </button>
-                    </Link>
-                  )}
-                  {/* 매니저 패널 버튼 - 모바일 */}
-                  {(user?.role === 'admin' || user?.role === 'manager') && (
-                    <Link href="/manager">
-                      <button className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded border border-green-300 hover:bg-green-200 transition-colors">
-                        매니저
-                      </button>
-                    </Link>
-                  )}
-                  <button 
-                    onClick={async () => {
-                      try {
-                        const response = await fetch('/api/auth/logout', {
-                          method: 'POST',
-                          credentials: 'include'
-                        });
-                        if (response.ok) {
-                          window.location.reload();
-                        }
-                      } catch (error) {
-                        console.error('로그아웃 오류:', error);
-                      }
-                    }}
-                    className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded border border-gray-300 hover:bg-gray-200 transition-colors"
-                  >
-                    로그아웃
-                  </button>
-                </>
-              )}
+              
+              {/* 햄버거 메뉴 버튼 */}
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
             </div>
+
+            {/* 모바일 드롭다운 메뉴 */}
+            {isMobileMenuOpen && (
+              <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-b border-gray-200 md:hidden z-50">
+                <div className="container mx-auto px-4 py-4">
+                  <div className="space-y-3">
+                    {!isAuthenticated ? (
+                      <>
+                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                          <button className="w-full text-left px-4 py-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                            로그인
+                          </button>
+                        </Link>
+                        <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                          <button className="w-full text-left px-4 py-2 text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            회원가입
+                          </button>
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        {/* 관리자/매니저 버튼들 */}
+                        {user?.role === 'admin' && (
+                          <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                            <button className="w-full text-left px-4 py-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                              관리자 패널
+                            </button>
+                          </Link>
+                        )}
+                        {(user?.role === 'admin' || user?.role === 'manager') && (
+                          <Link href="/manager" onClick={() => setIsMobileMenuOpen(false)}>
+                            <button className="w-full text-left px-4 py-2 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                              매니저 패널
+                            </button>
+                          </Link>
+                        )}
+                        <button 
+                          onClick={async () => {
+                            try {
+                              const response = await fetch('/api/auth/logout', {
+                                method: 'POST',
+                                credentials: 'include'
+                              });
+                              if (response.ok) {
+                                window.location.reload();
+                              }
+                            } catch (error) {
+                              console.error('로그아웃 오류:', error);
+                            }
+                          }}
+                          className="w-full text-left px-4 py-2 text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          로그아웃
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
