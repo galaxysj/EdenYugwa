@@ -2012,7 +2012,7 @@ export default function Admin() {
                         }}
                         disabled={updateStatusMutation.isPending}
                       >
-                        <SelectTrigger className="w-20 h-6 text-xs">
+                        <SelectTrigger className="w-24 h-6 text-xs">
                           <SelectValue>
                             {statusLabels[order.status as keyof typeof statusLabels]}
                           </SelectValue>
