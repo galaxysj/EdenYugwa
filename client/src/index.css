@@ -148,6 +148,14 @@
   min-width: 120px;
 }
 
+.admin-table .col-scheduled-date, .manager-table .col-scheduled-date {
+  width: 8%;
+  min-width: 90px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 .admin-table .col-customer-name, .manager-table .col-customer-name {
   width: 8%;
   min-width: 90px;

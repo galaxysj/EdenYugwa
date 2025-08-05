@@ -750,7 +750,7 @@ export default function Admin() {
         '매니저발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
         '원가합계': totalCost,
         '순수익': netProfit,
-        '메모': order.memo || ''
+        '메모': order.specialRequests || ''
       };
     });
 
@@ -1806,6 +1806,7 @@ export default function Admin() {
                 </th>
 
                 <th className="col-order-number text-left">주문번호</th>
+                <th className="col-scheduled-date text-left">예약발송</th>
                 <th className="col-customer-name text-left">주문자</th>
                 <th className="col-customer-name text-left">예금자</th>
                 <th className="col-order-details text-left">주문내역</th>
@@ -1856,10 +1857,27 @@ export default function Admin() {
                           hour12: false
                         })}시
                       </div>
-                      {order.scheduledDate && (
-                        <div className="text-xs text-red-600 font-bold no-wrap">
-                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                    </td>
+                    <td className="col-scheduled-date">
+                      {order.scheduledDate ? (
+                        <div 
+                          className="text-xs text-red-600 font-bold cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200 no-wrap"
+                          onClick={() => {
+                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
+                            if (scheduledDatePicker) {
+                              (scheduledDatePicker as HTMLElement).click();
+                            }
+                          }}
+                          title="클릭하여 예약발송일 수정"
+                        >
+                          {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { 
+                            year: '2-digit',
+                            month: '2-digit', 
+                            day: '2-digit' 
+                          })}
                         </div>
+                      ) : (
+                        <div className="text-xs text-gray-400 no-wrap">-</div>
                       )}
                     </td>
 
