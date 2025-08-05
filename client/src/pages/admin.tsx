@@ -1842,18 +1842,10 @@ export default function Admin() {
                     </td>
 
                     <td className="col-order-number">
-                      <div className="font-semibold text-gray-900 no-wrap text-xs">#{order.orderNumber}</div>
+                      <div className="font-semibold text-gray-900 no-wrap">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500 no-wrap">
                         {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                       </div>
-                      <div className="text-xs text-gray-500 no-wrap">
-                        {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                      {order.scheduledDate && (
-                        <div className="text-xs text-red-600 font-bold no-wrap">
-                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                        </div>
-                      )}
                     </td>
                     <td className="col-date text-center">
                       {order.scheduledDate ? (
@@ -1889,16 +1881,12 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-order-details">
-                      <div className="text-xs">
-                        {order.smallBoxQuantity > 0 && (
-                          <div className="text-gray-900 no-wrap">한과1호×{order.smallBoxQuantity}개</div>
-                        )}
-                        {order.largeBoxQuantity > 0 && (
-                          <div className="text-gray-900 no-wrap">한과2호×{order.largeBoxQuantity}개</div>
-                        )}
-                        {order.wrappingQuantity > 0 && (
-                          <div className="text-gray-900 no-wrap">보자기×{order.wrappingQuantity}개</div>
-                        )}
+                      <div className="text-xs no-wrap">
+                        {[
+                          order.smallBoxQuantity > 0 && `한과1호×${order.smallBoxQuantity}개`,
+                          order.largeBoxQuantity > 0 && `한과2호×${order.largeBoxQuantity}개`,
+                          order.wrappingQuantity > 0 && `보자기×${order.wrappingQuantity}개`
+                        ].filter(Boolean).join(', ')}
                       </div>
                     </td>
                     <td className="col-phone">
@@ -1909,13 +1897,13 @@ export default function Admin() {
                         <DialogTrigger asChild>
                           <div>
                             <div 
-                              className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded no-wrap"
+                              className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 no-wrap"
                               title="클릭하여 전체 주소 보기"
                             >
-                              {order.address1.length > 8 ? `${order.address1.substring(0, 8)}...` : order.address1}
+                              {order.address1.length > 12 ? `${order.address1.substring(0, 12)}...` : order.address1}
                             </div>
                             {checkRemoteArea(order.address1) && (
-                              <div className="text-xs text-red-600 font-bold">추가</div>
+                              <div className="text-xs text-red-600 font-bold">배송비추가</div>
                             )}
                           </div>
                         </DialogTrigger>
@@ -1944,7 +1932,7 @@ export default function Admin() {
                     </td>
                     <td className="col-address">
                       <div className="text-xs text-gray-600 no-wrap">{order.specialRequests ? 
-                        (order.specialRequests.length > 6 ? `${order.specialRequests.substring(0, 6)}...` : order.specialRequests) 
+                        (order.specialRequests.length > 8 ? `${order.specialRequests.substring(0, 8)}...` : order.specialRequests) 
                         : '-'}</div>
                     </td>
                     {/* 매출 */}
@@ -1990,33 +1978,85 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-status text-center">
-                      <div className="text-xs no-wrap">
-                        {order.paymentStatus === 'confirmed' ? '완료' : 
-                         order.paymentStatus === 'partial' ? '부분' : 
-                         order.paymentStatus === 'refunded' ? '환불' : '대기'}
-                      </div>
+                      <Select
+                        key={`payment-${order.id}-${order.paymentStatus}`}
+                        value={
+                          order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                            ? 'partial'
+                            : order.paymentStatus || 'pending'
+                        }
+                        onValueChange={(newPaymentStatus) => {
+                          setTimeout(() => {
+                            handlePaymentStatusChange(order.id, newPaymentStatus);
+                          }, 0);
+                        }}
+                        disabled={updatePaymentMutation.isPending}
+                      >
+                        <SelectTrigger className="w-20 h-6 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">입금대기</SelectItem>
+                          <SelectItem value="confirmed">입금완료</SelectItem>
+                          <SelectItem value="partial">부분결제</SelectItem>
+                          <SelectItem value="refunded">환불</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="col-status text-center">
-                      <div className="text-xs no-wrap">
-                        {order.status === 'delivered' ? '완료' :
-                         order.status === 'scheduled' ? '주문' :
-                         order.status === 'seller_shipped' ? '대기' : '접수'}
-                      </div>
+                      <Select
+                        key={`status-${order.id}-${order.status}`}
+                        value={order.status}
+                        onValueChange={(newStatus) => {
+                          setTimeout(() => {
+                            handleStatusChange(order.id, newStatus);
+                          }, 0);
+                        }}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="w-20 h-6 text-xs">
+                          <SelectValue>
+                            {statusLabels[order.status as keyof typeof statusLabels]}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="seller_shipped">발송대기</SelectItem>
+                          <SelectItem value="scheduled">발송주문</SelectItem>
+                          <SelectItem value="delivered" disabled={!order.sellerShipped}>발송완료</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="col-status text-center">
                       <div className="text-xs no-wrap">
                         {order.sellerShipped ? (
-                          <div className="text-green-600 font-medium">완료</div>
+                          <div className="text-green-600 font-medium">
+                            완료
+                            {order.sellerShippedDate && (
+                              <div 
+                                className="text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded no-wrap"
+                                onClick={() => {
+                                  const sellerShippedDatePicker = document.querySelector(`[data-order-id="${order.id}"] .seller-shipped-date-trigger`);
+                                  if (sellerShippedDatePicker) {
+                                    (sellerShippedDatePicker as HTMLElement).click();
+                                  }
+                                }}
+                                title="클릭하여 판매자발송일 수정"
+                              >
+                                {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                              </div>
+                            )}
+                          </div>
                         ) : (
                           <div className="text-gray-400">미처리</div>
                         )}
                       </div>
                     </td>
                     <td className="col-actions text-center">
-                      <div className="flex gap-1">
+                      <div className="flex flex-col gap-1 items-center">
                         <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="h-5 text-xs px-1">
-                            S
+                          <Button size="sm" variant="outline" className="h-6 text-xs px-2">
+                            SMS
                           </Button>
                         </SmsDialog>
                         <div className="hidden" data-order-id={order.id}>
@@ -2029,7 +2069,7 @@ export default function Admin() {
                           variant="destructive"
                           onClick={() => handleDeleteOrder(order.id)}
                           disabled={deleteOrderMutation.isPending}
-                          className="h-5 text-xs px-1"
+                          className="h-6 text-xs px-2"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
