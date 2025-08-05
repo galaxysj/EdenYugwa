@@ -643,12 +643,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      if (errors.length > 0) {
-        console.error("Some orders failed to update:", errors);
+      if (errors.length > 0 && results.length === 0) {
+        // 모든 주문이 실패한 경우에만 500 오류 반환
+        console.error("All orders failed to update:", errors);
         return res.status(500).json({ 
-          message: `${results.length}개 주문은 성공, ${errors.length}개 주문 실패`,
-          updatedOrders: results,
+          message: `모든 주문 업데이트 실패`,
           errors: errors
+        });
+      } else if (errors.length > 0) {
+        // 일부만 실패한 경우 성공으로 처리하되 오류 정보도 포함
+        console.warn("Some orders failed to update:", errors);
+        return res.status(200).json({ 
+          message: `${results.length}개 주문 성공, ${errors.length}개 주문 실패`,
+          updatedOrders: results,
+          errors: errors,
+          partialSuccess: true
         });
       }
       

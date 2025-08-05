@@ -328,10 +328,19 @@ export default function ManagerDashboard() {
       console.log('일괄 발송 처리 성공:', data);
       
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
-      toast({
-        title: "일괄 발송 처리 완료",
-        description: `${orderIds.length}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
-      });
+      
+      if (data.partialSuccess) {
+        toast({
+          title: "일괄 발송 처리 부분 완료",
+          description: data.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "일괄 발송 처리 완료",
+          description: `${orderIds.length}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
+        });
+      }
       setSelectedOrders(new Set());
     },
     onError: (error: any) => {
@@ -574,6 +583,8 @@ export default function ManagerDashboard() {
                         onClick={() => {
                           const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
                           console.log('전체 발송처리 대상 주문:', waitingOrders.map(o => o.id));
+                          // 전체 발송처리 시 대상 주문들을 선택 상태로 만들기
+                          setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
                         disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
@@ -861,6 +872,8 @@ export default function ManagerDashboard() {
                         onClick={() => {
                           const waitingOrders = filteredOrders.filter(o => !o.sellerShipped);
                           console.log('발송처리대기 탭 전체 발송처리 대상:', waitingOrders.map(o => o.id));
+                          // 전체 발송처리 시 대상 주문들을 선택 상태로 만들기
+                          setSelectedOrders(new Set(waitingOrders.map(o => o.id)));
                           bulkSellerShippedMutation.mutate(waitingOrders.map(o => o.id));
                         }}
                         disabled={bulkSellerShippedMutation.isPending || filteredOrders.filter(o => !o.sellerShipped).length === 0}
