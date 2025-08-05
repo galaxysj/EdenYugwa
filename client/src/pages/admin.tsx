@@ -1843,7 +1843,18 @@ export default function Admin() {
                     <td className="col-order-number">
                       <div className="font-semibold text-gray-900 no-wrap">#{order.orderNumber}</div>
                       <div className="text-xs text-gray-500 no-wrap">
-                        {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        {new Date(order.createdAt).toLocaleDateString('ko-KR', { 
+                          year: '2-digit', 
+                          month: '2-digit', 
+                          day: '2-digit' 
+                        })}
+                      </div>
+                      <div className="text-xs text-gray-400 no-wrap">
+                        {new Date(order.createdAt).toLocaleTimeString('ko-KR', { 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          hour12: false
+                        })}시
                       </div>
                       {order.scheduledDate && (
                         <div className="text-xs text-red-600 font-bold no-wrap">
