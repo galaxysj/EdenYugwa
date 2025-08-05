@@ -102,10 +102,23 @@
   vertical-align: top;
 }
 
-/* 상태 컬럼은 텍스트 줄바꿈 허용 */
-.admin-table .col-status, .manager-table .col-status {
+/* 상태 컬럼은 텍스트 줄바꿈 허용하되 매니저 페이지에서는 예외 */
+.admin-table .col-status {
   white-space: normal;
   word-wrap: break-word;
+}
+
+.manager-table .col-status {
+  white-space: nowrap;
+  min-width: 115px;
+  width: 12%;
+}
+
+/* 매니저 테이블의 Select 컴포넌트 너비 조정 */
+.manager-table .col-status [data-testid*="select-trigger"],
+.manager-table .col-status button[role="combobox"] {
+  min-width: 110px !important;
+  width: 110px !important;
 }
 
 /* 주문번호, 금액만 nowrap 유지 */
