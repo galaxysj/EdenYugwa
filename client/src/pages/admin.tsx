@@ -1588,8 +1588,8 @@ export default function Admin() {
                 </table>
               </div>
 
-              {/* 모바일 카드 뷰 */}
-              <div className="md:hidden space-y-4">
+              {/* 모바일 리스트 뷰 */}
+              <div className="md:hidden space-y-1">
                 {filteredOrders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
@@ -1622,118 +1622,78 @@ export default function Admin() {
                   const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                   
                   return (
-                    <Card key={order.id} className="p-4">
-                      <div className="space-y-3">
-                        {/* 상단: 주문번호와 고객명 */}
+                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                      <div className="space-y-2">
+                        {/* 첫 번째 줄: 주문번호, 고객명, 주문일 */}
                         <div className="flex items-center justify-between border-b pb-2">
-                          <div>
-                            <h3 className="font-bold text-gray-900">#{order.orderNumber}</h3>
-                            <p className="text-sm text-gray-600">{order.customerName}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-gray-900">#{order.orderNumber}</span>
+                            <span className="text-sm text-gray-600">{order.customerName}</span>
                           </div>
-                          <div className="text-right text-xs text-gray-500">
-                            <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                            <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
                         
-                        {/* 주문 내역 */}
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <h4 className="text-sm font-medium text-gray-700 mb-2">주문 내역</h4>
-                          <div className="space-y-1 text-sm">
+                        {/* 두 번째 줄: 주문 내역 */}
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
                             {order.smallBoxQuantity > 0 && (
-                              <div className="flex justify-between">
-                                <span>한과1호 × {order.smallBoxQuantity}개</span>
-                                <span className="font-medium">{formatPrice(smallBoxTotal)}</span>
-                              </div>
+                              <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded">한과1호×{order.smallBoxQuantity}</span>
                             )}
                             {order.largeBoxQuantity > 0 && (
-                              <div className="flex justify-between">
-                                <span>한과2호 × {order.largeBoxQuantity}개</span>
-                                <span className="font-medium">{formatPrice(largeBoxTotal)}</span>
-                              </div>
+                              <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">한과2호×{order.largeBoxQuantity}</span>
                             )}
                             {order.wrappingQuantity > 0 && (
-                              <div className="flex justify-between">
-                                <span>보자기 × {order.wrappingQuantity}개</span>
-                                <span className="font-medium">{formatPrice(wrappingTotal)}</span>
-                              </div>
-                            )}
-                            {shippingFee > 0 && (
-                              <div className="flex justify-between">
-                                <span>배송비</span>
-                                <span className="font-medium">{formatPrice(shippingFee)}</span>
-                              </div>
+                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">보자기×{order.wrappingQuantity}</span>
                             )}
                           </div>
                         </div>
-
-                        {/* 매출 정보 */}
-                        <div className="grid grid-cols-2 gap-3">
-                          {/* 매출 정보 */}
-                          <div className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-400">
-                            <h4 className="text-xs font-medium text-blue-700 mb-1">주문 금액</h4>
-                            <p className="text-lg font-bold text-blue-700">{formatPrice(order.totalAmount)}</p>
+                        
+                        {/* 세 번째 줄: 매출 정보 */}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="bg-blue-50 p-2 rounded border-l-2 border-blue-400">
+                            <div className="text-blue-600 font-medium">주문금액</div>
+                            <div className="text-blue-700 font-bold">{formatPrice(order.totalAmount)}</div>
                           </div>
-                          
-                          {/* 입금 정보 */}
-                          <div className="bg-green-50 rounded-lg p-3 border-l-4 border-green-400">
-                            <h4 className="text-xs font-medium text-green-700 mb-1">실제 입금</h4>
-                            <p className="text-lg font-bold text-green-700">
+                          <div className="bg-green-50 p-2 rounded border-l-2 border-green-400">
+                            <div className="text-green-600 font-medium">실제입금</div>
+                            <div className="text-green-700 font-bold">
                               {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
-                            </p>
+                            </div>
+                          </div>
+                          <div className="bg-purple-50 p-2 rounded border-l-2 border-purple-400">
+                            <div className="text-purple-600 font-medium">총원가</div>
+                            <div className="text-purple-700 font-bold">{formatPrice(totalCost)}</div>
                           </div>
                         </div>
-
-                        {/* 할인/미입금 정보 */}
-                        {(discountAmount > 0 || unpaidAmount > 0) && (
-                          <div className="bg-red-50 rounded-lg p-3 border-l-4 border-red-400">
-                            <h4 className="text-xs font-medium text-red-700 mb-1">
-                              {discountAmount > 0 ? '할인 금액' : '미입금 금액'}
-                            </h4>
-                            <p className="text-lg font-bold text-red-700">
-                              {formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* 원가 분석 */}
-                        <div className="bg-purple-50 rounded-lg p-3 border-l-4 border-purple-400">
-                          <h4 className="text-xs font-medium text-purple-700 mb-2">원가 분석</h4>
-                          <div className="space-y-1 text-xs">
-                            {order.smallBoxQuantity > 0 && (
-                              <div className="flex justify-between">
-                                <span>한과1호 원가</span>
-                                <span className="font-medium">{formatPrice(smallBoxesCost)}</span>
+                        
+                        {/* 네 번째 줄: 할인/미입금 및 순수익 */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {(discountAmount > 0 || unpaidAmount > 0) ? (
+                            <div className="bg-red-50 p-2 rounded border-l-2 border-red-400">
+                              <div className="text-red-600 font-medium">
+                                {discountAmount > 0 ? '할인금액' : '미입금액'}
                               </div>
-                            )}
-                            {order.largeBoxQuantity > 0 && (
-                              <div className="flex justify-between">
-                                <span>한과2호 원가</span>
-                                <span className="font-medium">{formatPrice(largeBoxesCost)}</span>
+                              <div className="text-red-700 font-bold">
+                                {formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}
                               </div>
-                            )}
-                            {order.wrappingQuantity > 0 && (
-                              <div className="flex justify-between">
-                                <span>보자기 원가</span>
-                                <span className="font-medium">{formatPrice(wrappingCost)}</span>
-                              </div>
-                            )}
-                            <div className="flex justify-between font-bold border-t pt-1">
-                              <span>총 원가</span>
-                              <span>{formatPrice(totalCost)}</span>
+                            </div>
+                          ) : (
+                            <div className="bg-gray-50 p-2 rounded border-l-2 border-gray-300">
+                              <div className="text-gray-500 font-medium">할인/미입금</div>
+                              <div className="text-gray-600 font-bold">-</div>
+                            </div>
+                          )}
+                          <div className={`p-2 rounded border-l-2 ${actualProfit >= 0 ? 'bg-emerald-50 border-emerald-400' : 'bg-red-50 border-red-400'}`}>
+                            <div className={`font-medium ${actualProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>순수익</div>
+                            <div className={`font-bold ${actualProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                              {formatPrice(actualProfit)}
                             </div>
                           </div>
                         </div>
-
-                        {/* 순수익 */}
-                        <div className={`${actualProfit >= 0 ? 'bg-emerald-50 border-emerald-400' : 'bg-red-50 border-red-400'} rounded-lg p-3 border-l-4`}>
-                          <h4 className={`text-xs font-medium mb-1 ${actualProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>순수익</h4>
-                          <p className={`text-xl font-bold ${actualProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-                            {formatPrice(actualProfit)}
-                          </p>
-                        </div>
                       </div>
-                    </Card>
+                    </div>
                   );
                 })}
               </div>
