@@ -931,13 +931,6 @@ export default function ManagerDashboard() {
                                     SMS
                                   </Button>
                                 </SmsDialog>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs px-2 py-1 h-7"
-                                >
-                                  수정
-                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -1167,13 +1160,6 @@ export default function ManagerDashboard() {
                                     SMS
                                   </Button>
                                 </SmsDialog>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs px-2 py-1 h-7"
-                                >
-                                  수정
-                                </Button>
                               </div>
                             </td>
                           </tr>
