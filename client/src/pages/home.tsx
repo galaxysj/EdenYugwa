@@ -211,15 +211,15 @@ export default function Home() {
       <section id="home" className="relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 py-6 md:py-12">
           {/* 모바일 상단 버튼들 */}
-          <div className="block md:hidden mb-4">
-            <div className="flex justify-center gap-3">
+          <div className="block md:hidden mb-2">
+            <div className="flex justify-center gap-2">
               <Link href="/order-lookup">
-                <button className="text-xs bg-orange-100 text-orange-800 px-3 py-2 rounded-lg hover:bg-orange-200 transition-colors border border-orange-300">
+                <button className="text-xs bg-white text-gray-700 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
                   📋 주문조회
                 </button>
               </Link>
               <Link href="/login">
-                <button className="text-xs bg-eden-beige text-eden-dark px-3 py-2 rounded-lg hover:bg-orange-50 transition-colors border border-orange-200">
+                <button className="text-xs bg-white text-gray-700 px-2 py-1 rounded border border-gray-300 hover:bg-gray-50 transition-colors">
                   👤 회원가입
                 </button>
               </Link>
