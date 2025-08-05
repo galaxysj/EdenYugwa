@@ -1785,7 +1785,7 @@ export default function Admin() {
 
 
         {/* Desktop Table */}
-        <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
+        <div className="hidden lg:block bg-white rounded-lg border">
           <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
@@ -1806,7 +1806,6 @@ export default function Admin() {
                 </th>
 
                 <th className="col-order-number text-left">주문번호</th>
-                <th className="col-date text-center">예약발송일</th>
                 <th className="col-customer-name text-left">주문자</th>
                 <th className="col-customer-name text-left">예금자</th>
                 <th className="col-order-details text-left">주문내역</th>
@@ -1846,25 +1845,13 @@ export default function Admin() {
                       <div className="text-xs text-gray-500 no-wrap">
                         {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                       </div>
-                    </td>
-                    <td className="col-date text-center">
-                      {order.scheduledDate ? (
-                        <div 
-                          className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-1 py-1 rounded no-wrap"
-                          onClick={() => {
-                            const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
-                            if (scheduledDatePicker) {
-                              (scheduledDatePicker as HTMLElement).click();
-                            }
-                          }}
-                          title="클릭하여 예약발송일 수정"
-                        >
-                          {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                      {order.scheduledDate && (
+                        <div className="text-xs text-red-600 font-bold no-wrap">
+                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
+
                     <td className="col-customer-name">
                       <div className="font-medium text-xs no-wrap">
                         {order.recipientName && order.recipientName !== order.customerName ? 

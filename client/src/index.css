@@ -76,30 +76,33 @@
 
 /* Enhanced table styles for better readability */
 .admin-table, .manager-table {
-  font-size: 0.875rem; /* text-sm */
+  font-size: 0.75rem; /* text-xs */
   table-layout: fixed;
   width: 100%;
+  border-collapse: collapse;
 }
 
 .admin-table th, .manager-table th {
-  font-size: 0.875rem; /* text-sm */
+  font-size: 0.75rem; /* text-xs */
   font-weight: 600; /* font-semibold */
   color: rgb(31 41 55); /* text-gray-800 */
-  padding: 0.75rem 0.5rem; /* py-3 px-2 */
+  padding: 0.5rem 0.25rem; /* py-2 px-1 */
   background-color: rgb(249 250 251); /* bg-gray-50 */
   border-bottom: 2px solid rgb(229 231 235); /* border-b-2 border-gray-200 */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  vertical-align: top;
 }
 
 .admin-table td, .manager-table td {
-  font-size: 0.875rem; /* text-sm */
-  padding: 0.75rem 0.5rem; /* py-3 px-2 */
+  font-size: 0.75rem; /* text-xs */
+  padding: 0.5rem 0.25rem; /* py-2 px-1 */
   border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  vertical-align: top;
 }
 
 .admin-table tbody tr:hover, .manager-table tbody tr:hover {
@@ -114,65 +117,50 @@
   font-weight: 600;
 }
 
-/* 특정 컬럼 너비 설정 */
+/* 특정 컬럼 너비 설정 - 전체 화면에 맞게 조정 */
 .admin-table .col-checkbox, .manager-table .col-checkbox {
-  width: 40px;
+  width: 3%;
   min-width: 40px;
-  max-width: 40px;
 }
 
 .admin-table .col-order-number, .manager-table .col-order-number {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
+  width: 10%;
+  min-width: 120px;
 }
 
 .admin-table .col-customer-name, .manager-table .col-customer-name {
-  width: 85px;
-  min-width: 85px;
-  max-width: 85px;
+  width: 8%;
+  min-width: 90px;
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
-  width: 130px;
-  min-width: 130px;
-  max-width: 130px;
+  width: 12%;
+  min-width: 140px;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {
-  width: 110px;
+  width: 10%;
   min-width: 110px;
-  max-width: 110px;
 }
 
 .admin-table .col-address, .manager-table .col-address {
-  width: 140px;
-  min-width: 140px;
-  max-width: 140px;
-}
-
-.admin-table .col-date, .manager-table .col-date {
-  width: 75px;
-  min-width: 75px;
-  max-width: 75px;
+  width: 18%;
+  min-width: 180px;
 }
 
 .admin-table .col-amount, .manager-table .col-amount {
-  width: 75px;
-  min-width: 75px;
-  max-width: 75px;
+  width: 8%;
+  min-width: 80px;
 }
 
 .admin-table .col-status, .manager-table .col-status {
-  width: 85px;
-  min-width: 85px;
-  max-width: 85px;
+  width: 9%;
+  min-width: 90px;
 }
 
 .admin-table .col-actions, .manager-table .col-actions {
-  width: 80px;
+  width: 8%;
   min-width: 80px;
-  max-width: 80px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
