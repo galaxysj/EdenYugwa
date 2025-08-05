@@ -454,8 +454,8 @@ export default function OrderLookup() {
               <Card className="border-2 border-dashed border-gray-300">
                 <CardContent className="p-12 text-center">
                   <Package className="mx-auto h-16 w-16 text-gray-300 mb-6" />
-                  <h3 className="text-xl font-semibold text-gray-700 mb-3">주문 내역이 없습니다</h3>
-                  <p className="text-gray-500 mb-4">
+                  <h3 className="text-xl font-semibold text-gray-700 mb-3 whitespace-nowrap">주문 내역이 없습니다</h3>
+                  <p className="text-gray-500 mb-4 whitespace-nowrap">
                     입력하신 전화번호로 등록된 주문을 찾을 수 없습니다.
                   </p>
                   <div className="text-sm text-gray-400 space-y-2 text-center w-full px-4">
