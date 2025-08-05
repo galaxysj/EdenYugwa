@@ -391,7 +391,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">주문일:</label>
                       <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
-                        <SelectTrigger className="h-8 w-32 text-xs">
+                        <SelectTrigger className="h-8 w-36 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -438,7 +438,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">결제상태:</label>
                       <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                        <SelectTrigger className="h-8 w-28 text-xs">
+                        <SelectTrigger className="h-8 w-32 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -455,7 +455,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">주문상태:</label>
                       <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                        <SelectTrigger className="h-8 w-28 text-xs">
+                        <SelectTrigger className="h-8 w-36 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -471,7 +471,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">판매자발송:</label>
                       <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
-                        <SelectTrigger className="h-8 w-28 text-xs">
+                        <SelectTrigger className="h-8 w-32 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
