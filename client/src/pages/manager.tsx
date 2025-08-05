@@ -766,9 +766,9 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full manager-table">
-                      <thead className="bg-gray-50 border-b-2 border-gray-200">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200 manager-table">
                         <tr>
-                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
+                          <th className="col-checkbox">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -783,16 +783,16 @@ export default function ManagerDashboard() {
                               className="rounded"
                             />
                           </th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>
-                          <th className="text-center py-3 px-3 text-sm font-semibold text-gray-700 min-w-[70px]">예약발송일</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[70px]">주문자</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문내역</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">연락처</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">배송지</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
+                          <th className="col-order-number">주문번호</th>
+                          <th className="col-date text-center">예약발송일</th>
+                          <th className="col-customer-name">주문자</th>
+                          <th className="col-order-details">주문내역</th>
+                          <th className="col-phone">연락처</th>
+                          <th className="col-address">배송지</th>
+                          <th className="col-status text-center">입금상태</th>
+                          <th className="col-status text-center">주문상태</th>
+                          <th className="col-status text-center">판매자발송</th>
+                          <th className="col-actions text-center">작업</th>
                         </tr>
                       </thead>
                       <tbody>

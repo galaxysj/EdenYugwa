@@ -231,3 +231,118 @@
 .gradient-card {
   background: linear-gradient(to right, var(--eden-beige), var(--eden-cream));
 }
+
+/* Manager table improvements */
+.manager-table th {
+  @apply text-left p-2 text-gray-800 text-xs;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.manager-table th.col-checkbox {
+  @apply w-8 text-center;
+}
+
+.manager-table th.col-order-number {
+  @apply min-w-[65px];
+}
+
+.manager-table th.col-date {
+  @apply min-w-[55px];
+}
+
+.manager-table th.col-customer-name {
+  @apply min-w-[50px];
+}
+
+.manager-table th.col-order-details {
+  @apply min-w-[80px];
+}
+
+.manager-table th.col-phone {
+  @apply min-w-[70px];
+}
+
+.manager-table th.col-address {
+  @apply min-w-[80px];
+}
+
+.manager-table th.col-status {
+  @apply min-w-[55px];
+}
+
+.manager-table th.col-actions {
+  @apply min-w-[60px];
+}
+
+.manager-table td {
+  @apply p-1 text-xs;
+  vertical-align: top;
+  line-height: 1.3;
+}
+
+.manager-table td.col-checkbox {
+  @apply w-8 text-center p-2;
+  vertical-align: middle;
+}
+
+.manager-table td.col-order-number {
+  @apply min-w-[65px] p-1;
+  vertical-align: top;
+}
+
+.manager-table td.col-date {
+  @apply min-w-[55px] p-1;
+  vertical-align: middle;
+}
+
+.manager-table td.col-customer-name {
+  @apply min-w-[50px] p-1;
+  vertical-align: top;
+}
+
+.manager-table td.col-order-details {
+  @apply min-w-[80px] p-1;
+  vertical-align: top;
+}
+
+.manager-table td.col-phone {
+  @apply min-w-[70px] p-1;
+  vertical-align: middle;
+}
+
+.manager-table td.col-address {
+  @apply min-w-[80px] p-1;
+  vertical-align: top;
+}
+
+.manager-table td.col-status {
+  @apply min-w-[55px] p-1;
+  vertical-align: middle;
+}
+
+.manager-table td.col-actions {
+  @apply min-w-[60px] p-1;
+  vertical-align: middle;
+}
+
+/* Additional spacing for better readability */
+.manager-table tr {
+  min-height: 50px;
+}
+
+.manager-table tbody tr:hover {
+  background-color: rgba(249, 250, 251, 0.8);
+}
+
+/* Ensure text alignment is consistent */
+.manager-table .text-center-override {
+  text-align: center !important;
+}
+
+.manager-table .no-wrap {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
