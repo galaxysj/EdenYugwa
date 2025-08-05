@@ -210,6 +210,22 @@ export default function Home() {
       {/* Order Section - Main Content */}
       <section id="home" className="relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 py-6 md:py-12">
+          {/* 모바일 상단 버튼들 */}
+          <div className="block md:hidden mb-4">
+            <div className="flex justify-center gap-3">
+              <Link href="/order-lookup">
+                <button className="text-xs bg-orange-100 text-orange-800 px-3 py-2 rounded-lg hover:bg-orange-200 transition-colors border border-orange-300">
+                  📋 주문조회
+                </button>
+              </Link>
+              <Link href="/login">
+                <button className="text-xs bg-eden-beige text-eden-dark px-3 py-2 rounded-lg hover:bg-orange-50 transition-colors border border-orange-200">
+                  👤 회원가입
+                </button>
+              </Link>
+            </div>
+          </div>
+
           <div className="text-center mb-6 md:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto">
               진안에서 온 <span className="text-eden-brown">정성 가득</span> 유과
