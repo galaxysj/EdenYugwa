@@ -548,7 +548,7 @@ export default function OrderForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>예약발송</FormLabel>
-                        <p className="text-xs text-gray-600 mb-1">발송은 순차적으로 진행하며, 미리 주문시 예약발송 지정 가능</p>
+                        <p className="text-xs text-gray-600 mb-1">순차적으로 발송하며, 미리 주문 시 예약 발송 지정 가능</p>
                         <p className="text-xs text-gray-500 mb-2 border-l-2 border-gray-300 pl-2">예약 발송날짜 지정(선택사항)</p>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -919,7 +919,6 @@ export default function OrderForm() {
           </div>
         </form>
       </Form>
-      
       {/* 모바일용 배송 안내 - 하단에 표시 */}
       <div className="md:hidden mt-6 p-3 bg-gradient-to-r from-eden-cream/40 to-eden-beige/20 rounded-lg border border-eden-brown/10 mx-2">
         <h4 className="text-base font-bold text-eden-brown mb-2 text-center font-korean">에덴한과 배송</h4>
