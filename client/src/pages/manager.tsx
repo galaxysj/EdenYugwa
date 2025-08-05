@@ -501,10 +501,10 @@ export default function ManagerDashboard() {
                     </Button>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-100 border-b-2 border-gray-300">
+                    <table className="w-full manager-table">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
-                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
+                          <th className="text-left p-4 font-semibold text-gray-800 w-12">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -515,19 +515,19 @@ export default function ManagerDashboard() {
                                 }
                               }}
                               checked={selectedOrders.size === filteredOrders.length && filteredOrders.length > 0}
-                              className="rounded"
+                              className="rounded w-4 h-4"
                             />
                           </th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>
-                          <th className="text-center py-3 px-3 text-sm font-semibold text-gray-700 min-w-[70px]">예약발송일</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[70px]">주문자</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문내역</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">연락처</th>
-                          <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[120px]">배송지</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문번호</th>
+                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[90px]">예약발송일</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[90px]">주문자</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문내역</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">연락처</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">배송지</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">입금상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">주문상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">판매자발송</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -551,15 +551,15 @@ export default function ManagerDashboard() {
                                 className="rounded"
                               />
                             </td>
-                            <td className="py-3 px-3">
-                              <div className="font-semibold text-gray-900 text-sm">#{order.orderNumber}</div>
+                            <td className="py-4 px-4">
+                              <div className="font-semibold text-gray-900 text-base">#{order.orderNumber}</div>
                               <div className="text-sm text-gray-600">
                                 <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                                <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                               </div>
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200 mt-1"
+                                  className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200 mt-1"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -734,8 +734,8 @@ export default function ManagerDashboard() {
                     </Button>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-100 border-b-2 border-gray-300">
+                    <table className="w-full manager-table">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
                           <th className="text-left p-3 font-semibold text-gray-700 w-12">
                             <input
@@ -970,10 +970,10 @@ export default function ManagerDashboard() {
                     </Button>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-gray-100 border-b-2 border-gray-300">
+                    <table className="w-full manager-table">
+                      <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
-                          <th className="text-left p-3 font-semibold text-gray-700 w-12">
+                          <th className="text-left p-4 font-semibold text-gray-800 w-12">
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -985,7 +985,7 @@ export default function ManagerDashboard() {
                                 }
                               }}
                               checked={selectedOrders.size === filteredOrders.filter(o => o.sellerShipped).length && filteredOrders.filter(o => o.sellerShipped).length > 0}
-                              className="rounded"
+                              className="rounded w-4 h-4"
                             />
                           </th>
                           <th className="py-3 px-3 text-left text-sm font-semibold text-gray-700 min-w-[80px]">주문번호</th>

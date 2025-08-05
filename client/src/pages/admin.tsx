@@ -1740,7 +1740,7 @@ export default function Admin() {
 
         {/* Desktop Table */}
         <div className="hidden lg:block overflow-x-auto bg-white rounded-lg border">
-          <table className="w-full">
+          <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
                 <th className="w-8 py-2 px-2 text-center">
@@ -1759,21 +1759,21 @@ export default function Admin() {
                   />
                 </th>
 
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문번호</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">예약발송일</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문자</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">예금자</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">주문내역</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">연락처</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">배송주소</th>
-                <th className="text-left py-2 px-2 font-medium text-gray-700 text-xs">메모</th>
-                <th className="text-center py-2 px-2 font-medium text-blue-700 text-xs">매출</th>
-                <th className="text-center py-2 px-2 font-medium text-green-700 text-xs">실입금</th>
-                <th className="text-center py-2 px-2 font-medium text-red-700 text-xs">할인/미입금</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">입금상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">주문상태</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">판매자발송</th>
-                <th className="text-center py-2 px-2 font-medium text-gray-700 text-xs">관리</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">주문번호</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">예약발송일</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">주문자</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">예금자</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">주문내역</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">연락처</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">배송주소</th>
+                <th className="text-left py-3 px-3 font-semibold text-gray-800 text-sm">메모</th>
+                <th className="text-center py-3 px-3 font-semibold text-blue-700 text-sm">매출</th>
+                <th className="text-center py-3 px-3 font-semibold text-green-700 text-sm">실입금</th>
+                <th className="text-center py-3 px-3 font-semibold text-red-700 text-sm">할인/미입금</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">입금상태</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">주문상태</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">판매자발송</th>
+                <th className="text-center py-3 px-3 font-semibold text-gray-800 text-sm">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -1795,15 +1795,15 @@ export default function Admin() {
                       />
                     </td>
 
-                    <td className="py-2 px-2">
-                      <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
-                      <div className="text-xs text-gray-500">
+                    <td className="py-3 px-3">
+                      <div className="font-semibold text-gray-900 text-sm">#{order.orderNumber}</div>
+                      <div className="text-sm text-gray-600">
                         <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                         <div>{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                       </div>
                       {order.scheduledDate ? (
                         <div 
-                          className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                          className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200"
                           onClick={() => {
                             const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
                             if (scheduledDatePicker) {
@@ -1816,7 +1816,7 @@ export default function Admin() {
                         </div>
                       ) : (
                         <div 
-                          className="text-blue-600 font-bold text-xs cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                          className="text-blue-600 font-bold text-sm cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
                           onClick={() => {
                             const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
                             if (scheduledDatePicker) {
@@ -1829,10 +1829,10 @@ export default function Admin() {
                         </div>
                       )}
                     </td>
-                    <td className="py-2 px-2 text-center">
+                    <td className="py-3 px-3 text-center">
                       {order.scheduledDate ? (
                         <div 
-                          className="text-xs text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                          className="text-sm text-blue-600 font-medium cursor-pointer hover:bg-blue-50 px-2 py-1 rounded border border-transparent hover:border-blue-200"
                           onClick={() => {
                             const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
                             if (scheduledDatePicker) {
@@ -1844,13 +1844,13 @@ export default function Admin() {
                           {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400">-</span>
+                        <span className="text-sm text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="py-2 px-2">
-                      <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                    <td className="py-3 px-3">
+                      <div className="font-medium text-gray-900 text-sm">{order.customerName}</div>
                       {order.recipientName && order.recipientName !== order.customerName && (
-                        <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                        <div className="text-sm text-blue-600">받는분: {order.recipientName}</div>
                       )}
                     </td>
                     <td className="py-2 px-2">

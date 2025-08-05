@@ -73,6 +73,38 @@
 .eden-cream { color: var(--eden-cream); }
 .eden-sage { color: var(--eden-sage); }
 .eden-beige { color: var(--eden-beige); }
+
+/* Enhanced table styles for better readability */
+.admin-table, .manager-table {
+  font-size: 0.875rem; /* text-sm */
+}
+
+.admin-table th, .manager-table th {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 600; /* font-semibold */
+  color: rgb(31 41 55); /* text-gray-800 */
+  padding: 1rem; /* py-4 px-4 */
+  background-color: rgb(249 250 251); /* bg-gray-50 */
+  border-bottom: 2px solid rgb(229 231 235); /* border-b-2 border-gray-200 */
+}
+
+.admin-table td, .manager-table td {
+  font-size: 0.875rem; /* text-sm */
+  padding: 1rem; /* py-4 px-4 */
+  border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
+}
+
+.admin-table tbody tr:hover, .manager-table tbody tr:hover {
+  background-color: rgb(249 250 251); /* hover:bg-gray-50 */
+}
+
+.admin-table .font-medium, .manager-table .font-medium {
+  font-weight: 500;
+}
+
+.admin-table .font-semibold, .manager-table .font-semibold {
+  font-weight: 600;
+}
 .eden-red { color: var(--eden-red); }
 
 /* 주요 제목들에만 적용할 색상 클래스 */
