@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X } from "lucide-react";
+import { useState } from "react";
 
 interface AdminHeaderProps {
   handleExcelDownload?: () => void;
@@ -12,12 +13,57 @@ interface AdminHeaderProps {
 
 export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSettingsDialog, passwordChangeDialog }: AdminHeaderProps) {
   const [location] = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <div className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6">
-        {/* 헤더 상단 */}
-        <div className="flex justify-between items-center py-4 border-b border-gray-100">
+      <div className="container mx-auto px-3 md:px-4 sm:px-6">
+        {/* 모바일 헤더 */}
+        <div className="flex md:hidden justify-between items-center py-3">
+          <div className="flex items-center space-x-2">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 p-1">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <h1 className="text-lg font-semibold text-gray-900 truncate">
+              관리자 패널
+            </h1>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-1"
+            >
+              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            </Button>
+            <Button 
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                  });
+                  if (response.ok) {
+                    window.location.href = '/';
+                  }
+                } catch (error) {
+                  console.error('로그아웃 실패:', error);
+                }
+              }}
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:text-red-700 p-1"
+            >
+              <LogOut className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+
+        {/* 데스크톱 헤더 */}
+        <div className="hidden md:flex justify-between items-center py-4 border-b border-gray-100">
           <div className="flex items-center space-x-4">
             <Link href="/">
               <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2">
@@ -53,8 +99,116 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
           </Button>
         </div>
 
-        {/* 네비게이션 메뉴 */}
-        <div className="py-3">
+        {/* 모바일 드롭다운 메뉴 */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 py-3 space-y-2">
+            {location === '/admin' && setActiveTab && (
+              <>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('revenue');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start ${
+                    activeTab === 'revenue' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  매출관리
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('orders');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start ${
+                    activeTab === 'orders' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Package className="h-4 w-4 mr-2" />
+                  주문목록
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('customers');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start ${
+                    activeTab === 'customers' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  고객관리
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start ${
+                    activeTab === 'settings' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Cog className="h-4 w-4 mr-2" />
+                  설정
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('users');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start ${
+                    activeTab === 'users' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  사용자관리
+                </Button>
+              </>
+            )}
+            {handleExcelDownload && (
+              <Button 
+                onClick={() => {
+                  handleExcelDownload();
+                  setIsMobileMenuOpen(false);
+                }}
+                variant="ghost" 
+                size="sm"
+                className="w-full justify-start text-green-600 hover:text-green-700 hover:bg-green-50"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                엑셀 다운로드
+              </Button>
+            )}
+            <div className="border-t pt-2">
+              {passwordChangeDialog}
+              {costSettingsDialog}
+            </div>
+          </div>
+        )}
+
+        {/* 데스크톱 네비게이션 메뉴 */}
+        <div className="hidden md:block py-3">
           <div className="flex items-center justify-between">
             {/* 메인 메뉴 */}
             <div className="flex items-center space-x-1">
