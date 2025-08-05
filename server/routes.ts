@@ -339,6 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const allOrders = await storage.getAllOrders();
       // 매니저는 발송주문(scheduled) 또는 발송완료(delivered) 상태의 주문만 볼 수 있음
+      // 입금상태에 관계없이 표시
       const filteredOrders = allOrders.filter(order => 
         order.status === 'scheduled' || order.status === 'delivered'
       );
