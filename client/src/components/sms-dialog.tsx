@@ -51,6 +51,8 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
       minute: '2-digit'
     });
     
+    console.log('SMS 상태 확인:', { status, paymentStatus }); // 디버그용
+    
     if (paymentStatus === 'confirmed') {
       return `입금이 확인되었습니다. (확인시간: ${timeStr})`;
     }
@@ -61,7 +63,10 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
       seller_shipped: `상품이 발송되었습니다. (발송시간: ${timeStr})`,
       delivered: `상품이 배송완료되었습니다. (배송완료시간: ${timeStr})`,
     };
-    return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
+    
+    const result = messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
+    console.log('SMS 메시지 결과:', result); // 디버그용
+    return result;
   };
 
   const form = useForm<SmsFormData>({
@@ -107,12 +112,16 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
   };
 
   const handlePresetMessage = (type: 'status' | 'payment' | 'shipping' | 'custom') => {
+    console.log('프리셋 메시지 타입:', type, '주문 상태:', order.status); // 디버그용
+    
     if (type === 'status') {
       const statusMessage = getStatusMessage(order.status);
-      form.setValue('message', `[에덴한과] ${order.customerName}님, ${statusMessage}`);
+      const finalMessage = `[에덴한과] ${order.customerName}님, ${statusMessage} 감사합니다.`;
+      console.log('최종 메시지:', finalMessage); // 디버그용
+      form.setValue('message', finalMessage);
     } else if (type === 'payment') {
       const paymentMessage = getStatusMessage(order.status, order.paymentStatus);
-      form.setValue('message', `[에덴한과] ${order.customerName}님, ${paymentMessage}`);
+      form.setValue('message', `[에덴한과] ${order.customerName}님, ${paymentMessage} 감사합니다.`);
     } else if (type === 'shipping') {
       form.setValue('message', `[에덴한과] ${order.customerName}님, 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`);
     } else {
