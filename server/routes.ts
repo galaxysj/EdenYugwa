@@ -627,27 +627,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const orderId of orderIds) {
         try {
           console.log(`Updating order ${orderId} to seller shipped...`);
+          
+          // 먼저 해당 주문이 존재하는지 확인
+          const existingOrder = await storage.getOrder(orderId);
+          if (!existingOrder) {
+            console.error(`Order ${orderId} not found`);
+            errors.push({ orderId, error: "주문을 찾을 수 없습니다" });
+            continue;
+          }
+          
+          // 이미 발송된 주문인지 확인
+          if (existingOrder.sellerShipped) {
+            console.log(`Order ${orderId} already shipped, skipping`);
+            continue;
+          }
+          
           const currentDate = new Date();
           const updatedOrder = await storage.updateOrderSellerShipped(orderId, true, currentDate);
           if (updatedOrder) {
             results.push(updatedOrder);
             console.log(`Successfully updated order ${orderId}`);
           } else {
-            console.error(`Order ${orderId} not found or could not be updated`);
-            errors.push({ orderId, error: "주문을 찾을 수 없거나 업데이트할 수 없습니다" });
+            console.error(`Order ${orderId} could not be updated`);
+            errors.push({ orderId, error: "주문을 업데이트할 수 없습니다" });
           }
         } catch (error) {
           console.error(`Failed to update order ${orderId}:`, error);
-          console.error(`Error details:`, error);
+          console.error(`Error stack:`, error instanceof Error ? error.stack : error);
           errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
         }
       }
+      
+      console.log(`Bulk update summary: ${results.length} successful, ${errors.length} failed`);
       
       if (errors.length > 0 && results.length === 0) {
         // 모든 주문이 실패한 경우에만 500 오류 반환
         console.error("All orders failed to update:", errors);
         return res.status(500).json({ 
-          message: `모든 주문 업데이트 실패`,
+          message: `모든 주문 업데이트 실패: ${errors.map(e => e.error).join(', ')}`,
           errors: errors
         });
       } else if (errors.length > 0) {
