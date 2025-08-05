@@ -62,7 +62,6 @@ const prices = {
   small: 19000, // 한과1호
   large: 21000, // 한과2호
   wrapping: 1000,
-  shipping: 4000,
 };
 
 
@@ -75,6 +74,10 @@ export default function OrderForm() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
+  const [shippingSettings, setShippingSettings] = useState({
+    shippingFee: 4000,
+    freeShippingThreshold: 6
+  });
   const [selectedAddress, setSelectedAddress] = useState<{
     zipCode: string;
     address: string;
@@ -110,6 +113,31 @@ export default function OrderForm() {
       depositorName: "",
     },
   });
+
+  // 배송비 설정 로드
+  useEffect(() => {
+    const loadShippingSettings = async () => {
+      try {
+        const [shippingFeeResponse, thresholdResponse] = await Promise.all([
+          fetch("/api/settings/shippingFee"),
+          fetch("/api/settings/freeShippingThreshold")
+        ]);
+
+        const shippingFeeSetting = await shippingFeeResponse.json();
+        const thresholdSetting = await thresholdResponse.json();
+
+        setShippingSettings({
+          shippingFee: parseInt(shippingFeeSetting.value) || 4000,
+          freeShippingThreshold: parseInt(thresholdSetting.value) || 6
+        });
+      } catch (error) {
+        console.error('배송비 설정 로드 실패:', error);
+        // 기본값 유지
+      }
+    };
+
+    loadShippingSettings();
+  }, []);
 
   // 로그인된 사용자의 정보로 폼 초기화
   useEffect(() => {
@@ -220,7 +248,7 @@ export default function OrderForm() {
     const totalQuantity = smallBoxQuantity + largeBoxQuantity;
     
     // 배송비 계산: 6개 이상이면 무료, 미만이면 4000원
-    const calculatedShippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+    const calculatedShippingFee = totalQuantity >= shippingSettings.freeShippingThreshold ? 0 : (totalQuantity > 0 ? shippingSettings.shippingFee : 0);
     setShippingFee(calculatedShippingFee);
     
     const total = smallBoxTotal + largeBoxTotal + wrappingTotal + calculatedShippingFee;
@@ -229,7 +257,7 @@ export default function OrderForm() {
 
   const onSubmit = (data: OrderFormData) => {
     const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
-    const shippingFee = totalQuantity >= 6 ? 0 : prices.shipping;
+    const shippingFee = totalQuantity >= shippingSettings.freeShippingThreshold ? 0 : shippingSettings.shippingFee;
     
     const orderData = {
       ...data,
@@ -804,8 +832,8 @@ export default function OrderForm() {
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
                         </p>
                         <div className="text-sm text-blue-800 space-y-1">
-                          <p>6개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
-                          <p>6개 미만: <span className="text-orange-600 font-semibold">배송비 4,000원</span></p>
+                          <p>{shippingSettings.freeShippingThreshold}개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
+                          <p>{shippingSettings.freeShippingThreshold}개 미만: <span className="text-orange-600 font-semibold">배송비 {formatPrice(shippingSettings.shippingFee)}</span></p>
                         </div>
                         <p className="text-xs text-red-600 mt-2 font-medium">
                           * 제주도, 도서산간지역은 추가비용 발생<br/>
@@ -845,8 +873,8 @@ export default function OrderForm() {
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
                         </p>
                         <div className="text-sm text-blue-800 space-y-1">
-                          <p>6개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
-                          <p>6개 미만: <span className="text-orange-600 font-semibold">배송비 4,000원</span></p>
+                          <p>{shippingSettings.freeShippingThreshold}개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
+                          <p>{shippingSettings.freeShippingThreshold}개 미만: <span className="text-orange-600 font-semibold">배송비 {formatPrice(shippingSettings.shippingFee)}</span></p>
                         </div>
                         <p className="text-xs text-red-600 mt-2 font-medium">
                           * 제주도, 도서산간지역은 추가비용 발생<br/>

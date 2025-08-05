@@ -154,6 +154,8 @@ function CostSettingsDialog() {
   const [smallBoxCost, setSmallBoxCost] = useState("");
   const [largeBoxCost, setLargeBoxCost] = useState("");
   const [wrappingCost, setWrappingCost] = useState("");
+  const [shippingFee, setShippingFee] = useState("");
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
   
   // Load existing settings when dialog opens
   useEffect(() => {
@@ -161,10 +163,14 @@ function CostSettingsDialog() {
       const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
       const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
       const wrappingCostSetting = settings.find(s => s.key === "wrappingCost");
+      const shippingFeeSetting = settings.find(s => s.key === "shippingFee");
+      const thresholdSetting = settings.find(s => s.key === "freeShippingThreshold");
       
       setSmallBoxCost(smallCostSetting?.value || "");
       setLargeBoxCost(largeCostSetting?.value || "");
       setWrappingCost(wrappingCostSetting?.value || "");
+      setShippingFee(shippingFeeSetting?.value || "");
+      setFreeShippingThreshold(thresholdSetting?.value || "");
     }
   }, [settings]);
   
@@ -191,10 +197,10 @@ function CostSettingsDialog() {
   });
   
   const handleSave = async () => {
-    if (!smallBoxCost || !largeBoxCost || !wrappingCost) {
+    if (!smallBoxCost || !largeBoxCost || !wrappingCost || !shippingFee || !freeShippingThreshold) {
       toast({
         title: "입력 오류",
-        description: "모든 원가 정보를 입력해주세요.",
+        description: "모든 설정 정보를 입력해주세요.",
         variant: "destructive",
       });
       return;
@@ -218,8 +224,20 @@ function CostSettingsDialog() {
         value: wrappingCost,
         description: "보자기 원가"
       });
+      
+      await updateCostMutation.mutateAsync({
+        key: "shippingFee",
+        value: shippingFee,
+        description: "배송비 (6개 미만 주문 시)"
+      });
+      
+      await updateCostMutation.mutateAsync({
+        key: "freeShippingThreshold",
+        value: freeShippingThreshold,
+        description: "무료배송 최소 수량"
+      });
     } catch (error) {
-      console.error("Cost settings update error:", error);
+      console.error("Settings update error:", error);
     }
   };
   
@@ -233,9 +251,9 @@ function CostSettingsDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>전역 원가 설정</DialogTitle>
+          <DialogTitle>전역 원가 및 배송비 설정</DialogTitle>
           <DialogDescription>
-            모든 주문에 적용할 기본 원가를 설정합니다.
+            모든 주문에 적용할 기본 원가와 배송비 정책을 설정합니다.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -268,6 +286,34 @@ function CostSettingsDialog() {
               onChange={(e) => setWrappingCost(e.target.value)}
               placeholder="원가 입력 (원)"
             />
+          </div>
+          <div className="border-t border-gray-200 pt-4">
+            <div className="mb-3">
+              <h4 className="font-medium text-gray-900">배송비 설정</h4>
+              <p className="text-sm text-gray-600">주문 폼의 배송비 계산에 적용됩니다</p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="shippingFee">배송비</Label>
+                <Input
+                  id="shippingFee"
+                  type="number"
+                  value={shippingFee}
+                  onChange={(e) => setShippingFee(e.target.value)}
+                  placeholder="배송비 입력 (원)"
+                />
+              </div>
+              <div>
+                <Label htmlFor="freeShippingThreshold">무료배송 최소 수량</Label>
+                <Input
+                  id="freeShippingThreshold"
+                  type="number"
+                  value={freeShippingThreshold}
+                  onChange={(e) => setFreeShippingThreshold(e.target.value)}
+                  placeholder="개수 입력"
+                />
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex justify-end gap-2 mt-6">

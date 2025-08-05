@@ -74,6 +74,28 @@ export class DatabaseStorage implements IStorage {
     this.initializeOrderCounter();
     this.ensureDefaultAdmin();
     this.ensureDefaultManager();
+    this.ensureDefaultSettings();
+  }
+
+  private async ensureDefaultSettings() {
+    try {
+      const defaultSettings = [
+        { key: 'smallBoxCost', value: '15000', description: '한과1호 원가 (개당)' },
+        { key: 'largeBoxCost', value: '17000', description: '한과2호 원가 (개당)' },
+        { key: 'wrappingCost', value: '500', description: '보자기 포장 원가 (개당)' },
+        { key: 'shippingFee', value: '4000', description: '배송비 (6개 미만 주문 시)' },
+        { key: 'freeShippingThreshold', value: '6', description: '무료배송 최소 수량' },
+      ];
+
+      for (const setting of defaultSettings) {
+        const existing = await this.getSetting(setting.key);
+        if (!existing) {
+          await this.setSetting(setting.key, setting.value, setting.description);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to create default settings:', error);
+    }
   }
 
   private async initializeOrderCounter() {
