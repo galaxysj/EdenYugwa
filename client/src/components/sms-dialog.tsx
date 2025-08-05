@@ -42,10 +42,32 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
     retry: false,
   });
 
+  const getStatusMessage = (status: string, paymentStatus?: string) => {
+    const now = new Date();
+    const timeStr = now.toLocaleString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    if (paymentStatus === 'confirmed') {
+      return `입금이 확인되었습니다. (확인시간: ${timeStr})`;
+    }
+    
+    const messages = {
+      pending: `주문이 접수되었습니다. (주문시간: ${timeStr})`,
+      scheduled: `발송이 예약되었습니다. (예약시간: ${timeStr})`,
+      seller_shipped: `상품이 발송완료되었습니다. (발송시간: ${timeStr})`,
+      delivered: `상품이 발송완료되었습니다. (발송시간: ${timeStr})`,
+    };
+    return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
+  };
+
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
     defaultValues: {
-      message: `[에덴한과] ${order.customerName}님, 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`,
+      message: `[에덴한과] ${order.customerName}님, ${getStatusMessage(order.status)} 감사합니다.`,
     },
   });
 
@@ -78,27 +100,6 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
     });
   };
 
-  const getStatusMessage = (status: string, paymentStatus?: string) => {
-    const now = new Date();
-    const timeStr = now.toLocaleString('ko-KR', {
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-    
-    if (paymentStatus === 'confirmed') {
-      return `입금이 확인되었습니다. (확인시간: ${timeStr})`;
-    }
-    
-    const messages = {
-      pending: `주문이 접수되었습니다. (접수시간: ${timeStr})`,
-      scheduled: `발송이 예약되었습니다. (예약시간: ${timeStr})`,
-      delivered: `상품이 발송완료되었습니다. (발송시간: ${timeStr})`,
-    };
-    return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
-  };
-
   const handlePresetMessage = (type: 'status' | 'payment' | 'shipping' | 'custom') => {
     if (type === 'status') {
       const statusMessage = getStatusMessage(order.status);
@@ -107,9 +108,6 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
       const paymentMessage = getStatusMessage(order.status, order.paymentStatus);
       form.setValue('message', `[에덴한과] ${order.customerName}님, ${paymentMessage}`);
     } else if (type === 'shipping') {
-      const shippingDate = order.scheduledDate ? 
-        new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' }) : 
-        '곧';
       form.setValue('message', `[에덴한과] ${order.customerName}님, 상품이 발송되었습니다. 3일이내 미 도착 시 반드시 연락주세요. 감사합니다. ^^`);
     } else {
       form.setValue('message', `[에덴한과] ${order.customerName}님께 개별 안내드립니다.`);
@@ -197,14 +195,16 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
                 <FormItem>
                   <FormLabel>메시지 내용</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="발송할 메시지를 입력해주세요..."
-                      className="min-h-[100px] resize-none"
-                      {...field}
+                    <Textarea 
+                      {...field} 
+                      placeholder="SMS 메시지를 입력하세요" 
+                      rows={4}
+                      className="resize-none"
                     />
                   </FormControl>
-                  <div className="text-xs text-gray-500">
-                    {field.value?.length || 0}/200자
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>SMS는 200자 이내로 입력해주세요</span>
+                    <span>{field.value?.length || 0}/200</span>
                   </div>
                   <FormMessage />
                 </FormItem>
