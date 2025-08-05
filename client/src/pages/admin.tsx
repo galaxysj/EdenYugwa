@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminHeader } from "@/components/admin-header";
 import type { Order, Setting } from "@shared/schema";
+import * as XLSX from 'xlsx';
 
 
 
@@ -650,6 +651,74 @@ export default function Admin() {
     if (confirm(`선택된 ${selectedTrashItems.size}개 주문을 영구적으로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
       bulkPermanentDeleteMutation.mutate(Array.from(selectedTrashItems));
     }
+  };
+
+  // Excel export function for admin
+  const exportToExcel = (ordersList: Order[], fileName: string) => {
+    const excelData = ordersList.map(order => {
+      // Get global cost settings
+      const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
+      const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
+      const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+      const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 15000;
+      const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 16000;
+      const wrappingCostValue = wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000;
+      
+      // Calculate totals
+      const smallBoxTotal = order.smallBoxQuantity * 19000;
+      const largeBoxTotal = order.largeBoxQuantity * 21000;
+      const wrappingTotal = order.wrappingQuantity * 1000;
+      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+      const shippingFee = totalItems >= 6 ? 0 : 4000;
+      
+      // Calculate costs
+      const smallBoxesCost = order.smallBoxQuantity * smallCost;
+      const largeBoxesCost = order.largeBoxQuantity * largeCost;
+      const wrappingCost = order.wrappingQuantity * wrappingCostValue;
+      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
+      const netProfit = (order.actualPaidAmount || order.totalAmount) - totalCost;
+      
+      return {
+        '주문번호': order.orderNumber,
+        '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
+        '주문시간': new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+        '고객명': order.customerName,
+        '받는분': order.recipientName || order.customerName,
+        '전화번호': order.customerPhone,
+        '주소': `${order.address1} ${order.address2 || ''}`.trim(),
+        '상품': [
+          order.smallBoxQuantity > 0 ? `한과1호×${order.smallBoxQuantity}개` : '',
+          order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
+          order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
+        ].filter(Boolean).join(', '),
+        '주문금액': order.totalAmount,
+        '실입금액': order.actualPaidAmount || order.totalAmount,
+        '할인금액': order.discountAmount || 0,
+        '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
+                   order.paymentStatus === 'partial' ? '부분결제' :
+                   order.paymentStatus === 'refunded' ? '환불' : '입금대기',
+        '주문상태': statusLabels[order.status as keyof typeof statusLabels],
+        '발송상태': order.sellerShipped ? '발송완료' : '발송대기',
+        '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
+        '발송완료일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
+        '매니저발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
+        '원가합계': totalCost,
+        '순수익': netProfit,
+        '메모': order.memo || ''
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "주문목록");
+    
+    const today = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `${fileName}_${today}.xlsx`);
+    
+    toast({
+      title: "엑셀 다운로드 완료",
+      description: `${ordersList.length}개 주문이 엑셀로 다운로드되었습니다.`,
+    });
   };
 
   // Shipping selection functions
@@ -2704,6 +2773,20 @@ export default function Admin() {
 
                 <TabsContent value="all" className="mt-6">
                   {renderOrderFilters()}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-600">
+                      총 {allOrders.length}개 주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(allOrders, "전체주문목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -2740,6 +2823,20 @@ export default function Admin() {
                 
                 <TabsContent value="pending" className="mt-6">
                   {renderOrderFilters()}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-600">
+                      총 {pendingOrders.length}개 주문접수 주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(pendingOrders, "주문접수목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -2776,6 +2873,20 @@ export default function Admin() {
                 
                 <TabsContent value="seller_shipped" className="mt-6">
                   {renderOrderFilters()}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-600">
+                      총 {sellerShippedOrders.length}개 발송대기 주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(sellerShippedOrders, "발송대기목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -2812,12 +2923,26 @@ export default function Admin() {
                 
                 <TabsContent value="scheduled" className="mt-6">
                   {renderOrderFilters()}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-600">
+                      총 {scheduledOrders.length}개 발송주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(scheduledOrders, "발송주문목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div className="text-sm text-red-700">
                           {selectedOrderItems.size}개 주문이 선택되었습니다
-                        </div>
+                        </div>        
                         <div className="flex gap-2">
                           <Button
                             size="sm"
@@ -2848,6 +2973,20 @@ export default function Admin() {
                 
                 <TabsContent value="delivered" className="mt-6">
                   {renderOrderFilters()}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-600">
+                      총 {deliveredOrders.length}개 발송완료 주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(deliveredOrders, "발송완료목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
                   {selectedOrderItems.size > 0 && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <div className="flex items-center justify-between">
@@ -2890,6 +3029,20 @@ export default function Admin() {
                     </div>
                   ) : (
                     <>
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm text-gray-600">
+                          총 {refundedOrders.length}개 환불 주문
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => exportToExcel(refundedOrders, "환불내역목록")}
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          엑셀 다운로드
+                        </Button>
+                      </div>
                       {selectedOrderItems.size > 0 && (
                         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                           <div className="flex items-center justify-between">

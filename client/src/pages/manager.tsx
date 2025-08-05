@@ -160,6 +160,46 @@ export default function ManagerDashboard() {
     },
   });
 
+  // Excel export function for manager
+  const exportToExcel = (ordersList: Order[], fileName: string) => {
+    const excelData = ordersList.map(order => ({
+      '주문번호': order.orderNumber,
+      '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
+      '주문시간': new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+      '고객명': order.customerName,
+      '받는분': order.recipientName || order.customerName,
+      '전화번호': order.customerPhone,
+      '주소': `${order.address1} ${order.address2 || ''}`.trim(),
+      '상품': [
+        order.smallBoxQuantity > 0 ? `한과1호×${order.smallBoxQuantity}개` : '',
+        order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
+        order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
+      ].filter(Boolean).join(', '),
+      '주문금액': order.totalAmount,
+      '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
+                 order.paymentStatus === 'partial' ? '부분결제' :
+                 order.paymentStatus === 'refunded' ? '환불' : '미입금',
+      '주문상태': statusLabels[order.status as keyof typeof statusLabels],
+      '발송상태': order.sellerShipped ? '매니저발송완료' : '발송처리대기',
+      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
+      '발송완료일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
+      '매니저발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
+      '메모': order.memo || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "매니저_주문목록");
+    
+    const today = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `${fileName}_${today}.xlsx`);
+    
+    toast({
+      title: "엑셀 다운로드 완료",
+      description: `${ordersList.length}개 주문이 엑셀로 다운로드되었습니다.`,
+    });
+  };
+
   // 주문 상태 변경 mutation
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
@@ -266,34 +306,10 @@ export default function ManagerDashboard() {
     },
   });
 
-  // Excel 다운로드 함수 (매니저용 - 금액 정보 제외)
-  const downloadExcel = () => {
-    const data = filteredOrders.map(order => ({
-      '주문번호': order.orderNumber,
-      '고객명': order.customerName,
-      '연락처': order.customerPhone,
-      '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
-      '상품': [
-        order.smallBoxQuantity > 0 ? `한과1호×${order.smallBoxQuantity}개` : '',
-        order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
-        order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
-      ].filter(Boolean).join(', '),
-      '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
-                 order.paymentStatus === 'partial' ? '부분결제' :
-                 order.paymentStatus === 'refunded' ? '환불' : '입금대기',
-      '주문상태': statusLabels[order.status as keyof typeof statusLabels],
-      '배송주소': `${order.address1} ${order.address2}`,
-      '판매자발송': order.sellerShipped ? '발송완료' : '발송대기',
-      '발송일정': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
-      '발송완료일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
-      '판매자발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
-      '메모': order.memo || ''
-    }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "주문목록");
-    XLSX.writeFile(wb, `주문목록_${new Date().toLocaleDateString('ko-KR')}.xlsx`);
+
+  const downloadExcel = () => {
+    exportToExcel(filteredOrders, "전체주문목록");
   };
 
   if (isLoading) {
@@ -472,8 +488,17 @@ export default function ManagerDashboard() {
               {/* 주문 목록 테이블 */}
               <TabsContent value="전체보기" className="space-y-4">
                 <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b">
-                    <h2 className="text-lg font-semibold">주문 목록</h2>
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(filteredOrders, "전체주문목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -696,8 +721,17 @@ export default function ManagerDashboard() {
               {/* 발송처리대기 탭 */}
               <TabsContent value="발송처리대기" className="space-y-4">
                 <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b">
-                    <h2 className="text-lg font-semibold">발송처리대기 목록</h2>
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-lg font-semibold">발송처리대기 목록 (총 {filteredOrders.filter(o => !o.sellerShipped).length}개)</h2>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(filteredOrders.filter(o => !o.sellerShipped), "발송처리대기목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -923,8 +957,17 @@ export default function ManagerDashboard() {
               {/* 매니저발송완료 탭 */}
               <TabsContent value="매니저발송완료" className="space-y-4">
                 <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b">
-                    <h2 className="text-lg font-semibold">매니저발송완료 주문</h2>
+                  <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-lg font-semibold">매니저발송완료 주문 (총 {filteredOrders.filter(o => o.sellerShipped).length}개)</h2>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(filteredOrders.filter(o => o.sellerShipped), "매니저발송완료목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
