@@ -145,9 +145,9 @@ export default function Home() {
                 <Link href="/order-lookup">
                   <button 
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full"
+                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-3 px-4 w-full border border-eden-brown rounded-lg bg-white hover:bg-eden-brown hover:text-white"
                   >
-                    주문 조회
+                    📋 주문 조회
                   </button>
                 </Link>
                 {!isAuthenticated && (
@@ -164,9 +164,9 @@ export default function Home() {
                   <Link href="/admin">
                     <button 
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-eden-red hover:text-eden-brown transition-colors py-2 w-full"
+                      className="text-left text-white bg-red-600 hover:bg-red-700 transition-colors py-3 px-4 w-full rounded-lg border"
                     >
-                      관리자
+                      👨‍💼 관리자 대시보드
                     </button>
                   </Link>
                 )}
@@ -174,9 +174,9 @@ export default function Home() {
                   <Link href="/manager">
                     <button 
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-eden-sage hover:text-eden-brown transition-colors py-2 w-full"
+                      className="text-left text-white bg-green-600 hover:bg-green-700 transition-colors py-3 px-4 w-full rounded-lg border"
                     >
-                      매니저
+                      📊 매니저 대시보드
                     </button>
                   </Link>
                 )}
