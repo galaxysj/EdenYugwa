@@ -45,7 +45,19 @@ export default function Home() {
                 </Link>
               ) : (
                 <button 
-                  onClick={() => window.location.href = '/api/auth/logout'}
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        credentials: 'include'
+                      });
+                      if (response.ok) {
+                        window.location.reload();
+                      }
+                    } catch (error) {
+                      console.error('로그아웃 오류:', error);
+                    }
+                  }}
                   className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-300 hover:bg-red-200 transition-colors"
                 >
                   로그아웃
