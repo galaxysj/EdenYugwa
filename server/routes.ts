@@ -613,11 +613,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk seller shipped update
   app.patch("/api/orders/seller-shipped", requireManagerOrAdmin, async (req, res) => {
     try {
+      console.log("=== Bulk seller shipped request started ===");
+      console.log("Request body:", req.body);
+      console.log("User:", req.user);
+      
       const { orderIds } = req.body;
       
-      console.log("Bulk seller shipped request received:", { orderIds });
+      console.log("Extracted orderIds:", orderIds);
       
       if (!Array.isArray(orderIds) || orderIds.length === 0) {
+        console.log("Invalid orderIds array");
         return res.status(400).json({ message: "주문 ID 목록이 필요합니다" });
       }
       
@@ -683,10 +688,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedOrders: results 
       });
     } catch (error) {
-      console.error("Bulk seller shipped update error:", error);
+      console.error("=== Bulk seller shipped update MAIN ERROR ===");
+      console.error("Error type:", typeof error);
+      console.error("Error instanceof Error:", error instanceof Error);
+      console.error("Error message:", error instanceof Error ? error.message : String(error));
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack');
+      console.error("Full error object:", error);
       res.status(500).json({ 
         message: "일괄 발송 업데이트에 실패했습니다",
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
+        details: error instanceof Error ? error.stack : String(error)
       });
     }
   });
