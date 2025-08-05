@@ -99,10 +99,20 @@
   font-size: 0.75rem; /* text-xs */
   padding: 0.5rem 0.25rem; /* py-2 px-1 */
   border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
+  vertical-align: top;
+}
+
+/* 상태 컬럼은 텍스트 줄바꿈 허용 */
+.admin-table .col-status, .manager-table .col-status {
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* 나머지 컬럼은 기본 nowrap 유지 */
+.admin-table td:not(.col-status), .manager-table td:not(.col-status) {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  vertical-align: top;
 }
 
 .admin-table tbody tr:hover, .manager-table tbody tr:hover {
@@ -154,8 +164,8 @@
 }
 
 .admin-table .col-status, .manager-table .col-status {
-  width: 9%;
-  min-width: 90px;
+  width: 10%;
+  min-width: 100px;
 }
 
 .admin-table .col-actions, .manager-table .col-actions {
