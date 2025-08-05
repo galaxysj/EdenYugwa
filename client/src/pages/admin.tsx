@@ -3142,50 +3142,29 @@ export default function Admin() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* 원가 설정 */}
-                          <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-gray-900">원가 설정</h3>
-                            <div className="border rounded-lg p-4 bg-gray-50">
-                              <div className="text-center">
-                                <CostSettingsDialog />
-                                <p className="text-xs text-gray-500 mt-2">
-                                  한과 가격, 포장비, 배송비 등을 설정할 수 있습니다
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 시스템 관리 */}
-                          <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-gray-900">시스템 관리</h3>
-                            <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
-                              <div className="text-center">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => window.location.reload()}
-                                  className="w-full"
-                                >
-                                  <RefreshCw className="h-4 w-4 mr-2" />
-                                  시스템 새로고침
-                                </Button>
-                              </div>
-                              <div className="text-center">
-                                <PasswordChangeDialog />
-                              </div>
-                            </div>
-                          </div>
+                        {/* 컴팩트한 설정 버튼들 */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                          <CostSettingsDialog />
+                          <PasswordChangeDialog />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.location.reload()}
+                            className="flex items-center gap-2"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                            새로고침
+                          </Button>
                         </div>
 
-                        {/* 현재 설정 값 표시 - 모바일 최적화 */}
-                        <div className="mt-6 pt-6 border-t">
-                          <h3 className="text-sm font-medium text-gray-900 mb-4">현재 설정값</h3>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* 컴팩트한 현재 설정값 */}
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium text-gray-900">현재 설정값</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs">
                             {settings && settings.map((setting) => (
-                              <div key={setting.id} className="bg-white border rounded-lg p-3">
-                                <div className="text-xs text-gray-500">{setting.description}</div>
-                                <div className="text-sm font-medium text-gray-900">
+                              <div key={setting.id} className="bg-gray-50 rounded p-2 text-center">
+                                <div className="text-gray-600 truncate text-xs">{setting.description}</div>
+                                <div className="font-medium text-gray-900">
                                   {setting.key.includes('Cost') || setting.key.includes('Fee') || setting.key.includes('Threshold') 
                                     ? `${parseInt(setting.value).toLocaleString()}원`
                                     : setting.value
