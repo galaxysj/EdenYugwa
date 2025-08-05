@@ -39,17 +39,11 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      // 사용자 역할에 따라 리다이렉트
-      if (user.role === 'admin') {
-        navigate("/admin");
-      } else if (user.role === 'manager') {
-        navigate("/manager");
-      } else {
-        navigate("/");
-      }
+    if (!isLoading && isAuthenticated) {
+      // 이미 로그인된 사용자는 홈으로 리다이렉트
+      navigate("/");
     }
-  }, [isAuthenticated, isLoading, user, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return (
@@ -57,6 +51,20 @@ export default function RegisterPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
           <p className="mt-2 text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 이미 로그인된 사용자는 회원가입 페이지에 접근할 수 없음
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <div className="text-center p-6 bg-white rounded-lg shadow-lg">
+          <h2 className="text-xl font-bold text-orange-800 mb-4">이미 로그인되어 있습니다</h2>
+          <Button onClick={() => navigate("/")} className="bg-orange-600 hover:bg-orange-700">
+            홈으로 이동
+          </Button>
         </div>
       </div>
     );
