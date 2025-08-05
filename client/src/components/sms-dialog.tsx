@@ -51,7 +51,7 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
       minute: '2-digit'
     });
     
-    console.log('SMS 상태 확인:', { status, paymentStatus }); // 디버그용
+
     
     if (paymentStatus === 'confirmed') {
       return `입금이 확인되었습니다. (확인시간: ${timeStr})`;
@@ -64,9 +64,7 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
       delivered: `상품이 배송완료되었습니다. (배송완료시간: ${timeStr})`,
     };
     
-    const result = messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
-    console.log('SMS 메시지 결과:', result); // 디버그용
-    return result;
+    return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
   };
 
   const form = useForm<SmsFormData>({
@@ -76,10 +74,16 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
     },
   });
 
-  // 다이얼로그가 열릴 때 현재 상태에 맞는 메시지로 초기화
+  // 다이얼로그가 열릴 때 주문접수 메시지로 초기화
   const initializeMessage = () => {
-    const statusMessage = getStatusMessage(order.status);
-    form.setValue('message', `[에덴한과] ${order.customerName}님, ${statusMessage} 감사합니다.`);
+    const now = new Date();
+    const timeStr = now.toLocaleString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    form.setValue('message', `[에덴한과] ${order.customerName}님, 주문이 접수되었습니다. (주문시간: ${timeStr}) 감사합니다.`);
   };
 
   const sendSMSMutation = useMutation({
@@ -112,12 +116,17 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
   };
 
   const handlePresetMessage = (type: 'status' | 'payment' | 'shipping' | 'custom') => {
-    console.log('프리셋 메시지 타입:', type, '주문 상태:', order.status); // 디버그용
+    const now = new Date();
+    const timeStr = now.toLocaleString('ko-KR', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
     
     if (type === 'status') {
-      const statusMessage = getStatusMessage(order.status);
-      const finalMessage = `[에덴한과] ${order.customerName}님, ${statusMessage} 감사합니다.`;
-      console.log('최종 메시지:', finalMessage); // 디버그용
+      // 주문상태 알림은 항상 "주문접수"로 표시
+      const finalMessage = `[에덴한과] ${order.customerName}님, 주문이 접수되었습니다. (주문시간: ${timeStr}) 감사합니다.`;
       form.setValue('message', finalMessage);
     } else if (type === 'payment') {
       const paymentMessage = getStatusMessage(order.status, order.paymentStatus);
