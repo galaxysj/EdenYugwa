@@ -473,26 +473,29 @@ export function CustomerManagement() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          고객관리
-        </CardTitle>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => refreshStatsMutation.mutate()}
-            disabled={refreshStatsMutation.isPending}
-          >
-            {refreshStatsMutation.isPending ? "업데이트중..." : "통계 새로고침"}
-          </Button>
-          <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                엑셀 업로드
-              </Button>
-            </DialogTrigger>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            고객관리
+          </CardTitle>
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => refreshStatsMutation.mutate()}
+              disabled={refreshStatsMutation.isPending}
+              className="flex-1 sm:flex-none"
+            >
+              {refreshStatsMutation.isPending ? "업데이트중..." : "통계 새로고침"}
+            </Button>
+            <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                  <Upload className="h-4 w-4 mr-2" />
+                  엑셀 업로드
+                </Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>엑셀 파일로 고객 일괄 등록</DialogTitle>
@@ -542,12 +545,20 @@ export function CustomerManagement() {
           </Dialog>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => resetForm()}>
+              <Button onClick={() => resetForm()} size="sm" className="flex-1 sm:flex-none">
                 <Plus className="h-4 w-4 mr-2" />
                 고객 등록
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+          </Dialog>
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        {/* 고객 등록/수정 다이얼로그 */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
                 {editingCustomer ? "고객 정보 수정" : "새 고객 등록"}

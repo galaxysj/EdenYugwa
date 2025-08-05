@@ -2715,7 +2715,7 @@ export default function Admin() {
         passwordChangeDialog={<PasswordChangeDialog />}
       />
 
-      <div className="container mx-auto p-4 sm:p-6">
+      <div className="container mx-auto p-2 sm:p-4 md:p-6">
 
 
 
@@ -2744,7 +2744,32 @@ export default function Admin() {
               </div>
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-8">
+                {/* 모바일에서는 2줄로 나누어 표시 */}
+                <div className="block md:hidden">
+                  <TabsList className="grid w-full grid-cols-4 mb-2">
+                    <TabsTrigger value="all" className="text-xs px-1">전체 ({allOrders.length})</TabsTrigger>
+                    <TabsTrigger value="pending" className="text-xs px-1">주문접수 ({pendingOrders.length})</TabsTrigger>
+                    <TabsTrigger value="seller_shipped" className="text-xs px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="text-xs px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                  </TabsList>
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="delivered" className="text-xs px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="refunded" className="text-red-600 text-xs px-1">
+                      환불내역 ({refundedOrders.length})
+                    </TabsTrigger>
+                    <TabsTrigger value="revenue" className="text-purple-600 text-xs px-1">
+                      <DollarSign className="h-3 w-3 mr-1" />
+                      매출관리
+                    </TabsTrigger>
+                    <TabsTrigger value="trash" className="text-red-600 text-xs px-1">
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      휴지통 ({deletedOrders.length})
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                {/* 데스크톱에서는 한 줄로 표시 */}
+                <TabsList className="hidden md:grid w-full grid-cols-8">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
