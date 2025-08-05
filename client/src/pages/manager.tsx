@@ -296,40 +296,79 @@ export default function ManagerDashboard() {
     },
   });
 
-  // 일괄 판매자 발송 mutation
+  // 일괄 판매자 발송 mutation (개별 처리 방식)
   const bulkSellerShippedMutation = useMutation({
     mutationFn: async (orderIds: number[]) => {
-      console.log('일괄 발송 처리 요청:', { orderIds });
+      console.log('일괄 발송 처리 요청 (개별 처리 방식):', { orderIds });
       console.log('현재 사용자:', user);
       
-      // 선택된 주문만 발송처리
-      const response = await fetch('/api/orders/seller-shipped', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderIds }),
-        credentials: 'include',
-      });
+      const results = [];
+      const errors = [];
       
-      console.log('API 응답 상태:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API 오류 응답:', errorText);
-        throw new Error(errorText || '일괄 발송 처리에 실패했습니다');
+      // 각 주문을 개별적으로 처리
+      for (const orderId of orderIds) {
+        try {
+          console.log(`주문 ${orderId} 개별 발송 처리 시작`);
+          
+          // 개별 주문 발송 처리 API 호출
+          const response = await fetch(`/api/orders/${orderId}/seller-shipped`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sellerShipped: true }),
+            credentials: 'include',
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`주문 ${orderId} 발송 처리 실패:`, errorText);
+            errors.push({ orderId, error: errorText });
+            continue;
+          }
+          
+          const result = await response.json();
+          results.push(result);
+          console.log(`주문 ${orderId} 발송 처리 성공`);
+          
+          // 발송 완료 시 주문 상태도 delivered로 변경
+          try {
+            const statusResponse = await fetch(`/api/orders/${orderId}/status`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ status: 'delivered' }),
+              credentials: 'include',
+            });
+            
+            if (statusResponse.ok) {
+              console.log(`주문 ${orderId} 상태 delivered로 변경 완료`);
+            }
+          } catch (statusError) {
+            console.error(`주문 ${orderId} 상태 변경 실패:`, statusError);
+          }
+          
+        } catch (error) {
+          console.error(`주문 ${orderId} 처리 중 오류:`, error);
+          errors.push({ orderId, error: error instanceof Error ? error.message : String(error) });
+        }
       }
       
-      const result = await response.json();
-      console.log('API 성공 응답:', result);
-      return result;
+      return {
+        success: results.length,
+        failed: errors.length,
+        results,
+        errors,
+        message: `${results.length}개 주문 발송완료, ${errors.length}개 주문 실패`
+      };
     },
     onSuccess: async (data, orderIds) => {
       console.log('일괄 발송 처리 성공:', data);
       
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
       
-      if (data.partialSuccess) {
+      if (data.failed > 0) {
         toast({
           title: "일괄 발송 처리 부분 완료",
           description: data.message,
@@ -338,7 +377,7 @@ export default function ManagerDashboard() {
       } else {
         toast({
           title: "일괄 발송 처리 완료",
-          description: `${orderIds.length}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
+          description: `${data.success}개 주문이 발송 처리되고 주문상태가 발송완료로 변경되었습니다.`,
         });
       }
       setSelectedOrders(new Set());
@@ -563,19 +602,6 @@ export default function ManagerDashboard() {
                           className="bg-white min-w-[80px]"
                         >
                           선택 해제
-                        </Button>
-                      )}
-                      {selectedOrders.size > 0 && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            const selectedOrderIds = Array.from(selectedOrders);
-                            bulkSellerShippedMutation.mutate(selectedOrderIds);
-                          }}
-                          disabled={bulkSellerShippedMutation.isPending}
-                          className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
-                        >
-                          {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
                         </Button>
                       )}
                       <Button
@@ -852,19 +878,6 @@ export default function ManagerDashboard() {
                           className="bg-white min-w-[80px]"
                         >
                           선택 해제
-                        </Button>
-                      )}
-                      {selectedOrders.size > 0 && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            const selectedOrderIds = Array.from(selectedOrders);
-                            bulkSellerShippedMutation.mutate(selectedOrderIds);
-                          }}
-                          disabled={bulkSellerShippedMutation.isPending}
-                          className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]"
-                        >
-                          {bulkSellerShippedMutation.isPending ? "처리중..." : "선택 주문 발송처리"}
                         </Button>
                       )}
                       <Button
