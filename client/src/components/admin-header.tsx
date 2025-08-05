@@ -198,7 +198,11 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-7 px-3 text-xs font-medium text-gray-600 hover:text-gray-900"
+                    className={`h-7 px-3 text-xs font-medium transition-all ${
+                      location === '/manager' 
+                        ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
                   >
                     매니저
                   </Button>
