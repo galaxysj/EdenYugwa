@@ -1104,25 +1104,27 @@ export default function Admin() {
         {/* 매출 요약 */}
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-semibold">매출 관리 리포트</h3>
-            <p className="text-sm text-gray-600 mt-1">
+            <h3 className="text-sm md:text-lg font-semibold">매출 관리 리포트</h3>
+            <p className="text-xs md:text-sm text-gray-600 mt-1">
               입금완료된 모든 주문 (발송예약, 발송완료 포함)
             </p>
           </div>
-          <Button onClick={handleRevenueExcelDownload} className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            매출 엑셀 다운로드
+          <Button onClick={handleRevenueExcelDownload} className="flex items-center gap-2 text-xs md:text-sm px-2 md:px-4">
+            <Download className="h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden sm:inline">매출 엑셀 다운로드</span>
+            <span className="sm:hidden">엑셀</span>
           </Button>
         </div>
         {/* 날짜 필터 */}
         <Card>
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-1 md:gap-2">
                 <Button
                   size="sm"
                   variant={dateFilter === 'all' ? 'default' : 'outline'}
                   onClick={() => setDateFilter('all')}
+                  className="text-xs md:text-sm px-2 md:px-3"
                 >
                   전체
                 </Button>
@@ -1130,6 +1132,7 @@ export default function Admin() {
                   size="sm"
                   variant={dateFilter === 'today' ? 'default' : 'outline'}
                   onClick={() => setDateFilter('today')}
+                  className="text-xs md:text-sm px-2 md:px-3"
                 >
                   오늘
                 </Button>
@@ -1137,22 +1140,25 @@ export default function Admin() {
                   size="sm"
                   variant={dateFilter === 'week' ? 'default' : 'outline'}
                   onClick={() => setDateFilter('week')}
+                  className="text-xs md:text-sm px-2 md:px-3"
                 >
-                  최근 7일
+                  7일
                 </Button>
                 <Button
                   size="sm"
                   variant={dateFilter === 'month' ? 'default' : 'outline'}
                   onClick={() => setDateFilter('month')}
+                  className="text-xs md:text-sm px-2 md:px-3"
                 >
-                  최근 30일
+                  30일
                 </Button>
                 <Button
                   size="sm"
                   variant={dateFilter === 'custom' ? 'default' : 'outline'}
                   onClick={() => setDateFilter('custom')}
+                  className="text-xs md:text-sm px-2 md:px-3"
                 >
-                  기간 설정
+                  기간설정
                 </Button>
               </div>
               
@@ -1162,14 +1168,14 @@ export default function Admin() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+                    className="px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm"
                   />
                   <span className="text-gray-500">~</span>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm"
+                    className="px-2 md:px-3 py-1 border border-gray-300 rounded-md text-xs md:text-sm"
                   />
                 </div>
               )}
@@ -1180,7 +1186,7 @@ export default function Admin() {
         <Card className="bg-white border-eden-red/20">
           <CardContent className="p-6">
             <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-eden-red mb-2">
+              <h3 className="text-lg md:text-xl font-bold text-eden-red mb-2">
                 매출 총합계 ({dateFilter === 'all' ? '전체 기간' : 
                   dateFilter === 'today' ? '오늘' :
                   dateFilter === 'week' ? '최근 7일' :
@@ -1190,52 +1196,52 @@ export default function Admin() {
             </div>
             
             <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-4 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 md:gap-4 text-center">
                 <div>
-                  <div className="font-semibold text-gray-700 mb-1">주문건수</div>
-                  <div className="text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
+                  <div className="font-semibold text-gray-700 mb-1 text-xs md:text-sm">주문건수</div>
+                  <div className="text-sm md:text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-amber-700 mb-1">한과1호</div>
-                  <div className="text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
+                  <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">한과1호</div>
+                  <div className="text-sm md:text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-orange-700 mb-1">한과2호</div>
-                  <div className="text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
+                  <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">한과2호</div>
+                  <div className="text-sm md:text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-eden-brown mb-1">보자기</div>
-                  <div className="text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
+                  <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">보자기</div>
+                  <div className="text-sm md:text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-blue-700 mb-1">택배건수</div>
-                  <div className="text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                  <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
+                  <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-red-700 mb-1">환불건수</div>
-                  <div className="text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                  <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
+                  <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-green-700 mb-1">실제입금</div>
-                  <div className="text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                  <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
+                  <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-red-700 mb-1">총원가</div>
-                  <div className="text-lg font-bold text-red-600">
+                  <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
+                  <div className="text-sm md:text-lg font-bold text-red-600">
                     {formatPrice(filteredTotals.totalCost)}
                   </div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-purple-700 mb-1">순수익</div>
-                  <div className={`text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                  <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
+                  <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                     {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                   </div>
                 </div>
@@ -2280,6 +2286,14 @@ export default function Admin() {
                       </div>
                     </div>
 
+                    {/* 메모 표시 */}
+                    {order.notes && (
+                      <div className="text-xs bg-yellow-50 p-2 rounded border border-yellow-200">
+                        <div className="text-gray-500 mb-1">메모</div>
+                        <div className="text-gray-700">{order.notes}</div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-4 gap-2">
                       <div>
                         <div className="text-gray-500 mb-2">입금상태</div>
@@ -2381,6 +2395,96 @@ export default function Admin() {
                         )}
                       </div>
 
+                    </div>
+
+                    {/* 원가 및 수익 정보 */}
+                    <div className="pt-3 border-t border-gray-100">
+                      <div className="text-gray-500 mb-2 text-xs">원가 및 수익 정보</div>
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div className="bg-purple-50 p-2 rounded text-xs">
+                          <div className="space-y-1">
+                            {(() => {
+                              const settings = queryClient.getQueryData<any[]>(['api/settings']);
+                              const smallBoxCost = settings?.find(s => s.key === "smallBoxCost")?.value ? 
+                                parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
+                              const largeBoxCost = settings?.find(s => s.key === "largeBoxCost")?.value ? 
+                                parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
+                              const wrappingCost = settings?.find(s => s.key === "wrappingCost")?.value ? 
+                                parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
+                              
+                              const smallBoxesCost = order.smallBoxQuantity * smallBoxCost;
+                              const largeBoxesCost = order.largeBoxQuantity * largeBoxCost;
+                              const wrappingsCost = order.wrappingQuantity * wrappingCost;
+                              const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+                              const shippingFee = totalItems >= 6 ? 0 : 4000;
+                              const totalCost = smallBoxesCost + largeBoxesCost + wrappingsCost + shippingFee;
+                              
+                              return (
+                                <>
+                                  {order.smallBoxQuantity > 0 && (
+                                    <div className="text-purple-600">
+                                      한과1호: {formatPrice(smallBoxesCost)}
+                                    </div>
+                                  )}
+                                  {order.largeBoxQuantity > 0 && (
+                                    <div className="text-purple-600">
+                                      한과2호: {formatPrice(largeBoxesCost)}
+                                    </div>
+                                  )}
+                                  {order.wrappingQuantity > 0 && (
+                                    <div className="text-purple-600">
+                                      보자기: {formatPrice(wrappingsCost)}
+                                    </div>
+                                  )}
+                                  {shippingFee > 0 && (
+                                    <div className="text-purple-600">
+                                      배송비: {formatPrice(shippingFee)}
+                                    </div>
+                                  )}
+                                  <div className="font-semibold text-purple-700 border-t border-purple-300 pt-1 mt-1">
+                                    총원가: {formatPrice(totalCost)}
+                                  </div>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                        <div className="bg-emerald-50 p-2 rounded text-xs">
+                          {(() => {
+                            const settings = queryClient.getQueryData<any[]>(['api/settings']);
+                            const smallBoxCost = settings?.find(s => s.key === "smallBoxCost")?.value ? 
+                              parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
+                            const largeBoxCost = settings?.find(s => s.key === "largeBoxCost")?.value ? 
+                              parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
+                            const wrappingCost = settings?.find(s => s.key === "wrappingCost")?.value ? 
+                              parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
+                            
+                            const smallBoxesCost = order.smallBoxQuantity * smallBoxCost;
+                            const largeBoxesCost = order.largeBoxQuantity * largeBoxCost;
+                            const wrappingsCost = order.wrappingQuantity * wrappingCost;
+                            const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
+                            const shippingFee = totalItems >= 6 ? 0 : 4000;
+                            const totalCost = smallBoxesCost + largeBoxesCost + wrappingsCost + shippingFee;
+                            
+                            const discountAmount = order.discountAmount || 0;
+                            const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
+                              ? (order.totalAmount - order.actualPaidAmount) : 0;
+                            
+                            const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
+                            
+                            return (
+                              <div className="text-center">
+                                <div className={`font-bold text-sm ${actualProfit >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                                  {formatPrice(actualProfit)}
+                                </div>
+                                <div className="text-xs text-emerald-600 mt-1">
+                                  순수익
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="pt-4 border-t border-gray-100">
@@ -2792,7 +2896,56 @@ export default function Admin() {
 
                 <TabsContent value="all" className="mt-6">
                   {renderOrderFilters()}
-                  <div className="flex justify-between items-center mb-4">
+                  
+                  {/* 모바일 일괄 관리 버튼들 */}
+                  <div className="lg:hidden mb-4">
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportToExcel(allOrders, "전체주문목록")}
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        <Download className="h-3 w-3" />
+                        엑셀
+                      </Button>
+                      {selectedShippingItems.size > 0 && (
+                        <Button
+                          size="sm"
+                          onClick={() => bulkSellerShippedMutation.mutate(Array.from(selectedShippingItems))}
+                          disabled={bulkSellerShippedMutation.isPending}
+                          className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Truck className="h-3 w-3" />
+                          일괄발송 ({selectedShippingItems.size})
+                        </Button>
+                      )}
+                      {selectedOrderItems.size > 0 && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                              bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                            }
+                          }}
+                          disabled={bulkDeleteMutation.isPending}
+                          className="flex items-center gap-1 text-xs"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          일괄삭제 ({selectedOrderItems.size})
+                        </Button>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      총 {allOrders.length}개 주문
+                      {selectedOrderItems.size > 0 && ` • 삭제선택: ${selectedOrderItems.size}개`}
+                      {selectedShippingItems.size > 0 && ` • 발송선택: ${selectedShippingItems.size}개`}
+                    </div>
+                  </div>
+                  
+                  {/* 데스크톱 일괄 관리 */}
+                  <div className="hidden lg:flex justify-between items-center mb-4">
                     <div className="text-xs md:text-sm text-gray-600">
                       총 {allOrders.length}개 주문
                     </div>
