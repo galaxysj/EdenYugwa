@@ -220,9 +220,10 @@ export default function OrderForm() {
     const totalQuantity = smallBoxQuantity + largeBoxQuantity;
     
     // 배송비 계산: 6개 이상이면 무료, 미만이면 4000원
-    const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+    const calculatedShippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+    setShippingFee(calculatedShippingFee);
     
-    const total = smallBoxTotal + largeBoxTotal + wrappingTotal + shippingFee;
+    const total = smallBoxTotal + largeBoxTotal + wrappingTotal + calculatedShippingFee;
     setTotalAmount(total);
   }, [watchedValues]);
 
@@ -310,7 +311,7 @@ export default function OrderForm() {
   const smallBoxTotal = prices.small * smallBoxQuantity;
   const largeBoxTotal = prices.large * largeBoxQuantity;
   const wrappingTotal = wrappingQuantity * prices.wrapping;
-  const calculatedShippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+  // 배송비는 state에서 관리되므로 shippingFee 사용
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -776,7 +777,12 @@ export default function OrderForm() {
                         )}
                         <div className="flex justify-between">
                           <span>배송비:</span>
-                          <span className="whitespace-nowrap">{shippingFee === 0 ? "무료" : formatPrice(shippingFee)}</span>
+                          <div className="text-right">
+                            <span className="whitespace-nowrap">{shippingFee === 0 ? "무료" : formatPrice(shippingFee)}</span>
+                            {addressValue && checkRemoteArea(addressValue) && (
+                              <div className="text-red-600 text-xs mt-1">제주/도서산간 추가요금 발생</div>
+                            )}
+                          </div>
                         </div>
                         <div className="border-t border-eden-sage pt-2 mt-2">
                           <div className="flex justify-between font-bold text-base md:text-lg text-eden-brown">
@@ -794,10 +800,11 @@ export default function OrderForm() {
                         <p className="text-sm text-blue-800">
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
                         </p>
-                        <p className="text-sm text-blue-800">
-                          6개 이상: <span className="text-green-600 font-semibold">무료배송</span>
-                        </p>
-                        <p className="text-xs text-eden-dark mt-2">
+                        <div className="text-sm text-blue-800 space-y-1">
+                          <p>6개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
+                          <p>6개 미만: <span className="text-orange-600 font-semibold">배송비 4,000원</span></p>
+                        </div>
+                        <p className="text-xs text-red-600 mt-2 font-medium">
                           * 제주도, 도서산간지역은 추가비용 발생
                         </p>
                       </div>
@@ -833,10 +840,11 @@ export default function OrderForm() {
                         <p className="text-sm text-blue-800">
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
                         </p>
-                        <p className="text-sm text-blue-800">
-                          6개 이상: <span className="text-green-600 font-semibold">무료배송</span>
-                        </p>
-                        <p className="text-xs text-eden-dark mt-2">
+                        <div className="text-sm text-blue-800 space-y-1">
+                          <p>6개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
+                          <p>6개 미만: <span className="text-orange-600 font-semibold">배송비 4,000원</span></p>
+                        </div>
+                        <p className="text-xs text-red-600 mt-2 font-medium">
                           * 제주도, 도서산간지역은 추가비용 발생
                         </p>
                       </div>
