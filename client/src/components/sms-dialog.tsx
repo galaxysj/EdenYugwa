@@ -58,8 +58,8 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
     const messages = {
       pending: `주문이 접수되었습니다. (주문시간: ${timeStr})`,
       scheduled: `발송이 예약되었습니다. (예약시간: ${timeStr})`,
-      seller_shipped: `상품이 발송완료되었습니다. (발송시간: ${timeStr})`,
-      delivered: `상품이 발송완료되었습니다. (발송시간: ${timeStr})`,
+      seller_shipped: `상품이 발송되었습니다. (발송시간: ${timeStr})`,
+      delivered: `상품이 배송완료되었습니다. (배송완료시간: ${timeStr})`,
     };
     return messages[status as keyof typeof messages] || `상태가 업데이트되었습니다. (업데이트시간: ${timeStr})`;
   };
@@ -67,9 +67,15 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
   const form = useForm<SmsFormData>({
     resolver: zodResolver(smsSchema),
     defaultValues: {
-      message: `[에덴한과] ${order.customerName}님, ${getStatusMessage(order.status)} 감사합니다.`,
+      message: '',
     },
   });
+
+  // 다이얼로그가 열릴 때 현재 상태에 맞는 메시지로 초기화
+  const initializeMessage = () => {
+    const statusMessage = getStatusMessage(order.status);
+    form.setValue('message', `[에덴한과] ${order.customerName}님, ${statusMessage} 감사합니다.`);
+  };
 
   const sendSMSMutation = useMutation({
     mutationFn: (data: { orderId: number; phoneNumber: string; message: string }) =>
@@ -115,7 +121,12 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (isOpen) {
+        initializeMessage();
+      }
+    }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
