@@ -223,6 +223,34 @@ export default function OrderForm() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch dashboard content for dynamic product names
+  const { data: dashboardData } = useQuery({
+    queryKey: ['/api/dashboard-content'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Helper function to get product name from dashboard content
+  const getProductName = (index: number, fallback: string) => {
+    if (!dashboardData) return fallback;
+    
+    try {
+      const productNamesData = dashboardData.find((item: any) => item.key === 'productNames');
+      if (!productNamesData) return fallback;
+      
+      const productNames = typeof productNamesData.value === 'string' 
+        ? JSON.parse(productNamesData.value) 
+        : productNamesData.value;
+      
+      if (Array.isArray(productNames) && productNames[index]) {
+        return productNames[index].name || fallback;
+      }
+    } catch (error) {
+      console.error('Error parsing product names:', error);
+    }
+    
+    return fallback;
+  };
+
   // Update product names with prices from settings when data changes
   useEffect(() => {
     if (dashboardContent && dashboardContent.productNames && settingsData) {
@@ -829,19 +857,19 @@ export default function OrderForm() {
                       <div className="space-y-2 text-sm">
                         {smallBoxQuantity > 0 && (
                           <div className="flex justify-between">
-                            <span>한과1호 × {smallBoxQuantity}:</span>
+                            <span>{getProductName(0, '한과1호')} × {smallBoxQuantity}:</span>
                             <span className="whitespace-nowrap">{formatPrice(smallBoxTotal)}</span>
                           </div>
                         )}
                         {largeBoxQuantity > 0 && (
                           <div className="flex justify-between">
-                            <span>한과2호 × {largeBoxQuantity}:</span>
+                            <span>{getProductName(1, '한과2호')} × {largeBoxQuantity}:</span>
                             <span className="whitespace-nowrap">{formatPrice(largeBoxTotal)}</span>
                           </div>
                         )}
                         {wrappingTotal > 0 && (
                           <div className="flex justify-between">
-                            <span>보자기 × {wrappingQuantity}:</span>
+                            <span>{getProductName(2, '보자기')} × {wrappingQuantity}:</span>
                             <span className="whitespace-nowrap">{formatPrice(wrappingTotal)}</span>
                           </div>
                         )}
