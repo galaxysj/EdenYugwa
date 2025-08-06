@@ -1234,14 +1234,18 @@ export default function Admin() {
       const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
       const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
       
-      const smallCost = smallProductCost ?? (smallCostSetting ? parseInt(smallCostSetting.value) : 15000);
-      const largeCost = largeProductCost ?? (largeCostSetting ? parseInt(largeCostSetting.value) : 16000);
-      const wrappingCostValue = wrappingProductCost ?? (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000);
+      // Use dynamic cost pricing from content management
+      const smallCost = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) : 
+                       (smallProductCost ?? (smallCostSetting ? parseInt(smallCostSetting.value) : 15000));
+      const largeCost = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) : 
+                       (largeProductCost ?? (largeCostSetting ? parseInt(largeCostSetting.value) : 16000));
+      const wrappingCostValue = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) : 
+                               (wrappingProductCost ?? (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000));
       
-      // Calculate totals using dynamic prices
+      // Calculate totals using dynamic prices from content management
       const smallBoxPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 19000;
       const largeBoxPrice = productNames[1]?.price ? parseInt(productNames[1].price) : 21000;
-      const wrappingPrice = dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000;
+      const wrappingPrice = productNames[2]?.price ? parseInt(productNames[2].price) : 1000;
       
       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
       const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
@@ -1507,12 +1511,16 @@ export default function Admin() {
     const wrappingProductCost = dashboardContent.wrappingCost ? parseInt(dashboardContent.wrappingCost) : null;
     
     // Fallback to global cost settings if no product-specific cost
-    const smallBoxCostValue = smallProductCost ?? (settings?.find(s => s.key === "smallBoxCost")?.value ? 
-      parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000);
-    const largeBoxCostValue = largeProductCost ?? (settings?.find(s => s.key === "largeBoxCost")?.value ? 
-      parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000);
-    const wrappingCostValue = wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
-      parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000);
+    // Use dynamic cost pricing from content management first
+    const smallBoxCostValue = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) :
+                             (smallProductCost ?? (settings?.find(s => s.key === "smallBoxCost")?.value ? 
+                             parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000));
+    const largeBoxCostValue = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) :
+                             (largeProductCost ?? (settings?.find(s => s.key === "largeBoxCost")?.value ? 
+                             parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000));
+    const wrappingCostValue = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) :
+                             (wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
+                             parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000));
     
     // Include all orders with confirmed payment status (including scheduled and delivered orders)
     // Exclude refunded orders from revenue calculation
@@ -1575,7 +1583,7 @@ export default function Admin() {
       // Use historical selling prices for revenue calculations, fallback to current prices
       const currentSmallPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 19000;
       const currentLargePrice = productNames[1]?.price ? parseInt(productNames[1].price) : 21000;
-      const currentWrappingPrice = dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000;
+      const currentWrappingPrice = productNames[2]?.price ? parseInt(productNames[2].price) : 1000;
       
       const smallBoxPrice = order.smallBoxPrice || currentSmallPrice;
       const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
@@ -1882,10 +1890,22 @@ export default function Admin() {
                     {orders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
-                      // Use historical pricing stored in the order for accurate sales calculations
-                      const smallBoxPrice = order.smallBoxPrice || 19000;
-                      const largeBoxPrice = order.largeBoxPrice || 21000;
-                      const wrappingPrice = order.wrappingPrice || 1000;
+                      // Get dynamic product names from dashboard content
+                      const getProductName = (index: number, fallback: string) => {
+                        if (dashboardContent.productNames && dashboardContent.productNames[index]) {
+                          return dashboardContent.productNames[index].name;
+                        }
+                        return fallback;
+                      };
+
+                      // Get dynamic pricing from content management, fallback to historical order data
+                      const productNames = dashboardContent.productNames || [];
+                      const smallBoxPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 
+                                          (order.smallBoxPrice || 19000);
+                      const largeBoxPrice = productNames[1]?.price ? parseInt(productNames[1].price) : 
+                                          (order.largeBoxPrice || 21000);
+                      const wrappingPrice = productNames[2]?.price ? parseInt(productNames[2].price) :
+                                          (order.wrappingPrice || 1000);
                       
                       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                       const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
@@ -1894,18 +1914,13 @@ export default function Admin() {
                       // Get shipping fee from order
                       const shippingFee = order.shippingFee || 0;
                       
-                      // Get dynamic product names from dashboard content
-                      const getProductName = (index: number, fallback: string) => {
-                        if (dashboardContent.productNames && dashboardContent.productNames[index]) {
-                          return dashboardContent.productNames[index].name;
-                        }
-                        return fallback;
-                      };
-                      
-                      // Use historical cost data stored in order for profit calculations
-                      const smallCost = order.smallBoxCost || 0;
-                      const largeCost = order.largeBoxCost || 0;
-                      const wrappingCost = order.wrappingCost || 0;
+                      // Get dynamic cost pricing from content management, fallback to historical order data
+                      const smallCost = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) : 
+                                       (order.smallBoxCost || 0);
+                      const largeCost = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) : 
+                                       (order.largeBoxCost || 0);
+                      const wrappingCost = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) : 
+                                          (order.wrappingCost || 0);
                       
                       // Calculate actual costs using stored historical data
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
@@ -2061,10 +2076,14 @@ export default function Admin() {
                 {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
-                  // Use historical pricing stored in the order for accurate sales calculations
-                  const smallBoxPrice = order.smallBoxPrice || 19000;
-                  const largeBoxPrice = order.largeBoxPrice || 21000;
-                  const wrappingPrice = order.wrappingPrice || 1000;
+                  // Get dynamic pricing from content management, fallback to historical order data
+                  const productNames = dashboardContent.productNames || [];
+                  const smallBoxPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 
+                                      (order.smallBoxPrice || 19000);
+                  const largeBoxPrice = productNames[1]?.price ? parseInt(productNames[1].price) : 
+                                      (order.largeBoxPrice || 21000);
+                  const wrappingPrice = productNames[2]?.price ? parseInt(productNames[2].price) :
+                                      (order.wrappingPrice || 1000);
                   
                   const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                   const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
@@ -2073,10 +2092,13 @@ export default function Admin() {
                   // Get shipping fee from order
                   const shippingFee = order.shippingFee || 0;
                   
-                  // Use historical cost data stored in order for profit calculations
-                  const smallCost = order.smallBoxCost || 0;
-                  const largeCost = order.largeBoxCost || 0;
-                  const wrappingCost = order.wrappingCost || 0;
+                  // Get dynamic cost pricing from content management, fallback to historical order data
+                  const smallCost = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) : 
+                                   (order.smallBoxCost || 0);
+                  const largeCost = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) : 
+                                   (order.largeBoxCost || 0);
+                  const wrappingCost = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) : 
+                                      (order.wrappingCost || 0);
                   
                   // Calculate actual costs using stored historical data
                   const smallBoxesCost = order.smallBoxQuantity * smallCost;
