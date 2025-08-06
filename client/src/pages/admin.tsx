@@ -1423,11 +1423,14 @@ export default function Admin() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span>주문 상세 내역</span>
+                <span className="text-base md:text-lg">주문 상세 내역</span>
                 <span className="text-sm font-normal text-gray-500">
                   {filteredOrders.length}건
                 </span>
               </CardTitle>
+              <p className="text-xs md:text-sm text-gray-600 mt-1">
+                매출 분석을 위한 주문별 상세 정보
+              </p>
             </CardHeader>
             <CardContent>
               {/* 데스크탑 테이블 뷰 */}
@@ -1589,7 +1592,13 @@ export default function Admin() {
               </div>
 
               {/* 모바일 리스트 뷰 */}
-              <div className="md:hidden space-y-1">
+              <div className="md:hidden">
+                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-700 font-medium text-center">
+                    📊 매출 상세 분석 - 주문별 수익 내역
+                  </p>
+                </div>
+                <div className="space-y-2">
                 {filteredOrders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
@@ -1696,6 +1705,7 @@ export default function Admin() {
                     </div>
                   );
                 })}
+                </div>
               </div>
             </CardContent>
           </Card>
