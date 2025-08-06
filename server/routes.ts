@@ -87,12 +87,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const accessCheck = await sessionService.validateAccess(user.id, {
           ipAddress,
           userAgent,
+          sessionId: req.sessionID,
         });
 
         if (!accessCheck.allowed) {
-          return res.status(403).json({ 
-            message: `접근이 차단되었습니다: ${accessCheck.reason}` 
-          });
+          if (accessCheck.requiresApproval) {
+            return res.status(202).json({ 
+              message: accessCheck.reason,
+              requiresApproval: true,
+              approvalRequestId: accessCheck.approvalRequestId
+            });
+          } else {
+            return res.status(403).json({ 
+              message: `접근이 차단되었습니다: ${accessCheck.reason}` 
+            });
+          }
         }
         
         req.logIn(user, async (err) => {
@@ -147,13 +156,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/auth/user", requireAuth, (req, res) => {
-    const user = req.user as User;
-    res.json({ 
-      id: user.id, 
-      username: user.username, 
-      role: user.role 
-    });
+  app.get("/api/auth/user", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // 현재 세션이 추적되고 있는지 확인하고, 없으면 생성
+      if (req.sessionID) {
+        const sessions = await sessionService.getUserActiveSessions(user.id);
+        const currentSessionExists = sessions.some(s => s.sessionId === req.sessionID);
+        
+        if (!currentSessionExists) {
+          const ipAddress = req.ip || req.connection.remoteAddress || '127.0.0.1';
+          const userAgent = req.get('User-Agent') || '';
+          const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24시간
+          
+          await sessionService.createSession({
+            userId: user.id,
+            sessionId: req.sessionID,
+            ipAddress,
+            userAgent,
+            expiresAt,
+          });
+        } else {
+          // 세션 활동 업데이트
+          await sessionService.updateSessionActivity(req.sessionID);
+        }
+      }
+      
+      res.json({ 
+        id: user.id, 
+        username: user.username, 
+        role: user.role 
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      const user = req.user as User;
+      res.json({ 
+        id: user.id, 
+        username: user.username, 
+        role: user.role 
+      });
+    }
   });
 
   // Change password route
@@ -226,6 +269,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get login history error:", error);
       res.status(500).json({ message: "로그인 기록 조회에 실패했습니다" });
+    }
+  });
+
+  // 승인 요청 관련 API
+  app.get("/api/auth/approval-requests", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      
+      // 관리자만 모든 요청 조회 가능, 일반 사용자는 자신의 요청만
+      const requests = user.role === 'admin' 
+        ? await sessionService.getPendingApprovalRequests()
+        : await sessionService.getPendingApprovalRequests(user.id);
+      
+      res.json(requests);
+    } catch (error) {
+      console.error("Get approval requests error:", error);
+      res.status(500).json({ message: "승인 요청 조회 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.post("/api/auth/approval-requests/:id/approve", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const requestId = parseInt(req.params.id);
+      
+      if (user.role !== 'admin') {
+        return res.status(403).json({ message: "관리자만 승인할 수 있습니다" });
+      }
+      
+      await sessionService.handleApprovalRequest(requestId, 'approve', user.id);
+      res.json({ message: "로그인이 승인되었습니다" });
+    } catch (error) {
+      console.error("Approval error:", error);
+      res.status(500).json({ message: "승인 처리 중 오류가 발생했습니다" });
+    }
+  });
+
+  app.post("/api/auth/approval-requests/:id/reject", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const requestId = parseInt(req.params.id);
+      
+      if (user.role !== 'admin') {
+        return res.status(403).json({ message: "관리자만 거부할 수 있습니다" });
+      }
+      
+      await sessionService.handleApprovalRequest(requestId, 'reject', user.id);
+      res.json({ message: "로그인이 거부되었습니다" });
+    } catch (error) {
+      console.error("Rejection error:", error);
+      res.status(500).json({ message: "거부 처리 중 오류가 발생했습니다" });
     }
   });
 

@@ -4714,11 +4714,12 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">메인 제목</td>
                                     <td className="px-4 py-3">
-                                      <Input
+                                      <Textarea
                                         value={dashboardContent.mainTitle}
                                         onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
-                                        placeholder="메인 제목"
+                                        placeholder="메인 제목 (줄바꿈 가능)"
                                         className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -4782,9 +4783,9 @@ export default function Admin() {
                                       <Textarea
                                         value={dashboardContent.mainDescription}
                                         onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
-                                        placeholder="메인 설명"
+                                        placeholder="메인 설명 (줄바꿈 가능)"
                                         className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
-                                        rows={2}
+                                        rows={3}
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -5082,11 +5083,12 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">배송 제목</td>
                                     <td className="px-4 py-3">
-                                      <Input
+                                      <Textarea
                                         value={dashboardContent.shippingTitle || ''}
                                         onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
-                                        placeholder="에덴한과 배송"
+                                        placeholder="에덴한과 배송 (줄바꿈 가능)"
                                         className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -5150,9 +5152,9 @@ export default function Admin() {
                                       <Textarea
                                         value={dashboardContent.shippingInfo}
                                         onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
-                                        placeholder="배송 안내 (• 로 시작하면 리스트로 표시)"
+                                        placeholder="배송 안내 (줄바꿈 가능, • 로 시작하면 리스트로 표시)"
                                         className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
-                                        rows={3}
+                                        rows={4}
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -5285,11 +5287,12 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">입금 계좌</td>
                                     <td className="px-4 py-3">
-                                      <Input
+                                      <Textarea
                                         value={dashboardContent.bankAccount}
                                         onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
-                                        placeholder="농협 352-1701-3342-63 (예금주: 손*진)"
+                                        placeholder="농협 352-1701-3342-63&#10;(예금주: 손*진)"
                                         className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -5353,9 +5356,9 @@ export default function Admin() {
                                       <Textarea
                                         value={dashboardContent.bankMessage}
                                         onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
-                                        placeholder="주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                        placeholder="주문 후 위 계좌로 입금해 주시면&#10;확인 후 발송해 드립니다 (줄바꿈 가능)"
                                         className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
-                                        rows={2}
+                                        rows={3}
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">

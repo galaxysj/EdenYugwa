@@ -62,6 +62,20 @@ interface AccessControlSettings {
   isEnabled: boolean;
 }
 
+interface ApprovalRequest {
+  id: number;
+  userId: number;
+  sessionId: string;
+  ipAddress: string;
+  userAgent?: string;
+  location?: string;
+  deviceType?: string;
+  requestReason: string;
+  status: 'pending' | 'approved' | 'rejected' | 'expired';
+  createdAt: string;
+  expiresAt: string;
+}
+
 export default function SecuritySettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -77,6 +91,12 @@ export default function SecuritySettings() {
   // 로그인 기록 조회
   const { data: loginHistory, isLoading: historyLoading } = useQuery<LoginAttempt[]>({
     queryKey: ['/api/auth/login-history'],
+  });
+
+  // 승인 요청 조회 (관리자만)
+  const { data: approvalRequests, isLoading: approvalRequestsLoading } = useQuery<ApprovalRequest[]>({
+    queryKey: ['/api/auth/approval-requests'],
+    refetchInterval: 10000, // 10초마다 자동 새로고침
   });
 
   // 접근 제어 설정 조회
@@ -156,6 +176,7 @@ export default function SecuritySettings() {
       case 'mobile': return '모바일';
       case 'tablet': return '태블릿';
       case 'desktop': return '데스크톱';
+      case 'laptop': return '노트북';
       default: return '알 수 없음';
     }
   };

@@ -181,6 +181,27 @@ export const loginAttempts = pgTable("login_attempts", {
   index("idx_login_attempts_created_at").on(table.createdAt),
 ]);
 
+// 로그인 승인 요청 테이블
+export const loginApprovalRequests = pgTable("login_approval_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  sessionId: varchar("session_id", { length: 100 }).notNull(),
+  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
+  userAgent: text("user_agent"),
+  location: text("location"),
+  deviceType: text("device_type"),
+  requestReason: text("request_reason").notNull(), // 차단 이유
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(), // 요청 만료 시간 (30분)
+}, (table) => [
+  index("idx_approval_requests_user_id").on(table.userId),
+  index("idx_approval_requests_status").on(table.status),
+  index("idx_approval_requests_created_at").on(table.createdAt),
+]);
+
 export const insertLoginAttemptSchema = createInsertSchema(loginAttempts).omit({
   id: true,
   createdAt: true,
@@ -188,6 +209,14 @@ export const insertLoginAttemptSchema = createInsertSchema(loginAttempts).omit({
 
 export type InsertLoginAttempt = z.infer<typeof insertLoginAttemptSchema>;
 export type LoginAttempt = typeof loginAttempts.$inferSelect;
+
+export const insertLoginApprovalRequestSchema = createInsertSchema(loginApprovalRequests).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLoginApprovalRequest = z.infer<typeof insertLoginApprovalRequestSchema>;
+export type LoginApprovalRequest = typeof loginApprovalRequests.$inferSelect;
 
 // Session storage table for express-session
 export const sessions = pgTable(

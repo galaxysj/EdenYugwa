@@ -1,12 +1,23 @@
 import { db } from "./db";
-import { userSessions, accessControlSettings, loginAttempts, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt } from "@shared/schema";
-import { eq, and, gte, desc } from "drizzle-orm";
+import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
+import { eq, and, gte, desc, lt } from "drizzle-orm";
 
 // User-Agent 파싱을 위한 간단한 유틸리티
 function parseUserAgent(userAgent: string) {
-  const deviceType = /Mobile|Android|iPhone|iPad/.test(userAgent) 
-    ? (/iPad/.test(userAgent) ? 'tablet' : 'mobile')
-    : 'desktop';
+  let deviceType = 'desktop';
+  
+  // 모바일 감지 (iPhone, Android 폰)
+  if (/Mobile|Android|iPhone/.test(userAgent) && !/iPad/.test(userAgent)) {
+    deviceType = 'mobile';
+  }
+  // 태블릿 감지 (iPad, Android 태블릿)
+  else if (/iPad|Tablet/.test(userAgent)) {
+    deviceType = 'tablet';
+  }
+  // 노트북 감지 (Mac, Windows, Linux 랩톱)
+  else if (/Macintosh|Windows NT.*WOW64|Windows NT.*Win64|Linux.*x86_64/.test(userAgent) && !/Mobile|Tablet/.test(userAgent)) {
+    deviceType = 'laptop';
+  }
   
   let browserInfo = 'Unknown';
   if (userAgent.includes('Chrome')) browserInfo = 'Chrome';
@@ -123,7 +134,7 @@ export class SessionService {
     } else {
       const [created] = await db
         .insert(accessControlSettings)
-        .values([{ userId, ...settings }])
+        .values({ userId, ...settings })
         .returning();
       return created;
     }
@@ -156,11 +167,17 @@ export class SessionService {
       .limit(limit);
   }
 
-  // 접근 제어 검증
+  // 접근 제어 검증 및 승인 요청 처리
   async validateAccess(userId: number, requestData: {
     ipAddress: string;
     userAgent: string;
-  }): Promise<{ allowed: boolean; reason?: string }> {
+    sessionId?: string;
+  }): Promise<{ 
+    allowed: boolean; 
+    reason?: string; 
+    requiresApproval?: boolean;
+    approvalRequestId?: number;
+  }> {
     const settings = await this.getAccessControlSettings(userId);
     
     if (!settings || !settings.isEnabled) {
@@ -170,30 +187,52 @@ export class SessionService {
     const { deviceType } = parseUserAgent(requestData.userAgent);
     const location = getLocationFromIP(requestData.ipAddress);
 
+    let blockReasons: string[] = [];
+
     // 디바이스 타입 검증
-    if (settings.allowedDeviceTypes && !settings.allowedDeviceTypes.includes(deviceType)) {
-      return { 
-        allowed: false, 
-        reason: `허용되지 않은 디바이스 타입: ${deviceType}` 
-      };
+    if (settings.allowedDeviceTypes && settings.allowedDeviceTypes.length > 0 && 
+        !settings.allowedDeviceTypes.includes(deviceType)) {
+      blockReasons.push(`허용되지 않은 디바이스 타입: ${this.getDeviceTypeLabel(deviceType)}`);
     }
 
-    // IP 범위 검증 (간단한 구현)
+    // IP 범위 검증
     if (settings.allowedIpRanges && settings.allowedIpRanges.length > 0) {
       const isAllowedIp = settings.allowedIpRanges.some((range: string) => {
-        // 간단한 IP 매칭 (실제로는 CIDR 매칭 구현 필요)
         return requestData.ipAddress.startsWith(range) || range === '*';
       });
       
       if (!isAllowedIp) {
-        return { 
-          allowed: false, 
-          reason: '허용되지 않은 IP 주소' 
+        blockReasons.push(`허용되지 않은 IP 주소: ${requestData.ipAddress}`);
+      }
+    }
+
+    // 차단 사유가 있는 경우 승인 요청 생성
+    if (blockReasons.length > 0 && requestData.sessionId) {
+      try {
+        const approvalRequest = await this.createLoginApprovalRequest({
+          userId,
+          sessionId: requestData.sessionId,
+          ipAddress: requestData.ipAddress,
+          userAgent: requestData.userAgent,
+          requestReason: blockReasons.join('; '),
+        });
+
+        return {
+          allowed: false,
+          requiresApproval: true,
+          approvalRequestId: approvalRequest.id,
+          reason: `접근이 제한되었습니다. 관리자 승인이 필요합니다.\n사유: ${blockReasons.join(', ')}`
+        };
+      } catch (error) {
+        console.error('승인 요청 생성 실패:', error);
+        return {
+          allowed: false,
+          reason: blockReasons.join(', ')
         };
       }
     }
 
-    // 동시 세션 수 검증
+    // 동시 세션 수 검증 (승인 요청 대상이 아님)
     const activeSessions = await this.getUserActiveSessions(userId);
     if (activeSessions.length >= settings.maxConcurrentSessions) {
       return { 
@@ -219,8 +258,133 @@ export class SessionService {
         and(
           eq(userSessions.userId, userId),
           eq(userSessions.isActive, true),
-          // 현재 세션은 제외
-          // Note: Drizzle의 not 함수 사용 필요
+          // 현재 세션이 아닌 것들만
+          // Note: currentSessionId가 다른 것들만 선택
+        )
+      );
+  }
+
+  // 로그인 승인 요청 생성
+  async createLoginApprovalRequest(requestData: {
+    userId: number;
+    sessionId: string;
+    ipAddress: string;
+    userAgent?: string;
+    requestReason: string;
+  }) {
+    const { deviceType } = parseUserAgent(requestData.userAgent || '');
+    const location = getLocationFromIP(requestData.ipAddress);
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30분 후 만료
+
+    const [request] = await db
+      .insert(loginApprovalRequests)
+      .values([{
+        userId: requestData.userId,
+        sessionId: requestData.sessionId,
+        ipAddress: requestData.ipAddress,
+        userAgent: requestData.userAgent,
+        location,
+        deviceType,
+        requestReason: requestData.requestReason,
+        expiresAt,
+      }])
+      .returning();
+
+    return request;
+  }
+
+  // 대기 중인 승인 요청 조회
+  async getPendingApprovalRequests(userId?: number) {
+    const query = db
+      .select()
+      .from(loginApprovalRequests)
+      .where(
+        and(
+          eq(loginApprovalRequests.status, "pending"),
+          gte(loginApprovalRequests.expiresAt, new Date())
+        )
+      )
+      .orderBy(desc(loginApprovalRequests.createdAt));
+
+    if (userId) {
+      const userQuery = db
+        .select()
+        .from(loginApprovalRequests)
+        .where(
+          and(
+            eq(loginApprovalRequests.status, "pending"),
+            gte(loginApprovalRequests.expiresAt, new Date()),
+            eq(loginApprovalRequests.userId, userId)
+          )
+        )
+        .orderBy(desc(loginApprovalRequests.createdAt));
+      return await userQuery;
+    }
+
+    return await query;
+  }
+
+  // 승인 요청 처리
+  async handleApprovalRequest(requestId: number, action: 'approve' | 'reject', approvedBy: number) {
+    const [request] = await db
+      .select()
+      .from(loginApprovalRequests)
+      .where(eq(loginApprovalRequests.id, requestId));
+
+    if (!request || request.status !== 'pending') {
+      throw new Error('유효하지 않은 요청입니다');
+    }
+
+    if (new Date() > request.expiresAt) {
+      throw new Error('만료된 요청입니다');
+    }
+
+    const status = action === 'approve' ? 'approved' : 'rejected';
+    
+    await db
+      .update(loginApprovalRequests)
+      .set({
+        status,
+        approvedBy,
+        approvedAt: new Date(),
+      })
+      .where(eq(loginApprovalRequests.id, requestId));
+
+    // 승인된 경우 접근 제어 설정에 추가
+    if (action === 'approve') {
+      const settings = await this.getAccessControlSettings(request.userId);
+      if (settings) {
+        // IP 범위에 추가
+        const updatedIpRanges = settings.allowedIpRanges ? [...settings.allowedIpRanges] : [];
+        if (!updatedIpRanges.includes(request.ipAddress)) {
+          updatedIpRanges.push(request.ipAddress);
+        }
+
+        // 디바이스 타입에 추가
+        const updatedDeviceTypes = settings.allowedDeviceTypes ? [...settings.allowedDeviceTypes] : [];
+        if (request.deviceType && !updatedDeviceTypes.includes(request.deviceType)) {
+          updatedDeviceTypes.push(request.deviceType);
+        }
+
+        await this.upsertAccessControlSettings(request.userId, {
+          allowedIpRanges: updatedIpRanges as string[],
+          allowedDeviceTypes: updatedDeviceTypes as string[],
+        });
+      }
+    }
+
+    return request;
+  }
+
+  // 만료된 승인 요청 정리
+  async cleanupExpiredApprovalRequests() {
+    await db
+      .update(loginApprovalRequests)
+      .set({ status: 'expired' })
+      .where(
+        and(
+          eq(loginApprovalRequests.status, 'pending'),
+          lt(loginApprovalRequests.expiresAt, new Date())
         )
       );
   }
