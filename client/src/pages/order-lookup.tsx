@@ -488,27 +488,24 @@ export default function OrderLookup() {
                       onClick={() => toggleOrderExpansion(order.id)}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
                             <div className="font-bold text-gray-900 text-sm">#{order.orderNumber}</div>
-                            <div className="text-xs text-gray-500">
-                              {formatDate(order.createdAt)} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                            <div className="text-xs text-gray-400">
+                              {isExpanded ? '▲' : '▼'}
                             </div>
                           </div>
-                          <div className="text-sm text-gray-700">
-                            {order.customerName}
+                          <div className="text-xs text-gray-500 mt-1">
+                            {formatDate(order.createdAt)} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={statusColors[order.status as keyof typeof statusColors]} variant="secondary">
-                            {statusLabels[order.status as keyof typeof statusLabels]}
-                          </Badge>
-                          <Badge className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]} variant="secondary">
-                            {paymentStatusLabels[order.paymentStatus as keyof typeof paymentStatusLabels]}
-                          </Badge>
-                          <div className="font-bold text-blue-600 text-sm">{formatPrice(order.totalAmount)}</div>
-                          <div className="text-xs text-gray-400">
-                            {isExpanded ? '▲' : '▼'}
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-sm text-gray-700">{order.customerName}</span>
+                            <Badge className={`${statusColors[order.status as keyof typeof statusColors]} text-xs px-2 py-0.5`} variant="secondary">
+                              {statusLabels[order.status as keyof typeof statusLabels]}
+                            </Badge>
+                            <Badge className={`${paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]} text-xs px-2 py-0.5`} variant="secondary">
+                              {paymentStatusLabels[order.paymentStatus as keyof typeof paymentStatusLabels]}
+                            </Badge>
                           </div>
                         </div>
                       </div>
