@@ -743,6 +743,8 @@ export default function Admin() {
   const [dashboardContent, setDashboardContent] = useState({
     smallBoxName: "한과1호(약 1.1kg) 약 35.5×21×11.2cm",
     largeBoxName: "한과2호(약 2kg) 약 50×25×15cm",
+    smallBoxDimensions: "약 35.5×21×11.2cm",
+    largeBoxDimensions: "약 37×23×11.5cm",
     mainTitle: "이든 한과",
     mainDescription: "전통 한과를 맛보세요",
     heroImageUrl: "",
@@ -3762,48 +3764,94 @@ export default function Admin() {
                           <div className="space-y-4">
                             <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <Label htmlFor="smallBoxName">한과1호 상품명</Label>
-                                <Input
-                                  id="smallBoxName"
-                                  value={dashboardContent.smallBoxName}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, smallBoxName: e.target.value})}
-                                  placeholder="한과1호 상품명을 입력하세요"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'smallBoxName', 
-                                    value: dashboardContent.smallBoxName 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="smallBoxName">한과1호 상품명</Label>
+                                  <Input
+                                    id="smallBoxName"
+                                    value={dashboardContent.smallBoxName}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, smallBoxName: e.target.value})}
+                                    placeholder="한과1호 상품명을 입력하세요"
+                                    className="mt-1"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'smallBoxName', 
+                                      value: dashboardContent.smallBoxName 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="mt-2"
+                                  >
+                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  </Button>
+                                </div>
+                                <div>
+                                  <Label htmlFor="smallBoxDimensions">한과1호 크기</Label>
+                                  <Input
+                                    id="smallBoxDimensions"
+                                    value={dashboardContent.smallBoxDimensions}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, smallBoxDimensions: e.target.value})}
+                                    placeholder="예: 약 35.5×21×11.2cm"
+                                    className="mt-1"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'smallBoxDimensions', 
+                                      value: dashboardContent.smallBoxDimensions 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="mt-2"
+                                  >
+                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  </Button>
+                                </div>
                               </div>
                               
-                              <div>
-                                <Label htmlFor="largeBoxName">한과2호 상품명</Label>
-                                <Input
-                                  id="largeBoxName"
-                                  value={dashboardContent.largeBoxName}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, largeBoxName: e.target.value})}
-                                  placeholder="한과2호 상품명을 입력하세요"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'largeBoxName', 
-                                    value: dashboardContent.largeBoxName 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="largeBoxName">한과2호 상품명</Label>
+                                  <Input
+                                    id="largeBoxName"
+                                    value={dashboardContent.largeBoxName}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, largeBoxName: e.target.value})}
+                                    placeholder="한과2호 상품명을 입력하세요"
+                                    className="mt-1"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'largeBoxName', 
+                                      value: dashboardContent.largeBoxName 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="mt-2"
+                                  >
+                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  </Button>
+                                </div>
+                                <div>
+                                  <Label htmlFor="largeBoxDimensions">한과2호 크기</Label>
+                                  <Input
+                                    id="largeBoxDimensions"
+                                    value={dashboardContent.largeBoxDimensions}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, largeBoxDimensions: e.target.value})}
+                                    placeholder="예: 약 37×23×11.5cm"
+                                    className="mt-1"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'largeBoxDimensions', 
+                                      value: dashboardContent.largeBoxDimensions 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="mt-2"
+                                  >
+                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
