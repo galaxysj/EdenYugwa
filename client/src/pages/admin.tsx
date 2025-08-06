@@ -14,6 +14,7 @@ import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
 import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
+import { UserManagement } from "@/components/user-management";
 
 import PasswordChangeDialog from "@/components/PasswordChangeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -3701,6 +3702,22 @@ export default function Admin() {
                 
                 <TabsContent value="customers" className="mt-6">
                   <CustomerManagement />
+                </TabsContent>
+
+                <TabsContent value="members" className="mt-6">
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                          <Users className="h-5 w-5" />
+                          회원관리
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <UserManagement />
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="trash" className="mt-6">
