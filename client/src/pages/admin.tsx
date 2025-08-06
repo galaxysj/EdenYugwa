@@ -319,16 +319,66 @@ function PriceSettingsDialog() {
   const { data: settings } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
   });
+
+  // Fetch dashboard content for dynamic products
+  const { data: contentData } = useQuery({
+    queryKey: ['/api/dashboard-content'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Convert array to object for easier access
+  const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
+    acc[item.key] = item.value;
+    return acc;
+  }, {}) : {};
+
+  // Parse product names safely
+  const parseProductNames = () => {
+    try {
+      if (!dashboardContent.productNames) return [];
+      if (typeof dashboardContent.productNames === 'string') {
+        return JSON.parse(dashboardContent.productNames);
+      }
+      return Array.isArray(dashboardContent.productNames) ? dashboardContent.productNames : [];
+    } catch (error) {
+      console.error('Error parsing product names:', error);
+      return [];
+    }
+  };
+
+  const productNames = parseProductNames();
+
+  // Function to update products in dashboard content
+  const updateProductInDashboard = async (updatedProducts: any[]) => {
+    try {
+      const response = await fetch('/api/dashboard-content/productNames', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          value: JSON.stringify(updatedProducts)
+        })
+      });
+
+      if (response.ok) {
+        queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+        toast({
+          title: "가격 업데이트 완료",
+          description: "상품 가격이 성공적으로 업데이트되었습니다.",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating product prices:', error);
+      toast({
+        title: "오류 발생",
+        description: "가격 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    }
+  };
   
-  // Cost settings (원가)
-  const [smallBoxCost, setSmallBoxCost] = useState("");
-  const [largeBoxCost, setLargeBoxCost] = useState("");
-  const [wrappingCost, setWrappingCost] = useState("");
-  // Price settings (판매가)
-  const [smallBoxPrice, setSmallBoxPrice] = useState("");
-  const [largeBoxPrice, setLargeBoxPrice] = useState("");
-  const [wrappingPrice, setWrappingPrice] = useState("");
-  const [productPrices, setProductPrices] = useState<any[]>([]);
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
@@ -336,27 +386,15 @@ function PriceSettingsDialog() {
   // Load existing settings when dialog opens
   useEffect(() => {
     if (settings) {
-      const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
-      const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
-      const wrappingCostSetting = settings.find(s => s.key === "wrappingCost");
-      const smallPriceSetting = settings.find(s => s.key === "smallBoxPrice");
-      const largePriceSetting = settings.find(s => s.key === "largeBoxPrice");
-      const wrappingPriceSetting = settings.find(s => s.key === "wrappingPrice");
       const shippingFeeSetting = settings.find(s => s.key === "shippingFee");
       const thresholdSetting = settings.find(s => s.key === "freeShippingThreshold");
       
-      setSmallBoxCost(smallCostSetting?.value || "");
-      setLargeBoxCost(largeCostSetting?.value || "");
-      setWrappingCost(wrappingCostSetting?.value || "");
-      setSmallBoxPrice(smallPriceSetting?.value || "");
-      setLargeBoxPrice(largePriceSetting?.value || "");
-      setWrappingPrice(wrappingPriceSetting?.value || "");
       setShippingFee(shippingFeeSetting?.value || "");
       setFreeShippingThreshold(thresholdSetting?.value || "");
     }
   }, [settings]);
   
-  const updatePriceMutation = useMutation({
+  const updateShippingMutation = useMutation({
     mutationFn: async (data: { key: string; value: string; description: string }) => {
       return await api.settings.create(data);
     },
@@ -364,83 +402,46 @@ function PriceSettingsDialog() {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       toast({
-        title: "가격 설정 완료",
-        description: "가격 설정이 업데이트되었습니다.",
+        title: "배송비 설정 완료",
+        description: "배송비 설정이 업데이트되었습니다.",
       });
       setOpen(false);
     },
     onError: () => {
       toast({
         title: "오류 발생",
-        description: "가격 설정 업데이트에 실패했습니다.",
+        description: "배송비 설정 업데이트에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
   
   const handleSave = async () => {
-    if (!smallBoxCost || !largeBoxCost || !wrappingCost || !smallBoxPrice || !largeBoxPrice || !wrappingPrice || !shippingFee || !freeShippingThreshold) {
+    if (!shippingFee || !freeShippingThreshold) {
       toast({
         title: "입력 오류",
-        description: "모든 설정 정보를 입력해주세요.",
+        description: "배송비 설정 정보를 입력해주세요.",
         variant: "destructive",
       });
       return;
     }
     
     try {
-      // Cost settings (원가)
-      await updatePriceMutation.mutateAsync({
-        key: "smallBoxCost",
-        value: smallBoxCost,
-        description: "한과1호 (소박스) 원가"
-      });
-      
-      await updatePriceMutation.mutateAsync({
-        key: "largeBoxCost", 
-        value: largeBoxCost,
-        description: "한과2호 (대박스) 원가"
-      });
-      
-      await updatePriceMutation.mutateAsync({
-        key: "wrappingCost",
-        value: wrappingCost,
-        description: "보자기 원가"
-      });
-      
-      // Price settings (판매가)
-      await updatePriceMutation.mutateAsync({
-        key: "smallBoxPrice",
-        value: smallBoxPrice,
-        description: "한과1호 (소박스) 판매가"
-      });
-      
-      await updatePriceMutation.mutateAsync({
-        key: "largeBoxPrice",
-        value: largeBoxPrice,
-        description: "한과2호 (대박스) 판매가"
-      });
-      
-      await updatePriceMutation.mutateAsync({
-        key: "wrappingPrice",
-        value: wrappingPrice,
-        description: "보자기 판매가"
-      });
-      
       // Shipping settings
-      await updatePriceMutation.mutateAsync({
+      await updateShippingMutation.mutateAsync({
         key: "shippingFee",
         value: shippingFee,
-        description: "배송비 (6개 미만 주문 시)"
+        description: "배송비"
       });
       
-      await updatePriceMutation.mutateAsync({
+      await updateShippingMutation.mutateAsync({
         key: "freeShippingThreshold",
         value: freeShippingThreshold,
         description: "무료배송 최소 수량"
       });
+      
     } catch (error) {
-      console.error("Settings update error:", error);
+      console.error("배송비 설정 저장 오류:", error);
     }
   };
   
@@ -460,75 +461,61 @@ function PriceSettingsDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="smallBoxCost">한과1호 (소박스) 원가</Label>
-            <Input
-              id="smallBoxCost"
-              type="number"
-              value={smallBoxCost}
-              onChange={(e) => setSmallBoxCost(e.target.value)}
-              placeholder="원가 입력 (원)"
-            />
-          </div>
-          <div>
-            <Label htmlFor="largeBoxCost">한과2호 (대박스) 원가</Label>
-            <Input
-              id="largeBoxCost"
-              type="number"
-              value={largeBoxCost}
-              onChange={(e) => setLargeBoxCost(e.target.value)}
-              placeholder="원가 입력 (원)"
-            />
-          </div>
-          <div>
-            <Label htmlFor="wrappingCost">보자기 원가</Label>
-            <Input
-              id="wrappingCost"
-              type="number"
-              value={wrappingCost}
-              onChange={(e) => setWrappingCost(e.target.value)}
-              placeholder="원가 입력 (원)"
-            />
-          </div>
-          
-          <div className="border-t border-gray-200 pt-4">
+          <div className="border-b border-gray-200 pb-4">
             <div className="mb-3">
-              <h4 className="font-medium text-gray-900">상품 판매가</h4>
-              <p className="text-sm text-gray-600">주문 폼에 표시될 판매가격입니다</p>
+              <h4 className="font-medium text-gray-900">상품 가격 관리</h4>
+              <p className="text-sm text-gray-600">콘텐츠 관리에서 등록된 상품들의 가격과 원가를 설정합니다</p>
             </div>
             <div className="space-y-3">
               {/* Dynamic Product Prices based on Content Management */}
-              {/* Dynamic product prices based on dashboard content */}
-              <div>
-                <Label htmlFor="smallBoxPrice">한과1호 판매가</Label>
-                <Input
-                  id="smallBoxPrice"
-                  type="number"
-                  value={smallBoxPrice}
-                  onChange={(e) => setSmallBoxPrice(e.target.value)}
-                  placeholder="판매가 입력 (원)"
-                />
-              </div>
-              <div>
-                <Label htmlFor="largeBoxPrice">한과2호 판매가</Label>
-                <Input
-                  id="largeBoxPrice"
-                  type="number"
-                  value={largeBoxPrice}
-                  onChange={(e) => setLargeBoxPrice(e.target.value)}
-                  placeholder="판매가 입력 (원)"
-                />
-              </div>
-              <div>
-                <Label htmlFor="wrappingPrice">보자기 판매가</Label>
-                <Input
-                  id="wrappingPrice"
-                  type="number"
-                  value={wrappingPrice}
-                  onChange={(e) => setWrappingPrice(e.target.value)}
-                  placeholder="판매가 입력 (원)"
-                />
-              </div>
+              {productNames && productNames.length > 0 ? (
+                productNames.map((product: any, index: number) => (
+                  <div key={index} className="space-y-2">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <h5 className="font-medium text-sm text-gray-900 mb-2">{product.name}</h5>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor={`product-cost-${index}`} className="text-xs">원가</Label>
+                          <Input
+                            id={`product-cost-${index}`}
+                            type="number"
+                            value={product.costPrice || ""}
+                            onChange={(e) => {
+                              const updatedProducts = [...productNames];
+                              updatedProducts[index] = { ...product, costPrice: e.target.value };
+                              // Update dashboard content immediately
+                              updateProductInDashboard(updatedProducts);
+                            }}
+                            placeholder="원가 (원)"
+                            className="text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor={`product-price-${index}`} className="text-xs">판매가</Label>
+                          <Input
+                            id={`product-price-${index}`}
+                            type="number"
+                            value={product.price || ""}
+                            onChange={(e) => {
+                              const updatedProducts = [...productNames];
+                              updatedProducts[index] = { ...product, price: e.target.value };
+                              // Update dashboard content immediately
+                              updateProductInDashboard(updatedProducts);
+                            }}
+                            placeholder="판매가 (원)"
+                            className="text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <p className="text-sm">등록된 상품이 없습니다.</p>
+                  <p className="text-xs">콘텐츠 관리에서 상품을 등록해주세요.</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -567,9 +554,9 @@ function PriceSettingsDialog() {
           </Button>
           <Button 
             onClick={handleSave}
-            disabled={updatePriceMutation.isPending}
+            disabled={updateShippingMutation.isPending}
           >
-            {updatePriceMutation.isPending ? "저장 중..." : "저장"}
+            {updateShippingMutation.isPending ? "저장 중..." : "저장"}
           </Button>
         </div>
       </DialogContent>
