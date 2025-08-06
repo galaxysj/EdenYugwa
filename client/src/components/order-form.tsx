@@ -798,7 +798,7 @@ export default function OrderForm() {
                       control={form.control}
                       name="specialRequests"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="text-[17px]">
                           <FormLabel>요청사항</FormLabel>
                           <FormControl>
                             <Textarea 
