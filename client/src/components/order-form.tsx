@@ -76,11 +76,7 @@ const formatPhoneNumber = (value: string) => {
   }
 };
 
-const prices = {
-  small: 19000, // 한과1호
-  large: 21000, // 한과2호
-  wrapping: 1000,
-};
+// Dynamic prices will be loaded from admin settings
 
 
 
@@ -95,6 +91,11 @@ export default function OrderForm() {
   const [shippingSettings, setShippingSettings] = useState({
     shippingFee: 4000,
     freeShippingThreshold: 6
+  });
+  const [prices, setPrices] = useState({
+    small: 19000, // 한과1호
+    large: 21000, // 한과2호
+    wrapping: 1000,
   });
   const [selectedAddress, setSelectedAddress] = useState<{
     zipCode: string;
@@ -132,29 +133,43 @@ export default function OrderForm() {
     },
   });
 
-  // 배송비 설정 로드
+  // 배송비 설정 및 상품 가격 로드
   useEffect(() => {
-    const loadShippingSettings = async () => {
+    const loadSettings = async () => {
       try {
-        const [shippingFeeResponse, thresholdResponse] = await Promise.all([
+        const [shippingFeeResponse, thresholdResponse, settingsResponse] = await Promise.all([
           fetch("/api/settings/shippingFee"),
-          fetch("/api/settings/freeShippingThreshold")
+          fetch("/api/settings/freeShippingThreshold"),
+          fetch("/api/settings")
         ]);
 
         const shippingFeeSetting = await shippingFeeResponse.json();
         const thresholdSetting = await thresholdResponse.json();
+        const allSettings = await settingsResponse.json();
 
         setShippingSettings({
           shippingFee: parseInt(shippingFeeSetting.value) || 4000,
           freeShippingThreshold: parseInt(thresholdSetting.value) || 6
         });
+
+        // 상품 가격 설정 업데이트
+        const smallBoxCostSetting = allSettings.find((s: any) => s.key === "smallBoxCost");
+        const largeBoxCostSetting = allSettings.find((s: any) => s.key === "largeBoxCost");
+        const wrappingCostSetting = allSettings.find((s: any) => s.key === "wrappingCost");
+
+        setPrices({
+          small: smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 19000,
+          large: largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 21000,
+          wrapping: wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000,
+        });
+
       } catch (error) {
-        console.error('배송비 설정 로드 실패:', error);
+        console.error('설정 로드 실패:', error);
         // 기본값 유지
       }
     };
 
-    loadShippingSettings();
+    loadSettings();
   }, []);
 
   // 로그인된 사용자의 정보로 폼 초기화
@@ -271,7 +286,7 @@ export default function OrderForm() {
     
     const total = smallBoxTotal + largeBoxTotal + wrappingTotal + calculatedShippingFee;
     setTotalAmount(total);
-  }, [watchedValues]);
+  }, [watchedValues, prices, shippingSettings]);
 
   const onSubmit = (data: OrderFormData) => {
     const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;

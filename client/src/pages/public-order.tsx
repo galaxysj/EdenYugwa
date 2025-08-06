@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -65,6 +65,11 @@ export default function PublicOrder() {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [orderPassword, setOrderPassword] = useState("");
+  const [prices, setPrices] = useState({
+    small: 19000, // 한과1호 기본값
+    large: 21000, // 한과2호 기본값 
+    wrapping: 1000, // 보자기 기본값
+  });
 
   const form = useForm<PublicOrderForm>({
     resolver: zodResolver(publicOrderSchema),
@@ -89,6 +94,31 @@ export default function PublicOrder() {
       orderPassword: "",
     },
   });
+
+  // 상품 가격 설정 로드
+  useEffect(() => {
+    const loadPrices = async () => {
+      try {
+        const response = await fetch("/api/settings");
+        const settings = await response.json();
+
+        const smallBoxCostSetting = settings.find((s: any) => s.key === "smallBoxCost");
+        const largeBoxCostSetting = settings.find((s: any) => s.key === "largeBoxCost");
+        const wrappingCostSetting = settings.find((s: any) => s.key === "wrappingCost");
+
+        setPrices({
+          small: smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 19000,
+          large: largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 21000,
+          wrapping: wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000,
+        });
+      } catch (error) {
+        console.error('가격 설정 로드 실패:', error);
+        // 기본값 유지
+      }
+    };
+
+    loadPrices();
+  }, []);
 
   const createOrderMutation = useMutation({
     mutationFn: (data: InsertOrder) => api.orders.create(data),
@@ -126,15 +156,11 @@ export default function PublicOrder() {
       return;
     }
     
-    // Calculate total amount
-    const smallBoxPrice = 30000;
-    const largeBoxPrice = 50000;
-    const wrappingPrice = 2000;
-    
+    // Calculate total amount using dynamic prices
     const totalAmount = 
-      (data.smallBoxQuantity * smallBoxPrice) +
-      (data.largeBoxQuantity * largeBoxPrice) +
-      (data.wrappingQuantity * wrappingPrice);
+      (data.smallBoxQuantity * prices.small) +
+      (data.largeBoxQuantity * prices.large) +
+      (data.wrappingQuantity * prices.wrapping);
 
     const orderData = {
       customerName: data.customerName,
@@ -168,17 +194,13 @@ export default function PublicOrder() {
   };
 
   const calculateTotal = () => {
-    const smallBoxPrice = 30000;
-    const largeBoxPrice = 50000;
-    const wrappingPrice = 2000;
-    
     const smallBoxQuantity = form.watch("smallBoxQuantity") || 0;
     const largeBoxQuantity = form.watch("largeBoxQuantity") || 0;
     const wrappingQuantity = form.watch("wrappingQuantity") || 0;
     
-    return (smallBoxQuantity * smallBoxPrice) + 
-           (largeBoxQuantity * largeBoxPrice) + 
-           (wrappingQuantity * wrappingPrice);
+    return (smallBoxQuantity * prices.small) + 
+           (largeBoxQuantity * prices.large) + 
+           (wrappingQuantity * prices.wrapping);
   };
 
   const formatPrice = (price: number) => {
@@ -636,19 +658,19 @@ export default function PublicOrder() {
                     {(form.watch("smallBoxQuantity") || 0) > 0 && (
                       <div className="flex justify-between">
                         <span>한과1호×{form.watch("smallBoxQuantity") || 0}개</span>
-                        <span>{formatPrice((form.watch("smallBoxQuantity") || 0) * 30000)}</span>
+                        <span>{formatPrice((form.watch("smallBoxQuantity") || 0) * prices.small)}</span>
                       </div>
                     )}
                     {(form.watch("largeBoxQuantity") || 0) > 0 && (
                       <div className="flex justify-between">
                         <span>한과2호×{form.watch("largeBoxQuantity") || 0}개</span>
-                        <span>{formatPrice((form.watch("largeBoxQuantity") || 0) * 50000)}</span>
+                        <span>{formatPrice((form.watch("largeBoxQuantity") || 0) * prices.large)}</span>
                       </div>
                     )}
                     {(form.watch("wrappingQuantity") || 0) > 0 && (
                       <div className="flex justify-between">
                         <span>보자기×{form.watch("wrappingQuantity") || 0}개</span>
-                        <span>{formatPrice((form.watch("wrappingQuantity") || 0) * 2000)}</span>
+                        <span>{formatPrice((form.watch("wrappingQuantity") || 0) * prices.wrapping)}</span>
                       </div>
                     )}
                     <div className="border-t pt-2 mt-4">
