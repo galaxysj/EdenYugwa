@@ -232,7 +232,7 @@ export default function OrderForm() {
         // 각 상품에 대해 설정에서 가격 로드 및 업데이트
         const updatedProductNames = productNamesData.map((product: any, index: number) => {
           const productKey = product.key || `product_${index}`;
-          const priceSetting = settingsData.find((s: any) => s.key === `${productKey}Price`);
+          const priceSetting = settingsData?.find((s: any) => s.key === `${productKey}Price`);
           
           return {
             ...product,

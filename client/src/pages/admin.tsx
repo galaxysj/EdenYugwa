@@ -1645,23 +1645,29 @@ export default function Admin() {
 
   // Render revenue report function
   const renderRevenueReport = () => {
-    // Get product costs from dashboard content first, fallback to settings
+    // Get product costs from settings first (new price management system)
+    const product0CostSetting = settings?.find(s => s.key === "product_0Cost");
+    const product1CostSetting = settings?.find(s => s.key === "product_1Cost");
+    const product2CostSetting = settings?.find(s => s.key === "product_2Cost");
+    const product3CostSetting = settings?.find(s => s.key === "product_3Cost");
+    
+    // Fallback to content management and old settings
     const productNames = dashboardContent.productNames || [];
     const smallProductCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : null;
     const largeProductCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : null;
     const wrappingProductCost = dashboardContent.wrappingCost ? parseInt(dashboardContent.wrappingCost) : null;
     
-    // Fallback to global cost settings if no product-specific cost
-    // Use dynamic cost pricing from content management first
-    const smallBoxCostValue = productNames[0]?.cost ? parseInt(productNames[0].cost) :
+    // Use dynamic cost pricing from price settings first, then content management, then fallback
+    const smallBoxCostValue = product0CostSetting ? parseInt(product0CostSetting.value) :
                              (smallProductCost ?? (settings?.find(s => s.key === "smallBoxCost")?.value ? 
                              parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000));
-    const largeBoxCostValue = productNames[1]?.cost ? parseInt(productNames[1].cost) :
+    const largeBoxCostValue = product1CostSetting ? parseInt(product1CostSetting.value) :
                              (largeProductCost ?? (settings?.find(s => s.key === "largeBoxCost")?.value ? 
                              parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000));
-    const wrappingCostValue = productNames[2]?.cost ? parseInt(productNames[2].cost) :
-                             (wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
-                             parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000));
+    const wrappingCostValue = (product2CostSetting ? parseInt(product2CostSetting.value) : 
+                              (product3CostSetting ? parseInt(product3CostSetting.value) : 
+                              (wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
+                              parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000))));
     
     // Include all orders with confirmed payment status (including scheduled and delivered orders)
     // Exclude refunded orders from revenue calculation
@@ -1721,10 +1727,19 @@ export default function Admin() {
       const wrappingCost = order.wrappingQuantity * (order.wrappingCost || wrappingCostValue);
       const shippingCost = order.shippingFee || 0;
       
-      // Use historical selling prices for revenue calculations, fallback to current prices
-      const currentSmallPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 19000;
-      const currentLargePrice = productNames[1]?.price ? parseInt(productNames[1].price) : 21000;
-      const currentWrappingPrice = productNames[2]?.price ? parseInt(productNames[2].price) : 1000;
+      // Use historical selling prices for revenue calculations, fallback to current prices from settings
+      const product0PriceSetting = settings?.find(s => s.key === "product_0Price");
+      const product1PriceSetting = settings?.find(s => s.key === "product_1Price");
+      const product2PriceSetting = settings?.find(s => s.key === "product_2Price");
+      const product3PriceSetting = settings?.find(s => s.key === "product_3Price");
+      
+      const currentSmallPrice = product0PriceSetting ? parseInt(product0PriceSetting.value) :
+                               (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
+      const currentLargePrice = product1PriceSetting ? parseInt(product1PriceSetting.value) :
+                               (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
+      const currentWrappingPrice = (product2PriceSetting ? parseInt(product2PriceSetting.value) :
+                                   (product3PriceSetting ? parseInt(product3PriceSetting.value) :
+                                   (productNames[2]?.price ? parseInt(productNames[2].price) : 1000)));
       
       const smallBoxPrice = order.smallBoxPrice || currentSmallPrice;
       const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
