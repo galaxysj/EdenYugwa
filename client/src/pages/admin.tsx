@@ -1701,24 +1701,44 @@ export default function Admin() {
                           </div>
                         </div>
                         
-                        {/* 수익 정보 - 한 줄로 압축 */}
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-3">
-                            <span className="text-black">
-                              입금 <span className="font-bold">{formatPrice(order.actualPaidAmount || order.totalAmount)}</span>
-                            </span>
-                            <span className="text-black">
-                              원가 <span className="font-bold">{formatPrice(totalCost)}</span>
-                            </span>
-                            {(discountAmount > 0 || unpaidAmount > 0) && (
-                              <span className="text-black">
-                                {discountAmount > 0 ? '할인' : '미입금'} <span className="font-bold">{formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}</span>
+                        {/* 입금상태 및 수익 정보 */}
+                        <div className="space-y-1">
+                          {/* 입금상태 */}
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-600">입금상태:</span>
+                              <span className={`font-bold px-2 py-0.5 rounded text-xs ${
+                                order.paymentStatus === 'confirmed' 
+                                  ? 'bg-green-100 text-green-700' 
+                                  : order.paymentStatus === 'partial'
+                                  ? 'bg-yellow-100 text-yellow-700'
+                                  : 'bg-red-100 text-red-700'
+                              }`}>
+                                {order.paymentStatus === 'confirmed' ? '입금완료' : 
+                                 order.paymentStatus === 'partial' ? '부분결제' : '입금대기'}
                               </span>
-                            )}
+                            </div>
                           </div>
-                          <span className="font-bold text-black">
-                            순수익 {formatPrice(actualProfit)}
-                          </span>
+                          
+                          {/* 수익 정보 */}
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-3">
+                              <span className="text-black">
+                                입금 <span className="font-bold">{formatPrice(order.actualPaidAmount || order.totalAmount)}</span>
+                              </span>
+                              <span className="text-black">
+                                원가 <span className="font-bold">{formatPrice(totalCost)}</span>
+                              </span>
+                              {(discountAmount > 0 || unpaidAmount > 0) && (
+                                <span className="text-black">
+                                  {discountAmount > 0 ? '할인' : '미입금'} <span className="font-bold">{formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}</span>
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-bold text-black">
+                              순수익 {formatPrice(actualProfit)}
+                            </span>
+                          </div>
                         </div>
                     </div>
                   );

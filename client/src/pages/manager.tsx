@@ -549,61 +549,65 @@ export default function ManagerDashboard() {
               {/* 주문 목록 테이블 */}
               <TabsContent value="전체보기" className="space-y-4">
                 <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="font-semibold text-[12px]">주문 목록 (총 {filteredOrders.length}개)</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => {
-                          // 발송완료되지 않은 모든 주문을 선택하고 일괄 발송처리
-                          const unshippedOrders = filteredOrders.filter(o => !o.sellerShipped);
-                          if (unshippedOrders.length === 0) {
-                            toast({
-                              title: "처리할 주문이 없습니다",
-                              description: "발송처리가 필요한 주문이 없습니다.",
-                              variant: "destructive",
+                  <div className="p-2 md:p-4 border-b">
+                    <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+                      <h2 className="text-sm md:text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
+                      <div className="flex gap-1 md:gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            // 발송완료되지 않은 모든 주문을 선택하고 일괄 발송처리
+                            const unshippedOrders = filteredOrders.filter(o => !o.sellerShipped);
+                            if (unshippedOrders.length === 0) {
+                              toast({
+                                title: "처리할 주문이 없습니다",
+                                description: "발송처리가 필요한 주문이 없습니다.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            // 일괄 발송처리 실행
+                            const orderIds = unshippedOrders.map(o => o.id);
+                            Promise.all(
+                              orderIds.map(id => 
+                                updateSellerShippedMutation.mutateAsync({ 
+                                  id, 
+                                  sellerShipped: true 
+                                })
+                              )
+                            ).then(() => {
+                              toast({
+                                title: "일괄 발송처리 완료",
+                                description: `${orderIds.length}건의 주문이 발송처리되었습니다.`,
+                              });
+                            }).catch(() => {
+                              toast({
+                                title: "일괄 발송처리 실패",
+                                description: "일부 주문 처리 중 오류가 발생했습니다.",
+                                variant: "destructive",
+                              });
                             });
-                            return;
-                          }
-                          
-                          // 일괄 발송처리 실행
-                          const orderIds = unshippedOrders.map(o => o.id);
-                          Promise.all(
-                            orderIds.map(id => 
-                              updateSellerShippedMutation.mutateAsync({ 
-                                id, 
-                                sellerShipped: true 
-                              })
-                            )
-                          ).then(() => {
-                            toast({
-                              title: "일괄 발송처리 완료",
-                              description: `${orderIds.length}건의 주문이 발송처리되었습니다.`,
-                            });
-                          }).catch(() => {
-                            toast({
-                              title: "일괄 발송처리 실패",
-                              description: "일부 주문 처리 중 오류가 발생했습니다.",
-                              variant: "destructive",
-                            });
-                          });
-                        }}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                        disabled={updateSellerShippedMutation.isPending}
-                      >
-                        <Truck className="h-4 w-4" />
-                        일괄발송처리 ({filteredOrders.filter(o => !o.sellerShipped).length})
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => exportToExcel(filteredOrders, "전체주문목록")}
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        엑셀 다운로드
-                      </Button>
+                          }}
+                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                          disabled={updateSellerShippedMutation.isPending}
+                        >
+                          <Truck className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="hidden md:inline">일괄발송처리 ({filteredOrders.filter(o => !o.sellerShipped).length})</span>
+                          <span className="md:hidden">일괄처리({filteredOrders.filter(o => !o.sellerShipped).length})</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => exportToExcel(filteredOrders, "전체주문목록")}
+                          className="flex items-center gap-1 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                        >
+                          <Download className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="hidden md:inline">엑셀 다운로드</span>
+                          <span className="md:hidden">엑셀</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   {/* 데스크탑 테이블 뷰 */}
@@ -952,59 +956,63 @@ export default function ManagerDashboard() {
               {/* 발송처리대기 탭 */}
               <TabsContent value="발송처리대기" className="space-y-4">
                 <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">발송처리대기 목록 (총 {filteredOrders.filter(o => !o.sellerShipped).length}개)</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        onClick={() => {
-                          const unshippedOrders = filteredOrders.filter(o => !o.sellerShipped);
-                          if (unshippedOrders.length === 0) {
-                            toast({
-                              title: "처리할 주문이 없습니다",
-                              description: "발송처리가 필요한 주문이 없습니다.",
-                              variant: "destructive",
+                  <div className="p-2 md:p-4 border-b">
+                    <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+                      <h2 className="text-sm md:text-lg font-semibold">발송처리대기 목록 (총 {filteredOrders.filter(o => !o.sellerShipped).length}개)</h2>
+                      <div className="flex gap-1 md:gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => {
+                            const unshippedOrders = filteredOrders.filter(o => !o.sellerShipped);
+                            if (unshippedOrders.length === 0) {
+                              toast({
+                                title: "처리할 주문이 없습니다",
+                                description: "발송처리가 필요한 주문이 없습니다.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            const orderIds = unshippedOrders.map(o => o.id);
+                            Promise.all(
+                              orderIds.map(id => 
+                                updateSellerShippedMutation.mutateAsync({ 
+                                  id, 
+                                  sellerShipped: true 
+                                })
+                              )
+                            ).then(() => {
+                              toast({
+                                title: "일괄 발송처리 완료",
+                                description: `${orderIds.length}건의 주문이 발송처리되었습니다.`,
+                              });
+                            }).catch(() => {
+                              toast({
+                                title: "일괄 발송처리 실패",
+                                description: "일부 주문 처리 중 오류가 발생했습니다.",
+                                variant: "destructive",
+                              });
                             });
-                            return;
-                          }
-                          
-                          const orderIds = unshippedOrders.map(o => o.id);
-                          Promise.all(
-                            orderIds.map(id => 
-                              updateSellerShippedMutation.mutateAsync({ 
-                                id, 
-                                sellerShipped: true 
-                              })
-                            )
-                          ).then(() => {
-                            toast({
-                              title: "일괄 발송처리 완료",
-                              description: `${orderIds.length}건의 주문이 발송처리되었습니다.`,
-                            });
-                          }).catch(() => {
-                            toast({
-                              title: "일괄 발송처리 실패",
-                              description: "일부 주문 처리 중 오류가 발생했습니다.",
-                              variant: "destructive",
-                            });
-                          });
-                        }}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                        disabled={updateSellerShippedMutation.isPending}
-                      >
-                        <Truck className="h-4 w-4" />
-                        일괄발송처리 ({filteredOrders.filter(o => !o.sellerShipped).length})
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => exportToExcel(filteredOrders.filter(o => !o.sellerShipped), "발송처리대기목록")}
-                        className="flex items-center gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        엑셀 다운로드
-                      </Button>
+                          }}
+                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                          disabled={updateSellerShippedMutation.isPending}
+                        >
+                          <Truck className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="hidden md:inline">일괄발송처리 ({filteredOrders.filter(o => !o.sellerShipped).length})</span>
+                          <span className="md:hidden">일괄처리({filteredOrders.filter(o => !o.sellerShipped).length})</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => exportToExcel(filteredOrders.filter(o => !o.sellerShipped), "발송처리대기목록")}
+                          className="flex items-center gap-1 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                        >
+                          <Download className="h-3 w-3 md:h-4 md:w-4" />
+                          <span className="hidden md:inline">엑셀 다운로드</span>
+                          <span className="md:hidden">엑셀</span>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   {/* 데스크탑 테이블 뷰 */}
@@ -1309,13 +1317,13 @@ export default function ManagerDashboard() {
                                   id: order.id, 
                                   sellerShipped: true 
                                 })}
-                                className="text-xs px-2 py-1 h-7"
+                                className="text-xs px-1.5 py-0.5 h-6"
                               >
                                 발송처리
                               </Button>
                               
                               <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
+                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-1.5 py-0.5 h-6">
                                   <MessageSquare className="h-3 w-3" />
                                   SMS
                                 </Button>
@@ -1332,17 +1340,20 @@ export default function ManagerDashboard() {
               {/* 매니저발송완료 탭 */}
               <TabsContent value="매니저발송완료" className="space-y-4">
                 <div className="bg-white border rounded-lg">
-                  <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">매니저발송완료 주문 (총 {filteredOrders.filter(o => o.sellerShipped).length}개)</h2>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => exportToExcel(filteredOrders.filter(o => o.sellerShipped), "매니저발송완료목록")}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      엑셀 다운로드
-                    </Button>
+                  <div className="p-2 md:p-4 border-b">
+                    <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+                      <h2 className="text-sm md:text-lg font-semibold">매니저발송완료 주문 (총 {filteredOrders.filter(o => o.sellerShipped).length}개)</h2>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => exportToExcel(filteredOrders.filter(o => o.sellerShipped), "매니저발송완료목록")}
+                        className="flex items-center gap-1 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                      >
+                        <Download className="h-3 w-3 md:h-4 md:w-4" />
+                        <span className="hidden md:inline">엑셀 다운로드</span>
+                        <span className="md:hidden">엑셀</span>
+                      </Button>
+                    </div>
                   </div>
                   {/* 데스크탑 테이블 뷰 */}
                   <div className="hidden md:block overflow-x-auto">
