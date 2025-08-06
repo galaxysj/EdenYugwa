@@ -2641,14 +2641,7 @@ export default function Admin() {
                       )}
                     </div>
 
-                    {/* 금액 상세 */}
-                    {(order.actualPaidAmount !== order.totalAmount || discountAmount > 0) && (
-                      <div className="flex items-center gap-3 text-xs mb-2">
-                        <span className="text-green-600">입금: {formatPrice(actualPaidAmount)}</span>
-                        {discountAmount > 0 && <span className="text-red-600">할인: {formatPrice(discountAmount)}</span>}
-                        {unpaidAmount > 0 && <span className="text-red-600">미입금: {formatPrice(unpaidAmount)}</span>}
-                      </div>
-                    )}
+
 
                     {/* 특별 정보 */}
                     <div className="flex flex-wrap items-center gap-2 text-xs mb-2">
