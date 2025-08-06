@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Calculator } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Calculator, Save, Undo } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -589,7 +589,8 @@ function PriceSettingsDialog() {
                   <Button
                     onClick={saveAllPrices}
                     disabled={isBulkSaving}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    variant="ghost"
+                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                   >
                     {isBulkSaving ? "일괄 저장 중..." : "전체 일괄 저장"}
                   </Button>
@@ -635,7 +636,8 @@ function PriceSettingsDialog() {
                                     product.name
                                   )}
                                   disabled={savingPrices[`${productKey}-cost`] || !productPrices[productKey]?.cost}
-                                  className="px-2 text-xs"
+                                  variant="ghost"
+                                  className="px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                 >
                                   {savingPrices[`${productKey}-cost`] ? '저장중...' : '저장'}
                                 </Button>
@@ -665,7 +667,8 @@ function PriceSettingsDialog() {
                                     product.name
                                   )}
                                   disabled={savingPrices[`${productKey}-price`] || !productPrices[productKey]?.price}
-                                  className="px-2 text-xs"
+                                  variant="ghost"
+                                  className="px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                 >
                                   {savingPrices[`${productKey}-price`] ? '저장중...' : '저장'}
                                 </Button>
@@ -4396,11 +4399,12 @@ export default function Admin() {
                             toast({ title: "모든 콘텐츠가 기본값으로 초기화되었습니다." });
                           }
                         }}
-                        variant="destructive"
+                        variant="ghost"
                         size="sm"
+                        className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                       >
                         <RotateCcw className="h-4 w-4 mr-1" />
-                        전체 초기화
+                        전체되돌리기
                       </Button>
                     </div>
                     
@@ -4409,33 +4413,35 @@ export default function Admin() {
                           {/* 상품 정보 관리 */}
                           <div className="space-y-4">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                                <Calculator className="h-4 w-4" />
-                                상품 정보 관리
-                              </h3>
+                              <h3 className="text-lg font-semibold text-gray-900">상품 정보 관리</h3>
                               <div className="flex gap-2">
                                 <Button
-                                  onClick={() => {
-                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', cost: '0', size: '', weight: '' }];
-                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                    
-                                    // 대시보드 콘텐츠 업데이트
-                                    updateContentMutation.mutate({ 
-                                      key: 'productNames', 
-                                      value: JSON.stringify(newProductNames) 
-                                    });
-                                    
-                                    // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
-                                    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                  onClick={async () => {
+                                    try {
+                                      await updateContentMutation.mutateAsync({ 
+                                        key: 'productNames', 
+                                        value: JSON.stringify(dashboardContent.productNames) 
+                                      });
+                                      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "모든 상품 정보가 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "상품 정보 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
                                   }}
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                 >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  상품 추가
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
                                 </Button>
-
                                 <Button
                                   onClick={() => {
                                     if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
@@ -4450,41 +4456,55 @@ export default function Admin() {
                                         value: JSON.stringify(defaultProductNames) 
                                       });
                                       updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
-                                      
-                                      // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
                                       queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                     }
                                   }}
-                                  variant="outline"
+                                  variant="ghost"
                                   size="sm"
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                 >
                                   <RotateCcw className="h-4 w-4 mr-1" />
-                                  상품정보 되돌리기
+                                  전체초기화
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', cost: '0', size: '', weight: '' }];
+                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                    updateContentMutation.mutate({ 
+                                      key: 'productNames', 
+                                      value: JSON.stringify(newProductNames) 
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  상품 추가
                                 </Button>
                               </div>
                             </div>
                             
                             {/* Dynamic Product List with Pricing - Table Format */}
-                            <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                              <table className="w-full table-fixed">
-                                <thead>
-                                  <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="w-12 px-3 py-2 text-left text-xs font-medium text-gray-600">#</th>
-                                    <th className="w-40 px-3 py-2 text-left text-xs font-medium text-gray-600">상품명</th>
-
-                                    <th className="w-32 px-3 py-2 text-left text-xs font-medium text-gray-600">크기/규격</th>
-                                    <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-600">중량</th>
-                                    <th className="w-24 px-3 py-2 text-center text-xs font-medium text-gray-600">작업</th>
+                            <div className="border rounded-lg overflow-hidden bg-white">
+                              <table className="w-full">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 w-16">#</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">상품명</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">크기/규격</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">중량</th>
+                                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 w-36">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {(dashboardContent.productNames || []).map((product: any, index: number) => (
-                                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                                      <td className="px-3 py-2 text-sm text-gray-900">
+                                    <tr key={index} className="border-b border-gray-100">
+                                      <td className="px-4 py-3 text-sm text-gray-700 font-medium">
                                         {index + 1}
                                       </td>
-                                      <td className="px-3 py-2">
+                                      <td className="px-4 py-3">
                                         <Input
                                           value={product.name || ''}
                                           onChange={(e) => {
@@ -4493,11 +4513,10 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="상품명"
-                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         />
                                       </td>
-
-                                      <td className="px-3 py-2">
+                                      <td className="px-4 py-3">
                                         <Input
                                           value={product.size || ''}
                                           onChange={(e) => {
@@ -4506,10 +4525,10 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="(가로×세로×높이)"
-                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         />
                                       </td>
-                                      <td className="px-3 py-2">
+                                      <td className="px-4 py-3">
                                         <Input
                                           value={product.weight || ''}
                                           onChange={(e) => {
@@ -4518,29 +4537,25 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="중량"
-                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         />
                                       </td>
-                                      <td className="px-3 py-2 text-center">
+                                      <td className="px-4 py-3 text-center">
                                         <div className="flex gap-1 justify-center">
                                           <Button
                                             size="sm"
                                             onClick={async () => {
                                               const buttonKey = `product-${index}`;
-                                              if (savingButtons[buttonKey]) return; // 이미 진행 중이면 중단
+                                              if (savingButtons[buttonKey]) return;
                                               
                                               setSavingButtons(prev => ({...prev, [buttonKey]: true}));
                                               
                                               try {
-                                                // 상품 정보를 대시보드 콘텐츠에 저장
                                                 await updateContentMutation.mutateAsync({ 
                                                   key: 'productNames', 
                                                   value: JSON.stringify(dashboardContent.productNames) 
                                                 });
-                                                
-                                                // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
                                                 queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                                
                                                 toast({
                                                   title: "상품 정보 저장 완료",
                                                   description: `${product.name} 정보가 업데이트되었습니다.`,
@@ -4556,9 +4571,26 @@ export default function Admin() {
                                               }
                                             }}
                                             disabled={savingButtons[`product-${index}`]}
-                                            className="h-7 px-2 text-xs"
+                                            variant="ghost"
+                                            className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                           >
-                                            {savingButtons[`product-${index}`] ? '저장중...' : '저장'}
+                                            <Save className="h-3 w-3 mr-1" />
+                                            {savingButtons[`product-${index}`] ? '저장중' : '저장'}
+                                          </Button>
+                                          <Button
+                                            onClick={() => {
+                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                              toast({
+                                                title: "되돌리기 완료",
+                                                description: `${product.name} 정보가 되돌려졌습니다.`,
+                                              });
+                                            }}
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                          >
+                                            <Undo className="h-3 w-3 mr-1" />
+                                            되돌리기
                                           </Button>
                                           <Button
                                             onClick={() => {
@@ -4568,13 +4600,11 @@ export default function Admin() {
                                                 key: 'productNames', 
                                                 value: JSON.stringify(newProductNames) 
                                               });
-                                              
-                                              // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
                                               queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             }}
-                                            variant="outline"
+                                            variant="ghost"
                                             size="sm"
-                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
+                                            className="h-8 w-8 p-0 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                           >
                                             <X className="h-3 w-3" />
                                           </Button>
@@ -4611,29 +4641,64 @@ export default function Admin() {
                           {/* 메인 콘텐츠 */}
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900">메인 콘텐츠</h3>
-                              <Button
-                                onClick={() => {
-                                  if (confirm('기본값으로 되돌리시겠습니까?')) {
-                                    const defaults = {
-                                      mainTitle: "진안에서 온 정성 가득 유과",
-                                      mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
-                                      heroImages: [] as string[],
-                                      aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
-                                    };
-                                    setDashboardContent({...dashboardContent, ...defaults});
-                                    Object.entries(defaults).forEach(([key, value]) => {
-                                      updateContentMutation.mutate({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
-                                    });
-                                  }
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <RotateCcw className="h-4 w-4 mr-1" />
-                                되돌리기
-                              </Button>
+                              <h3 className="text-lg font-semibold text-gray-900">메인 콘텐츠</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const mainContentData = {
+                                        mainTitle: dashboardContent.mainTitle,
+                                        mainDescription: dashboardContent.mainDescription,
+                                        heroImages: dashboardContent.heroImages,
+                                        aboutText: dashboardContent.aboutText
+                                      };
+                                      
+                                      await Promise.all(Object.entries(mainContentData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value: typeof value === 'string' ? value : JSON.stringify(value) })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "메인 콘텐츠가 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "메인 콘텐츠 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        mainTitle: "진안에서 온 정성 가득 유과",
+                                        mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                        heroImages: [] as string[],
+                                        aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
                             </div>
                             
                             <div className="border rounded-lg overflow-hidden">
@@ -4642,7 +4707,7 @@ export default function Admin() {
                                   <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-20">저장</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -4657,38 +4722,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'mainTitle';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'mainTitle', 
-                                              value: dashboardContent.mainTitle 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'mainTitle';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'mainTitle', 
+                                                value: dashboardContent.mainTitle 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "제목 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "오류",
+                                                description: "저장 실패",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['mainTitle']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['mainTitle'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "메인 제목이 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "제목 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['mainTitle']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['mainTitle'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                   
@@ -4704,38 +4788,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'mainDescription';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'mainDescription', 
-                                              value: dashboardContent.mainDescription 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'mainDescription';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'mainDescription', 
+                                                value: dashboardContent.mainDescription 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "설명 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "오류",
+                                                description: "저장 실패",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['mainDescription']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['mainDescription'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "메인 설명이 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "설명 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['mainDescription']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['mainDescription'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                   
@@ -4781,38 +4884,57 @@ export default function Admin() {
                                       </div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'heroImages';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'heroImages', 
-                                              value: JSON.stringify(dashboardContent.heroImages)
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'heroImages';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'heroImages', 
+                                                value: JSON.stringify(dashboardContent.heroImages)
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "이미지 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['heroImages']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['heroImages'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "히어로 이미지가 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "이미지 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['heroImages']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['heroImages'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                   
@@ -4828,38 +4950,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'aboutText';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'aboutText', 
-                                              value: dashboardContent.aboutText 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'aboutText';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'aboutText', 
+                                                value: dashboardContent.aboutText 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "소개글 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['aboutText']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['aboutText'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "소개글이 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "소개글 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['aboutText']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['aboutText'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                 </tbody>
@@ -4872,27 +5013,60 @@ export default function Admin() {
                           {/* 배송 정보 */}
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900">배송 정보</h3>
-                              <Button
-                                onClick={() => {
-                                  if (confirm('기본값으로 되돌리시겠습니까?')) {
-                                    const defaults = {
-                                      shippingTitle: "에덴한과 배송",
-                                      shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
-                                    };
-                                    setDashboardContent({...dashboardContent, ...defaults});
-                                    Object.entries(defaults).forEach(([key, value]) => {
-                                      updateContentMutation.mutate({ key, value });
-                                    });
-                                  }
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <RotateCcw className="h-4 w-4 mr-1" />
-                                되돌리기
-                              </Button>
+                              <h3 className="text-lg font-semibold text-gray-900">배송 정보</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const shippingData = {
+                                        shippingTitle: dashboardContent.shippingTitle,
+                                        shippingInfo: dashboardContent.shippingInfo
+                                      };
+                                      
+                                      await Promise.all(Object.entries(shippingData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "배송 정보가 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "배송 정보 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        shippingTitle: "에덴한과 배송",
+                                        shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ key, value });
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
                             </div>
                             
                             <div className="border rounded-lg overflow-hidden">
@@ -4901,7 +5075,7 @@ export default function Admin() {
                                   <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-20">저장</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -4916,38 +5090,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'shippingTitle';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'shippingTitle', 
-                                              value: dashboardContent.shippingTitle || '' 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'shippingTitle';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'shippingTitle', 
+                                                value: dashboardContent.shippingTitle || '' 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "배송 제목 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['shippingTitle']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['shippingTitle'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "배송 제목이 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "배송 제목 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['shippingTitle']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['shippingTitle'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                   
@@ -4963,38 +5156,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'shippingInfo';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'shippingInfo', 
-                                              value: dashboardContent.shippingInfo 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'shippingInfo';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'shippingInfo', 
+                                                value: dashboardContent.shippingInfo 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "배송 안내 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['shippingInfo']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['shippingInfo'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "배송 안내 내용이 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "배송 안내 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['shippingInfo']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['shippingInfo'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                 </tbody>
@@ -5005,27 +5217,60 @@ export default function Admin() {
                           {/* 계좌 정보 */}
                           <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900">계좌 정보</h3>
-                              <Button
-                                onClick={() => {
-                                  if (confirm('기본값으로 되돌리시겠습니까?')) {
-                                    const defaults = {
-                                      bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
-                                      bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
-                                    };
-                                    setDashboardContent({...dashboardContent, ...defaults});
-                                    Object.entries(defaults).forEach(([key, value]) => {
-                                      updateContentMutation.mutate({ key, value });
-                                    });
-                                  }
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <RotateCcw className="h-4 w-4 mr-1" />
-                                되돌리기
-                              </Button>
+                              <h3 className="text-lg font-semibold text-gray-900">계좌 정보</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const accountData = {
+                                        bankAccount: dashboardContent.bankAccount,
+                                        bankMessage: dashboardContent.bankMessage
+                                      };
+                                      
+                                      await Promise.all(Object.entries(accountData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "계좌 정보가 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "계좌 정보 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                                        bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ key, value });
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
                             </div>
                             <div className="border rounded-lg overflow-hidden">
                               <table className="w-full text-sm">
@@ -5033,7 +5278,7 @@ export default function Admin() {
                                   <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-20">저장</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
@@ -5048,38 +5293,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'bankAccount';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'bankAccount', 
-                                              value: dashboardContent.bankAccount 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'bankAccount';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'bankAccount', 
+                                                value: dashboardContent.bankAccount 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "계좌 정보 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['bankAccount']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['bankAccount'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "입금 계좌가 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "계좌 정보 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['bankAccount']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['bankAccount'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                   
@@ -5095,38 +5359,57 @@ export default function Admin() {
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                      <Button
-                                        size="sm"
-                                        onClick={async () => {
-                                          const buttonKey = 'bankMessage';
-                                          if (savingButtons[buttonKey]) return;
-                                          
-                                          setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                          
-                                          try {
-                                            await updateContentMutation.mutateAsync({ 
-                                              key: 'bankMessage', 
-                                              value: dashboardContent.bankMessage 
-                                            });
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'bankMessage';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'bankMessage', 
+                                                value: dashboardContent.bankMessage 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "안내 메시지 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['bankMessage']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['bankMessage'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             toast({
-                                              title: "저장 완료",
-                                              description: "입금 안내 메시지가 저장되었습니다.",
+                                              title: "되돌림",
+                                              description: "안내 메시지 복원 완료",
                                             });
-                                          } catch (error) {
-                                            toast({
-                                              title: "저장 실패",
-                                              description: "저장 중 오류가 발생했습니다.",
-                                              variant: "destructive"
-                                            });
-                                          } finally {
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                          }
-                                        }}
-                                        disabled={savingButtons['bankMessage']}
-                                        className="h-8 px-3"
-                                      >
-                                        {savingButtons['bankMessage'] ? '저장중...' : '저장'}
-                                      </Button>
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
                                     </td>
                                   </tr>
                                 </tbody>
