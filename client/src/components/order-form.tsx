@@ -197,11 +197,12 @@ export default function OrderForm() {
         const productNames = JSON.parse(dashboardContent.productNames);
         
         // 상품 가격을 dashboard content에서 추출
-        const wrappingProduct = productNames.find((p: any) => p.name === '보자기');
+        const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
         const updatedPrices = {
           small: productNames[0]?.price ? parseInt(productNames[0].price) : prices.small,
           large: productNames[1]?.price ? parseInt(productNames[1].price) : prices.large,
-          wrapping: wrappingProduct?.price ? parseInt(wrappingProduct.price) : 1000,
+          wrapping: wrappingProduct?.price ? parseInt(wrappingProduct.price) : 
+                   (dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000),
         };
 
         setPrices(updatedPrices);
@@ -451,7 +452,7 @@ export default function OrderForm() {
                             </div>
                             <FormField
                               control={form.control}
-                              name={index === 0 ? "smallBoxQuantity" : index === 1 ? "largeBoxQuantity" : `product${index}Quantity`}
+                              name={index === 0 ? "smallBoxQuantity" : index === 1 ? "largeBoxQuantity" : "wrappingQuantity"}
                               render={({ field }) => (
                                 <FormItem>
                                   <div className="flex items-center space-x-2">
@@ -655,7 +656,7 @@ export default function OrderForm() {
                               {(() => {
                                 try {
                                   const productNames = JSON.parse(dashboardContent.productNames || '[]');
-                                  const wrappingProduct = productNames.find((p: any) => p.name === '보자기');
+                                  const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
                                   return wrappingProduct?.name || dashboardContent.wrappingName || "보자기";
                                 } catch {
                                   return dashboardContent.wrappingName || "보자기";

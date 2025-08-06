@@ -752,17 +752,19 @@ export default function Admin() {
     largeBoxDimensions: "약 37×23×11.5cm",
     wrappingName: "보자기",
     wrappingPrice: "개당 +1,000원",
+    wrappingPriceAmount: "1000",
+    wrappingCost: "200",
     mainTitle: "이든 한과",
     mainDescription: "전통 한과를 맛보세요",
-    heroImages: [],
+    heroImages: [] as string[],
     aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
     bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
     bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다",
     shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다.",
     shippingTitle: "에덴한과 배송",
     productNames: [
-      { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-      { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+      { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+      { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
     ]
   });
 
@@ -924,6 +926,8 @@ export default function Admin() {
         if (item.key === 'largeBoxDimensions') updatedContent.largeBoxDimensions = item.value;
         if (item.key === 'wrappingName') updatedContent.wrappingName = item.value;
         if (item.key === 'wrappingPrice') updatedContent.wrappingPrice = item.value;
+        if (item.key === 'wrappingPriceAmount') updatedContent.wrappingPriceAmount = item.value;
+        if (item.key === 'wrappingCost') updatedContent.wrappingCost = item.value;
         if (item.key === 'mainTitle') updatedContent.mainTitle = item.value;
         if (item.key === 'mainDescription') updatedContent.mainDescription = item.value;
         if (item.key === 'heroImages') {
@@ -947,8 +951,8 @@ export default function Admin() {
             updatedContent.productNames = JSON.parse(item.value || '[]');
           } catch {
             updatedContent.productNames = [
-              { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-              { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+              { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+              { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
             ];
           }
         }
@@ -1203,18 +1207,29 @@ export default function Admin() {
   // Excel export function for admin
   const exportToExcel = (ordersList: Order[], fileName: string) => {
     const excelData = ordersList.map(order => {
-      // Get global cost settings
+      // Get product costs from dashboard content first, fallback to settings
+      const productNames = dashboardContent.productNames || [];
+      const smallProductCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : null;
+      const largeProductCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : null;
+      const wrappingProductCost = dashboardContent.wrappingCost ? parseInt(dashboardContent.wrappingCost) : null;
+      
+      // Fallback to global cost settings if no product-specific cost
       const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
       const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
       const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
-      const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 15000;
-      const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 16000;
-      const wrappingCostValue = wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000;
       
-      // Calculate totals
-      const smallBoxTotal = order.smallBoxQuantity * 19000;
-      const largeBoxTotal = order.largeBoxQuantity * 21000;
-      const wrappingTotal = order.wrappingQuantity * 1000;
+      const smallCost = smallProductCost ?? (smallCostSetting ? parseInt(smallCostSetting.value) : 15000);
+      const largeCost = largeProductCost ?? (largeCostSetting ? parseInt(largeCostSetting.value) : 16000);
+      const wrappingCostValue = wrappingProductCost ?? (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000);
+      
+      // Calculate totals using dynamic prices
+      const smallBoxPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 19000;
+      const largeBoxPrice = productNames[1]?.price ? parseInt(productNames[1].price) : 21000;
+      const wrappingPrice = dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000;
+      
+      const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
+      const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
+      const wrappingTotal = order.wrappingQuantity * wrappingPrice;
       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
       const shippingFee = totalItems >= 6 ? 0 : 4000;
       
@@ -1469,13 +1484,19 @@ export default function Admin() {
 
   // Render revenue report function
   const renderRevenueReport = () => {
-    // Get cost values from settings
-    const smallBoxCostValue = settings?.find(s => s.key === "smallBoxCost")?.value ? 
-      parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000;
-    const largeBoxCostValue = settings?.find(s => s.key === "largeBoxCost")?.value ? 
-      parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000;
-    const wrappingCostValue = settings?.find(s => s.key === "wrappingCost")?.value ? 
-      parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000;
+    // Get product costs from dashboard content first, fallback to settings
+    const productNames = dashboardContent.productNames || [];
+    const smallProductCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : null;
+    const largeProductCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : null;
+    const wrappingProductCost = dashboardContent.wrappingCost ? parseInt(dashboardContent.wrappingCost) : null;
+    
+    // Fallback to global cost settings if no product-specific cost
+    const smallBoxCostValue = smallProductCost ?? (settings?.find(s => s.key === "smallBoxCost")?.value ? 
+      parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000);
+    const largeBoxCostValue = largeProductCost ?? (settings?.find(s => s.key === "largeBoxCost")?.value ? 
+      parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000);
+    const wrappingCostValue = wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
+      parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000);
     
     // Include all orders with confirmed payment status (including scheduled and delivered orders)
     // Exclude refunded orders from revenue calculation
@@ -1529,15 +1550,20 @@ export default function Admin() {
       acc.netProfit += order.netProfit || 0;
       
       // Use historical pricing and cost data stored in the order for accurate calculations
-      const smallBoxCost = order.smallBoxQuantity * (order.smallBoxCost || 15000);
-      const largeBoxCost = order.largeBoxQuantity * (order.largeBoxCost || 16000);
-      const wrappingCost = order.wrappingQuantity * (order.wrappingCost || 1000);
+      // If no historical cost, use current dynamic costs
+      const smallBoxCost = order.smallBoxQuantity * (order.smallBoxCost || smallBoxCostValue);
+      const largeBoxCost = order.largeBoxQuantity * (order.largeBoxCost || largeBoxCostValue);
+      const wrappingCost = order.wrappingQuantity * (order.wrappingCost || wrappingCostValue);
       const shippingCost = order.shippingFee || 0;
       
-      // Use historical selling prices for revenue calculations
-      const smallBoxPrice = order.smallBoxPrice || 19000;
-      const largeBoxPrice = order.largeBoxPrice || 21000;
-      const wrappingPrice = order.wrappingPrice || 1000;
+      // Use historical selling prices for revenue calculations, fallback to current prices
+      const currentSmallPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 19000;
+      const currentLargePrice = productNames[1]?.price ? parseInt(productNames[1].price) : 21000;
+      const currentWrappingPrice = dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000;
+      
+      const smallBoxPrice = order.smallBoxPrice || currentSmallPrice;
+      const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
+      const wrappingPrice = order.wrappingPrice || currentWrappingPrice;
       
       acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
       acc.smallBoxAmount += order.smallBoxQuantity * smallBoxPrice;
@@ -4022,21 +4048,18 @@ export default function Admin() {
                                   onClick={() => {
                                     if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
                                       const defaultProductNames = [
-                                        { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-                                        { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+                                        { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+                                        { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
                                       ];
-                                      const defaultContent = {
-                                        productNames: defaultProductNames,
-                                        wrappingName: "보자기",
-                                        wrappingPrice: "개당 +1,000원"
-                                      };
+                                      setDashboardContent({...dashboardContent, productNames: defaultProductNames});
                                       setDashboardContent({...dashboardContent, ...defaultContent});
                                       updateContentMutation.mutate({ 
                                         key: 'productNames', 
                                         value: JSON.stringify(defaultProductNames) 
                                       });
                                       updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
-                                      updateContentMutation.mutate({ key: 'wrappingPrice', value: "개당 1,000원" });
+                                      updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: "1000" });
+                                      updateContentMutation.mutate({ key: 'wrappingCost', value: "200" });
                                     }
                                   }}
                                   variant="outline"
@@ -4071,7 +4094,7 @@ export default function Admin() {
                                       <X className="h-4 w-4" />
                                     </Button>
                                   </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                                     <div>
                                       <Label className="text-xs text-gray-600">상품명</Label>
                                       <Input
@@ -4096,6 +4119,20 @@ export default function Admin() {
                                           setDashboardContent({...dashboardContent, productNames: newProductNames});
                                         }}
                                         placeholder="가격"
+                                        className="text-sm h-8 mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-gray-600">원가 (원)</Label>
+                                      <Input
+                                        type="number"
+                                        value={product.cost || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], cost: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="원가"
                                         className="text-sm h-8 mt-1"
                                       />
                                     </div>
@@ -4138,6 +4175,7 @@ export default function Admin() {
                                         
                                         // 개별 상품 가격을 product-prices API에도 동기화
                                         const productPrice = parseInt(product.price) || 0;
+                                        const productCost = parseInt(product.cost) || 0;
                                         fetch('/api/product-prices', {
                                           method: 'POST',
                                           headers: { 'Content-Type': 'application/json' },
@@ -4145,7 +4183,7 @@ export default function Admin() {
                                             productIndex: index,
                                             productName: product.name,
                                             price: productPrice,
-                                            cost: 0 // 기본 원가는 0으로 설정
+                                            cost: productCost
                                           })
                                         }).then(() => {
                                           toast({
@@ -4174,53 +4212,94 @@ export default function Admin() {
                             
                             {/* 보자기 상품 설정 */}
                             <div className="border-t border-gray-200 pt-4 space-y-3">
-                              <h4 className="text-sm font-medium text-gray-900">상품</h4>
-                              <div className="grid grid-cols-2 gap-3">
+                              <h4 className="text-sm font-medium text-gray-900">보자기 상품</h4>
+                              <div className="grid grid-cols-4 gap-3">
                                 <div>
-                                  <Label className="text-xs text-gray-600" htmlFor="wrappingName">보자기명</Label>
-                                  <div className="flex gap-2 mt-1">
-                                    <Input
-                                      id="wrappingName"
-                                      value={dashboardContent.wrappingName}
-                                      onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
-                                      placeholder="보자기"
-                                      className="h-8 text-sm"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      onClick={() => updateContentMutation.mutate({ 
-                                        key: 'wrappingName', 
-                                        value: dashboardContent.wrappingName 
-                                      })}
-                                      disabled={updateContentMutation.isPending}
-                                      className="h-8 px-3 text-xs"
-                                    >
-                                      저장
-                                    </Button>
-                                  </div>
+                                  <Label className="text-xs text-gray-600" htmlFor="wrappingName">상품명</Label>
+                                  <Input
+                                    id="wrappingName"
+                                    value={dashboardContent.wrappingName || '보자기'}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
+                                    placeholder="보자기"
+                                    className="h-8 text-sm mt-1"
+                                  />
                                 </div>
                                 <div>
-                                  <Label className="text-xs text-gray-600" htmlFor="wrappingPrice">가격 정보</Label>
-                                  <div className="flex gap-2 mt-1">
-                                    <Input
-                                      id="wrappingPrice"
-                                      value={dashboardContent.wrappingPrice}
-                                      onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
-                                      placeholder="개당 1,000원"
-                                      className="h-8 text-sm"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      onClick={() => updateContentMutation.mutate({ 
-                                        key: 'wrappingPrice', 
-                                        value: dashboardContent.wrappingPrice 
-                                      })}
-                                      disabled={updateContentMutation.isPending}
-                                      className="h-8 px-3 text-xs"
-                                    >
-                                      저장
-                                    </Button>
-                                  </div>
+                                  <Label className="text-xs text-gray-600" htmlFor="wrappingPriceAmount">판매가 (원)</Label>
+                                  <Input
+                                    id="wrappingPriceAmount"
+                                    type="number"
+                                    value={dashboardContent.wrappingPriceAmount || '1000'}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingPriceAmount: e.target.value})}
+                                    placeholder="1000"
+                                    className="h-8 text-sm mt-1"
+                                  />
+                                </div>
+                                <div>
+                                  <Label className="text-xs text-gray-600" htmlFor="wrappingCost">원가 (원)</Label>
+                                  <Input
+                                    id="wrappingCost"
+                                    type="number"
+                                    value={dashboardContent.wrappingCost || '200'}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingCost: e.target.value})}
+                                    placeholder="200"
+                                    className="h-8 text-sm mt-1"
+                                  />
+                                </div>
+                                <div className="flex items-end">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      // 보자기 정보를 저장
+                                      updateContentMutation.mutate({ key: 'wrappingName', value: dashboardContent.wrappingName });
+                                      updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: dashboardContent.wrappingPriceAmount });
+                                      updateContentMutation.mutate({ key: 'wrappingCost', value: dashboardContent.wrappingCost });
+                                      
+                                      // 보자기를 상품 목록에도 추가/업데이트
+                                      const productNames = [...(dashboardContent.productNames || [])];
+                                      const wrappingIndex = productNames.findIndex((p: any) => p.name === '보자기');
+                                      const wrappingProduct = {
+                                        name: dashboardContent.wrappingName || '보자기',
+                                        price: dashboardContent.wrappingPriceAmount || '1000',
+                                        cost: dashboardContent.wrappingCost || '200',
+                                        size: '',
+                                        weight: ''
+                                      };
+                                      
+                                      if (wrappingIndex >= 0) {
+                                        productNames[wrappingIndex] = wrappingProduct;
+                                      } else {
+                                        productNames.push(wrappingProduct);
+                                      }
+                                      
+                                      setDashboardContent({...dashboardContent, productNames});
+                                      updateContentMutation.mutate({ 
+                                        key: 'productNames', 
+                                        value: JSON.stringify(productNames) 
+                                      });
+                                      
+                                      // product-prices API에도 동기화
+                                      fetch('/api/product-prices', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          productIndex: wrappingIndex >= 0 ? wrappingIndex : productNames.length - 1,
+                                          productName: dashboardContent.wrappingName || '보자기',
+                                          price: parseInt(dashboardContent.wrappingPriceAmount) || 1000,
+                                          cost: parseInt(dashboardContent.wrappingCost) || 200
+                                        })
+                                      });
+                                      
+                                      toast({
+                                        title: "보자기 정보 저장 완료",
+                                        description: "보자기 상품 정보가 업데이트되었습니다.",
+                                      });
+                                    }}
+                                    disabled={updateContentMutation.isPending}
+                                    className="h-8 px-3 text-xs"
+                                  >
+                                    저장
+                                  </Button>
                                 </div>
                               </div>
                             </div>
