@@ -4293,10 +4293,14 @@ export default function Admin() {
                                 onClick={() => {
                                   if (confirm('배송 안내 정보를 기본값으로 되돌리시겠습니까?')) {
                                     const defaultContent = {
+                                      shippingTitle: "에덴한과 배송",
                                       shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
                                     };
                                     setDashboardContent({...dashboardContent, ...defaultContent});
-                                    updateContentMutation.mutate({ key: 'shippingInfo', value: defaultContent.shippingInfo });
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
                                   }
                                 }}
                                 variant="outline"
@@ -4308,6 +4312,28 @@ export default function Admin() {
                               </Button>
                             </div>
                             <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <Label htmlFor="shippingTitle">배송 섹션 제목</Label>
+                                <Input
+                                  id="shippingTitle"
+                                  value={dashboardContent.shippingTitle || ''}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
+                                  placeholder="에덴한과 배송"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'shippingTitle', 
+                                    value: dashboardContent.shippingTitle || '' 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+
                               <div>
                                 <Label htmlFor="shippingInfo">배송 안내 내용</Label>
                                 <Textarea
