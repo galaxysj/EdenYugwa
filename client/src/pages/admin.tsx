@@ -1653,14 +1653,33 @@ export default function Admin() {
                 </table>
               </div>
 
-              {/* 모바일 리스트 뷰 */}
+              {/* 모바일 요약 뷰 */}
               <div className="md:hidden">
-                <div className="mb-3 p-2 border-b border-gray-300">
-                  <p className="text-sm text-black font-bold">
-                    매출 상세내역 ({orders.length}건)
+                <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm font-bold text-blue-800 mb-1">
+                    📊 매출 요약 ({orders.length}건)
                   </p>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">총 주문금액</div>
+                      <div className="font-bold text-blue-700">{formatPrice(filteredTotals.totalAmount)}</div>
+                    </div>
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">실제 수익</div>
+                      <div className="font-bold text-green-700">{formatPrice(filteredTotals.actualRevenue)}</div>
+                    </div>
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">총 원가</div>
+                      <div className="font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
+                    </div>
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">순수익</div>
+                      <div className="font-bold text-purple-700">{formatPrice(filteredTotals.netProfit)}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
+                
+                <div className="space-y-2">
                 {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
@@ -1693,65 +1712,45 @@ export default function Admin() {
                   const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                   
                   return (
-                    <div key={order.id} className="border-b border-gray-200 py-2 bg-white">
-                        {/* 주문 기본 정보 */}
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2 text-xs">
-                            <span className="font-bold text-black">#{order.orderNumber}</span>
-                            <span className="text-black">{order.customerName}</span>
-                            <span className="text-gray-600">
-                              {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                            </span>
+                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                        {/* 주문 헤더 */}
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-blue-600 text-sm">#{order.orderNumber}</span>
+                            <span className="text-sm">{order.customerName}</span>
                           </div>
-                          <span className="text-xs font-bold text-black">{formatPrice(order.totalAmount)}</span>
+                          <span className={`text-xs px-2 py-1 rounded font-medium ${
+                            order.paymentStatus === 'confirmed' 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            {order.paymentStatus === 'confirmed' ? '입금완료' : '입금대기'}
+                          </span>
                         </div>
                         
-                        {/* 주문 내역 */}
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1 text-xs text-gray-700">
-                            {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
-                            {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
-                            {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
-                          </div>
+                        {/* 주문 정보 */}
+                        <div className="text-xs text-gray-600 mb-2">
+                          {new Date(order.createdAt).toLocaleDateString('ko-KR')} • 
+                          {order.smallBoxQuantity > 0 && ` 1호×${order.smallBoxQuantity}`}
+                          {order.largeBoxQuantity > 0 && ` 2호×${order.largeBoxQuantity}`}
+                          {order.wrappingQuantity > 0 && ` 보자기×${order.wrappingQuantity}`}
                         </div>
                         
-                        {/* 입금상태 및 수익 정보 */}
-                        <div className="space-y-1">
-                          {/* 입금상태 */}
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-600">입금상태:</span>
-                              <span className={`font-bold px-2 py-0.5 rounded text-xs ${
-                                order.paymentStatus === 'confirmed' 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : order.paymentStatus === 'partial'
-                                  ? 'bg-yellow-100 text-yellow-700'
-                                  : 'bg-red-100 text-red-700'
-                              }`}>
-                                {order.paymentStatus === 'confirmed' ? '입금완료' : 
-                                 order.paymentStatus === 'partial' ? '부분결제' : '입금대기'}
-                              </span>
-                            </div>
+                        {/* 수익 요약 */}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="text-gray-500">주문금액</div>
+                            <div className="font-bold">{formatPrice(order.totalAmount)}</div>
                           </div>
-                          
-                          {/* 수익 정보 */}
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-3">
-                              <span className="text-black">
-                                입금 <span className="font-bold">{formatPrice(order.actualPaidAmount || order.totalAmount)}</span>
-                              </span>
-                              <span className="text-black">
-                                원가 <span className="font-bold">{formatPrice(totalCost)}</span>
-                              </span>
-                              {(discountAmount > 0 || unpaidAmount > 0) && (
-                                <span className="text-black">
-                                  {discountAmount > 0 ? '할인' : '미입금'} <span className="font-bold">{formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}</span>
-                                </span>
-                              )}
+                          <div className="text-center">
+                            <div className="text-gray-500">원가</div>
+                            <div className="font-bold text-red-600">{formatPrice(totalCost)}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-500">순수익</div>
+                            <div className={`font-bold ${actualProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatPrice(actualProfit)}
                             </div>
-                            <span className="font-bold text-black">
-                              순수익 {formatPrice(actualProfit)}
-                            </span>
                           </div>
                         </div>
                     </div>
