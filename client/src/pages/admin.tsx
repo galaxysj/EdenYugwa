@@ -1348,20 +1348,21 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
-        {/* 매출 총합계 - 통합 테이블 버전 */}
+        {/* 매출 총합계 - 데스크탑용 그리드, 모바일용 리스트 */}
         <Card className="bg-white border-eden-red/20">
-          <CardContent className="p-6">
-            <div className="text-center mb-6">
-              <h3 className="text-lg md:text-xl font-bold text-eden-red mb-2">
-                매출 총합계 ({dateFilter === 'all' ? '전체 기간' : 
+          <CardContent className="p-4 md:p-6">
+            <div className="text-center mb-4 md:mb-6">
+              <h3 className="text-base md:text-xl font-bold text-eden-red mb-2">
+                💰 매출 총합계 ({dateFilter === 'all' ? '전체' : 
                   dateFilter === 'today' ? '오늘' :
-                  dateFilter === 'week' ? '최근 7일' :
-                  dateFilter === 'month' ? '최근 30일' :
+                  dateFilter === 'week' ? '7일' :
+                  dateFilter === 'month' ? '30일' :
                   dateFilter === 'custom' && startDate && endDate ? `${startDate} ~ ${endDate}` : '기간 설정'})
               </h3>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-4">
+            {/* 데스크탑 그리드 뷰 */}
+            <div className="hidden md:block bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 md:gap-4 text-center">
                 <div>
                   <div className="font-semibold text-gray-700 mb-1 text-xs md:text-sm">주문건수</div>
@@ -1412,8 +1413,55 @@ export default function Admin() {
                   </div>
                 </div>
               </div>
-              
+            </div>
 
+            {/* 모바일 리스트 뷰 */}
+            <div className="md:hidden space-y-2">
+              {/* 핵심 수치 3개 */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                  <div className="text-green-600 text-xs font-medium mb-1">실제입금</div>
+                  <div className="text-green-700 text-sm font-bold">{formatPrice(filteredTotals.actualRevenue)}</div>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <div className="text-red-600 text-xs font-medium mb-1">총원가</div>
+                  <div className="text-red-700 text-sm font-bold">{formatPrice(filteredTotals.totalCost)}</div>
+                </div>
+                <div className={`border rounded-lg p-3 text-center ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}`}>
+                  <div className={`text-xs font-medium mb-1 ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
+                  <div className={`text-sm font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
+                    {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
+                  </div>
+                </div>
+              </div>
+
+              {/* 상세 정보 리스트 */}
+              <div className="bg-gray-50 rounded-lg p-3 space-y-2">
+                <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                  <span className="text-xs text-gray-600">주문건수</span>
+                  <span className="text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                  <span className="text-xs text-amber-600">한과1호</span>
+                  <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                  <span className="text-xs text-orange-600">한과2호</span>
+                  <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                  <span className="text-xs text-eden-brown">보자기</span>
+                  <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                  <span className="text-xs text-blue-600">택배건수</span>
+                  <span className="text-sm font-bold text-blue-700">{filteredTotals.shippingOrders}건</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-xs text-red-600">환불건수</span>
+                  <span className="text-sm font-bold text-red-700">{refundedOrders.length}건</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
