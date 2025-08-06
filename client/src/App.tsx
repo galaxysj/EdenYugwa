@@ -13,6 +13,7 @@ import Register from "@/pages/register";
 import OrderLookup from "@/pages/order-lookup";
 import OrderEdit from "@/pages/order-edit";
 import PublicOrder from "@/pages/public-order";
+import SecuritySettings from "@/pages/security-settings";
 import { ProtectedRoute } from "@/components/protected-route";
 
 function Router() {
@@ -36,6 +37,11 @@ function Router() {
       <Route path="/manager">
         <ProtectedRoute requiredRole="manager">
           <Manager />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/security-settings">
+        <ProtectedRoute requiredRole="manager">
+          <SecuritySettings />
         </ProtectedRoute>
       </Route>
       <Route path="/order-lookup" component={OrderLookup} />

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
 
 interface AdminHeaderProps {
@@ -77,26 +77,34 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
               관리자 패널
             </h1>
           </div>
-          <Button 
-            onClick={async () => {
-              try {
-                const response = await fetch('/api/auth/logout', {
-                  method: 'POST',
-                  credentials: 'include'
-                });
-                if (response.ok) {
-                  window.location.href = '/';
+          <div className="flex items-center space-x-2">
+            <Link href="/security-settings">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2">
+                <Shield className="h-4 w-4 mr-2" />
+                보안 설정
+              </Button>
+            </Link>
+            <Button 
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                  });
+                  if (response.ok) {
+                    window.location.href = '/';
+                  }
+                } catch (error) {
+                  console.error('로그아웃 실패:', error);
                 }
-              } catch (error) {
-                console.error('로그아웃 실패:', error);
-              }
-            }}
-            variant="outline"
-            className="text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            로그아웃
-          </Button>
+              }}
+              variant="outline"
+              className="text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              로그아웃
+            </Button>
+          </div>
         </div>
 
         {/* 모바일 드롭다운 메뉴 */}
@@ -217,6 +225,25 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   <Trash2 className="h-4 w-4 mr-2" />
                   휴지통
                 </Button>
+              </>
+            )}
+            
+            {/* 보안 설정 링크 */}
+            <Link href="/security-settings">
+              <Button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                variant="ghost" 
+                size="sm"
+                className="w-full justify-start text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                보안 설정
+              </Button>
+            </Link>
+            
+            {location === '/admin' && setActiveTab && (
+              <>
+                {/* 여기에 기존 버튼들이 있었음 */}
               </>
             )}
             {handleExcelDownload && (

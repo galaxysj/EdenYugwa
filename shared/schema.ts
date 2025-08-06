@@ -114,6 +114,81 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+// User sessions table for tracking multiple sessions
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  sessionId: varchar("session_id", { length: 255 }).notNull().unique(),
+  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
+  userAgent: text("user_agent").notNull(),
+  location: text("location"), // 지역 정보 (IP 기반)
+  deviceType: text("device_type"), // mobile, desktop, tablet
+  browserInfo: text("browser_info"),
+  isActive: boolean("is_active").notNull().default(true),
+  lastActivity: timestamp("last_activity").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+  lastActivity: true,
+});
+
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
+
+// Access control settings for users
+export const accessControlSettings = pgTable("access_control_settings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().unique(),
+  allowedIpRanges: jsonb("allowed_ip_ranges").$type<string[]>().default([]), // 허용된 IP 범위
+  allowedCountries: jsonb("allowed_countries").$type<string[]>().default([]), // 허용된 국가 코드
+  allowedDeviceTypes: jsonb("allowed_device_types").$type<string[]>().default(['mobile', 'desktop', 'tablet']), // 허용된 디바이스 타입
+  blockUnknownDevices: boolean("block_unknown_devices").notNull().default(false), // 새로운 디바이스 차단 여부
+  maxConcurrentSessions: integer("max_concurrent_sessions").notNull().default(5), // 최대 동시 세션 수
+  sessionTimeout: integer("session_timeout").notNull().default(24), // 세션 타임아웃 (시간)
+  requireLocationVerification: boolean("require_location_verification").notNull().default(false),
+  isEnabled: boolean("is_enabled").notNull().default(false), // 접근 제어 활성화 여부
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAccessControlSettingsSchema = createInsertSchema(accessControlSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAccessControlSettings = z.infer<typeof insertAccessControlSettingsSchema>;
+export type AccessControlSettings = typeof accessControlSettings.$inferSelect;
+
+// Login attempts tracking
+export const loginAttempts = pgTable("login_attempts", {
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }),
+  ipAddress: varchar("ip_address", { length: 45 }).notNull(),
+  userAgent: text("user_agent"),
+  location: text("location"),
+  deviceType: text("device_type"),
+  success: boolean("success").notNull(),
+  failureReason: text("failure_reason"), // 실패 사유
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_login_attempts_ip").on(table.ipAddress),
+  index("idx_login_attempts_username").on(table.username),
+  index("idx_login_attempts_created_at").on(table.createdAt),
+]);
+
+export const insertLoginAttemptSchema = createInsertSchema(loginAttempts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLoginAttempt = z.infer<typeof insertLoginAttemptSchema>;
+export type LoginAttempt = typeof loginAttempts.$inferSelect;
+
 // Session storage table for express-session
 export const sessions = pgTable(
   "sessions",

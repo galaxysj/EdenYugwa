@@ -4,7 +4,8 @@ import passport from "./auth";
 import { requireAuth, requireAdmin, requireManagerOrAdmin } from "./auth";
 import { userService } from "./user-service";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, insertProductPriceSchema, type Order, type InsertCustomer, type User, type DashboardContent, type ProductPrice } from "@shared/schema";
+import { sessionService } from "./session-service";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, insertProductPriceSchema, insertAccessControlSettingsSchema, type Order, type InsertCustomer, type User, type DashboardContent, type ProductPrice } from "@shared/schema";
 import * as XLSX from "xlsx";
 import multer from "multer";
 
@@ -59,38 +60,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/auth/login", (req, res, next) => {
-    passport.authenticate('local', (err: any, user: User, info: any) => {
-      if (err) {
-        return res.status(500).json({ message: "서버 오류가 발생했습니다" });
-      }
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "로그인에 실패했습니다" });
-      }
-      
-      req.logIn(user, (err) => {
-        if (err) {
-          return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
-        }
-        return res.json({ 
-          message: "로그인 성공", 
-          user: { 
-            id: user.id, 
-            username: user.username, 
-            role: user.role 
-          } 
+  app.post("/api/auth/login", async (req, res, next) => {
+    const ipAddress = req.ip || req.connection.remoteAddress || '127.0.0.1';
+    const userAgent = req.get('User-Agent') || '';
+    
+    passport.authenticate('local', async (err: any, user: User, info: any) => {
+      try {
+        // 로그인 시도 기록
+        await sessionService.logLoginAttempt({
+          username: req.body.username,
+          ipAddress,
+          userAgent,
+          success: !!user,
+          failureReason: user ? null : (info?.message || "로그인 실패"),
         });
-      });
+
+        if (err) {
+          return res.status(500).json({ message: "서버 오류가 발생했습니다" });
+        }
+        
+        if (!user) {
+          return res.status(401).json({ message: info?.message || "로그인에 실패했습니다" });
+        }
+
+        // 접근 제어 검증
+        const accessCheck = await sessionService.validateAccess(user.id, {
+          ipAddress,
+          userAgent,
+        });
+
+        if (!accessCheck.allowed) {
+          return res.status(403).json({ 
+            message: `접근이 차단되었습니다: ${accessCheck.reason}` 
+          });
+        }
+        
+        req.logIn(user, async (err) => {
+          if (err) {
+            return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+          }
+
+          // 세션 추적 생성
+          if (req.sessionID) {
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24시간
+            await sessionService.createSession({
+              userId: user.id,
+              sessionId: req.sessionID,
+              ipAddress,
+              userAgent,
+              expiresAt,
+            });
+          }
+
+          return res.json({ 
+            message: "로그인 성공", 
+            user: { 
+              id: user.id, 
+              username: user.username, 
+              role: user.role 
+            } 
+          });
+        });
+      } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다" });
+      }
     })(req, res, next);
   });
 
-  app.post("/api/auth/logout", (req, res) => {
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).json({ message: "로그아웃 처리 중 오류가 발생했습니다" });
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      // 세션 비활성화
+      if (req.sessionID) {
+        await sessionService.deactivateSession(req.sessionID);
       }
-      res.json({ message: "로그아웃 성공" });
-    });
+
+      req.logout((err) => {
+        if (err) {
+          return res.status(500).json({ message: "로그아웃 처리 중 오류가 발생했습니다" });
+        }
+        res.json({ message: "로그아웃 성공" });
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "로그아웃 처리 중 오류가 발생했습니다" });
+    }
   });
 
   app.get("/api/auth/user", requireAuth, (req, res) => {
@@ -121,6 +175,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Password change error:", error);
       res.status(500).json({ message: "비밀번호 변경에 실패했습니다" });
+    }
+  });
+
+  // Session management routes
+  app.get("/api/auth/sessions", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const sessions = await sessionService.getUserActiveSessions(user.id);
+      
+      // 현재 세션 표시를 위해 sessionID 추가
+      const sessionsWithCurrent = sessions.map(session => ({
+        ...session,
+        isCurrent: session.sessionId === req.sessionID
+      }));
+      
+      res.json(sessionsWithCurrent);
+    } catch (error) {
+      console.error("Get sessions error:", error);
+      res.status(500).json({ message: "세션 조회에 실패했습니다" });
+    }
+  });
+
+  app.delete("/api/auth/sessions/:sessionId", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const { sessionId } = req.params;
+      
+      // 세션이 해당 사용자의 것인지 확인
+      const sessions = await sessionService.getUserActiveSessions(user.id);
+      const sessionToTerminate = sessions.find(s => s.sessionId === sessionId);
+      
+      if (!sessionToTerminate) {
+        return res.status(404).json({ message: "세션을 찾을 수 없습니다" });
+      }
+      
+      await sessionService.terminateSession(sessionId);
+      res.json({ message: "세션이 종료되었습니다" });
+    } catch (error) {
+      console.error("Terminate session error:", error);
+      res.status(500).json({ message: "세션 종료에 실패했습니다" });
+    }
+  });
+
+  app.get("/api/auth/login-history", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const history = await sessionService.getUserLoginHistory(user.username);
+      res.json(history);
+    } catch (error) {
+      console.error("Get login history error:", error);
+      res.status(500).json({ message: "로그인 기록 조회에 실패했습니다" });
+    }
+  });
+
+  // Access control settings routes
+  app.get("/api/auth/access-control", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const settings = await sessionService.getAccessControlSettings(user.id);
+      res.json(settings || {
+        userId: user.id,
+        allowedIpRanges: [],
+        allowedCountries: [],
+        allowedDeviceTypes: ['mobile', 'desktop', 'tablet'],
+        blockUnknownDevices: false,
+        maxConcurrentSessions: 5,
+        sessionTimeout: 24,
+        requireLocationVerification: false,
+        isEnabled: false
+      });
+    } catch (error) {
+      console.error("Get access control error:", error);
+      res.status(500).json({ message: "접근 제어 설정 조회에 실패했습니다" });
+    }
+  });
+
+  app.post("/api/auth/access-control", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as User;
+      const settingsData = insertAccessControlSettingsSchema.parse(req.body);
+      
+      const settings = await sessionService.upsertAccessControlSettings(user.id, settingsData);
+      res.json(settings);
+    } catch (error) {
+      console.error("Update access control error:", error);
+      if ((error as any).issues) {
+        const firstError = (error as any).issues[0];
+        res.status(400).json({ message: firstError.message });
+      } else {
+        res.status(500).json({ message: "접근 제어 설정 업데이트에 실패했습니다" });
+      }
     }
   });
 
