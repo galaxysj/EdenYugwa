@@ -3167,7 +3167,6 @@ export default function Admin() {
         costSettingsDialog={<PriceSettingsDialog />}
         passwordChangeDialog={<PasswordChangeDialog />}
       />
-
       <div className="container mx-auto p-2 sm:p-4 md:p-6">
 
 
@@ -3219,20 +3218,16 @@ export default function Admin() {
                       휴지통 ({deletedOrders.length})
                     </TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-1">
                     <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
                       <Users className="h-3 w-3 mr-1" />
                       고객관리
-                    </TabsTrigger>
-                    <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
-                      <Cog className="h-3 w-3 mr-1" />
-                      설정
                     </TabsTrigger>
                   </TabsList>
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-                <TabsList className="hidden md:grid w-full grid-cols-9">
+                <TabsList className="hidden md:grid w-full grid-cols-7">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -3252,14 +3247,6 @@ export default function Admin() {
                   <TabsTrigger value="customers" className="text-blue-600">
                     <Users className="h-4 w-4 mr-1" />
                     고객관리
-                  </TabsTrigger>
-                  <TabsTrigger value="settings" className="text-orange-600">
-                    <Cog className="h-4 w-4 mr-1" />
-                    설정
-                  </TabsTrigger>
-                  <TabsTrigger value="content" className="text-green-600">
-                    <Edit className="h-4 w-4 mr-1" />
-                    콘텐츠
                   </TabsTrigger>
                 </TabsList>
                 
@@ -3801,7 +3788,7 @@ export default function Admin() {
                             <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor="smallBoxName">한과1호 (소박스) 상품명</Label>
+                                <Label htmlFor="smallBoxName">상품명</Label>
                                 <Input
                                   id="smallBoxName"
                                   value={dashboardContent.smallBoxName}
@@ -3823,7 +3810,7 @@ export default function Admin() {
                               </div>
                               
                               <div>
-                                <Label htmlFor="largeBoxName">한과2호 (대박스) 상품명</Label>
+                                <Label htmlFor="largeBoxName">상품명</Label>
                                 <Input
                                   id="largeBoxName"
                                   value={dashboardContent.largeBoxName}
@@ -3971,7 +3958,6 @@ export default function Admin() {
         </Card>
 
       </div>
-
       {/* Payment Confirmation Dialog */}
       <PaymentConfirmDialog
         order={selectedOrderForPayment}
@@ -3979,7 +3965,6 @@ export default function Admin() {
         setOpen={setShowPaymentDialog}
         onConfirm={handlePaymentConfirmation}
       />
-      
       {/* Payment Details Dialog - for confirmed payment */}
       {selectedOrderForPayment && (
         <PaymentDetailsDialog 
