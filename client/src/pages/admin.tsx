@@ -729,6 +729,25 @@ function PriceSettingsDialog() {
                   placeholder="개수 입력"
                 />
               </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="excludeWrappingFromShipping"
+                  checked={dashboardContent.excludeWrappingFromShipping}
+                  onChange={(e) => {
+                    const newValue = e.target.checked;
+                    setDashboardContent(prev => ({...prev, excludeWrappingFromShipping: newValue}));
+                    updateContentMutation.mutate({ key: 'excludeWrappingFromShipping', value: newValue.toString() });
+                  }}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <Label htmlFor="excludeWrappingFromShipping" className="text-sm font-medium">
+                  보자기는 배송비 계산에서 제외
+                </Label>
+              </div>
+              <div className="text-xs text-gray-500 ml-7">
+                체크하면 보자기 수량은 무료배송 최소 수량 계산에 포함되지 않습니다
+              </div>
             </div>
           </div>
         </div>
@@ -939,7 +958,8 @@ export default function Admin() {
     productNames: [
       { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
       { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
-    ]
+    ],
+    excludeWrappingFromShipping: false
   });
 
   // Handle multiple image upload
@@ -1130,6 +1150,7 @@ export default function Admin() {
             ];
           }
         }
+        if (item.key === 'excludeWrappingFromShipping') updatedContent.excludeWrappingFromShipping = item.value === 'true';
       });
       setDashboardContent(updatedContent);
     }

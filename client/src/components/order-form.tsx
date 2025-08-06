@@ -421,7 +421,8 @@ export default function OrderForm() {
   }, [watchedValues, prices, shippingSettings, productNames]);
 
   const onSubmit = (data: OrderFormData) => {
-    const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
+    // 배송비 계산을 위한 총 수량 (보자기 제외 설정 반영)
+    const totalQuantity = getTotalQuantity();
     const shippingFee = totalQuantity >= shippingSettings.freeShippingThreshold ? 0 : shippingSettings.shippingFee;
     
     const orderData = {
@@ -513,12 +514,25 @@ export default function OrderForm() {
   
   // 전체 수량 계산 (모든 동적 상품 포함)
   const getTotalQuantity = () => {
+    // 보자기 제외 설정 확인
+    const excludeWrapping = dashboardContent.excludeWrappingFromShipping === 'true';
+    
     if (!productNames || productNames.length === 0) {
-      return smallBoxQuantity + largeBoxQuantity;
+      // 기본 상품 시스템에서는 보자기(wrappingQuantity) 제외 여부 확인
+      const baseTotal = smallBoxQuantity + largeBoxQuantity;
+      return excludeWrapping ? baseTotal : baseTotal + wrappingQuantity;
     }
     
     let total = 0;
     productNames.forEach((product: any, index: number) => {
+      // 보자기 상품 확인 (이름이 '보자기'이거나 dashboardContent.wrappingName과 일치)
+      const isWrappingProduct = product.name === '보자기' || product.name === dashboardContent.wrappingName;
+      
+      // 보자기 제외 설정이 켜져있고 보자기 상품이면 수량 계산에서 제외
+      if (excludeWrapping && isWrappingProduct) {
+        return;
+      }
+      
       total += getDynamicProductQuantity(index, product.name);
     });
     return total;
