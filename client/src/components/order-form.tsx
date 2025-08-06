@@ -488,9 +488,17 @@ export default function OrderForm() {
   const wrappingQuantity = form.watch("wrappingQuantity");
   const totalQuantity = smallBoxQuantity + largeBoxQuantity;
   
-  const smallBoxTotal = prices.small * smallBoxQuantity;
-  const largeBoxTotal = prices.large * largeBoxQuantity;
-  const wrappingTotal = wrappingQuantity * prices.wrapping;
+  // 동적 상품 가격을 사용하여 총액 계산
+  const getCurrentPrice = (index: number, fallbackPrice: number) => {
+    if (productNames && productNames[index] && productNames[index].price) {
+      return parseInt(productNames[index].price) || fallbackPrice;
+    }
+    return fallbackPrice;
+  };
+  
+  const smallBoxTotal = getCurrentPrice(0, prices.small) * smallBoxQuantity;
+  const largeBoxTotal = getCurrentPrice(1, prices.large) * largeBoxQuantity;
+  const wrappingTotal = wrappingQuantity * getCurrentPrice(2, prices.wrapping);
   // 배송비는 state에서 관리되므로 shippingFee 사용
 
   return (
