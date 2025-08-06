@@ -332,8 +332,8 @@ function PriceSettingsDialog() {
     return acc;
   }, {}) : {};
 
-  // Parse product names safely
-  const parseProductNames = () => {
+  // Parse product names safely and get current products
+  const getCurrentProducts = () => {
     try {
       if (!dashboardContent.productNames) return [];
       if (typeof dashboardContent.productNames === 'string') {
@@ -346,11 +346,18 @@ function PriceSettingsDialog() {
     }
   };
 
-  const productNames = parseProductNames();
+  const currentProducts = getCurrentProducts();
+  const [localProductNames, setLocalProductNames] = useState<any[]>([]);
 
-  // Function to update products in dashboard content
-  const updateProductInDashboard = async (updatedProducts: any[]) => {
-    try {
+  // Update local state when dashboard content changes
+  useEffect(() => {
+    const products = getCurrentProducts();
+    setLocalProductNames(products);
+  }, [contentData]);
+
+  // Function to update products in dashboard content with debounce
+  const updateProductInDashboard = useMutation({
+    mutationFn: async (updatedProducts: any[]) => {
       const response = await fetch('/api/dashboard-content/productNames', {
         method: 'PATCH',
         headers: {
@@ -362,21 +369,38 @@ function PriceSettingsDialog() {
         })
       });
 
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-        toast({
-          title: "가격 업데이트 완료",
-          description: "상품 가격이 성공적으로 업데이트되었습니다.",
-        });
+      if (!response.ok) {
+        throw new Error('가격 업데이트 실패');
       }
-    } catch (error) {
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+      toast({
+        title: "가격 업데이트 완료",
+        description: "상품 가격이 성공적으로 업데이트되었습니다.",
+      });
+    },
+    onError: (error) => {
       console.error('Error updating product prices:', error);
       toast({
         title: "오류 발생",
         description: "가격 업데이트에 실패했습니다.",
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  // Handle input changes
+  const handlePriceChange = (index: number, field: 'price' | 'costPrice', value: string) => {
+    const updatedProducts = [...localProductNames];
+    updatedProducts[index] = { ...updatedProducts[index], [field]: value };
+    setLocalProductNames(updatedProducts);
+  };
+
+  // Save changes
+  const handleSaveProducts = () => {
+    updateProductInDashboard.mutate(localProductNames);
   };
   
   // Shipping settings
@@ -466,57 +490,62 @@ function PriceSettingsDialog() {
               <h4 className="font-medium text-gray-900">상품 가격 관리</h4>
               <p className="text-sm text-gray-600">콘텐츠 관리에서 등록된 상품들의 가격과 원가를 설정합니다</p>
             </div>
-            <div className="space-y-3">
-              {/* Dynamic Product Prices based on Content Management */}
-              {productNames && productNames.length > 0 ? (
-                productNames.map((product: any, index: number) => (
-                  <div key={index} className="space-y-2">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <h5 className="font-medium text-sm text-gray-900 mb-2">{product.name}</h5>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label htmlFor={`product-cost-${index}`} className="text-xs">원가</Label>
-                          <Input
-                            id={`product-cost-${index}`}
-                            type="number"
-                            value={product.costPrice || ""}
-                            onChange={(e) => {
-                              const updatedProducts = [...productNames];
-                              updatedProducts[index] = { ...product, costPrice: e.target.value };
-                              // Update dashboard content immediately
-                              updateProductInDashboard(updatedProducts);
-                            }}
-                            placeholder="원가 (원)"
-                            className="text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor={`product-price-${index}`} className="text-xs">판매가</Label>
-                          <Input
-                            id={`product-price-${index}`}
-                            type="number"
-                            value={product.price || ""}
-                            onChange={(e) => {
-                              const updatedProducts = [...productNames];
-                              updatedProducts[index] = { ...product, price: e.target.value };
-                              // Update dashboard content immediately
-                              updateProductInDashboard(updatedProducts);
-                            }}
-                            placeholder="판매가 (원)"
-                            className="text-xs"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 text-gray-500">
-                  <p className="text-sm">등록된 상품이 없습니다.</p>
-                  <p className="text-xs">콘텐츠 관리에서 상품을 등록해주세요.</p>
+            {localProductNames && localProductNames.length > 0 ? (
+              <div className="space-y-3">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gray-50 rounded-t-lg">
+                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800 w-2/5">상품명</th>
+                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800 w-1/3">원가</th>
+                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800 w-1/3">판매가</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {localProductNames.map((product: any, index: number) => (
+                        <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="px-4 py-3 text-base font-medium text-gray-900">
+                            {product.name}
+                          </td>
+                          <td className="px-4 py-2">
+                            <Input
+                              type="number"
+                              value={product.costPrice || ""}
+                              onChange={(e) => handlePriceChange(index, 'costPrice', e.target.value)}
+                              placeholder="원가 입력"
+                              className="text-base h-10 font-medium"
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <Input
+                              type="number"
+                              value={product.price || ""}
+                              onChange={(e) => handlePriceChange(index, 'price', e.target.value)}
+                              placeholder="판매가 입력"
+                              className="text-base h-10 font-medium"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </div>
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handleSaveProducts}
+                    disabled={updateProductInDashboard.isPending}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+                  >
+                    {updateProductInDashboard.isPending ? "저장 중..." : "상품 가격 저장"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                <p className="text-base">등록된 상품이 없습니다.</p>
+                <p className="text-sm mt-1">콘텐츠 관리에서 상품을 등록해주세요.</p>
+              </div>
+            )}
           </div>
 
           <div className="border-t border-gray-200 pt-4">
