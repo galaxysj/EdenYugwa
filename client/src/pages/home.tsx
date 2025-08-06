@@ -41,11 +41,18 @@ export default function Home() {
               
               {/* 로그인/회원가입 버튼 - 비로그인 상태에서만 표시 */}
               {!isAuthenticated && (
-                <Link href="/login">
-                  <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors">
-                    로그인
-                  </button>
-                </Link>
+                <>
+                  <Link href="/login">
+                    <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors">
+                      로그인
+                    </button>
+                  </Link>
+                  <Link href="/register">
+                    <button className="text-xs bg-gray-600 text-white px-3 py-1.5 rounded-full hover:bg-gray-700 transition-colors">
+                      회원가입
+                    </button>
+                  </Link>
+                </>
               )}
               
               {/* 햄버거 메뉴 버튼 */}
