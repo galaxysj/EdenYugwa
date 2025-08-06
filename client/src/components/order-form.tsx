@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -85,6 +85,18 @@ export default function OrderForm() {
   const { user, isAuthenticated } = useAuth();
 
   const queryClient = useQueryClient();
+
+  // Fetch dashboard content for dynamic product names
+  const { data: contentData } = useQuery({
+    queryKey: ['/api/dashboard-content'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Convert array to object for easier access
+  const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
+    acc[item.key] = item.value;
+    return acc;
+  }, {}) : {};
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -395,7 +407,7 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">한과1호(약 1.1kg)</h5>
+                            <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.smallBoxName || "한과1호(약 1.1kg)"}</h5>
                             <p className="text-xs text-black mt-1">약 35.5×21×11.2cm</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
@@ -450,7 +462,7 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">한과2호(약 1.3kg)</h5>
+                            <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.largeBoxName || "한과2호(약 1.3kg)"}</h5>
                             <p className="text-xs text-black mt-1">약 37×23×11.5cm</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
