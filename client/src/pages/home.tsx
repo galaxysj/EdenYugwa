@@ -255,7 +255,7 @@ export default function Home() {
           </div>
 
           {/* Product Information Section */}
-          {dashboardContent.productNames && dashboardContent.productNames.length > 0 && (
+          {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 && (
             <div className="max-w-4xl mx-auto mb-8 md:mb-12">
               <div className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-2xl p-4 md:p-6 mx-2 md:mx-0">
                 <h3 className="text-lg md:text-xl font-bold text-eden-brown mb-4 text-center font-korean">
