@@ -231,7 +231,7 @@ export default function OrderForm() {
 
   // Helper function to get product name from dashboard content
   const getProductName = (index: number, fallback: string) => {
-    if (!dashboardData) return fallback;
+    if (!dashboardData || !Array.isArray(dashboardData)) return fallback;
     
     try {
       const productNamesData = dashboardData.find((item: any) => item.key === 'productNames');
@@ -260,7 +260,7 @@ export default function OrderForm() {
         // 각 상품에 대해 설정에서 가격 로드 및 업데이트
         const updatedProductNames = productNamesData.map((product: any, index: number) => {
           const productKey = product.key || `product_${index}`;
-          const priceSetting = settingsData?.find((s: any) => s.key === `${productKey}Price`);
+          const priceSetting = Array.isArray(settingsData) ? settingsData.find((s: any) => s.key === `${productKey}Price`) : null;
           
           return {
             ...product,
