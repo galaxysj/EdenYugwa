@@ -545,7 +545,8 @@ export default function ManagerDashboard() {
                       </Button>
                     </div>
                   </div>
-                  <div className="overflow-x-auto">
+                  {/* 데스크탑 테이블 뷰 */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full manager-table">
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
@@ -756,6 +757,134 @@ export default function ManagerDashboard() {
                       </div>
                     )}
                   </div>
+
+                  {/* 모바일 리스트 뷰 */}
+                  <div className="md:hidden space-y-2 p-2">
+                    {filteredOrders.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        주문이 없습니다.
+                      </div>
+                    ) : (
+                      filteredOrders.map((order) => (
+                        <div key={order.id} className={`border border-gray-200 rounded-lg p-3 bg-white ${
+                          order.paymentStatus !== 'confirmed' ? 'border-red-200 bg-red-50' : ''
+                        }`}>
+                          {/* 상단: 주문번호, 이름, 날짜 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedOrders.has(order.id)}
+                                onChange={(e) => {
+                                  const newSet = new Set(selectedOrders);
+                                  if (e.target.checked) {
+                                    newSet.add(order.id);
+                                  } else {
+                                    newSet.delete(order.id);
+                                  }
+                                  setSelectedOrders(newSet);
+                                }}
+                                className="rounded w-4 h-4"
+                              />
+                              <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
+                              <span className="text-black text-xs">{order.customerName}</span>
+                            </div>
+                            <span className="text-xs text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                            </span>
+                          </div>
+
+                          {/* 중간: 주문내역 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1 text-xs text-gray-700">
+                              {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
+                              {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                              {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
+                            </div>
+                            <div className="text-xs">
+                              {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
+                                <span className="text-black">부분결제</span>
+                              ) : order.paymentStatus === 'confirmed' ? (
+                                <span className="text-black">입금완료</span>
+                              ) : order.paymentStatus === 'partial' ? (
+                                <span className="text-black">부분결제</span>
+                              ) : order.paymentStatus === 'refunded' ? (
+                                <span className="text-black">환불</span>
+                              ) : (
+                                <span className="text-black">미입금</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 하단: 연락처, 주소 */}
+                          <div className="text-xs text-gray-700 mb-2">
+                            <div>연락처: {order.customerPhone}</div>
+                            <div className="flex items-center justify-between">
+                              <span>배송지: {order.address1.length > 20 ? `${order.address1.substring(0, 20)}...` : order.address1}</span>
+                              {checkRemoteArea(order.address1) && (
+                                <span className="text-red-600 font-bold">배송비추가</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 하단: 상태 변경 및 액션 버튼 */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={order.status}
+                                onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                                disabled={updateOrderStatusMutation.isPending}
+                              >
+                                <SelectTrigger className="h-7 text-xs px-2 w-24">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="scheduled">발송주문</SelectItem>
+                                  <SelectItem value="delivered">발송완료</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="flex items-center gap-1">
+                              {order.sellerShipped ? (
+                                <div className="text-center">
+                                  <div 
+                                    className="text-black text-xs cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border border-gray-300"
+                                    onClick={() => updateSellerShippedMutation.mutate({ 
+                                      id: order.id, 
+                                      sellerShipped: false 
+                                    })}
+                                    title="클릭하여 발송 상태 취소"
+                                  >
+                                    발송완료
+                                  </div>
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => updateSellerShippedMutation.mutate({ 
+                                    id: order.id, 
+                                    sellerShipped: true 
+                                  })}
+                                  className="text-xs px-2 py-1 h-7"
+                                >
+                                  발송처리
+                                </Button>
+                              )}
+                              
+                              <SmsDialog order={order}>
+                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
+                                  <MessageSquare className="h-3 w-3" />
+                                  SMS
+                                </Button>
+                              </SmsDialog>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 
@@ -817,7 +946,8 @@ export default function ManagerDashboard() {
                       </Button>
                     </div>
                   </div>
-                  <div className="overflow-x-auto">
+                  {/* 데스크탑 테이블 뷰 */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full manager-table">
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
@@ -1030,6 +1160,111 @@ export default function ManagerDashboard() {
                       </div>
                     )}
                   </div>
+
+                  {/* 모바일 리스트 뷰 */}
+                  <div className="md:hidden space-y-2 p-2">
+                    {filteredOrders.filter(o => !o.sellerShipped).length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        발송처리대기 주문이 없습니다.
+                      </div>
+                    ) : (
+                      filteredOrders.filter(o => !o.sellerShipped).map((order) => (
+                        <div key={order.id} className={`border border-gray-200 rounded-lg p-3 bg-white ${
+                          order.paymentStatus !== 'confirmed' ? 'border-red-200 bg-red-50' : ''
+                        }`}>
+                          {/* 상단: 주문번호, 이름, 날짜 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedOrders.has(order.id)}
+                                onChange={(e) => {
+                                  const newSet = new Set(selectedOrders);
+                                  if (e.target.checked) {
+                                    newSet.add(order.id);
+                                  } else {
+                                    newSet.delete(order.id);
+                                  }
+                                  setSelectedOrders(newSet);
+                                }}
+                                className="rounded w-4 h-4"
+                              />
+                              <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
+                              <span className="text-black text-xs">{order.customerName}</span>
+                            </div>
+                            <span className="text-xs text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                            </span>
+                          </div>
+
+                          {/* 중간: 주문내역 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1 text-xs text-gray-700">
+                              {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
+                              {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                              {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
+                            </div>
+                            <div className="text-xs">
+                              {order.paymentStatus !== 'confirmed' ? (
+                                <span className="text-black">미입금</span>
+                              ) : (
+                                <span className="text-black">입금완료</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 하단: 연락처, 주소 */}
+                          <div className="text-xs text-gray-700 mb-2">
+                            <div>연락처: {order.customerPhone}</div>
+                            <div className="flex items-center justify-between">
+                              <span>배송지: {order.address1.length > 20 ? `${order.address1.substring(0, 20)}...` : order.address1}</span>
+                              {checkRemoteArea(order.address1) && (
+                                <span className="text-red-600 font-bold">배송비추가</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 하단: 발송처리 버튼 */}
+                          <div className="flex items-center justify-between">
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                              disabled={updateOrderStatusMutation.isPending}
+                            >
+                              <SelectTrigger className="h-7 text-xs px-2 w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="scheduled">발송주문</SelectItem>
+                                <SelectItem value="delivered">발송완료</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            <div className="flex items-center gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateSellerShippedMutation.mutate({ 
+                                  id: order.id, 
+                                  sellerShipped: true 
+                                })}
+                                className="text-xs px-2 py-1 h-7"
+                              >
+                                발송처리
+                              </Button>
+                              
+                              <SmsDialog order={order}>
+                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
+                                  <MessageSquare className="h-3 w-3" />
+                                  SMS
+                                </Button>
+                              </SmsDialog>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 
@@ -1048,7 +1283,8 @@ export default function ManagerDashboard() {
                       엑셀 다운로드
                     </Button>
                   </div>
-                  <div className="overflow-x-auto">
+                  {/* 데스크탑 테이블 뷰 */}
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full manager-table">
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
@@ -1259,6 +1495,111 @@ export default function ManagerDashboard() {
                       <div className="text-center py-8 text-gray-500">
                         매니저발송완료된 주문이 없습니다.
                       </div>
+                    )}
+                  </div>
+
+                  {/* 모바일 리스트 뷰 */}
+                  <div className="md:hidden space-y-2 p-2">
+                    {filteredOrders.filter(o => o.sellerShipped).length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        매니저발송완료된 주문이 없습니다.
+                      </div>
+                    ) : (
+                      filteredOrders.filter(o => o.sellerShipped).map((order) => (
+                        <div key={order.id} className={`border border-gray-200 rounded-lg p-3 bg-white ${
+                          order.paymentStatus !== 'confirmed' ? 'border-red-200 bg-red-50' : ''
+                        }`}>
+                          {/* 상단: 주문번호, 이름, 날짜 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedOrders.has(order.id)}
+                                onChange={(e) => {
+                                  const newSet = new Set(selectedOrders);
+                                  if (e.target.checked) {
+                                    newSet.add(order.id);
+                                  } else {
+                                    newSet.delete(order.id);
+                                  }
+                                  setSelectedOrders(newSet);
+                                }}
+                                className="rounded w-4 h-4"
+                              />
+                              <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
+                              <span className="text-black text-xs">{order.customerName}</span>
+                            </div>
+                            <span className="text-xs text-gray-600">
+                              {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                            </span>
+                          </div>
+
+                          {/* 중간: 주문내역 */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1 text-xs text-gray-700">
+                              {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
+                              {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                              {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
+                            </div>
+                            <div className="text-xs">
+                              <span className="text-black">발송완료</span>
+                            </div>
+                          </div>
+
+                          {/* 하단: 연락처, 주소 */}
+                          <div className="text-xs text-gray-700 mb-2">
+                            <div>연락처: {order.customerPhone}</div>
+                            <div className="flex items-center justify-between">
+                              <span>배송지: {order.address1.length > 20 ? `${order.address1.substring(0, 20)}...` : order.address1}</span>
+                              {checkRemoteArea(order.address1) && (
+                                <span className="text-red-600 font-bold">배송비추가</span>
+                              )}
+                            </div>
+                            {order.sellerShippedDate && (
+                              <div className="text-gray-600 mt-1">
+                                발송일: {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR')}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 하단: 상태 변경 및 액션 버튼 */}
+                          <div className="flex items-center justify-between">
+                            <Select
+                              value={order.status}
+                              onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
+                              disabled={updateOrderStatusMutation.isPending}
+                            >
+                              <SelectTrigger className="h-7 text-xs px-2 w-24">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="scheduled">발송주문</SelectItem>
+                                <SelectItem value="delivered">발송완료</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            
+                            <div className="flex items-center gap-1">
+                              <div 
+                                className="text-black text-xs cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border border-gray-300"
+                                onClick={() => updateSellerShippedMutation.mutate({ 
+                                  id: order.id, 
+                                  sellerShipped: false 
+                                })}
+                                title="클릭하여 발송 상태 취소"
+                              >
+                                발송완료
+                              </div>
+                              
+                              <SmsDialog order={order}>
+                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
+                                  <MessageSquare className="h-3 w-3" />
+                                  SMS
+                                </Button>
+                              </SmsDialog>
+                            </div>
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>
