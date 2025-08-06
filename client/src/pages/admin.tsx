@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Info } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
