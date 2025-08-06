@@ -3980,7 +3980,7 @@ export default function Admin() {
                               <div className="flex gap-2">
                                 <Button
                                   onClick={() => {
-                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '', size: '', weight: '' }];
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', size: '' }];
                                     setDashboardContent({...dashboardContent, productNames: newProductNames});
                                   }}
                                   variant="outline"
@@ -3994,8 +3994,8 @@ export default function Admin() {
                                   onClick={() => {
                                     if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
                                       const defaultProductNames = [
-                                        { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-                                        { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+                                        { name: '한과1호', size: '(10cm × 7cm × 7cm)' },
+                                        { name: '한과2호', size: '(14.5cm × 7cm × 7cm)' }
                                       ];
                                       const defaultContent = {
                                         productNames: defaultProductNames,
@@ -4046,7 +4046,7 @@ export default function Admin() {
                                   
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                      <Label htmlFor={`productName-${index}`}>상품명</Label>
+                                      <Label className="text-xs" htmlFor={`productName-${index}`}>상품명</Label>
                                       <Input
                                         id={`productName-${index}`}
                                         value={product.name || ''}
@@ -4060,21 +4060,7 @@ export default function Admin() {
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor={`productPrice-${index}`}>가격</Label>
-                                      <Input
-                                        id={`productPrice-${index}`}
-                                        value={product.price || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], price: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="가격을 입력하세요"
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`productSize-${index}`}>크기</Label>
+                                      <Label className="text-xs" htmlFor={`productSize-${index}`}>크기</Label>
                                       <Input
                                         id={`productSize-${index}`}
                                         value={product.size || ''}
@@ -4084,20 +4070,6 @@ export default function Admin() {
                                           setDashboardContent({...dashboardContent, productNames: newProductNames});
                                         }}
                                         placeholder="크기를 입력하세요"
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`productWeight-${index}`}>무게</Label>
-                                      <Input
-                                        id={`productWeight-${index}`}
-                                        value={product.weight || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], weight: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="무게를 입력하세요"
                                         className="mt-1"
                                       />
                                     </div>
