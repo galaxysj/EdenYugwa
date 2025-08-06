@@ -4021,12 +4021,12 @@ export default function Admin() {
                               </div>
                             </div>
                             
-                            {/* Dynamic Product List */}
-                            <div className="space-y-4">
+                            {/* 상품 리스트 */}
+                            <div className="space-y-2">
                               {(dashboardContent.productNames || []).map((product: any, index: number) => (
-                                <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                                  <div className="flex justify-between items-center mb-3">
-                                    <h4 className="font-medium text-gray-900">상품 {index + 1}</h4>
+                                <div key={index} className="bg-gray-50 rounded p-3">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-gray-700">상품 {index + 1}</span>
                                     <Button
                                       onClick={() => {
                                         const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
@@ -4038,69 +4038,53 @@ export default function Admin() {
                                       }}
                                       variant="outline"
                                       size="sm"
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      className="h-6 w-6 p-0 text-red-500 hover:bg-red-50"
                                     >
-                                      <X className="h-4 w-4" />
+                                      <X className="h-3 w-3" />
                                     </Button>
                                   </div>
                                   
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                      <Label htmlFor={`productName-${index}`}>상품명</Label>
-                                      <Input
-                                        id={`productName-${index}`}
-                                        value={product.name || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], name: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="상품명을 입력하세요"
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`productPrice-${index}`}>가격</Label>
-                                      <Input
-                                        id={`productPrice-${index}`}
-                                        value={product.price || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], price: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="가격을 입력하세요"
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`productSize-${index}`}>크기</Label>
-                                      <Input
-                                        id={`productSize-${index}`}
-                                        value={product.size || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], size: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="크기를 입력하세요"
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label htmlFor={`productWeight-${index}`}>무게</Label>
-                                      <Input
-                                        id={`productWeight-${index}`}
-                                        value={product.weight || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], weight: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="무게를 입력하세요"
-                                        className="mt-1"
-                                      />
-                                    </div>
+                                  <div className="grid grid-cols-4 gap-2 mb-2">
+                                    <Input
+                                      value={product.name || ''}
+                                      onChange={(e) => {
+                                        const newProductNames = [...dashboardContent.productNames];
+                                        newProductNames[index] = {...newProductNames[index], name: e.target.value};
+                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                      }}
+                                      placeholder="상품명"
+                                      className="text-xs h-8"
+                                    />
+                                    <Input
+                                      value={product.price || ''}
+                                      onChange={(e) => {
+                                        const newProductNames = [...dashboardContent.productNames];
+                                        newProductNames[index] = {...newProductNames[index], price: e.target.value};
+                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                      }}
+                                      placeholder="가격"
+                                      className="text-xs h-8"
+                                    />
+                                    <Input
+                                      value={product.size || ''}
+                                      onChange={(e) => {
+                                        const newProductNames = [...dashboardContent.productNames];
+                                        newProductNames[index] = {...newProductNames[index], size: e.target.value};
+                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                      }}
+                                      placeholder="크기"
+                                      className="text-xs h-8"
+                                    />
+                                    <Input
+                                      value={product.weight || ''}
+                                      onChange={(e) => {
+                                        const newProductNames = [...dashboardContent.productNames];
+                                        newProductNames[index] = {...newProductNames[index], weight: e.target.value};
+                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                      }}
+                                      placeholder="무게"
+                                      className="text-xs h-8"
+                                    />
                                   </div>
                                   
                                   <Button
@@ -4110,64 +4094,62 @@ export default function Admin() {
                                       value: JSON.stringify(dashboardContent.productNames) 
                                     })}
                                     disabled={updateContentMutation.isPending}
-                                    className="mt-3"
+                                    className="h-6 px-3 text-xs"
                                   >
-                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                    저장
                                   </Button>
                                 </div>
                               ))}
                               
                               {(!dashboardContent.productNames || dashboardContent.productNames.length === 0) && (
-                                <div className="text-center py-8 text-gray-500">
-                                  <p>등록된 상품이 없습니다.</p>
-                                  <p className="text-sm">상품 추가 버튼을 클릭하여 새 상품을 추가하세요.</p>
+                                <div className="text-center py-4 text-gray-500 text-sm">
+                                  <p>등록된 상품이 없습니다. 상품을 추가해주세요.</p>
                                 </div>
                               )}
                             </div>
                             
-                            {/* 보자기 포장 설정 */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-200">
-                              <div>
-                                <Label htmlFor="wrappingName">보자기 포장명</Label>
-                                <Input
-                                  id="wrappingName"
-                                  value={dashboardContent.wrappingName}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
-                                  placeholder="예: 보자기"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'wrappingName', 
-                                    value: dashboardContent.wrappingName 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
-                              </div>
-                              <div>
-                                <Label htmlFor="wrappingPrice">보자기 포장 가격</Label>
-                                <Input
-                                  id="wrappingPrice"
-                                  value={dashboardContent.wrappingPrice}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
-                                  placeholder="예: 개당 +1,000원"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'wrappingPrice', 
-                                    value: dashboardContent.wrappingPrice 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                            {/* 보자기 설정 */}
+                            <div className="bg-gray-50 rounded p-3 mt-3">
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">보자기 포장</h4>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="flex gap-1">
+                                  <Input
+                                    value={dashboardContent.wrappingName}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
+                                    placeholder="보자기"
+                                    className="text-xs h-8"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'wrappingName', 
+                                      value: dashboardContent.wrappingName 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="h-8 px-2 text-xs"
+                                  >
+                                    저장
+                                  </Button>
+                                </div>
+                                <div className="flex gap-1">
+                                  <Input
+                                    value={dashboardContent.wrappingPrice}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
+                                    placeholder="개당 +1,000원"
+                                    className="text-xs h-8"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'wrappingPrice', 
+                                      value: dashboardContent.wrappingPrice 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="h-8 px-2 text-xs"
+                                  >
+                                    저장
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
