@@ -1212,12 +1212,26 @@ export default function Admin() {
       const largeBoxCost = order.largeBoxQuantity * (largeBoxCostValue || 16000);
       const wrappingCost = order.wrappingQuantity * (wrappingCostValue || 1000);
       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-      const shippingCost = totalItems >= 6 ? 0 : 4000;
+      // Get dynamic shipping settings
+      const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
+      const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
+      const shippingFeeValue = shippingFeeSetting ? parseInt(shippingFeeSetting.value) : 4000;
+      const freeShippingThreshold = freeShippingThresholdSetting ? parseInt(freeShippingThresholdSetting.value) : 6;
+      
+      // Get dynamic product price settings
+      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
+      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
+      const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+      const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
+      const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
+      const wrappingPrice = wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000;
+      
+      const shippingCost = totalItems >= freeShippingThreshold ? 0 : shippingFeeValue;
       
       acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
-      acc.smallBoxAmount += order.smallBoxQuantity * 19000;
-      acc.largeBoxAmount += order.largeBoxQuantity * 21000;
-      acc.wrappingAmount += order.wrappingQuantity * 1000; // 보자기 판매가격
+      acc.smallBoxAmount += order.smallBoxQuantity * smallBoxPrice;
+      acc.largeBoxAmount += order.largeBoxQuantity * largeBoxPrice;
+      acc.wrappingAmount += order.wrappingQuantity * wrappingPrice;
       
       // Calculate quantities
       acc.smallBoxQuantity += order.smallBoxQuantity;
@@ -1515,11 +1529,24 @@ export default function Admin() {
                     {orders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
-                      const smallBoxTotal = order.smallBoxQuantity * 19000;
-                      const largeBoxTotal = order.largeBoxQuantity * 21000;
-                      const wrappingTotal = order.wrappingQuantity * 1000;
+                      // Get product price settings
+                      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
+                      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
+                      const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+                      const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
+                      const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
+                      
+                      const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
+                      const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
+                      const wrappingPrice = wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000;
+                      const shippingFeeValue = shippingFeeSetting ? parseInt(shippingFeeSetting.value) : 4000;
+                      const freeShippingThreshold = freeShippingThresholdSetting ? parseInt(freeShippingThresholdSetting.value) : 6;
+                      
+                      const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
+                      const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
+                      const wrappingTotal = order.wrappingQuantity * wrappingPrice;
                       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                      const shippingFee = totalItems >= 6 ? 0 : 4000;
+                      const shippingFee = totalItems >= freeShippingThreshold ? 0 : shippingFeeValue;
                       
                       // Get global cost settings
                       const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
@@ -1683,11 +1710,24 @@ export default function Admin() {
                 {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
-                  const smallBoxTotal = order.smallBoxQuantity * 19000;
-                  const largeBoxTotal = order.largeBoxQuantity * 21000;
-                  const wrappingTotal = order.wrappingQuantity * 1000;
+                  // Get product price settings  
+                  const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
+                  const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
+                  const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+                  const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
+                  const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
+                  
+                  const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
+                  const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
+                  const wrappingPrice = wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000;
+                  const shippingFeeValue = shippingFeeSetting ? parseInt(shippingFeeSetting.value) : 4000;
+                  const freeShippingThreshold = freeShippingThresholdSetting ? parseInt(freeShippingThresholdSetting.value) : 6;
+                  
+                  const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
+                  const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
+                  const wrappingTotal = order.wrappingQuantity * wrappingPrice;
                   const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                  const shippingFee = totalItems >= 6 ? 0 : 4000;
+                  const shippingFee = totalItems >= freeShippingThreshold ? 0 : shippingFeeValue;
                   
                   // Get global cost settings
                   const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
