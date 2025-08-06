@@ -4172,23 +4172,22 @@ export default function Admin() {
                             </div>
                           </div>
 
-                          {/* 메인 대시보드 콘텐츠 */}
-                          <div className="space-y-4">
+                          {/* 메인 콘텐츠 */}
+                          <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900">메인 대시보드 콘텐츠</h3>
+                              <h3 className="text-sm font-medium text-gray-900">메인 콘텐츠</h3>
                               <Button
                                 onClick={() => {
-                                  if (confirm('메인 대시보드 콘텐츠를 기본값으로 되돌리시겠습니까?')) {
-                                    const defaultContent = {
+                                  if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                    const defaults = {
                                       mainTitle: "진안에서 온 정성 가득 유과",
                                       mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
-                                      heroImages: [],
+                                      heroImages: [] as string[],
                                       aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
                                     };
-                                    setDashboardContent({...dashboardContent, ...defaultContent});
-                                    // 각각 업데이트
-                                    Object.entries(defaultContent).forEach(([key, value]) => {
-                                      updateContentMutation.mutate({ key, value });
+                                    setDashboardContent({...dashboardContent, ...defaults});
+                                    Object.entries(defaults).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
                                     });
                                   }
                                 }}
@@ -4197,154 +4196,139 @@ export default function Admin() {
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <RotateCcw className="h-4 w-4 mr-1" />
-                                콘텐츠 되돌리기
+                                되돌리기
                               </Button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <Label htmlFor="mainTitle">메인 제목</Label>
-                                <Input
-                                  id="mainTitle"
-                                  value={dashboardContent.mainTitle}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
-                                  placeholder="메인 제목을 입력하세요"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'mainTitle', 
-                                    value: dashboardContent.mainTitle 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                                <Label className="text-xs">메인 제목</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    value={dashboardContent.mainTitle}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
+                                    placeholder="메인 제목"
+                                    className="text-sm"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'mainTitle', 
+                                      value: dashboardContent.mainTitle 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="px-3"
+                                  >
+                                    저장
+                                  </Button>
+                                </div>
                               </div>
                               
                               <div>
-                                <Label htmlFor="mainDescription">메인 설명</Label>
-                                <Input
-                                  id="mainDescription"
-                                  value={dashboardContent.mainDescription}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
-                                  placeholder="메인 설명을 입력하세요"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'mainDescription', 
-                                    value: dashboardContent.mainDescription 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                                <Label className="text-xs">메인 설명</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    value={dashboardContent.mainDescription}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
+                                    placeholder="메인 설명"
+                                    className="text-sm"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'mainDescription', 
+                                      value: dashboardContent.mainDescription 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="px-3"
+                                  >
+                                    저장
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
 
-                          {/* 추가 콘텐츠 */}
-                          <div className="space-y-4">
+                          {/* 이미지 & 소개글 */}
+                          <div className="space-y-3">
                             <div>
-                              <Label htmlFor="heroImageFile">히어로 이미지 업로드</Label>
-                              <div className="mt-1 space-y-3">
+                              <Label className="text-xs">히어로 이미지</Label>
+                              <div className="mt-1 space-y-2">
                                 <Input
-                                  id="heroImageFile"
                                   type="file"
                                   accept="image/*"
                                   multiple
                                   onChange={handleImageUpload}
-                                  className="cursor-pointer"
+                                  className="cursor-pointer text-xs"
                                   disabled={dashboardContent.heroImages.length >= 8}
                                 />
                                 
-                                {/* Image Grid Display */}
                                 {dashboardContent.heroImages.length > 0 && (
-                                  <div className={`grid gap-2 ${
-                                    dashboardContent.heroImages.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
-                                    dashboardContent.heroImages.length === 2 ? 'grid-cols-2' :
-                                    dashboardContent.heroImages.length === 3 ? 'grid-cols-3' :
-                                    dashboardContent.heroImages.length === 4 ? 'grid-cols-2' :
-                                    dashboardContent.heroImages.length === 5 ? 'grid-cols-3' :
-                                    dashboardContent.heroImages.length === 6 ? 'grid-cols-3' :
-                                    'grid-cols-4'
-                                  }`}>
+                                  <div className="grid grid-cols-4 gap-1">
                                     {dashboardContent.heroImages.map((imageUrl, index) => (
                                       <div key={index} className="relative group">
                                         <img 
                                           src={imageUrl} 
-                                          alt={`히어로 이미지 ${index + 1}`} 
-                                          className={`w-full object-cover rounded border hover:opacity-80 transition-opacity ${
-                                            dashboardContent.heroImages.length === 1 ? 'h-32' :
-                                            dashboardContent.heroImages.length <= 4 ? 'h-24' : 'h-20'
-                                          }`}
+                                          alt={`이미지 ${index + 1}`} 
+                                          className="w-full h-16 object-cover rounded border"
                                         />
                                         <Button
                                           size="sm"
                                           variant="destructive"
                                           onClick={() => removeImage(index)}
-                                          className="absolute top-1 right-1 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                          className="absolute top-0 right-0 w-4 h-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
-                                          <X className="h-3 w-3" />
+                                          <X className="h-2 w-2" />
                                         </Button>
                                       </div>
                                     ))}
                                   </div>
                                 )}
                                 
-                                <div className="flex justify-between items-center text-xs text-gray-500">
-                                  <span>JPG, PNG, GIF 파일을 업로드하세요 (최대 8개)</span>
+                                <div className="flex justify-between text-xs text-gray-500">
+                                  <span>최대 8개</span>
                                   <span>{dashboardContent.heroImages.length}/8</span>
                                 </div>
-                                
-                                {dashboardContent.heroImages.length >= 8 && (
-                                  <p className="text-xs text-amber-600">최대 8개의 이미지까지 업로드 가능합니다. 새 이미지를 추가하려면 기존 이미지를 삭제해주세요.</p>
-                                )}
                               </div>
                             </div>
                             
                             <div>
-                              <Label htmlFor="aboutText">소개 텍스트</Label>
-                              <Textarea
-                                id="aboutText"
-                                value={dashboardContent.aboutText}
-                                onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
-                                placeholder="소개 텍스트를 입력하세요"
-                                className="mt-1"
-                                rows={4}
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => updateContentMutation.mutate({ 
-                                  key: 'aboutText', 
-                                  value: dashboardContent.aboutText 
-                                })}
-                                disabled={updateContentMutation.isPending}
-                                className="mt-2"
-                              >
-                                {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                              </Button>
+                              <Label className="text-xs">소개글</Label>
+                              <div className="flex gap-2 mt-1">
+                                <Textarea
+                                  value={dashboardContent.aboutText}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
+                                  placeholder="소개 텍스트"
+                                  className="text-sm"
+                                  rows={2}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'aboutText', 
+                                    value: dashboardContent.aboutText 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="px-3 self-start"
+                                >
+                                  저장
+                                </Button>
+                              </div>
                             </div>
                           </div>
 
-                          {/* 배송 안내 정보 */}
-                          <div className="space-y-4">
+                          {/* 배송 정보 */}
+                          <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900">배송 안내 정보</h3>
+                              <h3 className="text-sm font-medium text-gray-900">배송 정보</h3>
                               <Button
                                 onClick={() => {
-                                  if (confirm('배송 안내 정보를 기본값으로 되돌리시겠습니까?')) {
-                                    const defaultContent = {
+                                  if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                    const defaults = {
                                       shippingTitle: "에덴한과 배송",
                                       shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
                                     };
-                                    setDashboardContent({...dashboardContent, ...defaultContent});
-                                    // 각각 업데이트
-                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                    setDashboardContent({...dashboardContent, ...defaults});
+                                    Object.entries(defaults).forEach(([key, value]) => {
                                       updateContentMutation.mutate({ key, value });
                                     });
                                   }
@@ -4354,18 +4338,18 @@ export default function Admin() {
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <RotateCcw className="h-4 w-4 mr-1" />
-                                배송정보 되돌리기
+                                되돌리기
                               </Button>
                             </div>
-                            <div className="grid grid-cols-1 gap-4">
-                              <div>
-                                <Label htmlFor="shippingTitle">배송 섹션 제목</Label>
+                            
+                            <div>
+                              <Label className="text-xs">배송 섹션 제목</Label>
+                              <div className="flex gap-2 mt-1">
                                 <Input
-                                  id="shippingTitle"
                                   value={dashboardContent.shippingTitle || ''}
                                   onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
                                   placeholder="에덴한과 배송"
-                                  className="mt-1"
+                                  className="text-sm"
                                 />
                                 <Button
                                   size="sm"
@@ -4374,21 +4358,22 @@ export default function Admin() {
                                     value: dashboardContent.shippingTitle || '' 
                                   })}
                                   disabled={updateContentMutation.isPending}
-                                  className="mt-2"
+                                  className="px-3"
                                 >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  저장
                                 </Button>
                               </div>
+                            </div>
 
-                              <div>
-                                <Label htmlFor="shippingInfo">배송 안내 내용</Label>
+                            <div>
+                              <Label className="text-xs">배송 안내 내용</Label>
+                              <div className="flex gap-2 mt-1">
                                 <Textarea
-                                  id="shippingInfo"
                                   value={dashboardContent.shippingInfo}
                                   onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
-                                  placeholder="배송 관련 안내사항을 입력하세요"
-                                  className="mt-1"
-                                  rows={6}
+                                  placeholder="배송 안내 (• 로 시작하면 리스트로 표시)"
+                                  className="text-sm"
+                                  rows={3}
                                 />
                                 <Button
                                   size="sm"
@@ -4397,29 +4382,27 @@ export default function Admin() {
                                     value: dashboardContent.shippingInfo 
                                   })}
                                   disabled={updateContentMutation.isPending}
-                                  className="mt-2"
+                                  className="px-3 self-start"
                                 >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  저장
                                 </Button>
-                                <p className="text-xs text-gray-500 mt-1">• 로 시작하는 항목들로 작성하면 리스트 형태로 표시됩니다</p>
                               </div>
                             </div>
                           </div>
 
-                          {/* 입금 계좌 정보 */}
-                          <div className="space-y-4">
+                          {/* 계좌 정보 */}
+                          <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                              <h3 className="text-sm font-medium text-gray-900">입금 계좌 정보</h3>
+                              <h3 className="text-sm font-medium text-gray-900">계좌 정보</h3>
                               <Button
                                 onClick={() => {
-                                  if (confirm('입금 계좌 정보를 기본값으로 되돌리시겠습니까?')) {
-                                    const defaultContent = {
+                                  if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                    const defaults = {
                                       bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
                                       bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
                                     };
-                                    setDashboardContent({...dashboardContent, ...defaultContent});
-                                    // 각각 업데이트
-                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                    setDashboardContent({...dashboardContent, ...defaults});
+                                    Object.entries(defaults).forEach(([key, value]) => {
                                       updateContentMutation.mutate({ key, value });
                                     });
                                   }
@@ -4429,72 +4412,59 @@ export default function Admin() {
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <RotateCcw className="h-4 w-4 mr-1" />
-                                계좌정보 되돌리기
+                                되돌리기
                               </Button>
                             </div>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-3">
                               <div>
-                                <Label htmlFor="bankAccount">입금 계좌</Label>
-                                <Input
-                                  id="bankAccount"
-                                  value={dashboardContent.bankAccount}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
-                                  placeholder="예: 농협 352-1701-3342-63 (예금주: 손*진)"
-                                  className="mt-1"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'bankAccount', 
-                                    value: dashboardContent.bankAccount 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                                <Label className="text-xs">입금 계좌</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Input
+                                    value={dashboardContent.bankAccount}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
+                                    placeholder="농협 352-1701-3342-63 (예금주: 손*진)"
+                                    className="text-sm"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'bankAccount', 
+                                      value: dashboardContent.bankAccount 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="px-3"
+                                  >
+                                    저장
+                                  </Button>
+                                </div>
                               </div>
                               <div>
-                                <Label htmlFor="bankMessage">입금 안내 메시지</Label>
-                                <Textarea
-                                  id="bankMessage"
-                                  value={dashboardContent.bankMessage}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
-                                  placeholder="주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
-                                  className="mt-1"
-                                  rows={2}
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'bankMessage', 
-                                    value: dashboardContent.bankMessage 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
-                                  className="mt-2"
-                                >
-                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                </Button>
+                                <Label className="text-xs">입금 안내 메시지</Label>
+                                <div className="flex gap-2 mt-1">
+                                  <Textarea
+                                    value={dashboardContent.bankMessage}
+                                    onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
+                                    placeholder="주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                    className="text-sm"
+                                    rows={2}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'bankMessage', 
+                                      value: dashboardContent.bankMessage 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="px-3 self-start"
+                                  >
+                                    저장
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
 
-                          {/* 현재 저장된 콘텐츠 미리보기 */}
-                          {contentData && contentData.length > 0 && (
-                            <div className="space-y-2">
-                              <h3 className="text-sm font-medium text-gray-900">현재 저장된 콘텐츠</h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
-                                {contentData.map((content) => (
-                                  <div key={content.id} className="bg-gray-50 rounded p-2">
-                                    <div className="text-gray-600 truncate text-xs font-medium">{content.key}</div>
-                                    <div className="text-gray-900 text-xs mt-1 break-words">
-                                      {content.value.length > 50 ? `${content.value.substring(0, 50)}...` : content.value}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+
                         </div>
                       </CardContent>
                     </Card>
