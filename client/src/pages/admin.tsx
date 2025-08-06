@@ -1593,12 +1593,12 @@ export default function Admin() {
 
               {/* 모바일 리스트 뷰 */}
               <div className="md:hidden">
-                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded">
                   <p className="text-xs text-blue-700 font-medium text-center">
-                    📊 매출 상세 분석 - 주문별 수익 내역
+                    📊 매출 상세 분석 ({filteredOrders.length}건)
                   </p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                 {filteredOrders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
@@ -1631,77 +1631,62 @@ export default function Admin() {
                   const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                   
                   return (
-                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
-                      <div className="space-y-2">
-                        {/* 첫 번째 줄: 주문번호, 고객명, 주문일 */}
-                        <div className="flex items-center justify-between border-b pb-2">
+                    <div key={order.id} className="border-b border-gray-200 p-2 bg-white">
+                        {/* 첫 번째 줄: 주문번호, 고객명, 주문금액 */}
+                        <div className="flex items-center justify-between text-xs mb-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-gray-900">#{order.orderNumber}</span>
-                            <span className="text-sm text-gray-600">{order.customerName}</span>
+                            <span className="font-bold text-gray-900">#{order.orderNumber}</span>
+                            <span className="text-gray-700">{order.customerName}</span>
                           </div>
-                          <div className="text-xs text-gray-500">
-                            {new Date(order.createdAt).toLocaleDateString('ko-KR')} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
+                          <span className="font-bold text-blue-600">{formatPrice(order.totalAmount)}</span>
                         </div>
                         
-                        {/* 두 번째 줄: 주문 내역 */}
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2">
-                            {order.smallBoxQuantity > 0 && (
-                              <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded">한과1호×{order.smallBoxQuantity}</span>
-                            )}
-                            {order.largeBoxQuantity > 0 && (
-                              <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">한과2호×{order.largeBoxQuantity}</span>
-                            )}
-                            {order.wrappingQuantity > 0 && (
-                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">보자기×{order.wrappingQuantity}</span>
-                            )}
+                        {/* 두 번째 줄: 주문내역과 주문일 */}
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <div className="flex items-center gap-1 text-gray-600">
+                            {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
+                            {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                            {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                           </div>
+                          <span className="text-gray-500">
+                            {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                          </span>
                         </div>
                         
-                        {/* 세 번째 줄: 매출 정보 */}
-                        <div className="grid grid-cols-3 gap-2 text-xs">
-                          <div className="bg-blue-50 p-2 rounded border-l-2 border-blue-400">
-                            <div className="text-blue-600 font-medium">주문금액</div>
-                            <div className="text-blue-700 font-bold">{formatPrice(order.totalAmount)}</div>
-                          </div>
-                          <div className="bg-green-50 p-2 rounded border-l-2 border-green-400">
-                            <div className="text-green-600 font-medium">실제입금</div>
-                            <div className="text-green-700 font-bold">
-                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                        {/* 세 번째 줄: 수익 분석 (4열 그리드) */}
+                        <div className="grid grid-cols-4 gap-1 text-xs">
+                          <div className="bg-green-50 px-1 py-1 rounded text-center">
+                            <div className="text-green-600 text-xs">입금</div>
+                            <div className="text-green-700 font-bold text-xs">
+                              {formatPrice(order.actualPaidAmount || order.totalAmount)}
                             </div>
                           </div>
-                          <div className="bg-purple-50 p-2 rounded border-l-2 border-purple-400">
-                            <div className="text-purple-600 font-medium">총원가</div>
-                            <div className="text-purple-700 font-bold">{formatPrice(totalCost)}</div>
+                          <div className="bg-purple-50 px-1 py-1 rounded text-center">
+                            <div className="text-purple-600 text-xs">원가</div>
+                            <div className="text-purple-700 font-bold text-xs">{formatPrice(totalCost)}</div>
                           </div>
-                        </div>
-                        
-                        {/* 네 번째 줄: 할인/미입금 및 순수익 */}
-                        <div className="grid grid-cols-2 gap-2 text-xs">
                           {(discountAmount > 0 || unpaidAmount > 0) ? (
-                            <div className="bg-red-50 p-2 rounded border-l-2 border-red-400">
-                              <div className="text-red-600 font-medium">
-                                {discountAmount > 0 ? '할인금액' : '미입금액'}
+                            <div className="bg-red-50 px-1 py-1 rounded text-center">
+                              <div className="text-red-600 text-xs">
+                                {discountAmount > 0 ? '할인' : '미입금'}
                               </div>
-                              <div className="text-red-700 font-bold">
+                              <div className="text-red-700 font-bold text-xs">
                                 {formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}
                               </div>
                             </div>
                           ) : (
-                            <div className="bg-gray-50 p-2 rounded border-l-2 border-gray-300">
-                              <div className="text-gray-500 font-medium">할인/미입금</div>
-                              <div className="text-gray-600 font-bold">-</div>
+                            <div className="bg-gray-50 px-1 py-1 rounded text-center">
+                              <div className="text-gray-500 text-xs">할인/미입금</div>
+                              <div className="text-gray-600 font-bold text-xs">-</div>
                             </div>
                           )}
-                          <div className={`p-2 rounded border-l-2 ${actualProfit >= 0 ? 'bg-emerald-50 border-emerald-400' : 'bg-red-50 border-red-400'}`}>
-                            <div className={`font-medium ${actualProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>순수익</div>
-                            <div className={`font-bold ${actualProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                          <div className={`px-1 py-1 rounded text-center ${actualProfit >= 0 ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                            <div className={`text-xs ${actualProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>순수익</div>
+                            <div className={`font-bold text-xs ${actualProfit >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                               {formatPrice(actualProfit)}
                             </div>
                           </div>
                         </div>
-                      </div>
                     </div>
                   );
                 })}
