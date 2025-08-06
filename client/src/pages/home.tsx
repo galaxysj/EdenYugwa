@@ -254,19 +254,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Shipping Information */}
-          {dashboardContent.shippingInfo && (
-            <div className="max-w-2xl mx-auto mb-6 md:mb-8">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 md:p-6 border border-blue-200 mx-2 md:mx-0">
-                <h3 className="text-lg font-bold text-eden-brown mb-3 text-center">{dashboardContent.shippingTitle || "에덴한과 배송"}</h3>
-                <div className="text-sm text-gray-700 space-y-1">
-                  {dashboardContent.shippingInfo.split('\n').map((line: string, index: number) => (
-                    <div key={index} className="leading-relaxed">{line}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+
 
           {/* Bank Account Information */}
           <div className="max-w-lg mx-auto mb-6 md:mb-8">
