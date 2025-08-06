@@ -14,7 +14,7 @@ import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
 import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
-import { UserManagement } from "@/components/user-management";
+
 import PasswordChangeDialog from "@/components/PasswordChangeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -660,7 +660,7 @@ export default function Admin() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
   const [showCustomerManagement, setShowCustomerManagement] = useState(false);
-  const [showUserManagement, setShowUserManagement] = useState(false);
+
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
   const [selectedShippingItems, setSelectedShippingItems] = useState<Set<number>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
@@ -3075,14 +3075,10 @@ export default function Admin() {
                       휴지통 ({deletedOrders.length})
                     </TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
                       <Users className="h-3 w-3 mr-1" />
                       고객관리
-                    </TabsTrigger>
-                    <TabsTrigger value="members" className="text-green-600 text-xs px-1">
-                      <Users className="h-3 w-3 mr-1" />
-                      회원관리
                     </TabsTrigger>
                     <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
                       <Cog className="h-3 w-3 mr-1" />
@@ -3092,7 +3088,7 @@ export default function Admin() {
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-                <TabsList className="hidden md:grid w-full grid-cols-9">
+                <TabsList className="hidden md:grid w-full grid-cols-8">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -3112,10 +3108,6 @@ export default function Admin() {
                   <TabsTrigger value="customers" className="text-blue-600">
                     <Users className="h-4 w-4 mr-1" />
                     고객관리
-                  </TabsTrigger>
-                  <TabsTrigger value="members" className="text-green-600">
-                    <Users className="h-4 w-4 mr-1" />
-                    회원관리
                   </TabsTrigger>
                   <TabsTrigger value="settings" className="text-orange-600">
                     <Cog className="h-4 w-4 mr-1" />
@@ -3556,10 +3548,6 @@ export default function Admin() {
                 
                 <TabsContent value="customers" className="mt-6">
                   <CustomerManagement />
-                </TabsContent>
-                
-                <TabsContent value="members" className="mt-6">
-                  <UserManagement />
                 </TabsContent>
 
                 <TabsContent value="trash" className="mt-6">
