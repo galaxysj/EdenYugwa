@@ -158,27 +158,27 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
             <>
               {/* Stats Overview */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <Card className="bg-blue-50">
+                <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+                    <div className="text-2xl font-bold text-gray-600">{stats.total}</div>
                     <div className="text-sm text-gray-600">총 주문</div>
                   </CardContent>
                 </Card>
-                <Card className="bg-green-50">
+                <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-green-600">{stats.delivered}</div>
+                    <div className="text-2xl font-bold text-gray-600">{stats.delivered}</div>
                     <div className="text-sm text-gray-600">배송 완료</div>
                   </CardContent>
                 </Card>
-                <Card className="bg-yellow-50">
+                <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-yellow-600">{stats.shipping}</div>
+                    <div className="text-2xl font-bold text-gray-600">{stats.shipping}</div>
                     <div className="text-sm text-gray-600">배송 중</div>
                   </CardContent>
                 </Card>
-                <Card className="bg-red-50">
+                <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-bold text-red-600">{stats.pending}</div>
+                    <div className="text-2xl font-bold text-gray-600">{stats.pending}</div>
                     <div className="text-sm text-gray-600">대기 중</div>
                   </CardContent>
                 </Card>

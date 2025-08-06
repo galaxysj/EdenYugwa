@@ -850,7 +850,7 @@ export default function OrderForm() {
                           <div className="text-right">
                             <span className="whitespace-nowrap">{shippingFee === 0 ? "무료" : formatPrice(shippingFee)}</span>
                             {addressValue && checkRemoteArea(addressValue) && (
-                              <div className="text-red-600 text-xs mt-1">
+                              <div className="text-gray-600 text-xs mt-1">
                                 <div>제주/도서산간 추가요금 발생</div>
                                 <div className="mt-0.5">판매자에게 문의해주세요</div>
                               </div>
@@ -868,16 +868,16 @@ export default function OrderForm() {
 
                     {/* Shipping Info - Hidden on mobile, will be moved to bottom */}
                     {totalQuantity > 0 && (
-                      <div className="hidden md:block bg-blue-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-blue-900 mb-2">배송비 안내</h5>
-                        <p className="text-sm text-blue-800">
+                      <div className="hidden md:block bg-gray-50 p-4 rounded-lg">
+                        <h5 className="font-medium text-gray-900 mb-2">배송비 안내</h5>
+                        <p className="text-sm text-gray-800">
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
                         </p>
-                        <div className="text-sm text-blue-800 space-y-1">
-                          <p>{shippingSettings.freeShippingThreshold}개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
-                          <p>{shippingSettings.freeShippingThreshold}개 미만: <span className="text-orange-600 font-semibold">배송비 {formatPrice(shippingSettings.shippingFee)}</span></p>
+                        <div className="text-sm text-gray-800 space-y-1">
+                          <p>{shippingSettings.freeShippingThreshold}개 이상: <span className="text-gray-600 font-semibold">무료배송</span></p>
+                          <p>{shippingSettings.freeShippingThreshold}개 미만: <span className="text-gray-600 font-semibold">배송비 {formatPrice(shippingSettings.shippingFee)}</span></p>
                         </div>
-                        <p className="text-xs text-red-600 mt-2 font-medium">
+                        <p className="text-xs text-gray-600 mt-2 font-medium">
                           * 제주도, 도서산간지역은 추가비용 발생<br/>
                           &nbsp;&nbsp;판매자에게 문의해주세요
                         </p>
@@ -909,16 +909,16 @@ export default function OrderForm() {
 
                     {/* Mobile Shipping Info - Only visible on mobile */}
                     {totalQuantity > 0 && (
-                      <div className="md:hidden bg-blue-50 p-4 rounded-lg mt-4">
-                        <h5 className="font-medium text-blue-900 mb-2">배송비 안내</h5>
-                        <p className="text-sm text-blue-800">
+                      <div className="md:hidden bg-gray-50 p-4 rounded-lg mt-4">
+                        <h5 className="font-medium text-gray-900 mb-2">배송비 안내</h5>
+                        <p className="text-sm text-gray-800">
                           <span className="font-medium">총 {totalQuantity}개 선택</span>
                         </p>
-                        <div className="text-sm text-blue-800 space-y-1">
-                          <p>{shippingSettings.freeShippingThreshold}개 이상: <span className="text-green-600 font-semibold">무료배송</span></p>
-                          <p>{shippingSettings.freeShippingThreshold}개 미만: <span className="text-orange-600 font-semibold">배송비 {formatPrice(shippingSettings.shippingFee)}</span></p>
+                        <div className="text-sm text-gray-800 space-y-1">
+                          <p>{shippingSettings.freeShippingThreshold}개 이상: <span className="text-gray-600 font-semibold">무료배송</span></p>
+                          <p>{shippingSettings.freeShippingThreshold}개 미만: <span className="text-gray-600 font-semibold">배송비 {formatPrice(shippingSettings.shippingFee)}</span></p>
                         </div>
-                        <p className="text-xs text-red-600 mt-2 font-medium">
+                        <p className="text-xs text-gray-600 mt-2 font-medium">
                           * 제주도, 도서산간지역은 추가비용 발생<br/>
                           &nbsp;&nbsp;판매자에게 문의해주세요
                         </p>

@@ -113,7 +113,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'revenue' 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
@@ -129,7 +129,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'orders' 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
@@ -145,7 +145,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'customers' 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
@@ -161,7 +161,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'members' 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
@@ -178,7 +178,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'settings' 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
@@ -194,8 +194,8 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'content' 
-                      ? 'bg-green-50 text-green-700 border border-green-200' 
-                      : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <Edit className="h-4 w-4 mr-2" />
@@ -210,8 +210,8 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   size="sm"
                   className={`w-full justify-start text-sm ${
                     activeTab === 'trash' 
-                      ? 'bg-red-50 text-red-700 border border-red-200' 
-                      : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -227,7 +227,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 }}
                 variant="ghost" 
                 size="sm"
-                className="w-full justify-start text-sm text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="w-full justify-start text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               >
                 <Download className="h-4 w-4 mr-2" />
                 엑셀 다운로드
@@ -254,7 +254,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'revenue' 
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
@@ -267,7 +267,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'customers'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
@@ -280,7 +280,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'members'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
@@ -300,7 +300,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'orders'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
@@ -313,7 +313,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     size="sm"
                     className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'customers'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
@@ -328,7 +328,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="bg-blue-50 text-blue-700 border border-blue-200 px-4 py-2 rounded-md font-medium"
+                  className="bg-gray-100 text-gray-900 border border-gray-300 px-4 py-2 rounded-md font-medium"
                 >
                   <Cog className="h-4 w-4 mr-2" />
                   설정
@@ -355,7 +355,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                       onClick={() => setActiveTab('content')}
                       variant="ghost" 
                       size="sm"
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50 px-3 py-2"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       콘텐츠
@@ -366,7 +366,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                       onClick={() => setActiveTab('trash')}
                       variant="ghost" 
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       휴지통
