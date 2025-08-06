@@ -127,4 +127,6 @@ Using Drizzle ORM with PostgreSQL:
 
 **Admin-Manager Role Separation for Order Status**: Implemented role-based restrictions preventing admin users from changing order status to "발송완료" (delivered), ensuring only managers can mark orders as delivered. Admin interface no longer shows "발송완료" option in status dropdown menus, and attempts to change status to delivered are blocked with appropriate error messages. This separation maintains proper workflow where managers handle final delivery confirmation while admins manage other order statuses. Updated August 6, 2025.
 
+**Enhanced Mobile Panel Access**: Added dedicated panel access buttons to mobile dashboard header for both admin and manager users. Admins now have access to both admin panel (purple button) and manager panel (orange button) from the mobile main dashboard, providing full administrative flexibility. Managers see only their manager panel button. This eliminates navigation issues when users return to the main dashboard from their respective panels. Backend authentication already supports admin access to manager routes through `requireManagerOrAdmin` middleware. Updated August 6, 2025.
+
 The application is designed for scalability with clear separation of concerns and ready for production deployment with database persistence and SMS integration.

@@ -38,13 +38,20 @@ export default function Home() {
                 </button>
               </Link>
               
-              {/* 관리자일 때 관리자패널 버튼 표시 */}
+              {/* 관리자일 때 관리자패널과 매니저패널 버튼 표시 */}
               {isAuthenticated && user?.role === 'admin' && (
-                <Link href="/admin">
-                  <button className="text-xs bg-white text-purple-600 border border-purple-600 px-2.5 py-1.5 rounded-md hover:bg-purple-600 hover:text-white transition-colors font-medium">
-                    관리자패널
-                  </button>
-                </Link>
+                <>
+                  <Link href="/admin">
+                    <button className="text-xs bg-white text-purple-600 border border-purple-600 px-2.5 py-1.5 rounded-md hover:bg-purple-600 hover:text-white transition-colors font-medium">
+                      관리자패널
+                    </button>
+                  </Link>
+                  <Link href="/manager">
+                    <button className="text-xs bg-white text-orange-600 border border-orange-600 px-2.5 py-1.5 rounded-md hover:bg-orange-600 hover:text-white transition-colors font-medium">
+                      매니저패널
+                    </button>
+                  </Link>
+                </>
               )}
               
               {/* 매니저일 때 매니저패널 버튼 표시 */}
