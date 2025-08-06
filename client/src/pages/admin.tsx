@@ -4653,7 +4653,7 @@ export default function Admin() {
                                         value={dashboardContent.mainTitle}
                                         onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
                                         placeholder="메인 제목"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -4699,7 +4699,7 @@ export default function Admin() {
                                         value={dashboardContent.mainDescription}
                                         onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
                                         placeholder="메인 설명"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         rows={2}
                                       />
                                     </td>
@@ -4748,7 +4748,7 @@ export default function Admin() {
                                           accept="image/*"
                                           multiple
                                           onChange={handleImageUpload}
-                                          className="cursor-pointer text-xs border-0 focus:ring-1 focus:ring-blue-500"
+                                          className="cursor-pointer text-xs border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                           disabled={dashboardContent.heroImages.length >= 8}
                                         />
                                         
@@ -4823,7 +4823,7 @@ export default function Admin() {
                                         value={dashboardContent.aboutText}
                                         onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
                                         placeholder="소개 텍스트"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         rows={2}
                                       />
                                     </td>
@@ -4912,7 +4912,7 @@ export default function Admin() {
                                         value={dashboardContent.shippingTitle || ''}
                                         onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
                                         placeholder="에덴한과 배송"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -4958,7 +4958,7 @@ export default function Admin() {
                                         value={dashboardContent.shippingInfo}
                                         onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
                                         placeholder="배송 안내 (• 로 시작하면 리스트로 표시)"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         rows={3}
                                       />
                                     </td>
@@ -5044,7 +5044,7 @@ export default function Admin() {
                                         value={dashboardContent.bankAccount}
                                         onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
                                         placeholder="농협 352-1701-3342-63 (예금주: 손*진)"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                       />
                                     </td>
                                     <td className="px-4 py-3 text-center">
@@ -5090,7 +5090,7 @@ export default function Admin() {
                                         value={dashboardContent.bankMessage}
                                         onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
                                         placeholder="주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         rows={2}
                                       />
                                     </td>
