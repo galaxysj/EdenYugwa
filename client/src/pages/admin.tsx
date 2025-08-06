@@ -1166,11 +1166,11 @@ export default function Admin() {
       const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
       
       // Use dynamic cost pricing from content management
-      const smallCost = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) : 
+      const smallCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : 
                        (smallProductCost ?? (smallCostSetting ? parseInt(smallCostSetting.value) : 15000));
-      const largeCost = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) : 
+      const largeCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : 
                        (largeProductCost ?? (largeCostSetting ? parseInt(largeCostSetting.value) : 16000));
-      const wrappingCostValue = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) : 
+      const wrappingCostValue = productNames[2]?.cost ? parseInt(productNames[2].cost) : 
                                (wrappingProductCost ?? (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000));
       
       // Calculate totals using dynamic prices from content management
@@ -1443,13 +1443,13 @@ export default function Admin() {
     
     // Fallback to global cost settings if no product-specific cost
     // Use dynamic cost pricing from content management first
-    const smallBoxCostValue = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) :
+    const smallBoxCostValue = productNames[0]?.cost ? parseInt(productNames[0].cost) :
                              (smallProductCost ?? (settings?.find(s => s.key === "smallBoxCost")?.value ? 
                              parseInt(settings.find(s => s.key === "smallBoxCost")?.value || "0") : 15000));
-    const largeBoxCostValue = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) :
+    const largeBoxCostValue = productNames[1]?.cost ? parseInt(productNames[1].cost) :
                              (largeProductCost ?? (settings?.find(s => s.key === "largeBoxCost")?.value ? 
                              parseInt(settings.find(s => s.key === "largeBoxCost")?.value || "0") : 16000));
-    const wrappingCostValue = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) :
+    const wrappingCostValue = productNames[2]?.cost ? parseInt(productNames[2].cost) :
                              (wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
                              parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000));
     
@@ -1846,11 +1846,11 @@ export default function Admin() {
                       const shippingFee = order.shippingFee || 0;
                       
                       // Get dynamic cost pricing from content management, fallback to historical order data
-                      const smallCost = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) : 
+                      const smallCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : 
                                        (order.smallBoxCost || 0);
-                      const largeCost = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) : 
+                      const largeCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : 
                                        (order.largeBoxCost || 0);
-                      const wrappingCost = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) : 
+                      const wrappingCost = productNames[2]?.cost ? parseInt(productNames[2].cost) : 
                                           (order.wrappingCost || 0);
                       
                       // Calculate actual costs using stored historical data
@@ -2024,11 +2024,11 @@ export default function Admin() {
                   const shippingFee = order.shippingFee || 0;
                   
                   // Get dynamic cost pricing from content management, fallback to historical order data
-                  const smallCost = productNames[0]?.costPrice ? parseInt(productNames[0].costPrice) : 
+                  const smallCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : 
                                    (order.smallBoxCost || 0);
-                  const largeCost = productNames[1]?.costPrice ? parseInt(productNames[1].costPrice) : 
+                  const largeCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : 
                                    (order.largeBoxCost || 0);
-                  const wrappingCost = productNames[2]?.costPrice ? parseInt(productNames[2].costPrice) : 
+                  const wrappingCost = productNames[2]?.cost ? parseInt(productNames[2].cost) : 
                                       (order.wrappingCost || 0);
                   
                   // Calculate actual costs using stored historical data
@@ -4001,12 +4001,12 @@ export default function Admin() {
                     
                     <div className="p-4 space-y-6">
                         <div className="space-y-6">
-                          {/* 상품 정보 및 가격 설정 */}
+                          {/* 상품 정보 관리 */}
                           <div className="space-y-4">
                             <div className="flex justify-between items-center">
                               <h3 className="text-sm font-medium text-gray-900 flex items-center gap-2">
                                 <Calculator className="h-4 w-4" />
-                                상품 정보 및 가격 설정
+                                상품 정보 관리
                               </h3>
                               <div className="flex gap-2">
                                 <Button
@@ -4030,54 +4030,7 @@ export default function Admin() {
                                   <Plus className="h-4 w-4 mr-1" />
                                   상품 추가
                                 </Button>
-                                <Button
-                                  onClick={() => {
-                                    // 보자기 상품이 이미 있는지 확인
-                                    const existingWrapping = dashboardContent.productNames?.find((p: any) => 
-                                      p.name?.includes('보자기') || p.name === dashboardContent.wrappingName
-                                    );
-                                    
-                                    if (existingWrapping) {
-                                      toast({
-                                        title: "이미 존재함",
-                                        description: "보자기 상품이 이미 목록에 있습니다.",
-                                      });
-                                      return;
-                                    }
-                                    
-                                    // 보자기 상품 추가
-                                    const wrappingProduct = {
-                                      name: dashboardContent.wrappingName || '보자기',
-                                      price: dashboardContent.wrappingPriceAmount || '1000',
-                                      cost: dashboardContent.wrappingCost || '200',
-                                      size: '',
-                                      weight: ''
-                                    };
-                                    
-                                    const newProductNames = [...(dashboardContent.productNames || []), wrappingProduct];
-                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                    
-                                    // 대시보드 콘텐츠 업데이트
-                                    updateContentMutation.mutate({ 
-                                      key: 'productNames', 
-                                      value: JSON.stringify(newProductNames) 
-                                    });
-                                    
-                                    // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
-                                    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                    
-                                    toast({
-                                      title: "보자기 상품 추가됨",
-                                      description: "보자기가 상품 목록에 추가되었습니다.",
-                                    });
-                                  }}
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  보자기 추가
-                                </Button>
+
                                 <Button
                                   onClick={() => {
                                     if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
@@ -4092,8 +4045,6 @@ export default function Admin() {
                                         value: JSON.stringify(defaultProductNames) 
                                       });
                                       updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
-                                      updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: "1000" });
-                                      updateContentMutation.mutate({ key: 'wrappingCost', value: "200" });
                                       
                                       // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
                                       queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
@@ -4116,8 +4067,7 @@ export default function Admin() {
                                   <tr className="bg-gray-50 border-b border-gray-200">
                                     <th className="w-12 px-3 py-2 text-left text-xs font-medium text-gray-600">#</th>
                                     <th className="w-40 px-3 py-2 text-left text-xs font-medium text-gray-600">상품명</th>
-                                    <th className="w-28 px-3 py-2 text-left text-xs font-medium text-gray-600">판매가</th>
-                                    <th className="w-28 px-3 py-2 text-left text-xs font-medium text-gray-600">원가</th>
+
                                     <th className="w-32 px-3 py-2 text-left text-xs font-medium text-gray-600">크기/규격</th>
                                     <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-600">중량</th>
                                     <th className="w-24 px-3 py-2 text-center text-xs font-medium text-gray-600">작업</th>
@@ -4141,32 +4091,7 @@ export default function Admin() {
                                           className="text-sm h-8 border-gray-200 focus:border-blue-300"
                                         />
                                       </td>
-                                      <td className="px-3 py-2">
-                                        <Input
-                                          type="number"
-                                          value={product.price || ''}
-                                          onChange={(e) => {
-                                            const newProductNames = [...dashboardContent.productNames];
-                                            newProductNames[index] = {...newProductNames[index], price: e.target.value};
-                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                          }}
-                                          placeholder="가격"
-                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
-                                        />
-                                      </td>
-                                      <td className="px-3 py-2">
-                                        <Input
-                                          type="number"
-                                          value={product.cost || ''}
-                                          onChange={(e) => {
-                                            const newProductNames = [...dashboardContent.productNames];
-                                            newProductNames[index] = {...newProductNames[index], cost: e.target.value};
-                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                          }}
-                                          placeholder="원가"
-                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
-                                        />
-                                      </td>
+
                                       <td className="px-3 py-2">
                                         <Input
                                           value={product.size || ''}
@@ -4202,26 +4127,12 @@ export default function Admin() {
                                                 value: JSON.stringify(dashboardContent.productNames) 
                                               });
                                               
-                                              // 개별 상품 가격을 product-prices API에도 동기화
-                                              const productPrice = parseInt(product.price) || 0;
-                                              const productCost = parseInt(product.cost) || 0;
-                                              fetch('/api/product-prices', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({
-                                                  productIndex: index,
-                                                  productName: product.name,
-                                                  price: productPrice,
-                                                  cost: productCost
-                                                })
-                                              }).then(() => {
-                                                // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
-                                                queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                                
-                                                toast({
-                                                  title: "상품 정보 저장 완료",
-                                                  description: `${product.name} 정보가 업데이트되었습니다.`,
-                                                });
+                                              // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                              
+                                              toast({
+                                                title: "상품 정보 저장 완료",
+                                                description: `${product.name} 정보가 업데이트되었습니다.`,
                                               });
                                             }}
                                             disabled={updateContentMutation.isPending}
@@ -4262,6 +4173,18 @@ export default function Admin() {
                               )}
                             </div>
                             
+                            {/* 가격 설정 안내 */}
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Calculator className="h-4 w-4 text-blue-600" />
+                                <h4 className="text-sm font-medium text-blue-800">가격 관리 안내</h4>
+                              </div>
+                              <p className="text-sm text-blue-700">
+                                상품의 <strong>판매가와 원가</strong>는 <strong>"가격 설정"</strong> 탭에서 관리할 수 있습니다.
+                                <br />
+                                이곳에서는 상품명, 크기, 중량 등의 기본 정보만 수정하세요.
+                              </p>
+                            </div>
 
                           </div>
 
