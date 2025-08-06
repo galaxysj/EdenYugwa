@@ -663,9 +663,23 @@ export default function Admin() {
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
   const [selectedShippingItems, setSelectedShippingItems] = useState<Set<number>>(new Set());
+  const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
   const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
+
+  // 주문 확장/축소 토글
+  const toggleOrderExpansion = (orderId: number) => {
+    setExpandedOrders(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orderId)) {
+        newSet.delete(orderId);
+      } else {
+        newSet.add(orderId);
+      }
+      return newSet;
+    });
+  };
   const [endDate, setEndDate] = useState<string>('');
   const [orderDateFilter, setOrderDateFilter] = useState<string>('all');
   const [orderStartDate, setOrderStartDate] = useState<string>('');
@@ -2541,170 +2555,207 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
-        {/* Mobile List - 간결한 리스트 버전 */}
+        {/* Mobile List - 간결한 리스트와 확장형 상세 뷰 */}
         <div className="lg:hidden space-y-1">
           {ordersList.map((order: Order) => {
             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
             const discountAmount = order.discountAmount || 0;
             const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
             const unpaidAmount = order.totalAmount - actualPaidAmount - discountAmount;
+            const isExpanded = expandedOrders.has(order.id);
             
             return (
-              <div key={order.id} className={`border-b border-gray-200 p-2 ${
-                order.paymentStatus === 'pending' ? 'bg-red-50' : 
-                order.status === 'seller_shipped' ? 'bg-blue-50' : 
-                'bg-white'
+              <div key={order.id} className={`border border-gray-200 rounded-lg bg-white ${
+                order.paymentStatus === 'pending' ? 'border-red-200 bg-red-50' : 
+                order.status === 'seller_shipped' ? 'border-blue-200 bg-blue-50' : 
+                ''
               }`}>
-                {/* 첫 번째 줄: 주문번호, 고객명, 금액, 상태 */}
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrderItems.has(order.id)}
-                      onChange={() => toggleOrderSelection(order.id)}
-                      className="rounded border-gray-300 w-3 h-3"
-                      title="삭제용 선택"
-                    />
-                    <span className="font-bold text-gray-900">#{order.orderNumber}</span>
-                    <span className="text-gray-700">{order.customerName}</span>
-                    {order.depositorName && order.depositorName !== order.customerName && (
-                      <span className="text-gray-500">({order.depositorName})</span>
+                {/* 간결한 리스트 뷰 - 항상 표시 */}
+                <div 
+                  className="p-3 cursor-pointer hover:bg-gray-50"
+                  onClick={() => toggleOrderExpansion(order.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrderItems.has(order.id)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          toggleOrderSelection(order.id);
+                        }}
+                        className="rounded border-gray-300 w-4 h-4"
+                        title="삭제용 선택"
+                      />
+                      <span className="font-bold text-gray-900 text-xs">#{order.orderNumber}</span>
+                      <span className="text-gray-700 text-xs">{order.customerName}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                        order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                        order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분' :
+                         order.paymentStatus === 'confirmed' ? '완료' :
+                         order.paymentStatus === 'partial' ? '부분' :
+                         order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-blue-600 text-xs">{formatPrice(order.totalAmount)}</span>
+                      <span className="text-xs text-gray-400">
+                        {isExpanded ? '▲' : '▼'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 확장형 상세 뷰 - 클릭시에만 표시 */}
+                {isExpanded && (
+                  <div className="px-3 pb-3 border-t border-gray-100">
+                    {/* 주문내역 */}
+                    <div className="flex items-center justify-between mb-2 pt-2">
+                      <div className="flex items-center gap-1 text-xs text-gray-700">
+                        {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
+                        {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
+                        {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                        order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {order.status === 'scheduled' ? '발송주문' :
+                         order.status === 'delivered' ? '발송완료' :
+                         order.status === 'seller_shipped' ? '발송대기' : '주문접수'}
+                      </span>
+                    </div>
+
+                    {/* 연락처, 주소 */}
+                    <div className="text-xs text-gray-700 mb-2">
+                      <div>연락처: {order.customerPhone}</div>
+                      <div>배송지: {order.address1} {order.address2}</div>
+                      {order.depositorName && order.depositorName !== order.customerName && (
+                        <div>예금자: {order.depositorName}</div>
+                      )}
+                    </div>
+
+                    {/* 금액 상세 */}
+                    {(order.actualPaidAmount !== order.totalAmount || discountAmount > 0) && (
+                      <div className="flex items-center gap-3 text-xs mb-2">
+                        <span className="text-green-600">입금: {formatPrice(actualPaidAmount)}</span>
+                        {discountAmount > 0 && <span className="text-red-600">할인: {formatPrice(discountAmount)}</span>}
+                        {unpaidAmount > 0 && <span className="text-red-600">미입금: {formatPrice(unpaidAmount)}</span>}
+                      </div>
                     )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-blue-600">{formatPrice(order.totalAmount)}</span>
-                    {StatusIcon && <StatusIcon className="h-3 w-3 text-blue-500" />}
-                    <span className="text-xs font-medium text-blue-600 px-1 py-0.5 bg-blue-100 rounded">
-                      {order.scheduledDate && order.status === 'pending' ? "예약발송" : statusLabels[order.status as keyof typeof statusLabels]}
-                    </span>
-                  </div>
-                </div>
 
-                {/* 두 번째 줄: 연락처, 주문내역, 주문일 */}
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <span>{order.customerPhone}</span>
-                    <span>•</span>
-                    <span>
-                      {order.smallBoxQuantity > 0 && `한과1호(약1.1kg)×${order.smallBoxQuantity}`}
-                      {order.largeBoxQuantity > 0 && ` 한과2호(약2.5kg)×${order.largeBoxQuantity}`}
-                      {order.wrappingQuantity > 0 && ` 보자기×${order.wrappingQuantity}`}
-                    </span>
-                  </div>
-                  <span className="text-gray-500">
-                    {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                  </span>
-                </div>
+                    {/* 특별 정보 */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs mb-2">
+                      {order.scheduledDate && (
+                        <span className="bg-orange-100 px-1 py-0.5 rounded text-orange-700">
+                          예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </span>
+                      )}
+                      {order.deliveredDate && (
+                        <span className="bg-green-100 px-1 py-0.5 rounded text-green-700">
+                          완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </span>
+                      )}
+                      {order.sellerShippedDate && (
+                        <span className="bg-blue-100 px-1 py-0.5 rounded text-blue-700">
+                          발송: {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                        </span>
+                      )}
+                      {order.specialRequests && (
+                        <span className="bg-yellow-100 px-1 py-0.5 rounded text-yellow-800">
+                          요청: {order.specialRequests}
+                        </span>
+                      )}
+                    </div>
 
-                {/* 세 번째 줄: 주소 */}
-                <div className="text-xs text-gray-600 mb-1 truncate">
-                  📍 {order.address1} {order.address2}
-                </div>
+                    {/* 상태 변경 및 액션 버튼 */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <Select
+                        value={
+                          order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
+                            ? 'partial'
+                            : order.paymentStatus || 'pending'
+                        }
+                        onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
+                        disabled={updatePaymentMutation.isPending}
+                      >
+                        <SelectTrigger className="w-full text-xs h-7">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">입금대기</SelectItem>
+                          <SelectItem value="confirmed">입금완료</SelectItem>
+                          <SelectItem value="partial">부분결제</SelectItem>
+                          <SelectItem value="refunded">환불</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Select
+                        value={order.status}
+                        onValueChange={(newStatus) => updateStatusMutation.mutate({ id: order.id, status: newStatus })}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        <SelectTrigger className="w-full text-xs h-7">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="scheduled">발송주문</SelectItem>
+                          <SelectItem value="seller_shipped">발송대기</SelectItem>
+                          <SelectItem value="delivered">발송완료</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                {/* 네 번째 줄: 금액 상세 (입금/할인 정보만 간단히) */}
-                {(order.actualPaidAmount !== order.totalAmount || discountAmount > 0) && (
-                  <div className="flex items-center gap-3 text-xs mb-1">
-                    <span className="text-green-600">입금: {formatPrice(actualPaidAmount)}</span>
-                    {discountAmount > 0 && <span className="text-red-600">할인: {formatPrice(discountAmount)}</span>}
-                    {unpaidAmount > 0 && <span className="text-red-600">미입금: {formatPrice(unpaidAmount)}</span>}
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-2">
+                        <SmsDialog order={order}>
+                          <Button size="sm" variant="outline" className="text-xs h-7 px-2">
+                            SMS
+                          </Button>
+                        </SmsDialog>
+                        <input
+                          type="checkbox"
+                          checked={selectedShippingItems.has(order.id)}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            toggleShippingSelection(order.id);
+                          }}
+                          className="rounded border-gray-300 w-4 h-4"
+                          disabled={order.sellerShipped || false}
+                          title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
+                        />
+                        <span className="text-xs text-gray-500">발송선택</span>
+                      </div>
+                      
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOrder(order.id);
+                        }}
+                        disabled={deleteOrderMutation.isPending}
+                        className="text-xs h-7 px-2"
+                      >
+                        삭제
+                      </Button>
+                    </div>
+
+                    {/* 숨겨진 date picker들 */}
+                    <div className="hidden" data-order-id={order.id}>
+                      <DeliveredDatePicker order={order} />
+                      <SellerShippedDatePicker order={order} />
+                      <ScheduledDatePicker order={order} />
+                    </div>
                   </div>
                 )}
-
-                {/* 특별 상태 표시 (한 줄로) */}
-                <div className="flex items-center gap-2 text-xs mb-2">
-                  {order.scheduledDate && (
-                    <span className="bg-orange-100 px-1 py-0.5 rounded text-orange-700">
-                      📅 {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                    </span>
-                  )}
-                  {order.status === 'delivered' && order.deliveredDate && (
-                    <span className="bg-green-100 px-1 py-0.5 rounded text-green-700">
-                      ✅ {new Date(order.deliveredDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                    </span>
-                  )}
-                  {order.sellerShippedDate && (
-                    <span className="bg-blue-100 px-1 py-0.5 rounded text-blue-700">
-                      🚚 {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                    </span>
-                  )}
-                  {order.specialRequests && (
-                    <span className="bg-yellow-100 px-1 py-0.5 rounded text-yellow-800 truncate">
-                      📝 {order.specialRequests}
-                    </span>
-                  )}
-                </div>
-
-                {/* 마지막 줄: 상태 변경 및 액션 */}
-                <div className="grid grid-cols-4 gap-1 text-xs">
-                  <Select
-                    value={
-                      order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
-                        ? 'partial'
-                        : order.paymentStatus || 'pending'
-                    }
-                    onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
-                    disabled={updatePaymentMutation.isPending}
-                  >
-                    <SelectTrigger className="w-full text-xs h-6">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">입금대기</SelectItem>
-                      <SelectItem value="confirmed">입금완료</SelectItem>
-                      <SelectItem value="partial">부분결제</SelectItem>
-                      <SelectItem value="refunded">환불</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  <Select
-                    value={order.status}
-                    onValueChange={(newStatus) => updateStatusMutation.mutate({ id: order.id, status: newStatus })}
-                    disabled={updateStatusMutation.isPending}
-                  >
-                    <SelectTrigger className="w-full text-xs h-6">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">주문접수</SelectItem>
-                      <SelectItem value="scheduled">발송주문</SelectItem>
-                      <SelectItem value="seller_shipped">발송대기</SelectItem>
-                      <SelectItem value="delivered">발송완료</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <div className="flex items-center gap-1">
-                    <SmsDialog order={order}>
-                      <Button size="sm" variant="outline" className="text-xs h-6 px-1 flex-1">
-                        SMS
-                      </Button>
-                    </SmsDialog>
-                    <input
-                      type="checkbox"
-                      checked={selectedShippingItems.has(order.id)}
-                      onChange={() => toggleShippingSelection(order.id)}
-                      className="rounded border-gray-300 w-3 h-3"
-                      disabled={order.sellerShipped || false}
-                      title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
-                    />
-                  </div>
-                  
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDeleteOrder(order.id)}
-                    disabled={deleteOrderMutation.isPending}
-                    className="text-xs h-6 px-1"
-                  >
-                    삭제
-                  </Button>
-                </div>
-
-                {/* 숨겨진 date picker들 */}
-                <div className="hidden" data-order-id={order.id}>
-                  <DeliveredDatePicker order={order} />
-                  <SellerShippedDatePicker order={order} />
-                  <ScheduledDatePicker order={order} />
-                </div>
               </div>
             );
           })}
