@@ -4098,7 +4098,7 @@ export default function Admin() {
                             
                             {/* 보자기 포장 설정 */}
                             <div className="border-t border-gray-200 pt-4 space-y-3">
-                              <h4 className="text-sm font-medium text-gray-900">보자기 포장 설정</h4>
+                              <h4 className="text-sm font-medium text-gray-900">설정</h4>
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
                                   <Label className="text-xs text-gray-600" htmlFor="wrappingName">포장명</Label>
