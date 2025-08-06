@@ -20,17 +20,25 @@ export default function Home() {
 
   // Convert array to object for easier access
   const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
-    if (item.key === 'heroImages') {
+    if (item.key === 'heroImages' || item.key === 'productNames') {
       try {
         acc[item.key] = JSON.parse(item.value || '[]');
       } catch {
-        acc[item.key] = [];
+        acc[item.key] = item.key === 'heroImages' ? [] : [];
       }
     } else {
       acc[item.key] = item.value;
     }
     return acc;
   }, {}) : {};
+
+  // Get settings data for pricing
+  const { data: settingsData } = useQuery({
+    queryKey: ['/api/settings'],
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const settings = settingsData;
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -254,53 +262,7 @@ export default function Home() {
             )}
           </div>
 
-          {/* Product Information Section */}
-          {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 && (
-            <div className="max-w-4xl mx-auto mb-8 md:mb-12">
-              <div className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-2xl p-4 md:p-6 mx-2 md:mx-0">
-                <h3 className="text-lg md:text-xl font-bold text-eden-brown mb-4 text-center font-korean">
-                  상품 정보
-                </h3>
-                <div className={`grid gap-4 md:gap-6 ${
-                  dashboardContent.productNames.length === 1 ? 'grid-cols-1 max-w-md mx-auto' :
-                  dashboardContent.productNames.length === 2 ? 'md:grid-cols-2' :
-                  dashboardContent.productNames.length === 3 ? 'md:grid-cols-3' :
-                  'md:grid-cols-2 lg:grid-cols-3'
-                }`}>
-                  {dashboardContent.productNames.map((product: any, index: number) => (
-                    <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-eden-beige/30">
-                      <h4 className="font-semibold text-eden-brown text-base md:text-lg mb-2">
-                        {product.name}
-                      </h4>
-                      {product.size && (
-                        <p className="text-sm text-gray-600 mb-2">
-                          크기: {product.size}
-                        </p>
-                      )}
-                      <div className="text-lg font-bold text-eden-brown">
-                        {index === 0 ? (settings?.find((s: any) => s.key === 'smallBoxPrice')?.value || '10,000원') : 
-                         index === 1 ? (settings?.find((s: any) => s.key === 'largeBoxPrice')?.value || '20,000원') :
-                         '10,000원'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {/* 보자기 상품 정보 */}
-                <div className="mt-4 bg-white rounded-lg p-4 shadow-sm border border-eden-beige/30">
-                  <h4 className="font-semibold text-eden-brown text-base md:text-lg mb-2">
-                    {dashboardContent.wrappingName || "보자기"}
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {dashboardContent.wrappingPrice || "개당 1,000원"}
-                  </p>
-                  <div className="text-lg font-bold text-eden-brown">
-                    {settings?.find((s: any) => s.key === 'wrappingPrice')?.value || '1,000원'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+
 
 
 

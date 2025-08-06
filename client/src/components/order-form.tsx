@@ -427,233 +427,92 @@ export default function OrderForm() {
                   상품 선택
                 </h4>
                 
-                <div className="space-y-3 md:space-y-4">
-                  {/* Product Selection - Dynamic Product List */}
-                  <div className="border-2 border-eden-beige rounded-lg p-3 md:p-4">
-                    <div className="space-y-3 md:space-y-4">
-                      {/* Dynamic Products from Content Management */}
-                      {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 ? (
-                        dashboardContent.productNames.map((product: any, index: number) => (
-                          <div key={index}>
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <h5 className="font-semibold text-black text-sm md:text-base">
-                                  {product.name}{product.size ? `(${product.size})` : ''}
-                                </h5>
-                                {product.size && (
-                                  <p className="text-xs text-black mt-1">{product.size}</p>
-                                )}
-                              </div>
-                              <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">
-                                {index === 0 ? formatPrice(prices.small) : 
-                                 index === 1 ? formatPrice(prices.large) :
-                                 formatPrice(10000)} {/* Default price for additional products */}
-                              </span>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name={index === 0 ? "smallBoxQuantity" : index === 1 ? "largeBoxQuantity" : "wrappingQuantity"}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="flex items-center space-x-2">
-                                    <FormLabel className="text-sm font-medium">수량</FormLabel>
-                                    <FormControl>
-                                      <div className="flex items-center space-x-1">
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                          className="w-7 h-7 p-0 text-xs"
-                                        >
-                                          -
-                                        </Button>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          {...field}
-                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                          className="w-12 h-7 text-center text-xs px-1"
-                                        />
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(field.value + 1)}
-                                          className="w-7 h-7 p-0 text-xs"
-                                        >
-                                          +
-                                        </Button>
-                                      </div>
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            {/* Divider between products */}
-                            {index < dashboardContent.productNames.length - 1 && (
-                              <div className="border-t border-eden-beige/50 mt-3"></div>
+                {/* Dynamic Product List */}
+                {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboardContent.productNames.map((product: any, index: number) => (
+                      <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/30 shadow-sm">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h5 className="font-semibold text-eden-brown text-base md:text-lg mb-1">
+                              {product.name}
+                            </h5>
+                            {product.size && (
+                              <p className="text-sm text-gray-600 mb-1">
+                                크기: {product.size}
+                              </p>
+                            )}
+                            {product.weight && (
+                              <p className="text-sm text-gray-600 mb-1">
+                                무게: {product.weight}
+                              </p>
                             )}
                           </div>
-                        ))
-                      ) : (
-                        // Fallback to default products if no dynamic products are configured
-                        <>
-                          {/* 한과1호 Selection */}
-                          <div>
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <h5 className="font-semibold text-black text-sm md:text-base">
-                                  {(() => {
-                                    try {
-                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
-                                      return productNames[0]?.name || "한과1호(약 1.1kg)";
-                                    } catch {
-                                      return dashboardContent.smallBoxName || "한과1호(약 1.1kg)";
-                                    }
-                                  })()}
-                                </h5>
-                                <p className="text-xs text-black mt-1">
-                                  {(() => {
-                                    try {
-                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
-                                      return productNames[0]?.size || "약 35.5×21×11.2cm";
-                                    } catch {
-                                      return dashboardContent.smallBoxDimensions || "약 35.5×21×11.2cm";
-                                    }
-                                  })()}
-                                </p>
-                              </div>
-                              <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
+                          <div className="text-right">
+                            <div className="text-lg md:text-xl font-bold text-eden-brown">
+                              {formatPrice(parseInt(product.price) || 0)}
                             </div>
-                            <FormField
-                              control={form.control}
-                              name="smallBoxQuantity"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="flex items-center space-x-2">
-                                    <FormLabel className="text-sm font-medium">수량</FormLabel>
-                                    <FormControl>
-                                      <div className="flex items-center space-x-1">
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                          className="w-7 h-7 p-0 text-xs"
-                                        >
-                                          -
-                                        </Button>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          {...field}
-                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                          className="w-12 h-7 text-center text-xs px-1"
-                                        />
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(field.value + 1)}
-                                          className="w-7 h-7 p-0 text-xs"
-                                        >
-                                          +
-                                        </Button>
-                                      </div>
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
                           </div>
-
-                          {/* Divider */}
-                          <div className="border-t border-eden-beige/50"></div>
-
-                          {/* 한과2호 Selection */}
-                          <div>
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <h5 className="font-semibold text-black text-sm md:text-base">
-                                  {(() => {
-                                    try {
-                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
-                                      return productNames[1]?.name || "한과2호(약 1.3kg)";
-                                    } catch {
-                                      return dashboardContent.largeBoxName || "한과2호(약 1.3kg)";
-                                    }
-                                  })()}
-                                </h5>
-                                <p className="text-xs text-black mt-1">
-                                  {(() => {
-                                    try {
-                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
-                                      return productNames[1]?.size || "약 37×23×11.5cm";
-                                    } catch {
-                                      return dashboardContent.largeBoxDimensions || "약 37×23×11.5cm";
-                                    }
-                                  })()}
-                                </p>
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name={
+                            index === 0 ? "smallBoxQuantity" : 
+                            index === 1 ? "largeBoxQuantity" : 
+                            product.name?.includes('보자기') ? "wrappingQuantity" : 
+                            "smallBoxQuantity"
+                          }
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center justify-between">
+                                <FormLabel className="text-sm font-medium text-gray-700">수량 선택</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-2">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
                               </div>
-                              <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name="largeBoxQuantity"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <div className="flex items-center space-x-2">
-                                    <FormLabel className="text-sm font-medium">수량</FormLabel>
-                                    <FormControl>
-                                      <div className="flex items-center space-x-1">
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                          className="w-7 h-7 p-0 text-xs"
-                                        >
-                                          -
-                                        </Button>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          {...field}
-                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                          className="w-12 h-7 text-center text-xs px-1"
-                                        />
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(field.value + 1)}
-                                          className="w-7 h-7 p-0 text-xs"
-                                        >
-                                          +
-                                        </Button>
-                                      </div>
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </>
-                      )}
-
-                      {/* Divider */}
-                      <div className="border-t border-eden-beige/50"></div>
-
-
-                    </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">등록된 상품이 없습니다.</p>
+                    <p className="text-xs">관리자가 상품을 등록하면 여기에 표시됩니다.</p>
+                  </div>
+                )}
 
-                  {/* Scheduled Delivery Date */}
-                  <FormField
+                {/* Scheduled Delivery Date */}
+                <FormField
                     control={form.control}
                     name="scheduledDate"
                     render={({ field }) => (
@@ -733,7 +592,6 @@ export default function OrderForm() {
                       </div>
                     </div>
                   </div>
-                </div>
               </CardContent>
             </Card>
 

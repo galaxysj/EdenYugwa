@@ -4036,6 +4036,15 @@ export default function Admin() {
                                   onClick={() => {
                                     const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', cost: '0', size: '', weight: '' }];
                                     setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                    
+                                    // 대시보드 콘텐츠 업데이트
+                                    updateContentMutation.mutate({ 
+                                      key: 'productNames', 
+                                      value: JSON.stringify(newProductNames) 
+                                    });
+                                    
+                                    // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                   }}
                                   variant="outline"
                                   size="sm"
@@ -4071,6 +4080,15 @@ export default function Admin() {
                                     const newProductNames = [...(dashboardContent.productNames || []), wrappingProduct];
                                     setDashboardContent({...dashboardContent, productNames: newProductNames});
                                     
+                                    // 대시보드 콘텐츠 업데이트
+                                    updateContentMutation.mutate({ 
+                                      key: 'productNames', 
+                                      value: JSON.stringify(newProductNames) 
+                                    });
+                                    
+                                    // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                    
                                     toast({
                                       title: "보자기 상품 추가됨",
                                       description: "보자기가 상품 목록에 추가되었습니다.",
@@ -4100,6 +4118,9 @@ export default function Admin() {
                                       updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
                                       updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: "1000" });
                                       updateContentMutation.mutate({ key: 'wrappingCost', value: "200" });
+                                      
+                                      // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                     }
                                   }}
                                   variant="outline"
@@ -4218,6 +4239,9 @@ export default function Admin() {
                                                   cost: productCost
                                                 })
                                               }).then(() => {
+                                                // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                                queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                                
                                                 toast({
                                                   title: "상품 정보 저장 완료",
                                                   description: `${product.name} 정보가 업데이트되었습니다.`,
@@ -4237,6 +4261,9 @@ export default function Admin() {
                                                 key: 'productNames', 
                                                 value: JSON.stringify(newProductNames) 
                                               });
+                                              
+                                              // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
                                             }}
                                             variant="outline"
                                             size="sm"
