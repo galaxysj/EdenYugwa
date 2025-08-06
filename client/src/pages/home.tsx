@@ -32,10 +32,10 @@ export default function Home() {
               </div>
               
               {/* 모바일 메뉴 버튼들 - 제목 아래 배치 */}
-              <div className="flex md:hidden items-center justify-center gap-1.5 mt-3">
+              <div className="flex md:hidden items-center justify-center gap-2 mt-3">
                 {/* 주문조회 버튼 - 항상 표시 */}
                 <Link href="/order-lookup">
-                  <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                  <button className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors">
                     주문조회
                   </button>
                 </Link>
@@ -44,12 +44,12 @@ export default function Home() {
                 {isAuthenticated && user?.role === 'admin' && (
                   <>
                     <Link href="/admin">
-                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                      <button className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors">
                         관리자패널
                       </button>
                     </Link>
                     <Link href="/manager">
-                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                      <button className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors">
                         매니저패널
                       </button>
                     </Link>
@@ -59,7 +59,7 @@ export default function Home() {
                 {/* 매니저일 때 매니저패널 버튼 표시 */}
                 {isAuthenticated && user?.role === 'manager' && (
                   <Link href="/manager">
-                    <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                    <button className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors">
                       매니저패널
                     </button>
                   </Link>
@@ -69,12 +69,12 @@ export default function Home() {
                 {!isAuthenticated ? (
                   <>
                     <Link href="/login">
-                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                      <button className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors">
                         로그인
                       </button>
                     </Link>
                     <Link href="/register">
-                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                      <button className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors">
                         회원가입
                       </button>
                     </Link>
@@ -86,7 +86,7 @@ export default function Home() {
                       fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
                         .then(() => window.location.reload());
                     }}
-                    className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium"
+                    className="text-xs bg-gray-100 text-black px-2 py-1 rounded hover:bg-gray-200 transition-colors"
                   >
                     로그아웃
                   </button>
