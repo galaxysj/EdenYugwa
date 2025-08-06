@@ -4009,7 +4009,7 @@ export default function Admin() {
                             setDashboardContent({...dashboardContent, ...defaultContent});
                             // 각각 업데이트
                             Object.entries(defaultContent).forEach(([key, value]) => {
-                              updateContentMutation.mutate({ key, value });
+                              updateContentMutation.mutate({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
                             });
                             toast({ title: "모든 콘텐츠가 기본값으로 초기화되었습니다." });
                           }
@@ -4110,7 +4110,6 @@ export default function Admin() {
                                         { name: '보자기', price: '1000', cost: '200', size: '', weight: '' }
                                       ];
                                       setDashboardContent({...dashboardContent, productNames: defaultProductNames});
-                                      setDashboardContent({...dashboardContent, ...defaultContent});
                                       updateContentMutation.mutate({ 
                                         key: 'productNames', 
                                         value: JSON.stringify(defaultProductNames) 

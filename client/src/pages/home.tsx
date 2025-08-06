@@ -266,6 +266,43 @@ export default function Home() {
 
 
 
+          {/* Product Information Section */}
+          {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 && (
+            <div className="max-w-4xl mx-auto mb-6 md:mb-8">
+              <div className="bg-white rounded-lg shadow-sm border border-eden-beige/30 p-4 md:p-6 mx-2 md:mx-0">
+                <h3 className="text-lg md:text-xl font-bold text-eden-brown mb-4 text-center font-korean">
+                  상품 정보
+                </h3>
+                <div className="grid gap-4 md:gap-6">
+                  {dashboardContent.productNames.map((product: any, index: number) => (
+                    <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/20">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-eden-brown text-base md:text-lg mb-2">
+                            {product.name}
+                          </h4>
+                          <div className="space-y-1 text-sm text-gray-600">
+                            {product.size && (
+                              <p>크기: {product.size}</p>
+                            )}
+                            {product.weight && (
+                              <p>무게: {product.weight}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg md:text-xl font-bold text-eden-brown">
+                            {parseInt(product.price || 0).toLocaleString()}원
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Bank Account Information */}
           <div className="max-w-lg mx-auto mb-6 md:mb-8">
             <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-3 md:p-4 border border-eden-brown/20 mx-2 md:mx-0">
