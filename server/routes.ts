@@ -338,11 +338,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/manager/orders", requireManagerOrAdmin, async (req, res) => {
     try {
       const allOrders = await storage.getAllOrders();
+      console.log("매니저 주문 조회 - 전체 주문 수:", allOrders.length);
+      console.log("매니저 주문 조회 - 주문 상태들:", allOrders.map(o => ({ id: o.id, status: o.status, orderNumber: o.orderNumber })));
+      
       // 매니저는 관리자가 발송주문(scheduled) 또는 발송완료(delivered)로 설정한 주문만 볼 수 있음
       // seller_shipped(발송대기), pending(주문접수) 상태는 제외
       const filteredOrders = allOrders.filter(order => 
         order.status === 'scheduled' || order.status === 'delivered'
       );
+      console.log("매니저 주문 조회 - 필터링된 주문 수:", filteredOrders.length);
+      console.log("매니저 주문 조회 - 필터링된 주문들:", filteredOrders.map(o => ({ id: o.id, status: o.status, orderNumber: o.orderNumber })));
+      
       res.json(filteredOrders);
     } catch (error) {
       console.error("Error fetching manager orders:", error);
