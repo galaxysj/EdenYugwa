@@ -750,7 +750,9 @@ export default function Admin() {
     mainTitle: "이든 한과",
     mainDescription: "전통 한과를 맛보세요",
     heroImageUrl: "",
-    aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+    aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
+    bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+    bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
   });
 
   // Handle image upload
@@ -817,6 +819,8 @@ export default function Admin() {
         if (item.key === 'mainDescription') updatedContent.mainDescription = item.value;
         if (item.key === 'heroImageUrl') updatedContent.heroImageUrl = item.value;
         if (item.key === 'aboutText') updatedContent.aboutText = item.value;
+        if (item.key === 'bankAccount') updatedContent.bankAccount = item.value;
+        if (item.key === 'bankMessage') updatedContent.bankMessage = item.value;
       });
       setDashboardContent(updatedContent);
     }
@@ -3821,7 +3825,9 @@ export default function Admin() {
                                   mainTitle: "진안에서 온 정성 가득 유과",
                                   mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
                                   heroImageUrl: "",
-                                  aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                  aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
+                                  bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                                  bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
                                 };
                                 setDashboardContent({...dashboardContent, ...defaultContent});
                                 // 각각 업데이트
@@ -4142,6 +4148,79 @@ export default function Admin() {
                               >
                                 {updateContentMutation.isPending ? "저장 중..." : "저장"}
                               </Button>
+                            </div>
+                          </div>
+
+                          {/* 입금 계좌 정보 */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">입금 계좌 정보</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('입금 계좌 정보를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                                      bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                계좌정보 되돌리기
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <Label htmlFor="bankAccount">입금 계좌</Label>
+                                <Input
+                                  id="bankAccount"
+                                  value={dashboardContent.bankAccount}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
+                                  placeholder="예: 농협 352-1701-3342-63 (예금주: 손*진)"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'bankAccount', 
+                                    value: dashboardContent.bankAccount 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              <div>
+                                <Label htmlFor="bankMessage">입금 안내 메시지</Label>
+                                <Textarea
+                                  id="bankMessage"
+                                  value={dashboardContent.bankMessage}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
+                                  placeholder="주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                  className="mt-1"
+                                  rows={2}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'bankMessage', 
+                                    value: dashboardContent.bankMessage 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
                             </div>
                           </div>
 
