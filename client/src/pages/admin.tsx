@@ -355,53 +355,8 @@ function PriceSettingsDialog() {
     setLocalProductNames(products);
   }, [contentData]);
 
-  // Function to update products in dashboard content with debounce
-  const updateProductInDashboard = useMutation({
-    mutationFn: async (updatedProducts: any[]) => {
-      const response = await fetch('/api/dashboard-content/productNames', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          value: JSON.stringify(updatedProducts)
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('가격 업데이트 실패');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-      toast({
-        title: "가격 업데이트 완료",
-        description: "상품 가격이 성공적으로 업데이트되었습니다.",
-      });
-    },
-    onError: (error) => {
-      console.error('Error updating product prices:', error);
-      toast({
-        title: "오류 발생",
-        description: "가격 업데이트에 실패했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Handle input changes
-  const handlePriceChange = (index: number, field: 'price' | 'costPrice', value: string) => {
-    const updatedProducts = [...localProductNames];
-    updatedProducts[index] = { ...updatedProducts[index], [field]: value };
-    setLocalProductNames(updatedProducts);
-  };
-
-  // Save changes
-  const handleSaveProducts = () => {
-    updateProductInDashboard.mutate(localProductNames);
-  };
+  // Content management focuses on product names only
+  // Price and cost management is handled in the "가격 설정" tab
   
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
@@ -496,9 +451,7 @@ function PriceSettingsDialog() {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50 rounded-t-lg">
-                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800 w-2/5">상품명</th>
-                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800 w-1/3">원가</th>
-                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800 w-1/3">판매가</th>
+                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800">상품명</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -507,37 +460,15 @@ function PriceSettingsDialog() {
                           <td className="px-4 py-3 text-base font-medium text-gray-900">
                             {product.name}
                           </td>
-                          <td className="px-4 py-2">
-                            <Input
-                              type="number"
-                              value={product.costPrice || ""}
-                              onChange={(e) => handlePriceChange(index, 'costPrice', e.target.value)}
-                              placeholder="원가 입력"
-                              className="text-base h-10 font-medium"
-                            />
-                          </td>
-                          <td className="px-4 py-2">
-                            <Input
-                              type="number"
-                              value={product.price || ""}
-                              onChange={(e) => handlePriceChange(index, 'price', e.target.value)}
-                              placeholder="판매가 입력"
-                              className="text-base h-10 font-medium"
-                            />
-                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="flex justify-end pt-2">
-                  <Button
-                    onClick={handleSaveProducts}
-                    disabled={updateProductInDashboard.isPending}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-                  >
-                    {updateProductInDashboard.isPending ? "저장 중..." : "상품 가격 저장"}
-                  </Button>
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    💡 상품의 판매가와 원가는 <strong>"가격 설정"</strong> 탭에서 관리할 수 있습니다.
+                  </p>
                 </div>
               </div>
             ) : (
