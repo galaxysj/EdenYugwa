@@ -20,7 +20,7 @@ export default function Home() {
 
   // Convert array to object for easier access
   const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
-    if (item.key === 'heroImages') {
+    if (item.key === 'heroImages' || item.key === 'productNames') {
       try {
         acc[item.key] = JSON.parse(item.value || '[]');
       } catch {
@@ -31,6 +31,12 @@ export default function Home() {
     }
     return acc;
   }, {}) : {};
+
+  // Get product names from dashboard content
+  const productNames = dashboardContent.productNames || [
+    { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+    { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+  ];
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
