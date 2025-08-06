@@ -891,9 +891,9 @@ export default function ManagerDashboard() {
                                       order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
                                       'bg-red-100 text-red-700'
                                     }`}>
-                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분' :
-                                       order.paymentStatus === 'confirmed' ? '완료' :
-                                       order.paymentStatus === 'partial' ? '부분' :
+                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                                       order.paymentStatus === 'confirmed' ? '입금완료' :
+                                       order.paymentStatus === 'partial' ? '부분결제' :
                                        order.paymentStatus === 'refunded' ? '환불' : '미입금'}
                                     </span>
                                   </div>
@@ -942,9 +942,9 @@ export default function ManagerDashboard() {
                                       order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
                                       'bg-red-100 text-red-700'
                                     }`}>
-                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분' :
-                                       order.paymentStatus === 'confirmed' ? '완료' :
-                                       order.paymentStatus === 'partial' ? '부분' :
+                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                                       order.paymentStatus === 'confirmed' ? '입금완료' :
+                                       order.paymentStatus === 'partial' ? '부분결제' :
                                        order.paymentStatus === 'refunded' ? '환불' : '미입금'}
                                     </span>
                                     <span className={`px-2 py-0.5 rounded text-xs ${
