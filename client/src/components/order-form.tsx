@@ -435,35 +435,39 @@ export default function OrderForm() {
                   상품 선택
                 </h4>
                 
-                {/* Dynamic Product List - Table Format */}
+                {/* Dynamic Product List - Modern List Format */}
                 {productNames && productNames.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-gray-200 rounded-lg">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">상품명</th>
-                          <th className="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">크기</th>
-                          <th className="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">무게</th>
-                          <th className="border border-gray-200 px-4 py-3 text-right text-sm font-medium text-gray-700">판매가</th>
-                          <th className="border border-gray-200 px-4 py-3 text-center text-sm font-medium text-gray-700">수량</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {productNames.map((product: any, index: number) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="border border-gray-200 px-4 py-3">
-                              <div className="font-semibold text-eden-brown text-base">
-                                {product.name}
-                              </div>
-                            </td>
-                            <td className="border border-gray-200 px-4 py-3 text-sm text-gray-600">
-                              {product.size || '-'}
-                            </td>
-                            <td className="border border-gray-200 px-4 py-3 text-sm text-gray-600">
-                              {product.weight || '-'}
-                            </td>
-                            <td className="border border-gray-200 px-4 py-3 text-right">
-                              <div className="text-lg font-bold text-eden-brown">
+                  <div className="space-y-4">
+                    {productNames.map((product: any, index: number) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-eden-sage/50 transition-colors">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          {/* Product Info */}
+                          <div className="flex-1">
+                            <h5 className="font-semibold text-eden-brown text-lg mb-2">
+                              {product.name}
+                            </h5>
+                            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                              {product.size && (
+                                <div className="flex items-center gap-1">
+                                  <span className="font-medium">크기:</span>
+                                  <span>{product.size}</span>
+                                </div>
+                              )}
+                              {product.weight && (
+                                <div className="flex items-center gap-1">
+                                  <span className="font-medium">무게:</span>
+                                  <span>{product.weight}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Price and Quantity */}
+                          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
+                            {/* Price */}
+                            <div className="text-right">
+                              <div className="text-sm text-gray-500 mb-1">판매가</div>
+                              <div className="text-xl font-bold text-eden-brown">
                                 {formatPrice(
                                   index === 0 ? prices.small : 
                                   index === 1 ? prices.large : 
@@ -471,8 +475,10 @@ export default function OrderForm() {
                                   prices.small
                                 )}
                               </div>
-                            </td>
-                            <td className="border border-gray-200 px-4 py-3">
+                            </div>
+                            
+                            {/* Quantity Selector */}
+                            <div className="min-w-[140px]">
                               <FormField
                                 control={form.control}
                                 name={
@@ -483,6 +489,7 @@ export default function OrderForm() {
                                 }
                                 render={({ field }) => (
                                   <FormItem>
+                                    <FormLabel className="text-xs text-gray-500 block text-center mb-2">수량</FormLabel>
                                     <FormControl>
                                       <div className="flex items-center justify-center space-x-2">
                                         <Button 
@@ -490,7 +497,7 @@ export default function OrderForm() {
                                           variant="outline" 
                                           size="sm"
                                           onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                          className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                          className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10 border-eden-beige"
                                         >
                                           -
                                         </Button>
@@ -499,14 +506,14 @@ export default function OrderForm() {
                                           min="0"
                                           {...field}
                                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                          className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
+                                          className="w-16 h-8 text-center text-sm font-medium border-eden-beige focus:border-eden-sage"
                                         />
                                         <Button 
                                           type="button"
                                           variant="outline" 
                                           size="sm"
                                           onClick={() => field.onChange(field.value + 1)}
-                                          className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                          className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10 border-eden-beige"
                                         >
                                           +
                                         </Button>
@@ -516,11 +523,11 @@ export default function OrderForm() {
                                   </FormItem>
                                 )}
                               />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
