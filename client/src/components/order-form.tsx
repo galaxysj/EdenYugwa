@@ -450,7 +450,7 @@ export default function OrderForm() {
                       <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/30 shadow-sm">
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
-                            <h5 className="font-semibold text-black text-sm md:text-base mb-1">
+                            <h5 className="font-semibold text-gray-900 text-sm md:text-base mb-1">
                               {product.name}
                             </h5>
                             {product.size && (
@@ -465,7 +465,7 @@ export default function OrderForm() {
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="text-base md:text-lg font-bold text-black">
+                            <div className="text-base md:text-lg font-bold text-gray-900">
                               {formatPrice(parseInt(product.price) || 0)}
                             </div>
                           </div>
