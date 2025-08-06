@@ -23,72 +23,75 @@ export default function Home() {
       {/* Navigation */}
       <header className="bg-white shadow-sm border-b border-eden-beige sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Leaf className="text-eden-sage text-2xl" />
-              <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-            </div>
-            
-            {/* 모바일 메뉴 버튼 */}
-            <div className="flex md:hidden items-center gap-1.5">
-              {/* 주문조회 버튼 - 항상 표시 */}
-              <Link href="/order-lookup">
-                <button className="text-xs bg-white text-eden-sage border border-eden-sage px-2.5 py-1.5 rounded-md hover:bg-eden-sage hover:text-white transition-colors font-medium">
-                  주문조회
-                </button>
-              </Link>
+          <div className="md:flex md:items-center md:justify-between">
+            {/* 브랜드 로고와 모바일 버튼들을 세로로 배치 */}
+            <div className="md:flex md:items-center md:space-x-3">
+              <div className="flex items-center space-x-3 justify-center md:justify-start">
+                <Leaf className="text-eden-sage text-2xl" />
+                <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
+              </div>
               
-              {/* 관리자일 때 관리자패널과 매니저패널 버튼 표시 */}
-              {isAuthenticated && user?.role === 'admin' && (
-                <>
-                  <Link href="/admin">
-                    <button className="text-xs bg-white text-purple-600 border border-purple-600 px-2.5 py-1.5 rounded-md hover:bg-purple-600 hover:text-white transition-colors font-medium">
-                      관리자패널
-                    </button>
-                  </Link>
+              {/* 모바일 메뉴 버튼들 - 제목 아래 배치 */}
+              <div className="flex md:hidden items-center justify-center gap-1.5 mt-3">
+                {/* 주문조회 버튼 - 항상 표시 */}
+                <Link href="/order-lookup">
+                  <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                    주문조회
+                  </button>
+                </Link>
+                
+                {/* 관리자일 때 관리자패널과 매니저패널 버튼 표시 */}
+                {isAuthenticated && user?.role === 'admin' && (
+                  <>
+                    <Link href="/admin">
+                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                        관리자패널
+                      </button>
+                    </Link>
+                    <Link href="/manager">
+                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                        매니저패널
+                      </button>
+                    </Link>
+                  </>
+                )}
+                
+                {/* 매니저일 때 매니저패널 버튼 표시 */}
+                {isAuthenticated && user?.role === 'manager' && (
                   <Link href="/manager">
-                    <button className="text-xs bg-white text-orange-600 border border-orange-600 px-2.5 py-1.5 rounded-md hover:bg-orange-600 hover:text-white transition-colors font-medium">
+                    <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
                       매니저패널
                     </button>
                   </Link>
-                </>
-              )}
-              
-              {/* 매니저일 때 매니저패널 버튼 표시 */}
-              {isAuthenticated && user?.role === 'manager' && (
-                <Link href="/manager">
-                  <button className="text-xs bg-white text-orange-600 border border-orange-600 px-2.5 py-1.5 rounded-md hover:bg-orange-600 hover:text-white transition-colors font-medium">
-                    매니저패널
+                )}
+                
+                {/* 비로그인 상태 - 로그인/회원가입 버튼 */}
+                {!isAuthenticated ? (
+                  <>
+                    <Link href="/login">
+                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                        로그인
+                      </button>
+                    </Link>
+                    <Link href="/register">
+                      <button className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium">
+                        회원가입
+                      </button>
+                    </Link>
+                  </>
+                ) : (
+                  /* 로그인 상태 - 로그아웃 버튼 */
+                  <button 
+                    onClick={() => {
+                      fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                        .then(() => window.location.reload());
+                    }}
+                    className="text-xs bg-white text-black border border-black px-2.5 py-1.5 rounded-md hover:bg-black hover:text-white transition-colors font-medium"
+                  >
+                    로그아웃
                   </button>
-                </Link>
-              )}
-              
-              {/* 비로그인 상태 - 로그인/회원가입 버튼 */}
-              {!isAuthenticated ? (
-                <>
-                  <Link href="/login">
-                    <button className="text-xs bg-white text-blue-600 border border-blue-600 px-2.5 py-1.5 rounded-md hover:bg-blue-600 hover:text-white transition-colors font-medium">
-                      로그인
-                    </button>
-                  </Link>
-                  <Link href="/register">
-                    <button className="text-xs bg-white text-gray-600 border border-gray-600 px-2.5 py-1.5 rounded-md hover:bg-gray-600 hover:text-white transition-colors font-medium">
-                      회원가입
-                    </button>
-                  </Link>
-                </>
-              ) : (
-                /* 로그인 상태 - 로그아웃 버튼 */
-                <button 
-                  onClick={() => {
-                    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-                      .then(() => window.location.reload());
-                  }}
-                  className="text-xs bg-white text-red-600 border border-red-600 px-2.5 py-1.5 rounded-md hover:bg-red-600 hover:text-white transition-colors font-medium"
-                >
-                  로그아웃
-                </button>
-              )}
+                )}
+              </div>
             </div>
 
 
