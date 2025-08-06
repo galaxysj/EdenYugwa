@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Info } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -4021,12 +4021,12 @@ export default function Admin() {
                               </div>
                             </div>
                             
-                            {/* 상품 리스트 */}
-                            <div className="space-y-2">
+                            {/* Dynamic Product List */}
+                            <div className="space-y-4">
                               {(dashboardContent.productNames || []).map((product: any, index: number) => (
-                                <div key={index} className="bg-gray-50 rounded p-3">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-gray-700">상품 {index + 1}</span>
+                                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                                  <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-medium text-gray-900">상품 {index + 1}</h4>
                                     <Button
                                       onClick={() => {
                                         const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
@@ -4038,53 +4038,69 @@ export default function Admin() {
                                       }}
                                       variant="outline"
                                       size="sm"
-                                      className="h-6 w-6 p-0 text-red-500 hover:bg-red-50"
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                     >
-                                      <X className="h-3 w-3" />
+                                      <X className="h-4 w-4" />
                                     </Button>
                                   </div>
                                   
-                                  <div className="grid grid-cols-4 gap-2 mb-2">
-                                    <Input
-                                      value={product.name || ''}
-                                      onChange={(e) => {
-                                        const newProductNames = [...dashboardContent.productNames];
-                                        newProductNames[index] = {...newProductNames[index], name: e.target.value};
-                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                      }}
-                                      placeholder="상품명"
-                                      className="text-xs h-8"
-                                    />
-                                    <Input
-                                      value={product.price || ''}
-                                      onChange={(e) => {
-                                        const newProductNames = [...dashboardContent.productNames];
-                                        newProductNames[index] = {...newProductNames[index], price: e.target.value};
-                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                      }}
-                                      placeholder="가격"
-                                      className="text-xs h-8"
-                                    />
-                                    <Input
-                                      value={product.size || ''}
-                                      onChange={(e) => {
-                                        const newProductNames = [...dashboardContent.productNames];
-                                        newProductNames[index] = {...newProductNames[index], size: e.target.value};
-                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                      }}
-                                      placeholder="크기"
-                                      className="text-xs h-8"
-                                    />
-                                    <Input
-                                      value={product.weight || ''}
-                                      onChange={(e) => {
-                                        const newProductNames = [...dashboardContent.productNames];
-                                        newProductNames[index] = {...newProductNames[index], weight: e.target.value};
-                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                      }}
-                                      placeholder="무게"
-                                      className="text-xs h-8"
-                                    />
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <Label htmlFor={`productName-${index}`}>상품명</Label>
+                                      <Input
+                                        id={`productName-${index}`}
+                                        value={product.name || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], name: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="상품명을 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productPrice-${index}`}>가격</Label>
+                                      <Input
+                                        id={`productPrice-${index}`}
+                                        value={product.price || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], price: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="가격을 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productSize-${index}`}>크기</Label>
+                                      <Input
+                                        id={`productSize-${index}`}
+                                        value={product.size || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], size: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="크기를 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productWeight-${index}`}>무게</Label>
+                                      <Input
+                                        id={`productWeight-${index}`}
+                                        value={product.weight || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], weight: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="무게를 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
                                   </div>
                                   
                                   <Button
@@ -4094,62 +4110,64 @@ export default function Admin() {
                                       value: JSON.stringify(dashboardContent.productNames) 
                                     })}
                                     disabled={updateContentMutation.isPending}
-                                    className="h-6 px-3 text-xs"
+                                    className="mt-3"
                                   >
-                                    저장
+                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
                                   </Button>
                                 </div>
                               ))}
                               
                               {(!dashboardContent.productNames || dashboardContent.productNames.length === 0) && (
-                                <div className="text-center py-4 text-gray-500 text-sm">
-                                  <p>등록된 상품이 없습니다. 상품을 추가해주세요.</p>
+                                <div className="text-center py-8 text-gray-500">
+                                  <p>등록된 상품이 없습니다.</p>
+                                  <p className="text-sm">상품 추가 버튼을 클릭하여 새 상품을 추가하세요.</p>
                                 </div>
                               )}
                             </div>
                             
-                            {/* 보자기 설정 */}
-                            <div className="bg-gray-50 rounded p-3 mt-3">
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">보자기 포장</h4>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div className="flex gap-1">
-                                  <Input
-                                    value={dashboardContent.wrappingName}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
-                                    placeholder="보자기"
-                                    className="text-xs h-8"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'wrappingName', 
-                                      value: dashboardContent.wrappingName 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
-                                    className="h-8 px-2 text-xs"
-                                  >
-                                    저장
-                                  </Button>
-                                </div>
-                                <div className="flex gap-1">
-                                  <Input
-                                    value={dashboardContent.wrappingPrice}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
-                                    placeholder="개당 +1,000원"
-                                    className="text-xs h-8"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'wrappingPrice', 
-                                      value: dashboardContent.wrappingPrice 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
-                                    className="h-8 px-2 text-xs"
-                                  >
-                                    저장
-                                  </Button>
-                                </div>
+                            {/* 보자기 포장 설정 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-200">
+                              <div>
+                                <Label htmlFor="wrappingName">보자기 포장명</Label>
+                                <Input
+                                  id="wrappingName"
+                                  value={dashboardContent.wrappingName}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
+                                  placeholder="예: 보자기"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'wrappingName', 
+                                    value: dashboardContent.wrappingName 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              <div>
+                                <Label htmlFor="wrappingPrice">보자기 포장 가격</Label>
+                                <Input
+                                  id="wrappingPrice"
+                                  value={dashboardContent.wrappingPrice}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
+                                  placeholder="예: 개당 +1,000원"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'wrappingPrice', 
+                                    value: dashboardContent.wrappingPrice 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -4446,95 +4464,6 @@ export default function Admin() {
                             </div>
                           </div>
 
-                          {/* 현재 적용된 콘텐츠 미리보기 */}
-                          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                            <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
-                              <Info className="h-4 w-4 mr-2" />
-                              현재 대시보드에 적용된 내용
-                            </h3>
-                            
-                            {/* 메인 타이틀과 설명 */}
-                            <div className="mb-4 p-3 bg-white rounded border">
-                              <h4 className="font-semibold text-gray-900 mb-1">{dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}</h4>
-                              <p className="text-sm text-gray-600 leading-relaxed">
-                                {(dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^").split('\\n').map((line: string, i: number) => (
-                                  <span key={i}>
-                                    {line}
-                                    {i < (dashboardContent.mainDescription || "").split('\\n').length - 1 && <br />}
-                                  </span>
-                                ))}
-                              </p>
-                            </div>
-
-                            {/* 상품 목록 */}
-                            {dashboardContent.productNames && dashboardContent.productNames.length > 0 && (
-                              <div className="mb-4">
-                                <h5 className="text-sm font-medium text-gray-800 mb-2">상품 목록</h5>
-                                <div className="space-y-2">
-                                  {dashboardContent.productNames.map((product: any, index: number) => (
-                                    <div key={index} className="bg-white p-2 rounded border text-xs">
-                                      <div className="font-medium text-gray-900">{product.name || `상품 ${index + 1}`}</div>
-                                      <div className="text-gray-600 mt-1">
-                                        <span className="mr-3">가격: {product.price || '미설정'}</span>
-                                        <span className="mr-3">크기: {product.size || '미설정'}</span>
-                                        <span>무게: {product.weight || '미설정'}</span>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* 보자기 정보 */}
-                            <div className="mb-4">
-                              <h5 className="text-sm font-medium text-gray-800 mb-2">포장 옵션</h5>
-                              <div className="bg-white p-2 rounded border text-xs">
-                                <span className="font-medium">{dashboardContent.wrappingName || "보자기"}</span>
-                                <span className="text-gray-600 ml-2">({dashboardContent.wrappingPrice || "개당 +1,000원"})</span>
-                              </div>
-                            </div>
-
-                            {/* 히어로 이미지 미리보기 */}
-                            {dashboardContent.heroImages && dashboardContent.heroImages.length > 0 && (
-                              <div className="mb-4">
-                                <h5 className="text-sm font-medium text-gray-800 mb-2">히어로 이미지 ({dashboardContent.heroImages.length}개)</h5>
-                                <div className="grid grid-cols-4 gap-2">
-                                  {dashboardContent.heroImages.slice(0, 4).map((imageUrl: string, index: number) => (
-                                    <img 
-                                      key={index}
-                                      src={imageUrl} 
-                                      alt={`히어로 이미지 ${index + 1}`} 
-                                      className="w-full h-12 object-cover rounded border"
-                                    />
-                                  ))}
-                                </div>
-                                {dashboardContent.heroImages.length > 4 && (
-                                  <p className="text-xs text-gray-500 mt-1">+{dashboardContent.heroImages.length - 4}개 더</p>
-                                )}
-                              </div>
-                            )}
-
-                            {/* 배송 정보 */}
-                            <div className="mb-4">
-                              <h5 className="text-sm font-medium text-gray-800 mb-2">{dashboardContent.shippingTitle || "에덴한과 배송"}</h5>
-                              <div className="bg-white p-2 rounded border text-xs text-gray-600">
-                                {(dashboardContent.shippingInfo || "배송 정보가 설정되지 않았습니다.").split('\n').map((line: string, i: number) => (
-                                  <div key={i} className={line.startsWith('•') ? 'ml-2' : ''}>
-                                    {line}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* 계좌 정보 */}
-                            <div>
-                              <h5 className="text-sm font-medium text-gray-800 mb-2">입금 안내</h5>
-                              <div className="bg-white p-2 rounded border text-xs">
-                                <div className="font-medium text-gray-900 mb-1">{dashboardContent.bankAccount || "계좌 정보가 설정되지 않았습니다."}</div>
-                                <div className="text-gray-600">{dashboardContent.bankMessage || "입금 안내 메시지가 설정되지 않았습니다."}</div>
-                              </div>
-                            </div>
-                          </div>
 
                         </div>
                       </CardContent>
