@@ -174,6 +174,25 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type Setting = typeof settings.$inferSelect;
 
+// Dynamic product prices table for flexible pricing
+export const productPrices = pgTable("product_prices", {
+  id: serial("id").primaryKey(),
+  productIndex: integer("product_index").notNull(), // 0, 1, 2, 3... matches productNames array index
+  productName: text("product_name").notNull(),
+  price: integer("price").notNull(), // price in korean won
+  cost: integer("cost").notNull(), // cost in korean won
+  isActive: boolean("is_active").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertProductPriceSchema = createInsertSchema(productPrices).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertProductPrice = z.infer<typeof insertProductPriceSchema>;
+export type ProductPrice = typeof productPrices.$inferSelect;
+
 // Dashboard content management schema
 export const dashboardContent = pgTable("dashboard_content", {
   id: serial("id").primaryKey(),

@@ -280,7 +280,7 @@ export default function Home() {
                       <div className="text-lg font-bold text-eden-brown">
                         {index === 0 ? (settings?.find((s: any) => s.key === 'smallBoxPrice')?.value || '10,000원') : 
                          index === 1 ? (settings?.find((s: any) => s.key === 'largeBoxPrice')?.value || '20,000원') :
-                         '가격 문의'}
+                         '10,000원'}
                       </div>
                     </div>
                   ))}

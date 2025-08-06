@@ -146,31 +146,53 @@ export default function OrderForm() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [shippingFeeResponse, thresholdResponse, settingsResponse] = await Promise.all([
+        const [shippingFeeResponse, thresholdResponse, settingsResponse, productPricesResponse] = await Promise.all([
           fetch("/api/settings/shippingFee"),
           fetch("/api/settings/freeShippingThreshold"),
-          fetch("/api/settings")
+          fetch("/api/settings"),
+          fetch("/api/product-prices")
         ]);
 
         const shippingFeeSetting = await shippingFeeResponse.json();
         const thresholdSetting = await thresholdResponse.json();
         const allSettings = await settingsResponse.json();
+        const productPrices = await productPricesResponse.json();
 
         setShippingSettings({
           shippingFee: parseInt(shippingFeeSetting.value) || 4000,
           freeShippingThreshold: parseInt(thresholdSetting.value) || 6
         });
 
-        // 상품 가격 설정 업데이트
-        const smallBoxPriceSetting = allSettings.find((s: any) => s.key === "smallBoxPrice");
-        const largeBoxPriceSetting = allSettings.find((s: any) => s.key === "largeBoxPrice");
-        const wrappingPriceSetting = allSettings.find((s: any) => s.key === "wrappingPrice");
+        // 상품 가격을 product prices API에서 로드 (우선순위: productPrices > settings)
+        let priceData = {
+          small: 19000,
+          large: 21000,
+          wrapping: 1000,
+        };
 
-        setPrices({
-          small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
-          large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
-          wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
-        });
+        // Product prices API에서 가격 정보 로드
+        if (Array.isArray(productPrices) && productPrices.length > 0) {
+          const smallBoxProduct = productPrices.find((p: any) => p.productIndex === 0);
+          const largeBoxProduct = productPrices.find((p: any) => p.productIndex === 1);
+          const wrappingProduct = productPrices.find((p: any) => p.productIndex === 2);
+
+          if (smallBoxProduct) priceData.small = smallBoxProduct.price;
+          if (largeBoxProduct) priceData.large = largeBoxProduct.price;
+          if (wrappingProduct) priceData.wrapping = wrappingProduct.price;
+        } else {
+          // 폴백: 기존 settings 사용
+          const smallBoxPriceSetting = allSettings.find((s: any) => s.key === "smallBoxPrice");
+          const largeBoxPriceSetting = allSettings.find((s: any) => s.key === "largeBoxPrice");
+          const wrappingPriceSetting = allSettings.find((s: any) => s.key === "wrappingPrice");
+
+          priceData = {
+            small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
+            large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
+            wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
+          };
+        }
+
+        setPrices(priceData);
 
       } catch (error) {
         console.error('설정 로드 실패:', error);
@@ -416,7 +438,7 @@ export default function OrderForm() {
                               <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">
                                 {index === 0 ? formatPrice(prices.small) : 
                                  index === 1 ? formatPrice(prices.large) :
-                                 '가격 문의'}
+                                 formatPrice(10000)} {/* Default price for additional products */}
                               </span>
                             </div>
                             <FormField

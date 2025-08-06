@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, productPrices, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent, type ProductPrice, type InsertProductPrice } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
@@ -71,6 +71,13 @@ export interface IStorage {
   setDashboardContent(key: string, value: string, type?: string): Promise<DashboardContent>;
   getAllDashboardContent(): Promise<DashboardContent[]>;
   updateDashboardContent(key: string, value: string): Promise<DashboardContent | undefined>;
+  
+  // Product prices management
+  getProductPrice(productIndex: number): Promise<ProductPrice | undefined>;
+  setProductPrice(productPrice: InsertProductPrice): Promise<ProductPrice>;
+  getAllProductPrices(): Promise<ProductPrice[]>;
+  updateProductPrice(productIndex: number, price: number, cost: number): Promise<ProductPrice | undefined>;
+  deleteProductPrice(productIndex: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1049,6 +1056,62 @@ export class DatabaseStorage implements IStorage {
       .where(eq(dashboardContent.key, key))
       .returning();
     return updated || undefined;
+  }
+
+  // Product prices management implementation
+  async getProductPrice(productIndex: number): Promise<ProductPrice | undefined> {
+    const productPrice = await db.select().from(productPrices)
+      .where(eq(productPrices.productIndex, productIndex))
+      .limit(1);
+    return productPrice[0];
+  }
+
+  async setProductPrice(productPrice: InsertProductPrice): Promise<ProductPrice> {
+    // Check if product price already exists
+    const existingPrice = await db.select().from(productPrices)
+      .where(eq(productPrices.productIndex, productPrice.productIndex))
+      .limit(1);
+
+    if (existingPrice.length > 0) {
+      // Update existing product price
+      const [updated] = await db.update(productPrices)
+        .set({
+          productName: productPrice.productName,
+          price: productPrice.price,
+          cost: productPrice.cost,
+          isActive: productPrice.isActive,
+          updatedAt: new Date()
+        })
+        .where(eq(productPrices.productIndex, productPrice.productIndex))
+        .returning();
+      return updated;
+    } else {
+      // Create new product price
+      const [created] = await db.insert(productPrices)
+        .values(productPrice)
+        .returning();
+      return created;
+    }
+  }
+
+  async getAllProductPrices(): Promise<ProductPrice[]> {
+    return await db.select().from(productPrices)
+      .where(eq(productPrices.isActive, true))
+      .orderBy(productPrices.productIndex);
+  }
+
+  async updateProductPrice(productIndex: number, price: number, cost: number): Promise<ProductPrice | undefined> {
+    const [updated] = await db.update(productPrices)
+      .set({ price, cost, updatedAt: new Date() })
+      .where(eq(productPrices.productIndex, productIndex))
+      .returning();
+    return updated;
+  }
+
+  async deleteProductPrice(productIndex: number): Promise<void> {
+    await db.update(productPrices)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(productPrices.productIndex, productIndex));
   }
 }
 

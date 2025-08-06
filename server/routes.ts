@@ -4,7 +4,7 @@ import passport from "./auth";
 import { requireAuth, requireAdmin, requireManagerOrAdmin } from "./auth";
 import { userService } from "./user-service";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, type Order, type InsertCustomer, type User, type DashboardContent } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, insertProductPriceSchema, type Order, type InsertCustomer, type User, type DashboardContent, type ProductPrice } from "@shared/schema";
 import * as XLSX from "xlsx";
 import multer from "multer";
 
@@ -1798,6 +1798,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating dashboard content:", error);
       res.status(500).json({ message: "대시보드 콘텐츠 업데이트에 실패했습니다" });
+    }
+  });
+
+  // Product prices management routes
+  app.get("/api/product-prices", requireAdmin, async (req, res) => {
+    try {
+      const productPrices = await storage.getAllProductPrices();
+      res.json(productPrices);
+    } catch (error) {
+      console.error("Error fetching product prices:", error);
+      res.status(500).json({ error: "Failed to fetch product prices" });
+    }
+  });
+
+  app.post("/api/product-prices", requireAdmin, async (req, res) => {
+    try {
+      const productPriceData = insertProductPriceSchema.parse(req.body);
+      const productPrice = await storage.setProductPrice(productPriceData);
+      res.json(productPrice);
+    } catch (error) {
+      console.error("Error setting product price:", error);
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Failed to set product price" });
+      }
+    }
+  });
+
+  app.patch("/api/product-prices/:productIndex", requireAdmin, async (req, res) => {
+    try {
+      const productIndex = parseInt(req.params.productIndex);
+      const { price, cost } = req.body;
+      
+      if (isNaN(productIndex) || !price || !cost) {
+        return res.status(400).json({ error: "Valid product index, price and cost are required" });
+      }
+      
+      const productPrice = await storage.updateProductPrice(productIndex, price, cost);
+      if (!productPrice) {
+        return res.status(404).json({ error: "Product price not found" });
+      }
+      
+      res.json(productPrice);
+    } catch (error) {
+      console.error("Error updating product price:", error);
+      res.status(500).json({ error: "Failed to update product price" });
+    }
+  });
+
+  app.delete("/api/product-prices/:productIndex", requireAdmin, async (req, res) => {
+    try {
+      const productIndex = parseInt(req.params.productIndex);
+      
+      if (isNaN(productIndex)) {
+        return res.status(400).json({ error: "Valid product index is required" });
+      }
+      
+      await storage.deleteProductPrice(productIndex);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting product price:", error);
+      res.status(500).json({ error: "Failed to delete product price" });
     }
   });
 

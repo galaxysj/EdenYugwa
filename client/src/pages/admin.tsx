@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Calculator } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -308,6 +308,187 @@ function AdminInfoSettingsDialog() {
   );
 }
 
+// Product Prices Management Component
+function ProductPricesManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch product prices
+  const { data: productPrices, isLoading: isPricesLoading } = useQuery<any[]>({
+    queryKey: ["/api/product-prices"],
+  });
+
+  // Fetch dashboard content for product names
+  const { data: contentData } = useQuery<any[]>({
+    queryKey: ["/api/dashboard-content"],
+  });
+
+  const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
+    acc[item.key] = item.value;
+    return acc;
+  }, {}) : {};
+
+  // Get product names from dashboard content
+  let productNames = [];
+  try {
+    productNames = JSON.parse(dashboardContent.productNames || '[]');
+  } catch {
+    productNames = [
+      { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+      { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+    ];
+  }
+
+  // Add wrapping as a separate product
+  const allProducts = [
+    ...productNames,
+    { name: '보자기', price: '1000', size: '', weight: '' }
+  ];
+
+  // Update product price mutation
+  const updateProductPriceMutation = useMutation({
+    mutationFn: async (data: { productIndex: number; productName: string; price: number; cost: number }) => {
+      const response = await fetch('/api/product-prices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!response.ok) throw new Error('Failed to update product price');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/product-prices"] });
+      toast({
+        title: "가격 업데이트 완료",
+        description: "상품 가격이 성공적으로 업데이트되었습니다.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "오류 발생",
+        description: "가격 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handlePriceUpdate = (productIndex: number, productName: string, price: string, cost: string) => {
+    const priceNum = parseInt(price);
+    const costNum = parseInt(cost);
+    
+    if (isNaN(priceNum) || isNaN(costNum)) {
+      toast({
+        title: "입력 오류",
+        description: "가격과 원가는 숫자로 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateProductPriceMutation.mutate({
+      productIndex,
+      productName,
+      price: priceNum,
+      cost: costNum
+    });
+  };
+
+  if (isPricesLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
+        <div className="text-gray-500">상품 가격 정보를 불러오는 중...</div>
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+          <Calculator className="h-5 w-5" />
+          상품 가격 관리
+        </CardTitle>
+        <p className="text-sm text-gray-600">각 상품별로 개별 가격과 원가를 설정할 수 있습니다</p>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {allProducts.map((product, index) => {
+            const existingPrice = productPrices?.find(p => p.productIndex === index);
+            
+            return (
+              <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-medium text-gray-900">{product.name}</h3>
+                  <span className="text-sm text-gray-500">상품 #{index}</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor={`price-${index}`} className="text-sm font-medium">
+                      판매가 (원)
+                    </Label>
+                    <Input
+                      id={`price-${index}`}
+                      type="number"
+                      defaultValue={existingPrice?.price || parseInt(product.price) || ''}
+                      placeholder="판매가 입력"
+                      className="mt-1"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`cost-${index}`} className="text-sm font-medium">
+                      원가 (원)
+                    </Label>
+                    <Input
+                      id={`cost-${index}`}
+                      type="number"
+                      defaultValue={existingPrice?.cost || ''}
+                      placeholder="원가 입력"
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const priceInput = document.getElementById(`price-${index}`) as HTMLInputElement;
+                      const costInput = document.getElementById(`cost-${index}`) as HTMLInputElement;
+                      handlePriceUpdate(index, product.name, priceInput.value, costInput.value);
+                    }}
+                    disabled={updateProductPriceMutation.isPending}
+                    className="flex items-center gap-1"
+                  >
+                    {updateProductPriceMutation.isPending ? "저장 중..." : "저장"}
+                  </Button>
+                </div>
+                
+                {existingPrice && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    마지막 업데이트: {new Date(existingPrice.updatedAt).toLocaleString('ko-KR')}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <h4 className="font-medium text-blue-900 mb-2">💡 사용 안내</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• 여기서 설정한 가격은 주문 폼에 자동으로 반영됩니다</li>
+            <li>• 원가는 매출 분석에서 수익 계산에 사용됩니다</li>
+            <li>• 기존 주문의 가격은 변경되지 않습니다 (주문 당시 가격 유지)</li>
+          </ul>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Price Settings Dialog Component
 function PriceSettingsDialog() {
   const [open, setOpen] = useState(false);
@@ -326,6 +507,7 @@ function PriceSettingsDialog() {
   const [smallBoxPrice, setSmallBoxPrice] = useState("");
   const [largeBoxPrice, setLargeBoxPrice] = useState("");
   const [wrappingPrice, setWrappingPrice] = useState("");
+  const [productPrices, setProductPrices] = useState<any[]>([]);
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
@@ -494,8 +676,10 @@ function PriceSettingsDialog() {
               <p className="text-sm text-gray-600">주문 폼에 표시될 판매가격입니다</p>
             </div>
             <div className="space-y-3">
+              {/* Dynamic Product Prices based on Content Management */}
+              {/* Dynamic product prices based on dashboard content */}
               <div>
-                <Label htmlFor="smallBoxPrice">한과1호 (소박스) 판매가</Label>
+                <Label htmlFor="smallBoxPrice">한과1호 판매가</Label>
                 <Input
                   id="smallBoxPrice"
                   type="number"
@@ -505,7 +689,7 @@ function PriceSettingsDialog() {
                 />
               </div>
               <div>
-                <Label htmlFor="largeBoxPrice">한과2호 (대박스) 판매가</Label>
+                <Label htmlFor="largeBoxPrice">한과2호 판매가</Label>
                 <Input
                   id="largeBoxPrice"
                   type="number"
@@ -3396,7 +3580,7 @@ export default function Admin() {
                       매출관리
                     </TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-3 mb-2">
+                  <TabsList className="grid w-full grid-cols-4 mb-2">
                     <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
                       <Users className="h-3 w-3 mr-1" />
                       고객관리
@@ -3404,6 +3588,10 @@ export default function Admin() {
                     <TabsTrigger value="members" className="text-green-600 text-xs px-1">
                       <Key className="h-3 w-3 mr-1" />
                       회원관리
+                    </TabsTrigger>
+                    <TabsTrigger value="product-prices" className="text-purple-600 text-xs px-1">
+                      <Calculator className="h-3 w-3 mr-1" />
+                      상품가격관리
                     </TabsTrigger>
                     <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
                       <Cog className="h-3 w-3 mr-1" />
@@ -3414,7 +3602,7 @@ export default function Admin() {
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
                 <div className="hidden md:block">
-                  <TabsList className="grid w-full grid-cols-10">
+                  <TabsList className="grid w-full grid-cols-11">
                     <TabsTrigger value="all" className="text-sm">전체 ({allOrders.length})</TabsTrigger>
                     <TabsTrigger value="pending" className="text-sm">주문접수 ({pendingOrders.length})</TabsTrigger>
                     <TabsTrigger value="seller_shipped" className="text-sm">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -3424,6 +3612,7 @@ export default function Admin() {
                     <TabsTrigger value="revenue" className="text-purple-600 text-sm">매출관리</TabsTrigger>
                     <TabsTrigger value="customers" className="text-blue-600 text-sm">고객관리</TabsTrigger>
                     <TabsTrigger value="members" className="text-green-600 text-sm">회원관리</TabsTrigger>
+                    <TabsTrigger value="product-prices" className="text-purple-600 text-sm">상품가격관리</TabsTrigger>
                     <TabsTrigger value="settings" className="text-orange-600 text-sm">대시보드 콘텐츠 관리</TabsTrigger>
                   </TabsList>
                 </div>
@@ -3891,6 +4080,10 @@ export default function Admin() {
                   ) : (
                     renderTrashOrdersList(deletedOrders)
                   )}
+                </TabsContent>
+
+                <TabsContent value="product-prices" className="mt-6">
+                  <ProductPricesManagement />
                 </TabsContent>
 
                 <TabsContent value="settings" className="mt-6">
