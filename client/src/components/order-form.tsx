@@ -467,7 +467,7 @@ export default function OrderForm() {
                               <span className="text-xs font-medium text-gray-700">수량 선택</span>
                             </div>
                           </div>
-                          <div className="text-right flex flex-col items-end space-y-2">
+                          <div className="flex items-center space-x-4">
                             <div className="text-base md:text-lg font-bold text-gray-900">
                               {formatPrice(parseInt(product.price) || 0)}
                             </div>
