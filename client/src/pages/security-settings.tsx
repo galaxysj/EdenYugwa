@@ -353,11 +353,11 @@ export default function SecuritySettings() {
               </p>
             </CardHeader>
             <CardContent>
-              {historyLoading ? (
-                <div className="text-center py-8">로딩 중...</div>
-              ) : (
-                <div className="space-y-3">
-                  {loginHistory?.map((attempt) => (
+              <div className="space-y-3">
+                {historyLoading ? (
+                  <div className="text-center py-8">로딩 중...</div>
+                ) : loginHistory && loginHistory.length > 0 ? (
+                  loginHistory.map((attempt) => (
                     <div 
                       key={attempt.id} 
                       className={`border rounded-lg p-3 ${
@@ -405,15 +405,13 @@ export default function SecuritySettings() {
                         </div>
                       </div>
                     </div>
-                  ))}
-                  
-                  {!loginHistory?.length && (
-                    <div className="text-center py-8 text-gray-500">
-                      로그인 기록이 없습니다.
-                    </div>
-                  )}
-                </div>
-              )}
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    아직 로그인 기록이 없습니다.
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -430,7 +428,7 @@ export default function SecuritySettings() {
             <CardContent>
               {settingsLoading ? (
                 <div className="text-center py-8">로딩 중...</div>
-              ) : accessSettings ? (
+              ) : (
                 <div className="space-y-6">
                   {/* 접근 제어 활성화 */}
                   <div className="flex items-center justify-between">
@@ -441,7 +439,7 @@ export default function SecuritySettings() {
                       </p>
                     </div>
                     <Switch
-                      checked={accessSettings.isEnabled}
+                      checked={accessSettings?.isEnabled || false}
                       onCheckedChange={(checked) => updateSetting('isEnabled', checked)}
                     />
                   </div>
@@ -468,7 +466,7 @@ export default function SecuritySettings() {
                     </div>
                     
                     <div className="space-y-2">
-                      {accessSettings.allowedIpRanges?.map((ipRange, index) => (
+                      {accessSettings?.allowedIpRanges?.map((ipRange, index) => (
                         <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                           <span className="text-sm">{ipRange}</span>
                           <Button
@@ -494,14 +492,14 @@ export default function SecuritySettings() {
                     </p>
                     
                     <div className="space-y-2">
-                      {['mobile', 'desktop', 'tablet'].map((deviceType) => (
+                      {['mobile', 'desktop', 'tablet', 'laptop'].map((deviceType) => (
                         <div key={deviceType} className="flex items-center space-x-2">
                           <input
                             type="checkbox"
                             id={deviceType}
-                            checked={accessSettings.allowedDeviceTypes?.includes(deviceType)}
+                            checked={accessSettings?.allowedDeviceTypes?.includes(deviceType) || false}
                             onChange={(e) => {
-                              const currentTypes = accessSettings.allowedDeviceTypes || [];
+                              const currentTypes = accessSettings?.allowedDeviceTypes || [];
                               const newTypes = e.target.checked
                                 ? [...currentTypes, deviceType]
                                 : currentTypes.filter(t => t !== deviceType);
@@ -529,7 +527,7 @@ export default function SecuritySettings() {
                       type="number"
                       min="1"
                       max="20"
-                      value={accessSettings.maxConcurrentSessions}
+                      value={accessSettings?.maxConcurrentSessions || 3}
                       onChange={(e) => updateSetting('maxConcurrentSessions', parseInt(e.target.value))}
                       className="w-24"
                     />
@@ -547,13 +545,13 @@ export default function SecuritySettings() {
                       type="number"
                       min="1"
                       max="168"
-                      value={accessSettings.sessionTimeout}
+                      value={accessSettings?.sessionTimeout || 24}
                       onChange={(e) => updateSetting('sessionTimeout', parseInt(e.target.value))}
                       className="w-24"
                     />
                   </div>
                 </div>
-              ) : null}
+              )}
             </CardContent>
           </Card>
         </TabsContent>
