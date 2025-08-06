@@ -2657,11 +2657,7 @@ export default function Admin() {
                           예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                         </span>
                       )}
-                      {order.deliveredDate && (
-                        <span className="bg-green-100 px-1 py-0.5 rounded text-green-700">
-                          완료: {new Date(order.deliveredDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                        </span>
-                      )}
+
                       {order.sellerShippedDate && (
                         <span className="bg-blue-100 px-1 py-0.5 rounded text-blue-700">
                           발송: {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
