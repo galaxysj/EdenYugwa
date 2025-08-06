@@ -4208,12 +4208,11 @@ export default function Admin() {
                               <div>
                                 <Label className="text-xs">메인 설명</Label>
                                 <div className="flex gap-2 mt-1">
-                                  <Textarea
+                                  <Input
                                     value={dashboardContent.mainDescription}
                                     onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
-                                    placeholder="부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과&#10;달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^"
+                                    placeholder="메인 설명"
                                     className="text-sm"
-                                    rows={3}
                                   />
                                   <Button
                                     size="sm"
@@ -4222,7 +4221,7 @@ export default function Admin() {
                                       value: dashboardContent.mainDescription 
                                     })}
                                     disabled={updateContentMutation.isPending}
-                                    className="px-3 self-start"
+                                    className="px-3"
                                   >
                                     저장
                                   </Button>
