@@ -950,15 +950,33 @@ export default function ManagerDashboard() {
                                   </div>
                                 </div>
 
-                                {/* 예약발송일 */}
-                                {order.scheduledDate && (
-                                  <div className="flex items-center gap-1 mb-2 text-xs">
-                                    <span className="text-gray-600">예약발송일:</span>
-                                    <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
-                                      {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
-                                    </span>
-                                  </div>
-                                )}
+                                {/* 발송 상태 및 일자 표시 - 주문 상태에 따라 동적 변경 */}
+                                <div className="flex items-center gap-1 mb-2 text-xs">
+                                  {order.status === 'scheduled' && order.scheduledDate && (
+                                    <>
+                                      <span className="text-gray-600">발송:</span>
+                                      <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                                        {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                      </span>
+                                    </>
+                                  )}
+                                  {order.status === 'delivered' && order.deliveredDate && (
+                                    <>
+                                      <span className="text-gray-600">발송완료:</span>
+                                      <span className="bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                                        {new Date(order.deliveredDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                      </span>
+                                    </>
+                                  )}
+                                  {order.sellerShipped && order.sellerShippedDate && (
+                                    <>
+                                      <span className="text-gray-600">매니저발송:</span>
+                                      <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+                                        {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
 
                                 {/* 연락처, 주소 */}
                                 <div className="text-xs text-gray-700 mb-2">

@@ -345,8 +345,20 @@ export class DatabaseStorage implements IStorage {
   async updateOrderStatus(id: number, status: string): Promise<Order | undefined> {
     const updateData: any = { status };
     
-    // 발송완료 상태로 변경하는 경우 현재 날짜를 설정
-    if (status === 'delivered') {
+    // 상태별 필드 초기화 및 설정
+    if (status === 'pending') {
+      // 주문접수 상태로 변경 시 모든 발송 관련 필드 초기화
+      updateData.sellerShipped = false;
+      updateData.sellerShippedDate = null;
+      updateData.scheduledDate = null;
+      updateData.deliveredDate = null;
+    } else if (status === 'scheduled') {
+      // 발송주문 상태로 변경 시 예약발송일 설정 (발송완료 관련 필드는 초기화)
+      updateData.deliveredDate = null;
+      updateData.sellerShipped = false;
+      updateData.sellerShippedDate = null;
+    } else if (status === 'delivered') {
+      // 발송완료 상태로 변경하는 경우 현재 날짜를 설정
       updateData.deliveredDate = new Date();
     }
     

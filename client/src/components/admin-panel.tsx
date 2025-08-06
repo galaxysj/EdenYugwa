@@ -44,6 +44,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
       api.orders.updateStatus(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/manager/orders'] }); // 매니저 캐시도 함께 업데이트
       toast({
         title: "상태 업데이트",
         description: "주문 상태가 성공적으로 업데이트되었습니다.",
