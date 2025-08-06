@@ -916,18 +916,15 @@ export default function ManagerDashboard() {
                                     ✕
                                   </button>
                                 </div>
-                                {/* 주문내역과 입금/주문상태 */}
+                                {/* 주문내역 */}
                                 <div className="mb-2 pt-2">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-1 text-xs text-gray-700">
-                                      {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
-                                      {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
-                                      {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
-                                    </div>
-                                    <span className="font-bold text-blue-600 text-xs">{(order.totalAmount || 0).toLocaleString()}원</span>
+                                  <div className="flex items-center gap-1 text-xs text-gray-700 mb-2">
+                                    {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
+                                    {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
+                                    {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                                   </div>
                                   
-                                  {/* 입금상태와 주문상태 */}
+                                  {/* 입금상태와 주문상태 - 관리자와 동일한 표시 */}
                                   <div className="flex items-center gap-2 mb-2">
                                     <span className={`px-2 py-0.5 rounded text-xs ${
                                       order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
@@ -935,10 +932,10 @@ export default function ManagerDashboard() {
                                       order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
                                       'bg-red-100 text-red-700'
                                     }`}>
-                                      입금: {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
-                                             order.paymentStatus === 'confirmed' ? '입금완료' :
-                                             order.paymentStatus === 'partial' ? '부분결제' :
-                                             order.paymentStatus === 'refunded' ? '환불' : '입금대기'}
+                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분' :
+                                       order.paymentStatus === 'confirmed' ? '완료' :
+                                       order.paymentStatus === 'partial' ? '부분' :
+                                       order.paymentStatus === 'refunded' ? '환불' : '미입금'}
                                     </span>
                                     <span className={`px-2 py-0.5 rounded text-xs ${
                                       order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
@@ -946,26 +943,11 @@ export default function ManagerDashboard() {
                                       order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
                                       'bg-gray-100 text-gray-700'
                                     }`}>
-                                      주문: {order.status === 'scheduled' ? '발송주문' :
-                                             order.status === 'delivered' ? '발송완료' :
-                                             order.status === 'seller_shipped' ? '발송대기' : '주문접수'}
+                                      {order.status === 'scheduled' ? '발송주문' :
+                                       order.status === 'delivered' ? '발송완료' :
+                                       order.status === 'seller_shipped' ? '발송대기' : '주문접수'}
                                     </span>
                                   </div>
-
-                                  {/* 금액 상세 정보 */}
-                                  {(order.actualPaidAmount !== order.totalAmount || (order.discountAmount && order.discountAmount > 0)) && (
-                                    <div className="flex items-center gap-3 text-xs mb-2 bg-gray-50 p-2 rounded">
-                                      {order.actualPaidAmount && (
-                                        <span className="text-green-600">실입금: {order.actualPaidAmount.toLocaleString()}원</span>
-                                      )}
-                                      {order.discountAmount && order.discountAmount > 0 && (
-                                        <span className="text-red-600">할인: {order.discountAmount.toLocaleString()}원</span>
-                                      )}
-                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (
-                                        <span className="text-red-600">미입금: {(order.totalAmount - order.actualPaidAmount).toLocaleString()}원</span>
-                                      )}
-                                    </div>
-                                  )}
                                 </div>
 
                                 {/* 예약발송일 */}
