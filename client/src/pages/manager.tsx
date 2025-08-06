@@ -97,12 +97,10 @@ export default function ManagerDashboard() {
     queryKey: ["/api/admin-settings"],
   });
 
-  // 필터링 로직 (매니저용 - 발송주문과 발송완료만 표시)
+  // 필터링 로직 (매니저용 - 관리자가 설정한 발송주문과 발송완료만 표시)
   const filteredOrders = (orders as Order[]).filter(order => {
-    // 매니저는 발송주문(scheduled)과 발송완료(delivered) 상태의 주문만 볼 수 있음
-    if (order.status !== 'scheduled' && order.status !== 'delivered') {
-      return false;
-    }
+    // 서버에서 이미 scheduled/delivered만 반환하므로 추가 필터링 불필요
+    // 매니저는 관리자가 발송주문(scheduled) 또는 발송완료(delivered)로 설정한 주문만 볼 수 있음
 
     // 날짜 필터링
     if (orderDateFilter === 'today') {
