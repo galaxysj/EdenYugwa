@@ -318,11 +318,6 @@ function PriceSettingsDialog() {
     queryKey: ["/api/settings"],
   });
   
-  // Load dashboard content for product names
-  const { data: contentData } = useQuery<DashboardContent[]>({
-    queryKey: ["/api/dashboard-content"],
-  });
-  
   // Cost settings (원가)
   const [smallBoxCost, setSmallBoxCost] = useState("");
   const [largeBoxCost, setLargeBoxCost] = useState("");
@@ -334,12 +329,6 @@ function PriceSettingsDialog() {
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
-  
-  // Get dynamic product names from dashboard content
-  const getProductName = (productKey: string, defaultName: string) => {
-    const content = contentData?.find(item => item.key === productKey);
-    return content?.value || defaultName;
-  };
   
   // Load existing settings when dialog opens
   useEffect(() => {
