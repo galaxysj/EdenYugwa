@@ -1915,17 +1915,45 @@ export default function Admin() {
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">한과1호</div>
+                  <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">
+                    {(() => {
+                      try {
+                        const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                        return productNames[0]?.name || '한과1호';
+                      } catch {
+                        return '한과1호';
+                      }
+                    })()}
+                  </div>
                   <div className="text-sm md:text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">한과2호</div>
+                  <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">
+                    {(() => {
+                      try {
+                        const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                        return productNames[1]?.name || '한과2호';
+                      } catch {
+                        return '한과2호';
+                      }
+                    })()}
+                  </div>
                   <div className="text-sm md:text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
                 </div>
                 
                 <div>
-                  <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">보자기</div>
+                  <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">
+                    {(() => {
+                      try {
+                        const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                        const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name?.includes('보자기'));
+                        return wrappingProduct?.name || productNames[2]?.name || '보자기';
+                      } catch {
+                        return '보자기';
+                      }
+                    })()}
+                  </div>
                   <div className="text-sm md:text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
                 </div>
                 
@@ -1987,15 +2015,43 @@ export default function Admin() {
                   <span className="text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-amber-600">{dashboardContent.productNames?.[0]?.name || '한과1호'}</span>
+                  <span className="text-xs text-amber-600">
+                    {(() => {
+                      try {
+                        const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                        return productNames[0]?.name || '한과1호';
+                      } catch {
+                        return '한과1호';
+                      }
+                    })()}
+                  </span>
                   <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-orange-600">{dashboardContent.productNames?.[1]?.name || '한과2호'}</span>
+                  <span className="text-xs text-orange-600">
+                    {(() => {
+                      try {
+                        const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                        return productNames[1]?.name || '한과2호';
+                      } catch {
+                        return '한과2호';
+                      }
+                    })()}
+                  </span>
                   <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-eden-brown">{dashboardContent.productNames?.[2]?.name || '보자기'}</span>
+                  <span className="text-xs text-eden-brown">
+                    {(() => {
+                      try {
+                        const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                        const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name?.includes('보자기'));
+                        return wrappingProduct?.name || productNames[2]?.name || '보자기';
+                      } catch {
+                        return '보자기';
+                      }
+                    })()}
+                  </span>
                   <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
