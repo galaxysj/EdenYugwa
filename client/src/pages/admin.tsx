@@ -796,29 +796,47 @@ export default function Admin() {
     }
 
     try {
-      const newImages = [];
-      let processedCount = 0;
+      // Show loading state
+      toast({ title: "이미지 업로드 중..." });
 
+      // Process files sequentially to maintain order
+      const newImages: string[] = [];
+      
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const reader = new FileReader();
-        
-        reader.onload = (e) => {
-          const imageUrl = e.target?.result as string;
-          newImages.push(imageUrl);
-          processedCount++;
-
-          if (processedCount === files.length) {
-            const updatedImages = [...dashboardContent.heroImages, ...newImages];
-            setDashboardContent({...dashboardContent, heroImages: updatedImages});
-            updateContentMutation.mutate({ key: 'heroImages', value: JSON.stringify(updatedImages) });
-            toast({ title: `${files.length}개 이미지가 업로드되었습니다.` });
-          }
-        };
-        
-        reader.readAsDataURL(file);
+        const imageUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        newImages.push(imageUrl);
       }
+
+      // Update state and save to database
+      const updatedImages = [...dashboardContent.heroImages, ...newImages];
+      setDashboardContent({...dashboardContent, heroImages: updatedImages});
+      
+      try {
+        await updateContentMutation.mutateAsync({ 
+          key: 'heroImages', 
+          value: JSON.stringify(updatedImages) 
+        });
+        toast({ title: `${files.length}개 이미지가 업로드되었습니다.` });
+      } catch (dbError) {
+        console.error('Database save error:', dbError);
+        toast({ 
+          title: "저장 실패", 
+          description: "이미지는 업로드되었지만 데이터베이스 저장에 실패했습니다.",
+          variant: "destructive"
+        });
+      }
+
+      // Reset file input
+      event.target.value = '';
+      
     } catch (error) {
+      console.error('Image upload error:', error);
       toast({ 
         title: "업로드 실패", 
         description: "이미지 업로드 중 오류가 발생했습니다.",
@@ -859,6 +877,10 @@ export default function Admin() {
           } catch {
             updatedContent.heroImages = [];
           }
+        }
+        // Legacy heroImageUrl support - convert to heroImages array
+        if (item.key === 'heroImageUrl' && item.value && !updatedContent.heroImages?.length) {
+          updatedContent.heroImages = [item.value];
         }
         if (item.key === 'aboutText') updatedContent.aboutText = item.value;
         if (item.key === 'bankAccount') updatedContent.bankAccount = item.value;
