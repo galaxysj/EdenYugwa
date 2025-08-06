@@ -375,20 +375,25 @@ function PriceSettingsDialog() {
       setShippingFee(shippingFeeSetting?.value || "");
       setFreeShippingThreshold(thresholdSetting?.value || "");
       
-      // Load product prices only if they don't already exist (preserve current input)
+      // Load product prices, preserving current input but adding new products
       setProductPrices(prevPrices => {
-        const newProductPrices: {[key: string]: {cost: string, price: string}} = {};
+        const newProductPrices: {[key: string]: {cost: string, price: string}} = { ...prevPrices };
+        
         localProductNames.forEach((product: any, index: number) => {
           const productKey = product.key || `product_${index}`;
-          const costSetting = settings.find(s => s.key === `${productKey}Cost`);
-          const priceSetting = settings.find(s => s.key === `${productKey}Price`);
           
-          // Only update from database if no current input exists
-          newProductPrices[productKey] = {
-            cost: prevPrices[productKey]?.cost || costSetting?.value || "",
-            price: prevPrices[productKey]?.price || priceSetting?.value || ""
-          };
+          // Only add if this product doesn't already exist in state
+          if (!newProductPrices[productKey]) {
+            const costSetting = settings.find(s => s.key === `${productKey}Cost`);
+            const priceSetting = settings.find(s => s.key === `${productKey}Price`);
+            
+            newProductPrices[productKey] = {
+              cost: costSetting?.value || "",
+              price: priceSetting?.value || ""
+            };
+          }
         });
+        
         return newProductPrices;
       });
     }
@@ -411,10 +416,15 @@ function PriceSettingsDialog() {
     },
   });
 
-  // Individual price save mutation without cache invalidation
+  // Individual price save mutation with cache invalidation for bulk save
   const saveIndividualPriceMutation = useMutation({
     mutationFn: async (data: { key: string; value: string; description: string }) => {
       return await api.settings.create(data);
+    },
+    onSuccess: () => {
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
     },
     onError: () => {
       toast({
@@ -465,28 +475,29 @@ function PriceSettingsDialog() {
     try {
       const savePromises: Promise<any>[] = [];
       
-      // Collect all prices to save
-      Object.entries(productPrices).forEach(([productKey, prices]) => {
-        const product = localProductNames.find((p: any, index: number) => 
-          (p.key || `product_${index}`) === productKey
-        );
+      // Collect all prices to save from all products
+      localProductNames.forEach((product: any, index: number) => {
+        const productKey = product.key || `product_${index}`;
+        const prices = productPrices[productKey];
         
-        if (product) {
-          if (prices.cost) {
+        if (prices) {
+          // Save cost if it has a value
+          if (prices.cost && prices.cost.trim() !== "") {
             savePromises.push(
               saveIndividualPriceMutation.mutateAsync({
                 key: `${productKey}Cost`,
-                value: prices.cost,
+                value: prices.cost.trim(),
                 description: `${product.name} 원가`
               })
             );
           }
           
-          if (prices.price) {
+          // Save price if it has a value
+          if (prices.price && prices.price.trim() !== "") {
             savePromises.push(
               saveIndividualPriceMutation.mutateAsync({
                 key: `${productKey}Price`,
-                value: prices.price,
+                value: prices.price.trim(),
                 description: `${product.name} 판매가`
               })
             );
@@ -497,18 +508,21 @@ function PriceSettingsDialog() {
       if (savePromises.length === 0) {
         toast({
           title: "저장할 가격 없음",
-          description: "저장할 가격 정보가 없습니다.",
+          description: "입력된 가격 정보가 없습니다. 가격을 먼저 입력해주세요.",
           variant: "destructive"
         });
         return;
       }
       
+      // Execute all save operations
       await Promise.all(savePromises);
       
       toast({
         title: "일괄 저장 완료",
         description: `총 ${savePromises.length}개의 가격 정보가 저장되었습니다.`,
       });
+      
+      // Don't clear the product prices - keep the current input values
       
     } catch (error) {
       console.error("일괄 저장 오류:", error);
