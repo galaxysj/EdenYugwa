@@ -171,8 +171,8 @@ export default function ManagerDashboard() {
       '전화번호': order.customerPhone,
       '주소': `${order.address1} ${order.address2 || ''}`.trim(),
       '상품': [
-        order.smallBoxQuantity > 0 ? `한과1호×${order.smallBoxQuantity}개` : '',
-        order.largeBoxQuantity > 0 ? `한과2호×${order.largeBoxQuantity}개` : '',
+        order.smallBoxQuantity > 0 ? `한과한과1호(약1.1kg)×${order.smallBoxQuantity}개` : '',
+        order.largeBoxQuantity > 0 ? `한과한과2호(약2.5kg)×${order.largeBoxQuantity}개` : '',
         order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
       ].filter(Boolean).join(', '),
       '주문금액': order.totalAmount,
@@ -698,10 +698,10 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호×{order.smallBoxQuantity}개</div>
+                                  <div>한과한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호×{order.largeBoxQuantity}개</div>
+                                  <div>한과한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
                                   <div>보자기×{order.wrappingQuantity}개</div>
@@ -862,8 +862,8 @@ export default function ManagerDashboard() {
                           {/* 중간: 주문내역 */}
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1 text-xs text-gray-700">
-                              {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
-                              {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                              {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
+                              {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
                               {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
@@ -1124,10 +1124,10 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호×{order.smallBoxQuantity}개</div>
+                                  <div>한과한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호×{order.largeBoxQuantity}개</div>
+                                  <div>한과한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
                                   <div>보자기×{order.wrappingQuantity}개</div>
@@ -1287,8 +1287,8 @@ export default function ManagerDashboard() {
                           {/* 중간: 주문내역 */}
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1 text-xs text-gray-700">
-                              {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
-                              {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                              {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
+                              {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
                               {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
@@ -1488,10 +1488,10 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호×{order.smallBoxQuantity}개</div>
+                                  <div>한과한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호×{order.largeBoxQuantity}개</div>
+                                  <div>한과한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
                                   <div>보자기×{order.wrappingQuantity}개</div>
@@ -1651,8 +1651,8 @@ export default function ManagerDashboard() {
                           {/* 중간: 주문내역 */}
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1 text-xs text-gray-700">
-                              {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
-                              {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
+                              {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
+                              {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
                               {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
