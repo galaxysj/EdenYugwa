@@ -4046,10 +4046,50 @@ export default function Admin() {
                                 </Button>
                                 <Button
                                   onClick={() => {
+                                    // 보자기 상품이 이미 있는지 확인
+                                    const existingWrapping = dashboardContent.productNames?.find((p: any) => 
+                                      p.name?.includes('보자기') || p.name === dashboardContent.wrappingName
+                                    );
+                                    
+                                    if (existingWrapping) {
+                                      toast({
+                                        title: "이미 존재함",
+                                        description: "보자기 상품이 이미 목록에 있습니다.",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    // 보자기 상품 추가
+                                    const wrappingProduct = {
+                                      name: dashboardContent.wrappingName || '보자기',
+                                      price: dashboardContent.wrappingPriceAmount || '1000',
+                                      cost: dashboardContent.wrappingCost || '200',
+                                      size: '',
+                                      weight: ''
+                                    };
+                                    
+                                    const newProductNames = [...(dashboardContent.productNames || []), wrappingProduct];
+                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                    
+                                    toast({
+                                      title: "보자기 상품 추가됨",
+                                      description: "보자기가 상품 목록에 추가되었습니다.",
+                                    });
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  보자기 추가
+                                </Button>
+                                <Button
+                                  onClick={() => {
                                     if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
                                       const defaultProductNames = [
                                         { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-                                        { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+                                        { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' },
+                                        { name: '보자기', price: '1000', cost: '200', size: '', weight: '' }
                                       ];
                                       setDashboardContent({...dashboardContent, productNames: defaultProductNames});
                                       setDashboardContent({...dashboardContent, ...defaultContent});
@@ -4219,107 +4259,7 @@ export default function Admin() {
                               )}
                             </div>
                             
-                            {/* 보자기 상품 설정 - Table Format */}
-                            <div className="border-t border-gray-200 pt-4 space-y-3">
-                              <h4 className="text-sm font-medium text-gray-900">보자기 상품</h4>
-                              <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                                <table className="w-full">
-                                  <thead>
-                                    <tr className="bg-gray-50 border-b border-gray-200">
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">상품명</th>
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">판매가</th>
-                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">원가</th>
-                                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-600">작업</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr className="border-b border-gray-100 hover:bg-gray-50">
-                                      <td className="px-3 py-2">
-                                        <Input
-                                          value={dashboardContent.wrappingName || '보자기'}
-                                          onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
-                                          placeholder="보자기"
-                                          className="h-8 text-sm border-gray-200 focus:border-blue-300"
-                                        />
-                                      </td>
-                                      <td className="px-3 py-2">
-                                        <Input
-                                          type="number"
-                                          value={dashboardContent.wrappingPriceAmount || '1000'}
-                                          onChange={(e) => setDashboardContent({...dashboardContent, wrappingPriceAmount: e.target.value})}
-                                          placeholder="1000"
-                                          className="h-8 text-sm border-gray-200 focus:border-blue-300"
-                                        />
-                                      </td>
-                                      <td className="px-3 py-2">
-                                        <Input
-                                          type="number"
-                                          value={dashboardContent.wrappingCost || '200'}
-                                          onChange={(e) => setDashboardContent({...dashboardContent, wrappingCost: e.target.value})}
-                                          placeholder="200"
-                                          className="h-8 text-sm border-gray-200 focus:border-blue-300"
-                                        />
-                                      </td>
-                                      <td className="px-3 py-2 text-center">
-                                        <Button
-                                          size="sm"
-                                          onClick={() => {
-                                            // 보자기 정보를 저장
-                                            updateContentMutation.mutate({ key: 'wrappingName', value: dashboardContent.wrappingName });
-                                            updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: dashboardContent.wrappingPriceAmount });
-                                            updateContentMutation.mutate({ key: 'wrappingCost', value: dashboardContent.wrappingCost });
-                                            
-                                            // 보자기를 상품 목록에도 추가/업데이트
-                                            const productNames = [...(dashboardContent.productNames || [])];
-                                            const wrappingIndex = productNames.findIndex((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
-                                            const wrappingProduct = {
-                                              name: dashboardContent.wrappingName || '보자기',
-                                              price: dashboardContent.wrappingPriceAmount || '1000',
-                                              cost: dashboardContent.wrappingCost || '200',
-                                              size: '',
-                                              weight: ''
-                                            };
-                                            
-                                            if (wrappingIndex >= 0) {
-                                              productNames[wrappingIndex] = wrappingProduct;
-                                            } else {
-                                              productNames.push(wrappingProduct);
-                                            }
-                                            
-                                            setDashboardContent({...dashboardContent, productNames});
-                                            updateContentMutation.mutate({ 
-                                              key: 'productNames', 
-                                              value: JSON.stringify(productNames) 
-                                            });
-                                            
-                                            // product-prices API에도 동기화
-                                            fetch('/api/product-prices', {
-                                              method: 'POST',
-                                              headers: { 'Content-Type': 'application/json' },
-                                              body: JSON.stringify({
-                                                productIndex: wrappingIndex >= 0 ? wrappingIndex : productNames.length - 1,
-                                                productName: dashboardContent.wrappingName || '보자기',
-                                                price: parseInt(dashboardContent.wrappingPriceAmount) || 1000,
-                                                cost: parseInt(dashboardContent.wrappingCost) || 200
-                                              })
-                                            });
-                                            
-                                            toast({
-                                              title: "보자기 정보 저장 완료",
-                                              description: "보자기 상품 정보가 업데이트되었습니다.",
-                                            });
-                                          }}
-                                          disabled={updateContentMutation.isPending}
-                                          className="h-7 px-2 text-xs"
-                                        >
-                                          저장
-                                        </Button>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
+
                           </div>
 
                           {/* 메인 콘텐츠 */}

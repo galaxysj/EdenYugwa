@@ -648,67 +648,7 @@ export default function OrderForm() {
                       {/* Divider */}
                       <div className="border-t border-eden-beige/50"></div>
 
-                      {/* 보자기 상품 Selection */}
-                      <div>
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">
-                              {(() => {
-                                try {
-                                  const productNames = JSON.parse(dashboardContent.productNames || '[]');
-                                  const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
-                                  return wrappingProduct?.name || dashboardContent.wrappingName || "보자기";
-                                } catch {
-                                  return dashboardContent.wrappingName || "보자기";
-                                }
-                              })()}
-                            </h5>
-                            <p className="text-xs text-black mt-1">개당 {formatPrice(prices.wrapping)}</p>
-                          </div>
-                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="wrappingQuantity"
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormLabel className="text-sm font-medium">수량</FormLabel>
-                                <FormControl>
-                                  <div className="flex items-center space-x-1">
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-7 h-7 p-0 text-xs"
-                                    >
-                                      -
-                                    </Button>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-12 h-7 text-center text-xs px-1"
-                                    />
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(field.value + 1)}
-                                      className="w-7 h-7 p-0 text-xs"
-                                    >
-                                      +
-                                    </Button>
-                                  </div>
-                                </FormControl>
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+
                     </div>
                   </div>
 
