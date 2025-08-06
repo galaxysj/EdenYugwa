@@ -95,7 +95,10 @@ export default function OrderForm() {
     return acc;
   }, {}) : {};
 
-  // Parse product names safely
+  // State for product names with updated prices
+  const [productNames, setProductNames] = useState<any[]>([]);
+
+  // Parse product names safely and load prices
   const parseProductNames = () => {
     try {
       if (!dashboardContent.productNames) return [];
@@ -108,8 +111,6 @@ export default function OrderForm() {
       return [];
     }
   };
-
-  const productNames = parseProductNames();
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -184,15 +185,25 @@ export default function OrderForm() {
           wrapping: 1000,
         };
 
+        // 새로운 가격 설정 시스템에서 가격 로드
+        const product0PriceSetting = allSettings.find((s: any) => s.key === "product_0Price");
+        const product1PriceSetting = allSettings.find((s: any) => s.key === "product_1Price");
+        const product2PriceSetting = allSettings.find((s: any) => s.key === "product_2Price");
+        const product3PriceSetting = allSettings.find((s: any) => s.key === "product_3Price");
+
         // 폴백: 기존 settings 사용
         const smallBoxPriceSetting = allSettings.find((s: any) => s.key === "smallBoxPrice");
         const largeBoxPriceSetting = allSettings.find((s: any) => s.key === "largeBoxPrice");
         const wrappingPriceSetting = allSettings.find((s: any) => s.key === "wrappingPrice");
 
         priceData = {
-          small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
-          large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
-          wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
+          small: product0PriceSetting ? parseInt(product0PriceSetting.value) : 
+                 (smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000),
+          large: product1PriceSetting ? parseInt(product1PriceSetting.value) : 
+                 (largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000),
+          wrapping: product2PriceSetting ? parseInt(product2PriceSetting.value) : 
+                   (product3PriceSetting ? parseInt(product3PriceSetting.value) : 
+                   (wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000)),
         };
 
         setPrices(priceData);
@@ -206,27 +217,51 @@ export default function OrderForm() {
     loadSettings();
   }, []);
 
-  // Dashboard content에서 상품 가격 동적 로드
+  // Fetch settings data for pricing
+  const { data: settingsData } = useQuery({
+    queryKey: ['/api/settings'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Update product names with prices from settings when data changes
   useEffect(() => {
-    if (dashboardContent && dashboardContent.productNames) {
+    if (dashboardContent && dashboardContent.productNames && settingsData) {
       try {
-        const productNames = JSON.parse(dashboardContent.productNames);
+        const productNamesData = parseProductNames();
         
-        // 상품 가격을 dashboard content에서 추출
-        const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
+        // 각 상품에 대해 설정에서 가격 로드 및 업데이트
+        const updatedProductNames = productNamesData.map((product: any, index: number) => {
+          const productKey = product.key || `product_${index}`;
+          const priceSetting = settingsData.find((s: any) => s.key === `${productKey}Price`);
+          
+          return {
+            ...product,
+            price: priceSetting ? priceSetting.value : (product.price || "0")
+          };
+        });
+        
+        setProductNames(updatedProductNames);
+        
+        // 기존 가격 업데이트 로직
+        const wrappingProduct = updatedProductNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
         const updatedPrices = {
-          small: productNames[0]?.price ? parseInt(productNames[0].price) : prices.small,
-          large: productNames[1]?.price ? parseInt(productNames[1].price) : prices.large,
+          small: updatedProductNames[0]?.price ? parseInt(updatedProductNames[0].price) : prices.small,
+          large: updatedProductNames[1]?.price ? parseInt(updatedProductNames[1].price) : prices.large,
           wrapping: wrappingProduct?.price ? parseInt(wrappingProduct.price) : 
                    (dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000),
         };
 
         setPrices(updatedPrices);
+        
       } catch (error) {
         console.error('상품 가격 로드 실패:', error);
+        // Fallback to basic product names without price updates
+        setProductNames(parseProductNames());
       }
+    } else if (dashboardContent) {
+      setProductNames(parseProductNames());
     }
-  }, [dashboardContent]);
+  }, [dashboardContent?.productNames, settingsData]);
 
   // 로그인된 사용자의 정보로 폼 초기화
   useEffect(() => {
