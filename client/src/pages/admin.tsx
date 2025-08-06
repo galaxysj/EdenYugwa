@@ -3379,6 +3379,74 @@ export default function Admin() {
                   )}
                 </TabsContent>
                 
+                <TabsContent value="orders" className="mt-6">
+                  {renderOrderFilters()}
+                  
+                  {/* 모바일 일괄 관리 */}
+                  <div className="lg:hidden mb-4">
+                    <div className="text-xs text-gray-600 mb-2">
+                      총 {allOrders.length}개 주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(allOrders, "전체주문목록")}
+                      className="flex items-center gap-2 text-xs w-full"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
+
+                  {/* 데스크톱 일괄 관리 */}
+                  <div className="hidden lg:flex justify-between items-center mb-4">
+                    <div className="text-xs md:text-sm text-gray-600">
+                      총 {allOrders.length}개 주문
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(allOrders, "전체주문목록")}
+                      className="flex items-center gap-2 text-xs md:text-sm"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
+                  {selectedOrderItems.size > 0 && (
+                    <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-red-700">
+                          {selectedOrderItems.size}개 주문이 선택되었습니다
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedOrderItems(new Set())}
+                          >
+                            선택 해제
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm(`선택된 ${selectedOrderItems.size}개 주문을 삭제하시겠습니까?`)) {
+                                bulkDeleteMutation.mutate(Array.from(selectedOrderItems));
+                              }
+                            }}
+                            disabled={bulkDeleteMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            일괄 삭제
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {renderOrdersList(allOrders)}
+                </TabsContent>
+
                 <TabsContent value="revenue" className="mt-6">
                   {renderRevenueReport()}
                 </TabsContent>
