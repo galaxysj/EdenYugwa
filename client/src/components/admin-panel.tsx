@@ -67,18 +67,31 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const handleSendSMS = (order: Order) => {
     const statusMessage = getStatusMessage(order.status);
     const message = `[에덴한과] ${order.customerName}님, ${statusMessage}`;
-    const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(order.customerPhone + '/' + message)}`;
+    const input = `${order.customerPhone}/${message}`;
+    const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
+    
+    console.log('관리자 단축어 URL:', shortcutUrl);
+    console.log('전화번호:', order.customerPhone);
+    console.log('메시지:', message);
+    console.log('입력값:', input);
     
     try {
-      window.open(shortcutUrl, '_self');
+      // 모바일에서는 location.href가 더 잘 작동할 수 있음
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        window.location.href = shortcutUrl;
+      } else {
+        window.open(shortcutUrl, '_blank');
+      }
+      
       toast({
-        title: "SMS 앱 열기 완료",
-        description: "iOS 단축어로 SMS를 발송합니다.",
+        title: "단축어 실행",
+        description: "iOS 단축어 앱을 열고 있습니다.",
       });
     } catch (error) {
+      console.error('단축어 실행 오류:', error);
       toast({
-        title: "SMS 앱 열기 실패",
-        description: "iOS 단축어를 실행할 수 없습니다.",
+        title: "단축어 실행 실패",
+        description: "iOS 단축어를 실행할 수 없습니다. 단축어 앱이 설치되어 있는지 확인해주세요.",
         variant: "destructive",
       });
     }
