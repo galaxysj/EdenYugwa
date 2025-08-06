@@ -453,6 +453,74 @@ function PriceSettingsDialog() {
       setSavingPrices(prev => ({...prev, [saveKey]: false}));
     }
   };
+
+  // Bulk save all prices
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
+  
+  const saveAllPrices = async () => {
+    if (isBulkSaving) return;
+    
+    setIsBulkSaving(true);
+    
+    try {
+      const savePromises: Promise<any>[] = [];
+      
+      // Collect all prices to save
+      Object.entries(productPrices).forEach(([productKey, prices]) => {
+        const product = localProductNames.find((p: any, index: number) => 
+          (p.key || `product_${index}`) === productKey
+        );
+        
+        if (product) {
+          if (prices.cost) {
+            savePromises.push(
+              saveIndividualPriceMutation.mutateAsync({
+                key: `${productKey}Cost`,
+                value: prices.cost,
+                description: `${product.name} 원가`
+              })
+            );
+          }
+          
+          if (prices.price) {
+            savePromises.push(
+              saveIndividualPriceMutation.mutateAsync({
+                key: `${productKey}Price`,
+                value: prices.price,
+                description: `${product.name} 판매가`
+              })
+            );
+          }
+        }
+      });
+      
+      if (savePromises.length === 0) {
+        toast({
+          title: "저장할 가격 없음",
+          description: "저장할 가격 정보가 없습니다.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      await Promise.all(savePromises);
+      
+      toast({
+        title: "일괄 저장 완료",
+        description: `총 ${savePromises.length}개의 가격 정보가 저장되었습니다.`,
+      });
+      
+    } catch (error) {
+      console.error("일괄 저장 오류:", error);
+      toast({
+        title: "일괄 저장 실패",
+        description: "일부 가격 저장에 실패했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsBulkSaving(false);
+    }
+  };
   
   const handleSave = async () => {
     if (!shippingFee || !freeShippingThreshold) {
@@ -516,6 +584,16 @@ function PriceSettingsDialog() {
             </div>
             {localProductNames && localProductNames.length > 0 ? (
               <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-gray-600">각 상품별로 개별 저장하거나 전체 일괄 저장할 수 있습니다.</p>
+                  <Button
+                    onClick={saveAllPrices}
+                    disabled={isBulkSaving}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isBulkSaving ? "일괄 저장 중..." : "전체 일괄 저장"}
+                  </Button>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full border border-gray-200 rounded-lg">
                     <thead>
