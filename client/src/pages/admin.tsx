@@ -745,6 +745,8 @@ export default function Admin() {
     largeBoxName: "한과2호(약 2kg) 약 50×25×15cm",
     smallBoxDimensions: "약 35.5×21×11.2cm",
     largeBoxDimensions: "약 37×23×11.5cm",
+    wrappingName: "보자기",
+    wrappingPrice: "개당 +1,000원",
     mainTitle: "이든 한과",
     mainDescription: "전통 한과를 맛보세요",
     heroImageUrl: "",
@@ -3852,6 +3854,52 @@ export default function Admin() {
                                     {updateContentMutation.isPending ? "저장 중..." : "저장"}
                                   </Button>
                                 </div>
+                              </div>
+                            </div>
+                            
+                            {/* 보자기 포장 설정 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-200">
+                              <div>
+                                <Label htmlFor="wrappingName">보자기 포장명</Label>
+                                <Input
+                                  id="wrappingName"
+                                  value={dashboardContent.wrappingName}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
+                                  placeholder="예: 보자기"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'wrappingName', 
+                                    value: dashboardContent.wrappingName 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              <div>
+                                <Label htmlFor="wrappingPrice">보자기 포장 가격</Label>
+                                <Input
+                                  id="wrappingPrice"
+                                  value={dashboardContent.wrappingPrice}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
+                                  placeholder="예: 개당 +1,000원"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'wrappingPrice', 
+                                    value: dashboardContent.wrappingPrice 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
                               </div>
                             </div>
                           </div>

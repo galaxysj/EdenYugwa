@@ -517,8 +517,8 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">보자기</h5>
-                            <p className="text-xs text-black mt-1">개당 +1,000원</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.wrappingName || "보자기"}</h5>
+                            <p className="text-xs text-black mt-1">{dashboardContent.wrappingPrice || "개당 +1,000원"}</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
                         </div>
