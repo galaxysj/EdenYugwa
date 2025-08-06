@@ -330,7 +330,6 @@ export default function ManagerDashboard() {
         adminSettings={adminSettings}
         isManager={true}
       />
-
       <div className="container mx-auto p-4 space-y-6">
         {currentPage === "orders" && (
           <>
@@ -386,7 +385,8 @@ export default function ManagerDashboard() {
               {/* 필터링 UI */}
               <Card>
                 <CardContent className="pt-4 pb-4">
-                  <div className="flex flex-wrap items-center gap-4">
+                  {/* 데스크탑 필터 레이아웃 */}
+                  <div className="hidden md:flex flex-wrap items-center gap-4">
                     {/* 날짜 필터 */}
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">주문일:</label>
@@ -482,6 +482,67 @@ export default function ManagerDashboard() {
                       </Select>
                     </div>
                   </div>
+
+                  {/* 모바일 필터 레이아웃 */}
+                  <div className="md:hidden space-y-3">
+                    {/* 첫 번째 줄: 주문일, 고객명 */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">주문일</label>
+                        <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="today">오늘</SelectItem>
+                            <SelectItem value="week">7일</SelectItem>
+                            <SelectItem value="month">30일</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">고객명</label>
+                        <Input
+                          placeholder="검색"
+                          value={customerNameFilter}
+                          onChange={(e) => setCustomerNameFilter(e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 두 번째 줄: 결제상태, 주문상태 */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">결제상태</label>
+                        <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="pending">미입금</SelectItem>
+                            <SelectItem value="confirmed">입금완료</SelectItem>
+                            <SelectItem value="partial">부분결제</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">판매자발송</label>
+                        <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">전체</SelectItem>
+                            <SelectItem value="shipped">완료</SelectItem>
+                            <SelectItem value="not_shipped">대기</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -489,7 +550,7 @@ export default function ManagerDashboard() {
               <TabsContent value="전체보기" className="space-y-4">
                 <div className="bg-white border rounded-lg">
                   <div className="p-4 border-b flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
+                    <h2 className="font-semibold text-[12px]">주문 목록 (총 {filteredOrders.length}개)</h2>
                     <div className="flex gap-2">
                       <Button
                         size="sm"
