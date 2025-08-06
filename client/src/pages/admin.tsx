@@ -1419,13 +1419,13 @@ export default function Admin() {
         </Card>
         
         {/* 매출관리 주문 상세 리스트 */}
-        {filteredOrders.length > 0 && (
+        {orders.length > 0 && (
           <Card className="border-blue-200">
             <CardHeader className="bg-blue-50">
               <CardTitle className="flex items-center justify-between">
                 <span className="text-base md:text-lg text-blue-800">📊 매출 상세내역</span>
                 <span className="text-sm font-normal text-blue-600 bg-white px-2 py-1 rounded">
-                  {filteredOrders.length}건
+                  {orders.length}건
                 </span>
               </CardTitle>
               <p className="text-xs md:text-sm text-blue-700 mt-1">
@@ -1450,7 +1450,7 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOrders
+                    {orders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
                       const smallBoxTotal = order.smallBoxQuantity * 19000;
@@ -1595,14 +1595,14 @@ export default function Admin() {
               <div className="md:hidden">
                 <div className="mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800 font-bold text-center">
-                    📊 매출 상세 분석표 ({filteredOrders.length}건)
+                    📊 매출 상세 분석표 ({orders.length}건)
                   </p>
                   <p className="text-xs text-blue-600 text-center mt-1">
                     주문별 수익성 분석 • 리스트형 최적화 표시
                   </p>
                 </div>
                 <div className="space-y-1">
-                {filteredOrders
+                {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
                   const smallBoxTotal = order.smallBoxQuantity * 19000;
