@@ -360,6 +360,7 @@ function PriceSettingsDialog() {
   
   // Product price states
   const [productPrices, setProductPrices] = useState<{[key: string]: {cost: string, price: string}}>({});
+  const [savingPrices, setSavingPrices] = useState<{[key: string]: boolean}>({});
   
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
@@ -396,20 +397,44 @@ function PriceSettingsDialog() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      toast({
-        title: "배송비 설정 완료",
-        description: "배송비 설정이 업데이트되었습니다.",
-      });
-      setOpen(false);
     },
     onError: () => {
       toast({
         title: "오류 발생",
-        description: "배송비 설정 업데이트에 실패했습니다.",
+        description: "설정 업데이트에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
+
+  // Individual price save function
+  const saveIndividualPrice = async (productKey: string, priceType: 'cost' | 'price', value: string, productName: string) => {
+    const saveKey = `${productKey}-${priceType}`;
+    if (savingPrices[saveKey]) return;
+    
+    setSavingPrices(prev => ({...prev, [saveKey]: true}));
+    
+    try {
+      await updateShippingMutation.mutateAsync({
+        key: `${productKey}${priceType === 'cost' ? 'Cost' : 'Price'}`,
+        value: value,
+        description: `${productName} ${priceType === 'cost' ? '원가' : '판매가'}`
+      });
+      
+      toast({
+        title: "저장 완료",
+        description: `${productName}의 ${priceType === 'cost' ? '원가' : '판매가'}가 저장되었습니다.`,
+      });
+    } catch (error) {
+      toast({
+        title: "저장 실패",
+        description: "저장 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingPrices(prev => ({...prev, [saveKey]: false}));
+    }
+  };
   
   const handleSave = async () => {
     if (!shippingFee || !freeShippingThreshold) {
@@ -422,28 +447,7 @@ function PriceSettingsDialog() {
     }
     
     try {
-      // Save product prices first
-      for (const product of localProductNames) {
-        const productPrice = productPrices[product.key];
-        if (productPrice) {
-          if (productPrice.cost) {
-            await updateShippingMutation.mutateAsync({
-              key: `${product.key}Cost`,
-              value: productPrice.cost,
-              description: `${product.name} 원가`
-            });
-          }
-          if (productPrice.price) {
-            await updateShippingMutation.mutateAsync({
-              key: `${product.key}Price`,
-              value: productPrice.price,
-              description: `${product.name} 판매가`
-            });
-          }
-        }
-      }
-      
-      // Shipping settings
+      // Shipping settings only
       await updateShippingMutation.mutateAsync({
         key: "shippingFee",
         value: shippingFee,
@@ -458,14 +462,14 @@ function PriceSettingsDialog() {
       
       toast({
         title: "저장 완료",
-        description: "상품 가격 및 배송비 설정이 저장되었습니다.",
+        description: "배송비 설정이 저장되었습니다.",
       });
       
     } catch (error) {
-      console.error("가격 설정 저장 오류:", error);
+      console.error("배송비 설정 저장 오류:", error);
       toast({
         title: "저장 실패",
-        description: "설정 저장 중 오류가 발생했습니다.",
+        description: "배송비 설정 저장 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     }
@@ -498,46 +502,76 @@ function PriceSettingsDialog() {
                   <table className="w-full border border-gray-200 rounded-lg">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b">상품명</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b">원가 (원)</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b">판매가 (원)</th>
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">상품명</th>
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">원가 (원)</th>
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">판매가 (원)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {localProductNames.map((product: any, index: number) => (
                         <tr key={index} className="hover:bg-gray-50 transition-colors duration-150 border-b last:border-b-0">
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                          <td className="px-3 py-3 text-sm font-medium text-gray-900">
                             {product.name}
                           </td>
-                          <td className="px-4 py-3">
-                            <Input
-                              type="number"
-                              placeholder="원가 입력"
-                              value={productPrices[product.key]?.cost || ""}
-                              onChange={(e) => setProductPrices(prev => ({
-                                ...prev,
-                                [product.key]: {
-                                  cost: e.target.value,
-                                  price: prev[product.key]?.price || ""
-                                }
-                              }))}
-                              className="w-full text-sm"
-                            />
+                          <td className="px-3 py-3">
+                            <div className="flex gap-2">
+                              <Input
+                                type="number"
+                                placeholder="원가 입력"
+                                value={productPrices[product.key]?.cost || ""}
+                                onChange={(e) => setProductPrices(prev => ({
+                                  ...prev,
+                                  [product.key]: {
+                                    cost: e.target.value,
+                                    price: prev[product.key]?.price || ""
+                                  }
+                                }))}
+                                className="flex-1 text-sm"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => saveIndividualPrice(
+                                  product.key, 
+                                  'cost', 
+                                  productPrices[product.key]?.cost || "", 
+                                  product.name
+                                )}
+                                disabled={savingPrices[`${product.key}-cost`] || !productPrices[product.key]?.cost}
+                                className="px-2 text-xs"
+                              >
+                                {savingPrices[`${product.key}-cost`] ? '저장중...' : '저장'}
+                              </Button>
+                            </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <Input
-                              type="number"
-                              placeholder="판매가 입력"
-                              value={productPrices[product.key]?.price || ""}
-                              onChange={(e) => setProductPrices(prev => ({
-                                ...prev,
-                                [product.key]: {
-                                  cost: prev[product.key]?.cost || "",
-                                  price: e.target.value
-                                }
-                              }))}
-                              className="w-full text-sm"
-                            />
+                          <td className="px-3 py-3">
+                            <div className="flex gap-2">
+                              <Input
+                                type="number"
+                                placeholder="판매가 입력"
+                                value={productPrices[product.key]?.price || ""}
+                                onChange={(e) => setProductPrices(prev => ({
+                                  ...prev,
+                                  [product.key]: {
+                                    cost: prev[product.key]?.cost || "",
+                                    price: e.target.value
+                                  }
+                                }))}
+                                className="flex-1 text-sm"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => saveIndividualPrice(
+                                  product.key, 
+                                  'price', 
+                                  productPrices[product.key]?.price || "", 
+                                  product.name
+                                )}
+                                disabled={savingPrices[`${product.key}-price`] || !productPrices[product.key]?.price}
+                                className="px-2 text-xs"
+                              >
+                                {savingPrices[`${product.key}-price`] ? '저장중...' : '저장'}
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -590,7 +624,7 @@ function PriceSettingsDialog() {
             onClick={handleSave}
             disabled={updateShippingMutation.isPending}
           >
-            {updateShippingMutation.isPending ? "저장 중..." : "저장"}
+            {updateShippingMutation.isPending ? "배송비 저장 중..." : "배송비 저장"}
           </Button>
         </div>
       </DialogContent>
