@@ -4446,7 +4446,95 @@ export default function Admin() {
                             </div>
                           </div>
 
+                          {/* 현재 적용된 콘텐츠 미리보기 */}
+                          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                            <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
+                              <Info className="h-4 w-4 mr-2" />
+                              현재 대시보드에 적용된 내용
+                            </h3>
+                            
+                            {/* 메인 타이틀과 설명 */}
+                            <div className="mb-4 p-3 bg-white rounded border">
+                              <h4 className="font-semibold text-gray-900 mb-1">{dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}</h4>
+                              <p className="text-sm text-gray-600 leading-relaxed">
+                                {(dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^").split('\\n').map((line: string, i: number) => (
+                                  <span key={i}>
+                                    {line}
+                                    {i < (dashboardContent.mainDescription || "").split('\\n').length - 1 && <br />}
+                                  </span>
+                                ))}
+                              </p>
+                            </div>
 
+                            {/* 상품 목록 */}
+                            {dashboardContent.productNames && dashboardContent.productNames.length > 0 && (
+                              <div className="mb-4">
+                                <h5 className="text-sm font-medium text-gray-800 mb-2">상품 목록</h5>
+                                <div className="space-y-2">
+                                  {dashboardContent.productNames.map((product: any, index: number) => (
+                                    <div key={index} className="bg-white p-2 rounded border text-xs">
+                                      <div className="font-medium text-gray-900">{product.name || `상품 ${index + 1}`}</div>
+                                      <div className="text-gray-600 mt-1">
+                                        <span className="mr-3">가격: {product.price || '미설정'}</span>
+                                        <span className="mr-3">크기: {product.size || '미설정'}</span>
+                                        <span>무게: {product.weight || '미설정'}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 보자기 정보 */}
+                            <div className="mb-4">
+                              <h5 className="text-sm font-medium text-gray-800 mb-2">포장 옵션</h5>
+                              <div className="bg-white p-2 rounded border text-xs">
+                                <span className="font-medium">{dashboardContent.wrappingName || "보자기"}</span>
+                                <span className="text-gray-600 ml-2">({dashboardContent.wrappingPrice || "개당 +1,000원"})</span>
+                              </div>
+                            </div>
+
+                            {/* 히어로 이미지 미리보기 */}
+                            {dashboardContent.heroImages && dashboardContent.heroImages.length > 0 && (
+                              <div className="mb-4">
+                                <h5 className="text-sm font-medium text-gray-800 mb-2">히어로 이미지 ({dashboardContent.heroImages.length}개)</h5>
+                                <div className="grid grid-cols-4 gap-2">
+                                  {dashboardContent.heroImages.slice(0, 4).map((imageUrl: string, index: number) => (
+                                    <img 
+                                      key={index}
+                                      src={imageUrl} 
+                                      alt={`히어로 이미지 ${index + 1}`} 
+                                      className="w-full h-12 object-cover rounded border"
+                                    />
+                                  ))}
+                                </div>
+                                {dashboardContent.heroImages.length > 4 && (
+                                  <p className="text-xs text-gray-500 mt-1">+{dashboardContent.heroImages.length - 4}개 더</p>
+                                )}
+                              </div>
+                            )}
+
+                            {/* 배송 정보 */}
+                            <div className="mb-4">
+                              <h5 className="text-sm font-medium text-gray-800 mb-2">{dashboardContent.shippingTitle || "에덴한과 배송"}</h5>
+                              <div className="bg-white p-2 rounded border text-xs text-gray-600">
+                                {(dashboardContent.shippingInfo || "배송 정보가 설정되지 않았습니다.").split('\n').map((line: string, i: number) => (
+                                  <div key={i} className={line.startsWith('•') ? 'ml-2' : ''}>
+                                    {line}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* 계좌 정보 */}
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-800 mb-2">입금 안내</h5>
+                              <div className="bg-white p-2 rounded border text-xs">
+                                <div className="font-medium text-gray-900 mb-1">{dashboardContent.bankAccount || "계좌 정보가 설정되지 않았습니다."}</div>
+                                <div className="text-gray-600">{dashboardContent.bankMessage || "입금 안내 메시지가 설정되지 않았습니다."}</div>
+                              </div>
+                            </div>
+                          </div>
 
                         </div>
                       </CardContent>

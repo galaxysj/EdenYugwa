@@ -94,23 +94,9 @@ export default function OrderForm() {
 
   // Convert array to object for easier access
   const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
-    if (item.key === 'productNames') {
-      try {
-        acc[item.key] = JSON.parse(item.value || '[]');
-      } catch {
-        acc[item.key] = [];
-      }
-    } else {
-      acc[item.key] = item.value;
-    }
+    acc[item.key] = item.value;
     return acc;
   }, {}) : {};
-
-  // Get product names and prices from dashboard content
-  const productNames = dashboardContent.productNames || [
-    { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-    { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
-  ];
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -119,21 +105,10 @@ export default function OrderForm() {
     freeShippingThreshold: 6
   });
   const [prices, setPrices] = useState({
-    small: parseInt(productNames[0]?.price || '20000'), // 첫 번째 상품
-    large: parseInt(productNames[1]?.price || '30000'), // 두 번째 상품
+    small: 19000, // 한과1호
+    large: 21000, // 한과2호
     wrapping: 1000,
   });
-
-  // Update prices when productNames change
-  useEffect(() => {
-    if (productNames.length > 0) {
-      setPrices(prev => ({
-        ...prev,
-        small: parseInt(productNames[0]?.price || '20000'),
-        large: parseInt(productNames[1]?.price || '30000'),
-      }));
-    }
-  }, [productNames]);
   const [selectedAddress, setSelectedAddress] = useState<{
     zipCode: string;
     address: string;
@@ -432,8 +407,8 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">{productNames[0]?.name || "한과1호"} {productNames[0]?.weight || "300g"}</h5>
-                            <p className="text-xs text-black mt-1">{productNames[0]?.size || "(10cm × 7cm × 7cm)"}</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.smallBoxName || "한과1호(약 1.1kg)"}</h5>
+                            <p className="text-xs text-black mt-1">{dashboardContent.smallBoxDimensions || "약 35.5×21×11.2cm"}</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
                         </div>
@@ -487,8 +462,8 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">{productNames[1]?.name || "한과2호"} {productNames[1]?.weight || "450g"}</h5>
-                            <p className="text-xs text-black mt-1">{productNames[1]?.size || "(14.5cm × 7cm × 7cm)"}</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.largeBoxName || "한과2호(약 1.3kg)"}</h5>
+                            <p className="text-xs text-black mt-1">{dashboardContent.largeBoxDimensions || "약 37×23×11.5cm"}</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
                         </div>
