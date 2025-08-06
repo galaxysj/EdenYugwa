@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { X, Settings, Package, Truck, CheckCircle, Clock, MessageSquare, Eye } from "lucide-react";
+import { X, Settings, Package, Truck, CheckCircle, Clock, MessageSquare, Eye, Edit3, Save } from "lucide-react";
 import type { Order } from "@shared/schema";
 
 interface AdminPanelProps {
@@ -32,10 +34,24 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [editingPrices, setEditingPrices] = useState(false);
+  const [priceValues, setPriceValues] = useState({
+    smallBoxCost: '',
+    largeBoxCost: '',
+    wrappingCost: '',
+    shippingFee: '',
+    freeShippingThreshold: ''
+  });
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['/api/orders'],
     queryFn: () => api.orders.getAll(),
+    enabled: isOpen,
+  });
+
+  const { data: settings = [] } = useQuery({
+    queryKey: ['/api/settings'],
+    queryFn: () => fetch('/api/settings').then(res => res.json()),
     enabled: isOpen,
   });
 
@@ -59,6 +75,31 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     },
   });
 
+  const updateSettingMutation = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string }) =>
+      fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, value }),
+      }).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] }); // 주문 데이터도 새로고침하여 가격 반영
+      toast({
+        title: "가격 업데이트 완료",
+        description: "상품 가격이 성공적으로 업데이트되었습니다.",
+      });
+      setEditingPrices(false);
+    },
+    onError: () => {
+      toast({
+        title: "업데이트 실패",
+        description: "가격 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleStatusChange = (orderId: number, newStatus: string) => {
     // 관리자는 발송완료(delivered) 상태로 변경할 수 없음 - 매니저만 가능
     if (newStatus === 'delivered') {
@@ -70,6 +111,51 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
       return;
     }
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
+  };
+
+  const handleEditPrices = () => {
+    // Load current values into the edit form
+    const smallBoxSetting = settings.find((s: any) => s.key === 'smallBoxCost');
+    const largeBoxSetting = settings.find((s: any) => s.key === 'largeBoxCost');
+    const wrappingSetting = settings.find((s: any) => s.key === 'wrappingCost');
+    const shippingFeeSetting = settings.find((s: any) => s.key === 'shippingFee');
+    const thresholdSetting = settings.find((s: any) => s.key === 'freeShippingThreshold');
+
+    setPriceValues({
+      smallBoxCost: smallBoxSetting?.value || '',
+      largeBoxCost: largeBoxSetting?.value || '',
+      wrappingCost: wrappingSetting?.value || '',
+      shippingFee: shippingFeeSetting?.value || '',
+      freeShippingThreshold: thresholdSetting?.value || ''
+    });
+    setEditingPrices(true);
+  };
+
+  const handleSavePrices = async () => {
+    const updates = [
+      { key: 'smallBoxCost', value: priceValues.smallBoxCost },
+      { key: 'largeBoxCost', value: priceValues.largeBoxCost },
+      { key: 'wrappingCost', value: priceValues.wrappingCost },
+      { key: 'shippingFee', value: priceValues.shippingFee },
+      { key: 'freeShippingThreshold', value: priceValues.freeShippingThreshold }
+    ];
+
+    for (const update of updates) {
+      if (update.value) {
+        updateSettingMutation.mutate(update);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPrices(false);
+    setPriceValues({
+      smallBoxCost: '',
+      largeBoxCost: '',
+      wrappingCost: '',
+      shippingFee: '',
+      freeShippingThreshold: ''
+    });
   };
 
   // iOS 단축어 링크로 SMS 발송하는 함수
@@ -120,7 +206,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
 
   // Calculate stats
   const stats = orders.reduce(
-    (acc, order) => {
+    (acc: any, order: Order) => {
       acc.total++;
       acc[order.status as keyof typeof acc]++;
       return acc;
@@ -184,6 +270,134 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 </Card>
               </div>
 
+              {/* Product Price Management */}
+              <Card className="mb-8">
+                <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
+                  <CardTitle className="font-korean flex items-center justify-between">
+                    <span className="flex items-center">
+                      <Edit3 className="mr-2 h-5 w-5" />
+                      상품 가격 관리
+                    </span>
+                    {!editingPrices && (
+                      <Button 
+                        onClick={handleEditPrices}
+                        className="bg-purple-600 text-white hover:bg-purple-700"
+                      >
+                        <Edit3 className="mr-2 h-4 w-4" />
+                        가격 수정
+                      </Button>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {editingPrices ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="smallBoxCost">한과1호 가격</Label>
+                          <Input
+                            id="smallBoxCost"
+                            type="number"
+                            value={priceValues.smallBoxCost}
+                            onChange={(e) => setPriceValues({...priceValues, smallBoxCost: e.target.value})}
+                            placeholder="한과1호 가격 (원)"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="largeBoxCost">한과2호 가격</Label>
+                          <Input
+                            id="largeBoxCost"
+                            type="number"
+                            value={priceValues.largeBoxCost}
+                            onChange={(e) => setPriceValues({...priceValues, largeBoxCost: e.target.value})}
+                            placeholder="한과2호 가격 (원)"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="wrappingCost">보자기 가격</Label>
+                          <Input
+                            id="wrappingCost"
+                            type="number"
+                            value={priceValues.wrappingCost}
+                            onChange={(e) => setPriceValues({...priceValues, wrappingCost: e.target.value})}
+                            placeholder="보자기 가격 (원)"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="shippingFee">배송비</Label>
+                          <Input
+                            id="shippingFee"
+                            type="number"
+                            value={priceValues.shippingFee}
+                            onChange={(e) => setPriceValues({...priceValues, shippingFee: e.target.value})}
+                            placeholder="배송비 (원)"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="freeShippingThreshold">무료배송 기준</Label>
+                          <Input
+                            id="freeShippingThreshold"
+                            type="number"
+                            value={priceValues.freeShippingThreshold}
+                            onChange={(e) => setPriceValues({...priceValues, freeShippingThreshold: e.target.value})}
+                            placeholder="무료배송 기준 개수"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex space-x-3 pt-4">
+                        <Button 
+                          onClick={handleSavePrices}
+                          disabled={updateSettingMutation.isPending}
+                          className="bg-green-600 text-white hover:bg-green-700"
+                        >
+                          <Save className="mr-2 h-4 w-4" />
+                          저장
+                        </Button>
+                        <Button 
+                          onClick={handleCancelEdit}
+                          variant="outline"
+                        >
+                          취소
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600">한과1호 가격</div>
+                        <div className="text-xl font-bold">
+                          {formatPrice(parseInt(settings.find((s: any) => s.key === 'smallBoxCost')?.value || '0'))}
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600">한과2호 가격</div>
+                        <div className="text-xl font-bold">
+                          {formatPrice(parseInt(settings.find((s: any) => s.key === 'largeBoxCost')?.value || '0'))}
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600">보자기 가격</div>
+                        <div className="text-xl font-bold">
+                          {formatPrice(parseInt(settings.find((s: any) => s.key === 'wrappingCost')?.value || '0'))}
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600">배송비</div>
+                        <div className="text-xl font-bold">
+                          {formatPrice(parseInt(settings.find((s: any) => s.key === 'shippingFee')?.value || '0'))}
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <div className="text-sm text-gray-600">무료배송 기준</div>
+                        <div className="text-xl font-bold">
+                          {settings.find((s: any) => s.key === 'freeShippingThreshold')?.value || '0'}개
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Orders Table */}
               <Card>
                 <CardHeader className="bg-gray-50">
@@ -224,10 +438,12 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <div className="text-sm text-gray-900">
-                                    {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
+                                    {order.smallBoxQuantity > 0 && `한과1호 × ${order.smallBoxQuantity}`}
+                                    {order.largeBoxQuantity > 0 && `한과2호 × ${order.largeBoxQuantity}`}
+                                    {order.smallBoxQuantity === 0 && order.largeBoxQuantity === 0 && '주문 없음'}
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    {order.hasWrapping === 'yes' ? '보자기 포장' : '보자기 없음'}
+                                    {order.wrappingQuantity > 0 ? `보자기 × ${order.wrappingQuantity}` : '보자기 없음'}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
