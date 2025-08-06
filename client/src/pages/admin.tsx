@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminHeader } from "@/components/admin-header";
-import type { Order, Setting, User } from "@shared/schema";
+import type { Order, Setting } from "@shared/schema";
 import * as XLSX from 'xlsx';
 
 
@@ -37,75 +37,6 @@ const statusIcons = {
   scheduled: Calendar,
   delivered: CheckCircle,
 };
-
-// Members List Component
-function MembersList() {
-  const { data: users, isLoading, error } = useQuery<User[]>({
-    queryKey: ['/api/users'],
-  });
-
-  if (isLoading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
-        <div className="text-gray-500">회원 목록을 불러오는 중...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8 text-red-500">
-        <div className="mb-2">회원 목록을 불러오는 중 오류가 발생했습니다.</div>
-        <div className="text-sm text-gray-500">{error.message}</div>
-      </div>
-    );
-  }
-
-  if (!users || users.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p>등록된 회원이 없습니다.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="text-sm text-gray-600 mb-4">
-        총 {users.length}명의 회원이 등록되어 있습니다.
-      </div>
-      
-      {/* 모바일 리스트 형태 */}
-      <div className="space-y-2">
-        {users.map((user) => (
-          <div key={user.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium text-gray-900 text-sm">{user.name}</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    user.role === 'admin' ? 'bg-red-100 text-red-700' :
-                    user.role === 'manager' ? 'bg-blue-100 text-blue-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {user.role === 'admin' ? '관리자' : user.role === 'manager' ? '매니저' : '일반회원'}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-600 space-y-1">
-                  <div>아이디: {user.username}</div>
-                  {user.phoneNumber && <div>연락처: {user.phoneNumber}</div>}
-                  {user.address && <div className="truncate">주소: {user.address}</div>}
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // 제주도 및 도서산간지역 감지 함수
 const checkRemoteArea = (address: string) => {
@@ -3537,7 +3468,11 @@ export default function Admin() {
                         </p>
                       </CardHeader>
                       <CardContent>
-                        <MembersList />
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                          <p>회원관리 기능은 준비 중입니다.</p>
+                          <p className="text-sm mt-2">현재는 사용자관리 탭에서 계정을 관리할 수 있습니다.</p>
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
