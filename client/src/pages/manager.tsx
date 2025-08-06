@@ -986,7 +986,6 @@ export default function ManagerDashboard() {
                                       </SelectTrigger>
                                       <SelectContent>
                                         <SelectItem value="scheduled">발송주문</SelectItem>
-                                        <SelectItem value="delivered">발송완료</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
