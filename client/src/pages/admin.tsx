@@ -2296,8 +2296,8 @@ export default function Admin() {
                     {orders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
-                      // Get dynamic product names from dashboard content
-                      const getProductName = (index: number, fallback: string) => {
+                      // 주문 시점의 실제 상품명을 사용하기 위한 함수 (현재 콘텐츠관리의 상품명 참조)
+                      const getOrderTimeProductName = (index: number, fallback: string) => {
                         if (dashboardContent.productNames && dashboardContent.productNames[index]) {
                           return dashboardContent.productNames[index].name;
                         }
@@ -2344,11 +2344,12 @@ export default function Admin() {
                             : order.dynamicProductQuantities;
                           Object.entries(dynamicQty).forEach(([index, quantity]) => {
                             const productIndex = parseInt(index);
+                            const qty = Number(quantity);
                             // 가격설정에서 동적 상품 원가 가져오기
                             const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
                             const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
                                               (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
-                            dynamicProductsCost += quantity * productCost;
+                            dynamicProductsCost += qty * productCost;
                           });
                         } catch (error) {
                           console.error('Error parsing dynamic product quantities for cost calculation:', error);
@@ -2373,15 +2374,15 @@ export default function Admin() {
                           <td className="py-4 px-4 text-sm">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800">{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getOrderTimeProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800">{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getOrderTimeProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="font-medium text-gray-800">{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getOrderTimeProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                               )}
-                              {/* 동적 상품 수량 표시 */}
+                              {/* 실제 주문에 저장된 동적 상품 수량 표시 */}
                               {order.dynamicProductQuantities && (() => {
                                 try {
                                   const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
@@ -2389,14 +2390,16 @@ export default function Admin() {
                                     : order.dynamicProductQuantities;
                                   return Object.entries(dynamicQty).map(([index, quantity]) => {
                                     const productIndex = parseInt(index);
-                                    const productName = getProductName(productIndex, `상품${productIndex + 1}`);
-                                    return quantity > 0 ? (
+                                    const qty = Number(quantity);
+                                    const productName = getOrderTimeProductName(productIndex, `상품${productIndex + 1}`);
+                                    return qty > 0 ? (
                                       <div key={productIndex} className="font-medium text-gray-800">
-                                        {productName}×{quantity}개
+                                        {productName}×{qty}개
                                       </div>
                                     ) : null;
                                   });
                                 } catch (error) {
+                                  console.error('Dynamic product quantities parse error:', error);
                                   return null;
                                 }
                               })()}
@@ -2448,17 +2451,17 @@ export default function Admin() {
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  {getProductName(0, '한과1호')}: {formatPrice(smallBoxesCost)}
+                                  {getOrderTimeProductName(0, '한과1호')}: {formatPrice(smallBoxesCost)}
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  {getProductName(1, '한과2호')}: {formatPrice(largeBoxesCost)}
+                                  {getOrderTimeProductName(1, '한과2호')}: {formatPrice(largeBoxesCost)}
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  {getProductName(2, '보자기')}: {formatPrice(wrappingCostTotal)}
+                                  {getOrderTimeProductName(2, '보자기')}: {formatPrice(wrappingCostTotal)}
                                 </div>
                               )}
                               {/* 동적 상품들 원가 표시 */}
@@ -2469,13 +2472,14 @@ export default function Admin() {
                                     : order.dynamicProductQuantities;
                                   return Object.entries(dynamicQty).map(([index, quantity]) => {
                                     const productIndex = parseInt(index);
+                                    const qty = Number(quantity);
                                     const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
                                     const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
                                                       (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
-                                    const itemCost = quantity * productCost;
-                                    return quantity > 0 ? (
+                                    const itemCost = qty * productCost;
+                                    return qty > 0 ? (
                                       <div key={productIndex} className="text-gray-600">
-                                        {getProductName(productIndex, `상품${productIndex + 1}`)}: {formatPrice(itemCost)}
+                                        {getOrderTimeProductName(productIndex, `상품${productIndex + 1}`)}: {formatPrice(itemCost)}
                                       </div>
                                     ) : null;
                                   });
@@ -2577,7 +2581,7 @@ export default function Admin() {
                   const largeBoxesCost = order.largeBoxQuantity * largeCost;
                   const wrappingCostTotal = order.wrappingQuantity * wrappingCost;
                   
-                  // 동적 상품들의 원가 계산
+                  // 실제 주문에 저장된 동적 상품들의 원가 계산
                   let dynamicProductsCost = 0;
                   if (order.dynamicProductQuantities) {
                     try {
@@ -2586,11 +2590,12 @@ export default function Admin() {
                         : order.dynamicProductQuantities;
                       Object.entries(dynamicQty).forEach(([index, quantity]) => {
                         const productIndex = parseInt(index);
-                        // 가격설정에서 동적 상품 원가 가져오기
+                        const qty = Number(quantity);
+                        // 주문 시점 원가를 우선 사용, 없으면 현재 설정 사용
                         const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
                         const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
-                                          (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
-                        dynamicProductsCost += quantity * productCost;
+                                          (productNames && productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+                        dynamicProductsCost += qty * productCost;
                       });
                     } catch (error) {
                       console.error('Error parsing dynamic product quantities for cost calculation:', error);
@@ -2638,8 +2643,9 @@ export default function Admin() {
                                 : order.dynamicProductQuantities;
                               return Object.entries(dynamicQty).map(([index, quantity]) => {
                                 const productIndex = parseInt(index);
+                                const qty = Number(quantity);
                                 const productName = dashboardContent.productNames?.[productIndex]?.name || `상품${productIndex + 1}`;
-                                return quantity > 0 ? ` ${productName}×${quantity}` : '';
+                                return qty > 0 ? ` ${productName}×${qty}` : '';
                               }).join('');
                             } catch (error) {
                               return '';

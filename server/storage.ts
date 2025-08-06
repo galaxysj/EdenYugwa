@@ -206,6 +206,7 @@ export class DatabaseStorage implements IStorage {
       smallBoxQuantity: insertOrder.smallBoxQuantity,
       largeBoxQuantity: insertOrder.largeBoxQuantity,
       wrappingQuantity: insertOrder.wrappingQuantity,
+      dynamicProductQuantities: insertOrder.dynamicProductQuantities,
       totalAmount: insertOrder.totalAmount,
       specialRequests: insertOrder.specialRequests,
       scheduledDate: insertOrder.scheduledDate,

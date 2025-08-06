@@ -748,6 +748,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         smallBoxCost: smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 15000,
         largeBoxCost: largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 16000,
         wrappingCost: wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000,
+        // Include dynamic product quantities for new products
+        dynamicProductQuantities: validatedData.dynamicProductQuantities,
         // Calculate total cost based on current prices
         totalCost: ((validatedData.smallBoxQuantity || 0) * (smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 15000)) +
                    ((validatedData.largeBoxQuantity || 0) * (largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 16000)) +
@@ -767,7 +769,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const order = await storage.createOrder(orderData);
-      console.log("주문 생성 후 order.userId:", order?.userId);
       
       // Update customer statistics after creating order
       await storage.updateCustomerStats(validatedData.customerPhone);

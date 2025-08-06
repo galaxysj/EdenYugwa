@@ -66,6 +66,7 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   ]).optional().nullable(),
   orderPassword: z.string().optional().nullable(), // 주문 비밀번호는 선택사항
   userId: z.number().optional().nullable(), // 로그인한 사용자 ID는 선택사항
+  dynamicProductQuantities: z.any().optional().nullable(), // 동적 상품 수량 (JSONB)
 });
 
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
