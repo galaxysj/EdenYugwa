@@ -47,6 +47,15 @@ export default function Home() {
                 </Link>
               )}
               
+              {/* 매니저일 때 매니저패널 버튼 표시 */}
+              {isAuthenticated && user?.role === 'manager' && (
+                <Link href="/manager">
+                  <button className="text-xs bg-white text-orange-600 border border-orange-600 px-2.5 py-1.5 rounded-md hover:bg-orange-600 hover:text-white transition-colors font-medium">
+                    매니저패널
+                  </button>
+                </Link>
+              )}
+              
               {/* 비로그인 상태 - 로그인/회원가입 버튼 */}
               {!isAuthenticated ? (
                 <>
