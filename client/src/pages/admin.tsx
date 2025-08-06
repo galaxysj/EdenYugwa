@@ -4638,7 +4638,7 @@ export default function Admin() {
                             
                             <div className="border rounded-lg overflow-hidden">
                               <table className="w-full text-sm">
-                                <thead className="bg-gray-50">
+                                <thead>
                                   <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
@@ -4646,7 +4646,7 @@ export default function Admin() {
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">메인 제목</td>
                                     <td className="px-4 py-3">
                                       <Input
@@ -4692,7 +4692,7 @@ export default function Admin() {
                                     </td>
                                   </tr>
                                   
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">메인 설명</td>
                                     <td className="px-4 py-3">
                                       <Textarea
@@ -4739,7 +4739,7 @@ export default function Admin() {
                                     </td>
                                   </tr>
                                   
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">히어로 이미지</td>
                                     <td className="px-4 py-3">
                                       <div className="space-y-2">
@@ -4816,7 +4816,7 @@ export default function Admin() {
                                     </td>
                                   </tr>
                                   
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">소개글</td>
                                     <td className="px-4 py-3">
                                       <Textarea
@@ -4897,7 +4897,7 @@ export default function Admin() {
                             
                             <div className="border rounded-lg overflow-hidden">
                               <table className="w-full text-sm">
-                                <thead className="bg-gray-50">
+                                <thead>
                                   <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
@@ -4905,7 +4905,7 @@ export default function Admin() {
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">배송 제목</td>
                                     <td className="px-4 py-3">
                                       <Input
@@ -4951,7 +4951,7 @@ export default function Admin() {
                                     </td>
                                   </tr>
                                   
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">배송 안내 내용</td>
                                     <td className="px-4 py-3">
                                       <Textarea
@@ -5029,7 +5029,7 @@ export default function Admin() {
                             </div>
                             <div className="border rounded-lg overflow-hidden">
                               <table className="w-full text-sm">
-                                <thead className="bg-gray-50">
+                                <thead>
                                   <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
                                     <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
@@ -5037,7 +5037,7 @@ export default function Admin() {
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">입금 계좌</td>
                                     <td className="px-4 py-3">
                                       <Input
@@ -5083,7 +5083,7 @@ export default function Admin() {
                                     </td>
                                   </tr>
                                   
-                                  <tr className="hover:bg-gray-50">
+                                  <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">입금 안내 메시지</td>
                                     <td className="px-4 py-3">
                                       <Textarea
