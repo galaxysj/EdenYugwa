@@ -866,20 +866,38 @@ export default function ManagerDashboard() {
                               {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
                               {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                             </div>
-                            <div className="text-xs">
-                              {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
-                                <span className="text-black">부분결제</span>
-                              ) : order.paymentStatus === 'confirmed' ? (
-                                <span className="text-black">입금완료</span>
-                              ) : order.paymentStatus === 'partial' ? (
-                                <span className="text-black">부분결제</span>
-                              ) : order.paymentStatus === 'refunded' ? (
-                                <span className="text-black">환불</span>
-                              ) : (
-                                <span className="text-black">미입금</span>
-                              )}
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className={`px-2 py-0.5 rounded ${
+                                order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                                order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                                 order.paymentStatus === 'confirmed' ? '입금완료' :
+                                 order.paymentStatus === 'partial' ? '부분결제' :
+                                 order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded ${
+                                order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                                order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {order.status === 'scheduled' ? '발송주문' :
+                                 order.status === 'delivered' ? '발송완료' : '주문접수'}
+                              </span>
                             </div>
                           </div>
+
+                          {/* 예약발송일 */}
+                          {order.scheduledDate && (
+                            <div className="flex items-center gap-1 mb-2 text-xs">
+                              <span className="text-gray-600">예약발송일:</span>
+                              <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                                {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                          )}
 
                           {/* 하단: 연락처, 주소 */}
                           <div className="text-xs text-gray-700 mb-2">
@@ -1273,14 +1291,38 @@ export default function ManagerDashboard() {
                               {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
                               {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                             </div>
-                            <div className="text-xs">
-                              {order.paymentStatus !== 'confirmed' ? (
-                                <span className="text-black">미입금</span>
-                              ) : (
-                                <span className="text-black">입금완료</span>
-                              )}
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className={`px-2 py-0.5 rounded ${
+                                order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                                order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                                 order.paymentStatus === 'confirmed' ? '입금완료' :
+                                 order.paymentStatus === 'partial' ? '부분결제' :
+                                 order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded ${
+                                order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                                order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {order.status === 'scheduled' ? '발송주문' :
+                                 order.status === 'delivered' ? '발송완료' : '주문접수'}
+                              </span>
                             </div>
                           </div>
+
+                          {/* 예약발송일 */}
+                          {order.scheduledDate && (
+                            <div className="flex items-center gap-1 mb-2 text-xs">
+                              <span className="text-gray-600">예약발송일:</span>
+                              <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                                {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                          )}
 
                           {/* 하단: 연락처, 주소 */}
                           <div className="text-xs text-gray-700 mb-2">
@@ -1613,10 +1655,33 @@ export default function ManagerDashboard() {
                               {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
                               {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
                             </div>
-                            <div className="text-xs">
-                              <span className="text-black">발송완료</span>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className={`px-2 py-0.5 rounded ${
+                                order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                                order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                                 order.paymentStatus === 'confirmed' ? '입금완료' :
+                                 order.paymentStatus === 'partial' ? '부분결제' :
+                                 order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                              </span>
+                              <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                                발송완료
+                              </span>
                             </div>
                           </div>
+
+                          {/* 예약발송일 */}
+                          {order.scheduledDate && (
+                            <div className="flex items-center gap-1 mb-2 text-xs">
+                              <span className="text-gray-600">예약발송일:</span>
+                              <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                                {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                              </span>
+                            </div>
+                          )}
 
                           {/* 하단: 연락처, 주소 */}
                           <div className="text-xs text-gray-700 mb-2">
