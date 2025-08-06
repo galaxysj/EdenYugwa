@@ -448,7 +448,7 @@ export default function OrderForm() {
                   <div className="space-y-4">
                     {productNames.map((product: any, index: number) => (
                       <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/30 shadow-sm">
-                        <div className="flex justify-between items-start mb-3">
+                        <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <h5 className="font-semibold text-gray-900 text-sm md:text-base mb-1">
                               {product.name}
@@ -463,60 +463,59 @@ export default function OrderForm() {
                                 무게: {product.weight}
                               </p>
                             )}
+                            <div className="mt-2">
+                              <span className="text-xs font-medium text-gray-700">수량 선택</span>
+                            </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex flex-col items-end space-y-2">
                             <div className="text-base md:text-lg font-bold text-gray-900">
                               {formatPrice(parseInt(product.price) || 0)}
                             </div>
+                            <FormField
+                              control={form.control}
+                              name={
+                                index === 0 ? "smallBoxQuantity" : 
+                                index === 1 ? "largeBoxQuantity" : 
+                                product.name?.includes('보자기') ? "wrappingQuantity" : 
+                                "smallBoxQuantity"
+                              }
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <div className="flex items-center space-x-2">
+                                      <Button 
+                                        type="button"
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                        className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                      >
+                                        -
+                                      </Button>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        {...field}
+                                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                        className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
+                                      />
+                                      <Button 
+                                        type="button"
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => field.onChange(field.value + 1)}
+                                        className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                      >
+                                        +
+                                      </Button>
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                           </div>
                         </div>
-                        
-                        <FormField
-                          control={form.control}
-                          name={
-                            index === 0 ? "smallBoxQuantity" : 
-                            index === 1 ? "largeBoxQuantity" : 
-                            product.name?.includes('보자기') ? "wrappingQuantity" : 
-                            "smallBoxQuantity"
-                          }
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center justify-between">
-                                <FormLabel className="text-sm font-medium text-gray-700">수량 선택</FormLabel>
-                                <FormControl>
-                                  <div className="flex items-center space-x-2">
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
-                                    >
-                                      -
-                                    </Button>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
-                                    />
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(field.value + 1)}
-                                      className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
-                                    >
-                                      +
-                                    </Button>
-                                  </div>
-                                </FormControl>
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
                     ))}
                   </div>
