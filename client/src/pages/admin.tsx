@@ -4034,7 +4034,7 @@ export default function Admin() {
                               <div className="flex gap-2">
                                 <Button
                                   onClick={() => {
-                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', size: '', weight: '' }];
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', cost: '0', size: '', weight: '' }];
                                     setDashboardContent({...dashboardContent, productNames: newProductNames});
                                   }}
                                   variant="outline"
@@ -4072,235 +4072,252 @@ export default function Admin() {
                               </div>
                             </div>
                             
-                            {/* Dynamic Product List with Pricing */}
-                            <div className="space-y-4">
-                              {(dashboardContent.productNames || []).map((product: any, index: number) => (
-                                <div key={index} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-gray-900">상품 #{index + 1}</span>
-                                    <Button
-                                      onClick={() => {
-                                        const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
-                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        updateContentMutation.mutate({ 
-                                          key: 'productNames', 
-                                          value: JSON.stringify(newProductNames) 
-                                        });
-                                      }}
-                                      variant="outline"
-                                      size="sm"
-                                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-                                    <div>
-                                      <Label className="text-xs text-gray-600">상품명</Label>
-                                      <Input
-                                        value={product.name || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], name: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="상품명"
-                                        className="text-sm h-8 mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-gray-600">판매가 (원)</Label>
-                                      <Input
-                                        type="number"
-                                        value={product.price || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], price: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="가격"
-                                        className="text-sm h-8 mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-gray-600">원가 (원)</Label>
-                                      <Input
-                                        type="number"
-                                        value={product.cost || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], cost: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="원가"
-                                        className="text-sm h-8 mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-gray-600">크기/규격</Label>
-                                      <Input
-                                        value={product.size || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], size: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="(가로×세로×높이)"
-                                        className="text-sm h-8 mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-gray-600">중량</Label>
-                                      <Input
-                                        value={product.weight || ''}
-                                        onChange={(e) => {
-                                          const newProductNames = [...dashboardContent.productNames];
-                                          newProductNames[index] = {...newProductNames[index], weight: e.target.value};
-                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
-                                        }}
-                                        placeholder="중량 (예: 300g)"
-                                        className="text-sm h-8 mt-1"
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="flex justify-end pt-2">
-                                    <Button
-                                      onClick={() => {
-                                        // 상품 정보를 대시보드 콘텐츠에 저장
-                                        updateContentMutation.mutate({ 
-                                          key: 'productNames', 
-                                          value: JSON.stringify(dashboardContent.productNames) 
-                                        });
-                                        
-                                        // 개별 상품 가격을 product-prices API에도 동기화
-                                        const productPrice = parseInt(product.price) || 0;
-                                        const productCost = parseInt(product.cost) || 0;
-                                        fetch('/api/product-prices', {
-                                          method: 'POST',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({
-                                            productIndex: index,
-                                            productName: product.name,
-                                            price: productPrice,
-                                            cost: productCost
-                                          })
-                                        }).then(() => {
-                                          toast({
-                                            title: "상품 정보 저장 완료",
-                                            description: `${product.name} 정보가 업데이트되었습니다.`,
-                                          });
-                                        });
-                                      }}
-                                      size="sm"
-                                      disabled={updateContentMutation.isPending}
-                                      className="flex items-center gap-1"
-                                    >
-                                      {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
+                            {/* Dynamic Product List with Pricing - Table Format */}
+                            <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                              <table className="w-full table-fixed">
+                                <thead>
+                                  <tr className="bg-gray-50 border-b border-gray-200">
+                                    <th className="w-12 px-3 py-2 text-left text-xs font-medium text-gray-600">#</th>
+                                    <th className="w-40 px-3 py-2 text-left text-xs font-medium text-gray-600">상품명</th>
+                                    <th className="w-28 px-3 py-2 text-left text-xs font-medium text-gray-600">판매가</th>
+                                    <th className="w-28 px-3 py-2 text-left text-xs font-medium text-gray-600">원가</th>
+                                    <th className="w-32 px-3 py-2 text-left text-xs font-medium text-gray-600">크기/규격</th>
+                                    <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-600">중량</th>
+                                    <th className="w-24 px-3 py-2 text-center text-xs font-medium text-gray-600">작업</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(dashboardContent.productNames || []).map((product: any, index: number) => (
+                                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                                      <td className="px-3 py-2 text-sm text-gray-900">
+                                        {index + 1}
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          value={product.name || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], name: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="상품명"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          type="number"
+                                          value={product.price || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], price: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="가격"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          type="number"
+                                          value={product.cost || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], cost: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="원가"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          value={product.size || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], size: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="(가로×세로×높이)"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          value={product.weight || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], weight: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="중량"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2 text-center">
+                                        <div className="flex gap-1 justify-center">
+                                          <Button
+                                            size="sm"
+                                            onClick={() => {
+                                              // 상품 정보를 대시보드 콘텐츠에 저장
+                                              updateContentMutation.mutate({ 
+                                                key: 'productNames', 
+                                                value: JSON.stringify(dashboardContent.productNames) 
+                                              });
+                                              
+                                              // 개별 상품 가격을 product-prices API에도 동기화
+                                              const productPrice = parseInt(product.price) || 0;
+                                              const productCost = parseInt(product.cost) || 0;
+                                              fetch('/api/product-prices', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                  productIndex: index,
+                                                  productName: product.name,
+                                                  price: productPrice,
+                                                  cost: productCost
+                                                })
+                                              }).then(() => {
+                                                toast({
+                                                  title: "상품 정보 저장 완료",
+                                                  description: `${product.name} 정보가 업데이트되었습니다.`,
+                                                });
+                                              });
+                                            }}
+                                            disabled={updateContentMutation.isPending}
+                                            className="h-7 px-2 text-xs"
+                                          >
+                                            저장
+                                          </Button>
+                                          <Button
+                                            onClick={() => {
+                                              const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
+                                              setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                              updateContentMutation.mutate({ 
+                                                key: 'productNames', 
+                                                value: JSON.stringify(newProductNames) 
+                                              });
+                                            }}
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                               
                               {(!dashboardContent.productNames || dashboardContent.productNames.length === 0) && (
-                                <div className="text-center py-6 text-gray-500">
+                                <div className="text-center py-8 text-gray-500">
                                   <p className="text-sm">등록된 상품이 없습니다.</p>
                                   <p className="text-xs">상품 추가 버튼을 클릭하여 새 상품을 추가하세요.</p>
                                 </div>
                               )}
                             </div>
                             
-                            {/* 보자기 상품 설정 */}
+                            {/* 보자기 상품 설정 - Table Format */}
                             <div className="border-t border-gray-200 pt-4 space-y-3">
                               <h4 className="text-sm font-medium text-gray-900">보자기 상품</h4>
-                              <div className="grid grid-cols-4 gap-3">
-                                <div>
-                                  <Label className="text-xs text-gray-600" htmlFor="wrappingName">상품명</Label>
-                                  <Input
-                                    id="wrappingName"
-                                    value={dashboardContent.wrappingName || '보자기'}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
-                                    placeholder="보자기"
-                                    className="h-8 text-sm mt-1"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-xs text-gray-600" htmlFor="wrappingPriceAmount">판매가 (원)</Label>
-                                  <Input
-                                    id="wrappingPriceAmount"
-                                    type="number"
-                                    value={dashboardContent.wrappingPriceAmount || '1000'}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingPriceAmount: e.target.value})}
-                                    placeholder="1000"
-                                    className="h-8 text-sm mt-1"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-xs text-gray-600" htmlFor="wrappingCost">원가 (원)</Label>
-                                  <Input
-                                    id="wrappingCost"
-                                    type="number"
-                                    value={dashboardContent.wrappingCost || '200'}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, wrappingCost: e.target.value})}
-                                    placeholder="200"
-                                    className="h-8 text-sm mt-1"
-                                  />
-                                </div>
-                                <div className="flex items-end">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      // 보자기 정보를 저장
-                                      updateContentMutation.mutate({ key: 'wrappingName', value: dashboardContent.wrappingName });
-                                      updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: dashboardContent.wrappingPriceAmount });
-                                      updateContentMutation.mutate({ key: 'wrappingCost', value: dashboardContent.wrappingCost });
-                                      
-                                      // 보자기를 상품 목록에도 추가/업데이트
-                                      const productNames = [...(dashboardContent.productNames || [])];
-                                      const wrappingIndex = productNames.findIndex((p: any) => p.name === '보자기');
-                                      const wrappingProduct = {
-                                        name: dashboardContent.wrappingName || '보자기',
-                                        price: dashboardContent.wrappingPriceAmount || '1000',
-                                        cost: dashboardContent.wrappingCost || '200',
-                                        size: '',
-                                        weight: ''
-                                      };
-                                      
-                                      if (wrappingIndex >= 0) {
-                                        productNames[wrappingIndex] = wrappingProduct;
-                                      } else {
-                                        productNames.push(wrappingProduct);
-                                      }
-                                      
-                                      setDashboardContent({...dashboardContent, productNames});
-                                      updateContentMutation.mutate({ 
-                                        key: 'productNames', 
-                                        value: JSON.stringify(productNames) 
-                                      });
-                                      
-                                      // product-prices API에도 동기화
-                                      fetch('/api/product-prices', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                          productIndex: wrappingIndex >= 0 ? wrappingIndex : productNames.length - 1,
-                                          productName: dashboardContent.wrappingName || '보자기',
-                                          price: parseInt(dashboardContent.wrappingPriceAmount) || 1000,
-                                          cost: parseInt(dashboardContent.wrappingCost) || 200
-                                        })
-                                      });
-                                      
-                                      toast({
-                                        title: "보자기 정보 저장 완료",
-                                        description: "보자기 상품 정보가 업데이트되었습니다.",
-                                      });
-                                    }}
-                                    disabled={updateContentMutation.isPending}
-                                    className="h-8 px-3 text-xs"
-                                  >
-                                    저장
-                                  </Button>
-                                </div>
+                              <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table className="w-full">
+                                  <thead>
+                                    <tr className="bg-gray-50 border-b border-gray-200">
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">상품명</th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">판매가</th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">원가</th>
+                                      <th className="px-3 py-2 text-center text-xs font-medium text-gray-600">작업</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-gray-100 hover:bg-gray-50">
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          value={dashboardContent.wrappingName || '보자기'}
+                                          onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
+                                          placeholder="보자기"
+                                          className="h-8 text-sm border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          type="number"
+                                          value={dashboardContent.wrappingPriceAmount || '1000'}
+                                          onChange={(e) => setDashboardContent({...dashboardContent, wrappingPriceAmount: e.target.value})}
+                                          placeholder="1000"
+                                          className="h-8 text-sm border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          type="number"
+                                          value={dashboardContent.wrappingCost || '200'}
+                                          onChange={(e) => setDashboardContent({...dashboardContent, wrappingCost: e.target.value})}
+                                          placeholder="200"
+                                          className="h-8 text-sm border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2 text-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={() => {
+                                            // 보자기 정보를 저장
+                                            updateContentMutation.mutate({ key: 'wrappingName', value: dashboardContent.wrappingName });
+                                            updateContentMutation.mutate({ key: 'wrappingPriceAmount', value: dashboardContent.wrappingPriceAmount });
+                                            updateContentMutation.mutate({ key: 'wrappingCost', value: dashboardContent.wrappingCost });
+                                            
+                                            // 보자기를 상품 목록에도 추가/업데이트
+                                            const productNames = [...(dashboardContent.productNames || [])];
+                                            const wrappingIndex = productNames.findIndex((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
+                                            const wrappingProduct = {
+                                              name: dashboardContent.wrappingName || '보자기',
+                                              price: dashboardContent.wrappingPriceAmount || '1000',
+                                              cost: dashboardContent.wrappingCost || '200',
+                                              size: '',
+                                              weight: ''
+                                            };
+                                            
+                                            if (wrappingIndex >= 0) {
+                                              productNames[wrappingIndex] = wrappingProduct;
+                                            } else {
+                                              productNames.push(wrappingProduct);
+                                            }
+                                            
+                                            setDashboardContent({...dashboardContent, productNames});
+                                            updateContentMutation.mutate({ 
+                                              key: 'productNames', 
+                                              value: JSON.stringify(productNames) 
+                                            });
+                                            
+                                            // product-prices API에도 동기화
+                                            fetch('/api/product-prices', {
+                                              method: 'POST',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              body: JSON.stringify({
+                                                productIndex: wrappingIndex >= 0 ? wrappingIndex : productNames.length - 1,
+                                                productName: dashboardContent.wrappingName || '보자기',
+                                                price: parseInt(dashboardContent.wrappingPriceAmount) || 1000,
+                                                cost: parseInt(dashboardContent.wrappingCost) || 200
+                                              })
+                                            });
+                                            
+                                            toast({
+                                              title: "보자기 정보 저장 완료",
+                                              description: "보자기 상품 정보가 업데이트되었습니다.",
+                                            });
+                                          }}
+                                          disabled={updateContentMutation.isPending}
+                                          className="h-7 px-2 text-xs"
+                                        >
+                                          저장
+                                        </Button>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
                               </div>
                             </div>
                           </div>
