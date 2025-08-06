@@ -154,22 +154,6 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 </Button>
                 <Button 
                   onClick={() => {
-                    setActiveTab('settings');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  variant="ghost" 
-                  size="sm"
-                  className={`w-full justify-start text-sm ${
-                    activeTab === 'settings' 
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Cog className="h-4 w-4 mr-2" />
-                  설정
-                </Button>
-                <Button 
-                  onClick={() => {
                     setActiveTab('users');
                     setIsMobileMenuOpen(false);
                   }}
@@ -183,6 +167,22 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 >
                   <Users className="h-4 w-4 mr-2" />
                   사용자관리
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('settings');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start text-sm ${
+                    activeTab === 'settings' 
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Cog className="h-4 w-4 mr-2" />
+                  설정
                 </Button>
               </>
             )}
