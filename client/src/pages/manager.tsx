@@ -239,21 +239,31 @@ export default function ManagerDashboard() {
       return api.patch(`/api/orders/${id}/seller-shipped`, { sellerShipped });
     },
     onSuccess: async (data, { id, sellerShipped }) => {
-      // 판매자 발송 완료 시 자동으로 주문 상태를 delivered로 변경
+      // 판매자 발송 상태에 따라 주문 상태 변경
       if (sellerShipped) {
+        // 발송 완료 시 자동으로 주문 상태를 delivered로 변경
         try {
           await api.patch(`/api/orders/${id}/status`, { status: 'delivered' });
         } catch (error) {
           console.error('주문 상태 업데이트 실패:', error);
         }
+      } else {
+        // 발송 취소 시 자동으로 주문 상태를 scheduled로 변경
+        try {
+          await api.patch(`/api/orders/${id}/status`, { status: 'scheduled' });
+        } catch (error) {
+          console.error('주문 상태 업데이트 실패:', error);
+        }
       }
       
+      // 캐시 무효화하여 UI 즉시 업데이트
       queryClient.invalidateQueries({ queryKey: ["/api/manager/orders"] });
+      
       toast({
         title: "발송 상태 변경",
         description: sellerShipped 
           ? "판매자 발송이 완료되고 주문상태가 발송완료로 변경되었습니다."
-          : "판매자 발송 상태가 변경되었습니다.",
+          : "판매자 발송이 취소되고 주문상태가 발송주문으로 변경되었습니다.",
       });
     },
     onError: (error: any) => {
