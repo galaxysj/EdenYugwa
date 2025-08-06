@@ -3229,12 +3229,6 @@ export default function Admin() {
                       설정
                     </TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-1 mt-2">
-                    <TabsTrigger value="content" className="text-green-600 text-xs px-1">
-                      <Edit className="h-3 w-3 mr-1" />
-                      대시보드 콘텐츠 관리
-                    </TabsTrigger>
-                  </TabsList>
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
