@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -753,7 +753,12 @@ export default function Admin() {
     aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
     bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
     bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다",
-    shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
+    shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다.",
+    shippingTitle: "에덴한과 배송",
+    productNames: [
+      { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+      { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+    ]
   });
 
   // Handle multiple image upload
@@ -931,6 +936,17 @@ export default function Admin() {
         if (item.key === 'bankAccount') updatedContent.bankAccount = item.value;
         if (item.key === 'bankMessage') updatedContent.bankMessage = item.value;
         if (item.key === 'shippingInfo') updatedContent.shippingInfo = item.value;
+        if (item.key === 'shippingTitle') updatedContent.shippingTitle = item.value;
+        if (item.key === 'productNames') {
+          try {
+            updatedContent.productNames = JSON.parse(item.value || '[]');
+          } catch {
+            updatedContent.productNames = [
+              { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+              { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+            ];
+          }
+        }
       });
       setDashboardContent(updatedContent);
     }
@@ -3961,122 +3977,152 @@ export default function Admin() {
                           <div className="space-y-4">
                             <div className="flex justify-between items-center">
                               <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
-                              <Button
-                                onClick={() => {
-                                  if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
-                                    const defaultContent = {
-                                      smallBoxName: "한과1호(약 1.1kg)",
-                                      largeBoxName: "한과2호(약 1.3kg)", 
-                                      smallBoxDimensions: "약 35.5×21×11.2cm",
-                                      largeBoxDimensions: "약 37×23×11.5cm",
-                                      wrappingName: "보자기",
-                                      wrappingPrice: "개당 +1,000원"
-                                    };
-                                    setDashboardContent({...dashboardContent, ...defaultContent});
-                                    // 각각 업데이트
-                                    Object.entries(defaultContent).forEach(([key, value]) => {
-                                      updateContentMutation.mutate({ key, value });
-                                    });
-                                  }
-                                }}
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <RotateCcw className="h-4 w-4 mr-1" />
-                                상품정보 되돌리기
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => {
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '', size: '', weight: '' }];
+                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  상품 추가
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
+                                      const defaultProductNames = [
+                                        { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+                                        { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+                                      ];
+                                      const defaultContent = {
+                                        productNames: defaultProductNames,
+                                        wrappingName: "보자기",
+                                        wrappingPrice: "개당 +1,000원"
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaultContent});
+                                      updateContentMutation.mutate({ 
+                                        key: 'productNames', 
+                                        value: JSON.stringify(defaultProductNames) 
+                                      });
+                                      updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
+                                      updateContentMutation.mutate({ key: 'wrappingPrice', value: "개당 +1,000원" });
+                                    }
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  상품정보 되돌리기
+                                </Button>
+                              </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="smallBoxName">한과1호 상품명</Label>
-                                  <Input
-                                    id="smallBoxName"
-                                    value={dashboardContent.smallBoxName}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, smallBoxName: e.target.value})}
-                                    placeholder="한과1호 상품명을 입력하세요"
-                                    className="mt-1"
-                                  />
+                            
+                            {/* Dynamic Product List */}
+                            <div className="space-y-4">
+                              {(dashboardContent.productNames || []).map((product: any, index: number) => (
+                                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                                  <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-medium text-gray-900">상품 {index + 1}</h4>
+                                    <Button
+                                      onClick={() => {
+                                        const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
+                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        updateContentMutation.mutate({ 
+                                          key: 'productNames', 
+                                          value: JSON.stringify(newProductNames) 
+                                        });
+                                      }}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <Label htmlFor={`productName-${index}`}>상품명</Label>
+                                      <Input
+                                        id={`productName-${index}`}
+                                        value={product.name || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], name: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="상품명을 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productPrice-${index}`}>가격</Label>
+                                      <Input
+                                        id={`productPrice-${index}`}
+                                        value={product.price || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], price: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="가격을 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productSize-${index}`}>크기</Label>
+                                      <Input
+                                        id={`productSize-${index}`}
+                                        value={product.size || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], size: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="크기를 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productWeight-${index}`}>무게</Label>
+                                      <Input
+                                        id={`productWeight-${index}`}
+                                        value={product.weight || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], weight: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="무게를 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                  </div>
+                                  
                                   <Button
                                     size="sm"
                                     onClick={() => updateContentMutation.mutate({ 
-                                      key: 'smallBoxName', 
-                                      value: dashboardContent.smallBoxName 
+                                      key: 'productNames', 
+                                      value: JSON.stringify(dashboardContent.productNames) 
                                     })}
                                     disabled={updateContentMutation.isPending}
-                                    className="mt-2"
+                                    className="mt-3"
                                   >
                                     {updateContentMutation.isPending ? "저장 중..." : "저장"}
                                   </Button>
                                 </div>
-                                <div>
-                                  <Label htmlFor="smallBoxDimensions">한과1호 크기</Label>
-                                  <Input
-                                    id="smallBoxDimensions"
-                                    value={dashboardContent.smallBoxDimensions}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, smallBoxDimensions: e.target.value})}
-                                    placeholder="예: 약 35.5×21×11.2cm"
-                                    className="mt-1"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'smallBoxDimensions', 
-                                      value: dashboardContent.smallBoxDimensions 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
-                                    className="mt-2"
-                                  >
-                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                  </Button>
-                                </div>
-                              </div>
+                              ))}
                               
-                              <div className="space-y-4">
-                                <div>
-                                  <Label htmlFor="largeBoxName">한과2호 상품명</Label>
-                                  <Input
-                                    id="largeBoxName"
-                                    value={dashboardContent.largeBoxName}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, largeBoxName: e.target.value})}
-                                    placeholder="한과2호 상품명을 입력하세요"
-                                    className="mt-1"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'largeBoxName', 
-                                      value: dashboardContent.largeBoxName 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
-                                    className="mt-2"
-                                  >
-                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                  </Button>
+                              {(!dashboardContent.productNames || dashboardContent.productNames.length === 0) && (
+                                <div className="text-center py-8 text-gray-500">
+                                  <p>등록된 상품이 없습니다.</p>
+                                  <p className="text-sm">상품 추가 버튼을 클릭하여 새 상품을 추가하세요.</p>
                                 </div>
-                                <div>
-                                  <Label htmlFor="largeBoxDimensions">한과2호 크기</Label>
-                                  <Input
-                                    id="largeBoxDimensions"
-                                    value={dashboardContent.largeBoxDimensions}
-                                    onChange={(e) => setDashboardContent({...dashboardContent, largeBoxDimensions: e.target.value})}
-                                    placeholder="예: 약 37×23×11.5cm"
-                                    className="mt-1"
-                                  />
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'largeBoxDimensions', 
-                                      value: dashboardContent.largeBoxDimensions 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
-                                    className="mt-2"
-                                  >
-                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                                  </Button>
-                                </div>
-                              </div>
+                              )}
                             </div>
                             
                             {/* 보자기 포장 설정 */}
