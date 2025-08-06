@@ -98,6 +98,17 @@ export default function OrderLookup() {
   const [reorderDialogOpen, setReorderDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [reorderScheduledDate, setReorderScheduledDate] = useState<string>('');
+  const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
+
+  const toggleOrderExpansion = (orderId: number) => {
+    const newSet = new Set(expandedOrders);
+    if (newSet.has(orderId)) {
+      newSet.delete(orderId);
+    } else {
+      newSet.add(orderId);
+    }
+    setExpandedOrders(newSet);
+  };
 
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
@@ -465,44 +476,60 @@ export default function OrderLookup() {
                 </CardContent>
               </Card>
             ) : (
-              orders.map((order) => (
-                <Card key={order.id} className="border border-gray-200">
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-xl font-korean">주문번호 #{order.orderNumber}</CardTitle>
-                          <div className="text-gray-500 mt-1">
-                            <div className="flex items-center">
-                              <Calendar className="mr-1 h-4 w-4" />
-                              {formatDate(order.createdAt)}
+              orders.map((order) => {
+                const isExpanded = expandedOrders.has(order.id);
+                const formatPrice = (price: number) => new Intl.NumberFormat('ko-KR').format(price) + '원';
+                
+                return (
+                  <Card key={order.id} className="border border-gray-200">
+                    {/* 컴팩트한 리스트 헤더 - 클릭 가능 */}
+                    <div 
+                      className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                      onClick={() => toggleOrderExpansion(order.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <div className="font-bold text-gray-900 text-sm">#{order.orderNumber}</div>
+                            <div className="text-xs text-gray-500">
+                              {formatDate(order.createdAt)} {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
                             </div>
-                            <div className="text-xs ml-5">
-                              {new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                            {order.scheduledDate && (
-                              <div className="text-sm ml-5 mt-2 text-blue-700 font-semibold bg-blue-50 px-2 py-1 rounded inline-block">
-                                📅 예약발송일: {formatDate(order.scheduledDate)}
-                              </div>
-                            )}
+                          </div>
+                          <div className="text-sm text-gray-700">
+                            {order.customerName}
                           </div>
                         </div>
-                        <div className="text-right space-y-2">
-                          <div>
-                            <Badge className={statusColors[order.status as keyof typeof statusColors]}>
-                              {statusLabels[order.status as keyof typeof statusLabels]}
-                            </Badge>
-                            {order.status === 'delivered' && order.deliveredDate && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                발송일: {formatDate(order.deliveredDate)}
-                              </div>
-                            )}
-                          </div>
-                          <Badge className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]}>
+                        <div className="flex items-center gap-2">
+                          <Badge className={statusColors[order.status as keyof typeof statusColors]} variant="secondary">
+                            {statusLabels[order.status as keyof typeof statusLabels]}
+                          </Badge>
+                          <Badge className={paymentStatusColors[order.paymentStatus as keyof typeof paymentStatusColors]} variant="secondary">
                             {paymentStatusLabels[order.paymentStatus as keyof typeof paymentStatusLabels]}
                           </Badge>
+                          <div className="font-bold text-blue-600 text-sm">{formatPrice(order.totalAmount)}</div>
+                          <div className="text-xs text-gray-400">
+                            {isExpanded ? '▲' : '▼'}
+                          </div>
                         </div>
                       </div>
-                    </CardHeader>
+                      
+                      {/* 주문 요약 정보 */}
+                      <div className="mt-2 text-xs text-gray-600">
+                        {order.smallBoxQuantity > 0 && `한과1호 ${order.smallBoxQuantity}개`}
+                        {order.smallBoxQuantity > 0 && order.largeBoxQuantity > 0 && ', '}
+                        {order.largeBoxQuantity > 0 && `한과2호 ${order.largeBoxQuantity}개`}
+                        {(order.smallBoxQuantity > 0 || order.largeBoxQuantity > 0) && order.wrappingQuantity > 0 && ', '}
+                        {order.wrappingQuantity > 0 && `보자기 ${order.wrappingQuantity}개`}
+                        {order.scheduledDate && (
+                          <span className="ml-2 text-blue-600 font-medium">
+                            📅 {formatDate(order.scheduledDate)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 확장된 상세 정보 */}
+                    {isExpanded && (
                     <CardContent className="space-y-6">
                       {/* Customer Info */}
                       <div>
@@ -614,8 +641,10 @@ export default function OrderLookup() {
                         )}
                       </div>
                     </CardContent>
-                </Card>
-              ))
+                    )}
+                  </Card>
+                );
+              })
             )}
           </div>
         )}
