@@ -1004,25 +1004,6 @@ export default function Admin() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [sellerShippedFilter, setSellerShippedFilter] = useState<string>('all');
-
-  // Product management helper functions
-  const addNewProduct = () => {
-    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '', size: '', weight: '' }];
-    setDashboardContent({...dashboardContent, productNames: newProductNames});
-  };
-
-  const removeProduct = (index: number) => {
-    const newProductNames = dashboardContent.productNames.filter((_, i) => i !== index);
-    setDashboardContent({...dashboardContent, productNames: newProductNames});
-  };
-
-  const updateProduct = (index: number, field: string, value: string) => {
-    const newProductNames = [...dashboardContent.productNames];
-    newProductNames[index] = {...newProductNames[index], [field]: value};
-    setDashboardContent({...dashboardContent, productNames: newProductNames});
-  };
-
-
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [showPaymentDetailsDialog, setShowPaymentDetailsDialog] = useState(false);
@@ -3952,271 +3933,573 @@ export default function Admin() {
                   <div className="space-y-6">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
-                          <Edit className="h-5 w-5" />
-                          대시보드 콘텐츠 관리
-                        </CardTitle>
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                            <Edit className="h-5 w-5" />
+                            대시보드 콘텐츠 관리
+                          </CardTitle>
+                          <Button
+                            onClick={() => {
+                              if (confirm('모든 콘텐츠를 기본값으로 완전히 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                                const defaultContent = {
+                                  smallBoxName: "한과1호(약 1.1kg)",
+                                  largeBoxName: "한과2호(약 1.3kg)", 
+                                  smallBoxDimensions: "약 35.5×21×11.2cm",
+                                  largeBoxDimensions: "약 37×23×11.5cm",
+                                  wrappingName: "보자기",
+                                  wrappingPrice: "개당 +1,000원",
+                                  mainTitle: "진안에서 온 정성 가득 유과",
+                                  mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                  heroImages: [],
+                                  aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
+                                  bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                                  bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                };
+                                setDashboardContent({...dashboardContent, ...defaultContent});
+                                // 각각 업데이트
+                                Object.entries(defaultContent).forEach(([key, value]) => {
+                                  updateContentMutation.mutate({ key, value });
+                                });
+                                toast({ title: "모든 콘텐츠가 기본값으로 초기화되었습니다." });
+                              }
+                            }}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <RotateCcw className="h-4 w-4 mr-1" />
+                            전체 초기화
+                          </Button>
+                        </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          {/* 기본 정보 */}
+                        <div className="space-y-6">
+                          {/* 상품명 설정 */}
                           <div className="space-y-4">
-                            <h3 className="font-medium text-gray-900 border-b pb-2">기본 정보</h3>
-                            
-                            <div className="space-y-3">
-                              <div>
-                                <Label className="text-sm text-gray-600">메인 제목</Label>
-                                <Input
-                                  value={dashboardContent.mainTitle}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
-                                  className="mt-1"
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'mainTitle')?.value || "진안에서 온 정성 가득 유과";
-                                    setDashboardContent({...dashboardContent, mainTitle: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'mainTitle', value: dashboardContent.mainTitle })}>저장</Button>
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label className="text-sm text-gray-600">메인 설명</Label>
-                                <Textarea
-                                  value={dashboardContent.mainDescription}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
-                                  className="mt-1"
-                                  rows={2}
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'mainDescription')?.value || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^";
-                                    setDashboardContent({...dashboardContent, mainDescription: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'mainDescription', value: dashboardContent.mainDescription })}>저장</Button>
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label className="text-sm text-gray-600">소개 텍스트</Label>
-                                <Textarea
-                                  value={dashboardContent.aboutText}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
-                                  className="mt-1"
-                                  rows={2}
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'aboutText')?.value || "이든 한과는 전통 방식으로 만든 건강한 한과입니다.";
-                                    setDashboardContent({...dashboardContent, aboutText: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'aboutText', value: dashboardContent.aboutText })}>저장</Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 배송 및 계좌 정보 */}
-                          <div className="space-y-4">
-                            <h3 className="font-medium text-gray-900 border-b pb-2">배송 및 계좌 정보</h3>
-                            
-                            <div className="space-y-3">
-                              <div>
-                                <Label className="text-sm text-gray-600">배송 제목</Label>
-                                <Input
-                                  value={dashboardContent.shippingTitle || ''}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
-                                  className="mt-1"
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'shippingTitle')?.value || "에덴한과 배송";
-                                    setDashboardContent({...dashboardContent, shippingTitle: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'shippingTitle', value: dashboardContent.shippingTitle || '' })}>저장</Button>
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label className="text-sm text-gray-600">배송 안내</Label>
-                                <Textarea
-                                  value={dashboardContent.shippingInfo}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
-                                  className="mt-1"
-                                  rows={3}
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'shippingInfo')?.value || "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다.";
-                                    setDashboardContent({...dashboardContent, shippingInfo: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'shippingInfo', value: dashboardContent.shippingInfo })}>저장</Button>
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label className="text-sm text-gray-600">입금 계좌</Label>
-                                <Input
-                                  value={dashboardContent.bankAccount}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
-                                  className="mt-1"
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'bankAccount')?.value || "농협 352-1701-3342-63 (예금주: 손*진)";
-                                    setDashboardContent({...dashboardContent, bankAccount: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'bankAccount', value: dashboardContent.bankAccount })}>저장</Button>
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label className="text-sm text-gray-600">입금 안내 메시지</Label>
-                                <Textarea
-                                  value={dashboardContent.bankMessage}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
-                                  className="mt-1"
-                                  rows={2}
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'bankMessage')?.value || "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다";
-                                    setDashboardContent({...dashboardContent, bankMessage: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'bankMessage', value: dashboardContent.bankMessage })}>저장</Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 상품 관리 */}
-                          <div className="space-y-4 lg:col-span-2">
-                            <div className="flex justify-between items-center border-b pb-2">
-                              <h3 className="font-medium text-gray-900">상품 관리</h3>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
                               <div className="flex gap-2">
-                                <Button size="sm" variant="outline" onClick={addNewProduct}>
-                                  <Plus className="h-4 w-4 mr-1" />상품 추가
+                                <Button
+                                  onClick={() => {
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '', size: '', weight: '' }];
+                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  상품 추가
                                 </Button>
-                                <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'productNames', value: JSON.stringify(dashboardContent.productNames) })}>
-                                  전체 저장
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
+                                      const defaultProductNames = [
+                                        { name: '한과1호', price: '20000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+                                        { name: '한과2호', price: '30000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+                                      ];
+                                      const defaultContent = {
+                                        productNames: defaultProductNames,
+                                        wrappingName: "보자기",
+                                        wrappingPrice: "개당 +1,000원"
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaultContent});
+                                      updateContentMutation.mutate({ 
+                                        key: 'productNames', 
+                                        value: JSON.stringify(defaultProductNames) 
+                                      });
+                                      updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
+                                      updateContentMutation.mutate({ key: 'wrappingPrice', value: "개당 +1,000원" });
+                                    }
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  상품정보 되돌리기
                                 </Button>
                               </div>
                             </div>
                             
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {dashboardContent.productNames?.map((product, index) => (
-                                <div key={index} className="border rounded-lg p-3 bg-gray-50">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium">{product.name || `상품 ${index + 1}`}</span>
-                                    <Button size="sm" variant="destructive" onClick={() => removeProduct(index)}>
-                                      <X className="h-3 w-3" />
+                            {/* Dynamic Product List */}
+                            <div className="space-y-4">
+                              {(dashboardContent.productNames || []).map((product: any, index: number) => (
+                                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                                  <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-medium text-gray-900">상품 {index + 1}</h4>
+                                    <Button
+                                      onClick={() => {
+                                        const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
+                                        setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        updateContentMutation.mutate({ 
+                                          key: 'productNames', 
+                                          value: JSON.stringify(newProductNames) 
+                                        });
+                                      }}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    >
+                                      <X className="h-4 w-4" />
                                     </Button>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <Input
-                                      value={product.name}
-                                      onChange={(e) => updateProduct(index, 'name', e.target.value)}
-                                      placeholder="상품명"
-                                    />
-                                    <Input
-                                      value={product.price}
-                                      onChange={(e) => updateProduct(index, 'price', e.target.value)}
-                                      placeholder="가격"
-                                    />
-                                    <Input
-                                      value={product.size}
-                                      onChange={(e) => updateProduct(index, 'size', e.target.value)}
-                                      placeholder="크기"
-                                    />
-                                    <Input
-                                      value={product.weight}
-                                      onChange={(e) => updateProduct(index, 'weight', e.target.value)}
-                                      placeholder="무게"
-                                    />
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <Label htmlFor={`productName-${index}`}>상품명</Label>
+                                      <Input
+                                        id={`productName-${index}`}
+                                        value={product.name || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], name: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="상품명을 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productPrice-${index}`}>가격</Label>
+                                      <Input
+                                        id={`productPrice-${index}`}
+                                        value={product.price || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], price: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="가격을 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productSize-${index}`}>크기</Label>
+                                      <Input
+                                        id={`productSize-${index}`}
+                                        value={product.size || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], size: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="크기를 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor={`productWeight-${index}`}>무게</Label>
+                                      <Input
+                                        id={`productWeight-${index}`}
+                                        value={product.weight || ''}
+                                        onChange={(e) => {
+                                          const newProductNames = [...dashboardContent.productNames];
+                                          newProductNames[index] = {...newProductNames[index], weight: e.target.value};
+                                          setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                        }}
+                                        placeholder="무게를 입력하세요"
+                                        className="mt-1"
+                                      />
+                                    </div>
                                   </div>
+                                  
+                                  <Button
+                                    size="sm"
+                                    onClick={() => updateContentMutation.mutate({ 
+                                      key: 'productNames', 
+                                      value: JSON.stringify(dashboardContent.productNames) 
+                                    })}
+                                    disabled={updateContentMutation.isPending}
+                                    className="mt-3"
+                                  >
+                                    {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                  </Button>
                                 </div>
                               ))}
-                            </div>
-
-                            {/* 보자기 포장 설정 */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                              <div>
-                                <Label className="text-sm text-gray-600">보자기 포장명</Label>
-                                <Input
-                                  value={dashboardContent.wrappingName}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
-                                  className="mt-1"
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'wrappingName')?.value || "보자기";
-                                    setDashboardContent({...dashboardContent, wrappingName: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'wrappingName', value: dashboardContent.wrappingName })}>저장</Button>
-                                </div>
-                              </div>
-                              <div>
-                                <Label className="text-sm text-gray-600">보자기 포장 가격</Label>
-                                <Input
-                                  value={dashboardContent.wrappingPrice}
-                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
-                                  className="mt-1"
-                                />
-                                <div className="flex gap-1 mt-1">
-                                  <Button size="sm" variant="outline" onClick={() => {
-                                    const originalValue = contentData?.find(item => item.key === 'wrappingPrice')?.value || "개당 +1,000원";
-                                    setDashboardContent({...dashboardContent, wrappingPrice: originalValue});
-                                  }}>되돌리기</Button>
-                                  <Button size="sm" onClick={() => updateContentMutation.mutate({ key: 'wrappingPrice', value: dashboardContent.wrappingPrice })}>저장</Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* 히어로 이미지 관리 */}
-                          <div className="space-y-4 lg:col-span-2">
-                            <h3 className="font-medium text-gray-900 border-b pb-2">히어로 이미지 관리</h3>
-                            <div>
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageUpload}
-                                className="mb-3"
-                                disabled={dashboardContent.heroImages.length >= 8}
-                              />
-                              {dashboardContent.heroImages.length > 0 && (
-                                <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                                  {dashboardContent.heroImages.map((imageUrl, index) => (
-                                    <div key={index} className="relative group">
-                                      <img 
-                                        src={imageUrl} 
-                                        alt={`이미지 ${index + 1}`} 
-                                        className="w-full h-16 object-cover rounded border"
-                                      />
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => removeImage(index)}
-                                        className="absolute top-0 right-0 w-5 h-5 p-0 opacity-0 group-hover:opacity-100"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  ))}
+                              
+                              {(!dashboardContent.productNames || dashboardContent.productNames.length === 0) && (
+                                <div className="text-center py-8 text-gray-500">
+                                  <p>등록된 상품이 없습니다.</p>
+                                  <p className="text-sm">상품 추가 버튼을 클릭하여 새 상품을 추가하세요.</p>
                                 </div>
                               )}
-                              <p className="text-xs text-gray-500 mt-2">{dashboardContent.heroImages.length}/8 이미지</p>
+                            </div>
+                            
+                            {/* 보자기 포장 설정 */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pt-4 border-t border-gray-200">
+                              <div>
+                                <Label htmlFor="wrappingName">보자기 포장명</Label>
+                                <Input
+                                  id="wrappingName"
+                                  value={dashboardContent.wrappingName}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingName: e.target.value})}
+                                  placeholder="예: 보자기"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'wrappingName', 
+                                    value: dashboardContent.wrappingName 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              <div>
+                                <Label htmlFor="wrappingPrice">보자기 포장 가격</Label>
+                                <Input
+                                  id="wrappingPrice"
+                                  value={dashboardContent.wrappingPrice}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
+                                  placeholder="예: 개당 +1,000원"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'wrappingPrice', 
+                                    value: dashboardContent.wrappingPrice 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
                             </div>
                           </div>
 
+                          {/* 메인 대시보드 콘텐츠 */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">메인 대시보드 콘텐츠</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('메인 대시보드 콘텐츠를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      mainTitle: "진안에서 온 정성 가득 유과",
+                                      mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                      heroImages: [],
+                                      aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                콘텐츠 되돌리기
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="mainTitle">메인 제목</Label>
+                                <Input
+                                  id="mainTitle"
+                                  value={dashboardContent.mainTitle}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
+                                  placeholder="메인 제목을 입력하세요"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'mainTitle', 
+                                    value: dashboardContent.mainTitle 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="mainDescription">메인 설명</Label>
+                                <Input
+                                  id="mainDescription"
+                                  value={dashboardContent.mainDescription}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
+                                  placeholder="메인 설명을 입력하세요"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'mainDescription', 
+                                    value: dashboardContent.mainDescription 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 추가 콘텐츠 */}
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="heroImageFile">히어로 이미지 업로드</Label>
+                              <div className="mt-1 space-y-3">
+                                <Input
+                                  id="heroImageFile"
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handleImageUpload}
+                                  className="cursor-pointer"
+                                  disabled={dashboardContent.heroImages.length >= 8}
+                                />
+                                
+                                {/* Image Grid Display */}
+                                {dashboardContent.heroImages.length > 0 && (
+                                  <div className={`grid gap-2 ${
+                                    dashboardContent.heroImages.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
+                                    dashboardContent.heroImages.length === 2 ? 'grid-cols-2' :
+                                    dashboardContent.heroImages.length === 3 ? 'grid-cols-3' :
+                                    dashboardContent.heroImages.length === 4 ? 'grid-cols-2' :
+                                    dashboardContent.heroImages.length === 5 ? 'grid-cols-3' :
+                                    dashboardContent.heroImages.length === 6 ? 'grid-cols-3' :
+                                    'grid-cols-4'
+                                  }`}>
+                                    {dashboardContent.heroImages.map((imageUrl, index) => (
+                                      <div key={index} className="relative group">
+                                        <img 
+                                          src={imageUrl} 
+                                          alt={`히어로 이미지 ${index + 1}`} 
+                                          className={`w-full object-cover rounded border hover:opacity-80 transition-opacity ${
+                                            dashboardContent.heroImages.length === 1 ? 'h-32' :
+                                            dashboardContent.heroImages.length <= 4 ? 'h-24' : 'h-20'
+                                          }`}
+                                        />
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => removeImage(index)}
+                                          className="absolute top-1 right-1 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                <div className="flex justify-between items-center text-xs text-gray-500">
+                                  <span>JPG, PNG, GIF 파일을 업로드하세요 (최대 8개)</span>
+                                  <span>{dashboardContent.heroImages.length}/8</span>
+                                </div>
+                                
+                                {dashboardContent.heroImages.length >= 8 && (
+                                  <p className="text-xs text-amber-600">최대 8개의 이미지까지 업로드 가능합니다. 새 이미지를 추가하려면 기존 이미지를 삭제해주세요.</p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="aboutText">소개 텍스트</Label>
+                              <Textarea
+                                id="aboutText"
+                                value={dashboardContent.aboutText}
+                                onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
+                                placeholder="소개 텍스트를 입력하세요"
+                                className="mt-1"
+                                rows={4}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => updateContentMutation.mutate({ 
+                                  key: 'aboutText', 
+                                  value: dashboardContent.aboutText 
+                                })}
+                                disabled={updateContentMutation.isPending}
+                                className="mt-2"
+                              >
+                                {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* 배송 안내 정보 */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">배송 안내 정보</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('배송 안내 정보를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      shippingTitle: "에덴한과 배송",
+                                      shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                배송정보 되돌리기
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <Label htmlFor="shippingTitle">배송 섹션 제목</Label>
+                                <Input
+                                  id="shippingTitle"
+                                  value={dashboardContent.shippingTitle || ''}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
+                                  placeholder="에덴한과 배송"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'shippingTitle', 
+                                    value: dashboardContent.shippingTitle || '' 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+
+                              <div>
+                                <Label htmlFor="shippingInfo">배송 안내 내용</Label>
+                                <Textarea
+                                  id="shippingInfo"
+                                  value={dashboardContent.shippingInfo}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
+                                  placeholder="배송 관련 안내사항을 입력하세요"
+                                  className="mt-1"
+                                  rows={6}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'shippingInfo', 
+                                    value: dashboardContent.shippingInfo 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                                <p className="text-xs text-gray-500 mt-1">• 로 시작하는 항목들로 작성하면 리스트 형태로 표시됩니다</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 입금 계좌 정보 */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">입금 계좌 정보</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('입금 계좌 정보를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                                      bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                계좌정보 되돌리기
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <Label htmlFor="bankAccount">입금 계좌</Label>
+                                <Input
+                                  id="bankAccount"
+                                  value={dashboardContent.bankAccount}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
+                                  placeholder="예: 농협 352-1701-3342-63 (예금주: 손*진)"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'bankAccount', 
+                                    value: dashboardContent.bankAccount 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              <div>
+                                <Label htmlFor="bankMessage">입금 안내 메시지</Label>
+                                <Textarea
+                                  id="bankMessage"
+                                  value={dashboardContent.bankMessage}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
+                                  placeholder="주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                  className="mt-1"
+                                  rows={2}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'bankMessage', 
+                                    value: dashboardContent.bankMessage 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 현재 저장된 콘텐츠 미리보기 */}
+                          {contentData && contentData.length > 0 && (
+                            <div className="space-y-2">
+                              <h3 className="text-sm font-medium text-gray-900">현재 저장된 콘텐츠</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+                                {contentData.map((content) => (
+                                  <div key={content.id} className="bg-gray-50 rounded p-2">
+                                    <div className="text-gray-600 truncate text-xs font-medium">{content.key}</div>
+                                    <div className="text-gray-900 text-xs mt-1 break-words">
+                                      {content.value.length > 50 ? `${content.value.substring(0, 50)}...` : content.value}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
                   </div>
                 </TabsContent>
-
               </Tabs>
             )}
           </CardContent>
