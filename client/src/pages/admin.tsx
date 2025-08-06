@@ -584,17 +584,7 @@ function PriceSettingsDialog() {
             </div>
             {localProductNames && localProductNames.length > 0 ? (
               <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-gray-600">각 상품별로 개별 저장하거나 전체 일괄 저장할 수 있습니다.</p>
-                  <Button
-                    onClick={saveAllPrices}
-                    disabled={isBulkSaving}
-                    variant="ghost"
-                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                  >
-                    {isBulkSaving ? "일괄 저장 중..." : "전체 일괄 저장"}
-                  </Button>
-                </div>
+                <p className="text-sm text-gray-600">각 상품별로 개별 저장하거나 전체 일괄 저장할 수 있습니다.</p>
                 <div className="overflow-x-auto">
                   <table className="w-full border border-gray-200 rounded-lg">
                     <thead>
@@ -679,6 +669,16 @@ function PriceSettingsDialog() {
                       })}
                     </tbody>
                   </table>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <Button
+                    onClick={saveAllPrices}
+                    disabled={isBulkSaving}
+                    variant="ghost"
+                    className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                  >
+                    {isBulkSaving ? "일괄 저장 중..." : "전체 일괄 저장"}
+                  </Button>
                 </div>
               </div>
             ) : (
