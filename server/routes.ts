@@ -464,6 +464,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("주문 생성 전 validatedData.userId:", validatedData.userId);
       
+      // Get current pricing settings to capture historical pricing context
+      const currentSettings = await storage.getAllSettings();
+      const smallBoxPriceSetting = currentSettings.find(s => s.key === "smallBoxPrice");
+      const largeBoxPriceSetting = currentSettings.find(s => s.key === "largeBoxPrice");
+      const wrappingPriceSetting = currentSettings.find(s => s.key === "wrappingPrice");
+      const smallBoxCostSetting = currentSettings.find(s => s.key === "smallBoxCost");
+      const largeBoxCostSetting = currentSettings.find(s => s.key === "largeBoxCost");
+      const wrappingCostSetting = currentSettings.find(s => s.key === "wrappingCost");
+      
+      // Capture current prices for historical accuracy
+      const orderData = {
+        ...validatedData,
+        // Store current selling prices
+        smallBoxPrice: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
+        largeBoxPrice: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
+        wrappingPrice: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
+        // Store current cost prices
+        smallBoxCost: smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 15000,
+        largeBoxCost: largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 16000,
+        wrappingCost: wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000,
+        // Calculate total cost based on current prices
+        totalCost: ((validatedData.smallBoxQuantity || 0) * (smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 15000)) +
+                   ((validatedData.largeBoxQuantity || 0) * (largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 16000)) +
+                   ((validatedData.wrappingQuantity || 0) * (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000))
+      };
+      
       // Automatically register or update customer with user info if logged in
       const userInfo = (req as any).user;
       await storage.autoRegisterCustomer({
@@ -476,7 +502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userRegisteredPhone: userInfo?.phoneNumber
       });
       
-      const order = await storage.createOrder(validatedData);
+      const order = await storage.createOrder(orderData);
       console.log("주문 생성 후 order.userId:", order?.userId);
       
       // Update customer statistics after creating order

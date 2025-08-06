@@ -1280,26 +1280,16 @@ export default function Admin() {
         ? (order.totalAmount - order.actualPaidAmount) : 0;
       acc.netProfit += order.netProfit || 0;
       
-      // Calculate product costs and fees - only core costs
-      const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || 15000);
-      const largeBoxCost = order.largeBoxQuantity * (largeBoxCostValue || 16000);
-      const wrappingCost = order.wrappingQuantity * (wrappingCostValue || 1000);
-      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-      // Get dynamic shipping settings
-      const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
-      const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
-      const shippingFeeValue = shippingFeeSetting ? parseInt(shippingFeeSetting.value) : 4000;
-      const freeShippingThreshold = freeShippingThresholdSetting ? parseInt(freeShippingThresholdSetting.value) : 6;
+      // Use historical pricing and cost data stored in the order for accurate calculations
+      const smallBoxCost = order.smallBoxQuantity * (order.smallBoxCost || 15000);
+      const largeBoxCost = order.largeBoxQuantity * (order.largeBoxCost || 16000);
+      const wrappingCost = order.wrappingQuantity * (order.wrappingCost || 1000);
+      const shippingCost = order.shippingFee || 0;
       
-      // Get dynamic product price settings
-      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
-      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
-      const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
-      const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
-      const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
-      const wrappingPrice = wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000;
-      
-      const shippingCost = totalItems >= freeShippingThreshold ? 0 : shippingFeeValue;
+      // Use historical selling prices for revenue calculations
+      const smallBoxPrice = order.smallBoxPrice || 19000;
+      const largeBoxPrice = order.largeBoxPrice || 21000;
+      const wrappingPrice = order.wrappingPrice || 1000;
       
       acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
       acc.smallBoxAmount += order.smallBoxQuantity * smallBoxPrice;
@@ -1602,38 +1592,28 @@ export default function Admin() {
                     {orders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
-                      // Get product price settings
-                      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxPrice");
-                      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxPrice");
-                      const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingPrice");
-                      const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
-                      const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
-                      
-                      const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
-                      const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
-                      const wrappingPrice = wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000;
-                      const shippingFeeValue = shippingFeeSetting ? parseInt(shippingFeeSetting.value) : 4000;
-                      const freeShippingThreshold = freeShippingThresholdSetting ? parseInt(freeShippingThresholdSetting.value) : 6;
+                      // Use historical pricing stored in the order for accurate sales calculations
+                      const smallBoxPrice = order.smallBoxPrice || 19000;
+                      const largeBoxPrice = order.largeBoxPrice || 21000;
+                      const wrappingPrice = order.wrappingPrice || 1000;
                       
                       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                       const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
                       const wrappingTotal = order.wrappingQuantity * wrappingPrice;
-                      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                      const shippingFee = totalItems >= freeShippingThreshold ? 0 : shippingFeeValue;
                       
-                      // Get global cost settings
-                      const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
-                      const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
-                      const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
-                      const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
+                      // Get shipping fee from order
+                      const shippingFee = order.shippingFee || 0;
                       
-                      // Calculate actual costs
-                      const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
-                      const wrappingCostValue = wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000;
-                      const wrappingCost = order.wrappingQuantity * wrappingCostValue;
+                      // Use historical cost data stored in order for profit calculations
+                      const smallCost = order.smallBoxCost || 0;
+                      const largeCost = order.largeBoxCost || 0;
+                      const wrappingCost = order.wrappingCost || 0;
+                      
+                      // Calculate actual costs using stored historical data
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
                       const largeBoxesCost = order.largeBoxQuantity * largeCost;
-                      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
+                      const wrappingCostTotal = order.wrappingQuantity * wrappingCost;
+                      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal;
                       
                       // Calculate discount and unpaid amounts
                       const discountAmount = order.discountAmount || 0;
@@ -1717,7 +1697,7 @@ export default function Admin() {
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-purple-600">
-                                  보자기: {formatPrice(wrappingCost)}
+                                  보자기: {formatPrice(wrappingCostTotal)}
                                 </div>
                               )}
                               {shippingFee > 0 && (
@@ -1783,38 +1763,28 @@ export default function Admin() {
                 {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
-                  // Get product price settings  
-                  const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxPrice");
-                  const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxPrice");
-                  const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingPrice");
-                  const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
-                  const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
-                  
-                  const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
-                  const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
-                  const wrappingPrice = wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000;
-                  const shippingFeeValue = shippingFeeSetting ? parseInt(shippingFeeSetting.value) : 4000;
-                  const freeShippingThreshold = freeShippingThresholdSetting ? parseInt(freeShippingThresholdSetting.value) : 6;
+                  // Use historical pricing stored in the order for accurate sales calculations
+                  const smallBoxPrice = order.smallBoxPrice || 19000;
+                  const largeBoxPrice = order.largeBoxPrice || 21000;
+                  const wrappingPrice = order.wrappingPrice || 1000;
                   
                   const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                   const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
                   const wrappingTotal = order.wrappingQuantity * wrappingPrice;
-                  const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-                  const shippingFee = totalItems >= freeShippingThreshold ? 0 : shippingFeeValue;
                   
-                  // Get global cost settings
-                  const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
-                  const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
-                  const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 0;
-                  const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 0;
+                  // Get shipping fee from order
+                  const shippingFee = order.shippingFee || 0;
                   
-                  // Calculate actual costs
-                  const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
-                  const wrappingCostValue = wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000;
-                  const wrappingCost = order.wrappingQuantity * wrappingCostValue;
+                  // Use historical cost data stored in order for profit calculations
+                  const smallCost = order.smallBoxCost || 0;
+                  const largeCost = order.largeBoxCost || 0;
+                  const wrappingCost = order.wrappingCost || 0;
+                  
+                  // Calculate actual costs using stored historical data
                   const smallBoxesCost = order.smallBoxQuantity * smallCost;
                   const largeBoxesCost = order.largeBoxQuantity * largeCost;
-                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
+                  const wrappingCostTotal = order.wrappingQuantity * wrappingCost;
+                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal;
                   
                   // Calculate discount and unpaid amounts
                   const discountAmount = order.discountAmount || 0;
