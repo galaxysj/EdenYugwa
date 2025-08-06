@@ -22,7 +22,7 @@ export const orders = pgTable("orders", {
   specialRequests: text("special_requests"),
   smallBoxQuantity: integer("small_box_quantity").notNull().default(0), // 소박스(한과1호) 수량
   largeBoxQuantity: integer("large_box_quantity").notNull().default(0), // 대박스(한과2호) 수량
-  wrappingQuantity: integer("wrapping_quantity").notNull().default(0), // 보자기 포장 수량
+  wrappingQuantity: integer("wrapping_quantity").notNull().default(0), // 보자기 상품 수량
   shippingFee: integer("shipping_fee").notNull().default(0), // 배송비
   totalAmount: integer("total_amount").notNull(),
   actualPaidAmount: integer("actual_paid_amount").default(0), // 실제 입금된 금액
@@ -31,11 +31,11 @@ export const orders = pgTable("orders", {
   // 주문 시점 가격 정보 (매출 계산용)
   smallBoxPrice: integer("small_box_price").default(0), // 주문 당시 한과1호 판매가
   largeBoxPrice: integer("large_box_price").default(0), // 주문 당시 한과2호 판매가
-  wrappingPrice: integer("wrapping_price").default(0), // 주문 당시 보자기 판매가
+  wrappingPrice: integer("wrapping_price").default(0), // 주문 당시 보자기 상품 판매가
   // 원가 정보
   smallBoxCost: integer("small_box_cost").default(0), // 한과1호 원가 (개당)
   largeBoxCost: integer("large_box_cost").default(0), // 한과2호 원가 (개당)
-  wrappingCost: integer("wrapping_cost").default(0), // 보자기 원가 (개당)
+  wrappingCost: integer("wrapping_cost").default(0), // 보자기 상품 원가 (개당)
   totalCost: integer("total_cost").default(0), // 총 원가
   netProfit: integer("net_profit").default(0), // 실제 수익 (실입금 - 원가 - 배송비)
   status: text("status").notNull().default("pending"), // 'pending', 'preparing', 'scheduled', 'shipping', 'delivered'

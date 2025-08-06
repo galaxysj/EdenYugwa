@@ -3396,18 +3396,37 @@ export default function Admin() {
                       매출관리
                     </TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-1">
+                  <TabsList className="grid w-full grid-cols-3 mb-2">
                     <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
                       <Users className="h-3 w-3 mr-1" />
                       고객관리
+                    </TabsTrigger>
+                    <TabsTrigger value="members" className="text-green-600 text-xs px-1">
+                      <Key className="h-3 w-3 mr-1" />
+                      회원관리
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
+                      <Cog className="h-3 w-3 mr-1" />
+                      대시보드 콘텐츠 관리
                     </TabsTrigger>
                   </TabsList>
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-
-                
-
+                <div className="hidden md:block">
+                  <TabsList className="grid w-full grid-cols-10">
+                    <TabsTrigger value="all" className="text-xs">전체 ({allOrders.length})</TabsTrigger>
+                    <TabsTrigger value="pending" className="text-xs">주문접수 ({pendingOrders.length})</TabsTrigger>
+                    <TabsTrigger value="seller_shipped" className="text-xs">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="text-xs">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                    <TabsTrigger value="delivered" className="text-xs">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="refunded" className="text-red-600 text-xs">환불내역 ({refundedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="revenue" className="text-purple-600 text-xs">매출관리</TabsTrigger>
+                    <TabsTrigger value="customers" className="text-blue-600 text-xs">고객관리</TabsTrigger>
+                    <TabsTrigger value="members" className="text-green-600 text-xs">회원관리</TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-xs">대시보드 콘텐츠 관리</TabsTrigger>
+                  </TabsList>
+                </div>
 
                 <TabsContent value="all" className="mt-6">
                   {renderOrderFilters()}
@@ -4007,7 +4026,7 @@ export default function Admin() {
                                         value: JSON.stringify(defaultProductNames) 
                                       });
                                       updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
-                                      updateContentMutation.mutate({ key: 'wrappingPrice', value: "개당 +1,000원" });
+                                      updateContentMutation.mutate({ key: 'wrappingPrice', value: "개당 1,000원" });
                                     }
                                   }}
                                   variant="outline"
@@ -4096,12 +4115,12 @@ export default function Admin() {
                               )}
                             </div>
                             
-                            {/* 보자기 포장 설정 */}
+                            {/* 보자기 상품 설정 */}
                             <div className="border-t border-gray-200 pt-4 space-y-3">
-                              <h4 className="text-sm font-medium text-gray-900">설정</h4>
+                              <h4 className="text-sm font-medium text-gray-900">보자기 상품 설정</h4>
                               <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                  <Label className="text-xs text-gray-600" htmlFor="wrappingName">포장명</Label>
+                                  <Label className="text-xs text-gray-600" htmlFor="wrappingName">보자기명</Label>
                                   <div className="flex gap-2 mt-1">
                                     <Input
                                       id="wrappingName"
@@ -4130,7 +4149,7 @@ export default function Admin() {
                                       id="wrappingPrice"
                                       value={dashboardContent.wrappingPrice}
                                       onChange={(e) => setDashboardContent({...dashboardContent, wrappingPrice: e.target.value})}
-                                      placeholder="개당 +1,000원"
+                                      placeholder="개당 1,000원"
                                       className="h-8 text-sm"
                                     />
                                     <Button

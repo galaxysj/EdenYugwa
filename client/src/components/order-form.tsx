@@ -37,16 +37,13 @@ const orderSchema = z.object({
   specialRequests: z.string().optional(),
   smallBoxQuantity: z.number().min(0, "소박스 수량은 0개 이상이어야 합니다"),
   largeBoxQuantity: z.number().min(0, "대박스 수량은 0개 이상이어야 합니다"),
-  wrappingQuantity: z.number().min(0, "보자기 포장 수량은 0개 이상이어야 합니다"),
+  wrappingQuantity: z.number().min(0, "보자기 수량은 0개 이상이어야 합니다"),
   scheduledDate: z.date().optional(),
   isDifferentDepositor: z.boolean().default(false),
   depositorName: z.string().optional(),
-}).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity >= 1, {
+}).refine((data) => data.smallBoxQuantity + data.largeBoxQuantity + data.wrappingQuantity >= 1, {
   message: "최소 1개 이상의 상품을 선택해주세요",
   path: ["smallBoxQuantity"],
-}).refine((data) => data.wrappingQuantity <= data.smallBoxQuantity + data.largeBoxQuantity, {
-  message: "보자기 포장 수량은 전체 수량보다 클 수 없습니다",
-  path: ["wrappingQuantity"],
 }).refine((data) => !data.isDifferentDepositor || data.depositorName, {
   message: "입금자 이름을 입력해주세요",
   path: ["depositorName"],
@@ -513,12 +510,12 @@ export default function OrderForm() {
                       {/* Divider */}
                       <div className="border-t border-eden-beige/50"></div>
 
-                      {/* 보자기 Selection */}
+                      {/* 보자기 상품 Selection */}
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.wrappingName || "보자기"}</h5>
-                            <p className="text-xs text-black mt-1">{dashboardContent.wrappingPrice || "개당 +1,000원"}</p>
+                            <p className="text-xs text-black mt-1">{dashboardContent.wrappingPrice || "개당 1,000원"}</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
                         </div>
@@ -543,7 +540,6 @@ export default function OrderForm() {
                                     <Input
                                       type="number"
                                       min="0"
-                                      max={totalQuantity}
                                       {...field}
                                       onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                                       className="w-12 h-7 text-center text-xs px-1"
