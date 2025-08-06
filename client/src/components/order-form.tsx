@@ -394,9 +394,11 @@ export default function OrderForm() {
 
   useEffect(() => {
     const [smallBoxQuantity, largeBoxQuantity, wrappingQuantity] = watchedValues;
-    const smallBoxTotal = prices.small * smallBoxQuantity;
-    const largeBoxTotal = prices.large * largeBoxQuantity;
-    const wrappingTotal = wrappingQuantity * prices.wrapping;
+    
+    // 동적 상품 가격을 사용하여 계산
+    const smallBoxTotal = getCurrentPrice(0, prices.small) * smallBoxQuantity;
+    const largeBoxTotal = getCurrentPrice(1, prices.large) * largeBoxQuantity;
+    const wrappingTotal = wrappingQuantity * getCurrentPrice(2, prices.wrapping);
     const totalQuantity = smallBoxQuantity + largeBoxQuantity;
     
     // 배송비 계산: 6개 이상이면 무료, 미만이면 4000원
@@ -405,7 +407,7 @@ export default function OrderForm() {
     
     const total = smallBoxTotal + largeBoxTotal + wrappingTotal + calculatedShippingFee;
     setTotalAmount(total);
-  }, [watchedValues, prices, shippingSettings]);
+  }, [watchedValues, prices, shippingSettings, productNames]);
 
   const onSubmit = (data: OrderFormData) => {
     const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
@@ -863,23 +865,58 @@ export default function OrderForm() {
                     {/* Price Summary */}
                     <div className="bg-eden-cream p-3 md:p-4 rounded-lg">
                       <div className="space-y-2 text-sm">
-                        {smallBoxQuantity > 0 && (
-                          <div className="flex justify-between">
-                            <span>{getProductName(0, '한과1호')} × {smallBoxQuantity}:</span>
-                            <span className="whitespace-nowrap">{formatPrice(smallBoxTotal)}</span>
-                          </div>
-                        )}
-                        {largeBoxQuantity > 0 && (
-                          <div className="flex justify-between">
-                            <span>{getProductName(1, '한과2호')} × {largeBoxQuantity}:</span>
-                            <span className="whitespace-nowrap">{formatPrice(largeBoxTotal)}</span>
-                          </div>
-                        )}
-                        {wrappingTotal > 0 && (
-                          <div className="flex justify-between">
-                            <span>{getProductName(2, '보자기')} × {wrappingQuantity}:</span>
-                            <span className="whitespace-nowrap">{formatPrice(wrappingTotal)}</span>
-                          </div>
+                        {/* 동적 상품 목록을 기반으로 주문 요약 생성 */}
+                        {productNames && productNames.length > 0 ? (
+                          productNames.map((product: any, index: number) => {
+                            let quantity = 0;
+                            let fieldName = '';
+                            
+                            // 각 상품별 수량 매핑
+                            if (index === 0) {
+                              quantity = smallBoxQuantity;
+                              fieldName = 'smallBoxQuantity';
+                            } else if (index === 1) {
+                              quantity = largeBoxQuantity;
+                              fieldName = 'largeBoxQuantity';
+                            } else if (index === 2 || product.name === '보자기') {
+                              quantity = wrappingQuantity;
+                              fieldName = 'wrappingQuantity';
+                            }
+                            
+                            if (quantity > 0) {
+                              const price = getCurrentPrice(index, 0);
+                              const total = price * quantity;
+                              
+                              return (
+                                <div key={index} className="flex justify-between">
+                                  <span>{product.name} × {quantity}:</span>
+                                  <span className="whitespace-nowrap">{formatPrice(total)}</span>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })
+                        ) : (
+                          <>
+                            {smallBoxQuantity > 0 && (
+                              <div className="flex justify-between">
+                                <span>{getProductName(0, '한과1호')} × {smallBoxQuantity}:</span>
+                                <span className="whitespace-nowrap">{formatPrice(smallBoxTotal)}</span>
+                              </div>
+                            )}
+                            {largeBoxQuantity > 0 && (
+                              <div className="flex justify-between">
+                                <span>{getProductName(1, '한과2호')} × {largeBoxQuantity}:</span>
+                                <span className="whitespace-nowrap">{formatPrice(largeBoxTotal)}</span>
+                              </div>
+                            )}
+                            {wrappingTotal > 0 && (
+                              <div className="flex justify-between">
+                                <span>{getProductName(2, '보자기')} × {wrappingQuantity}:</span>
+                                <span className="whitespace-nowrap">{formatPrice(wrappingTotal)}</span>
+                              </div>
+                            )}
+                          </>
                         )}
                         <div className="flex justify-between">
                           <span>배송비:</span>
