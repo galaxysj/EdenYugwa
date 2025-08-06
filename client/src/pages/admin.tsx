@@ -1641,9 +1641,9 @@ export default function Admin() {
 
               {/* 모바일 리스트 뷰 */}
               <div className="md:hidden">
-                <div className="mb-3 p-2 bg-blue-50 border-l-4 border-blue-500">
-                  <p className="text-sm text-blue-800 font-bold">
-                    📊 매출 상세내역 ({orders.length}건)
+                <div className="mb-3 p-2 border-b border-gray-300">
+                  <p className="text-sm text-black font-bold">
+                    매출 상세내역 ({orders.length}건)
                   </p>
                 </div>
                 <div className="space-y-1">
@@ -1683,18 +1683,18 @@ export default function Admin() {
                         {/* 주문 기본 정보 */}
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2 text-xs">
-                            <span className="font-bold text-blue-700">#{order.orderNumber}</span>
-                            <span className="text-gray-700">{order.customerName}</span>
-                            <span className="text-gray-500">
+                            <span className="font-bold text-black">#{order.orderNumber}</span>
+                            <span className="text-black">{order.customerName}</span>
+                            <span className="text-gray-600">
                               {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                             </span>
                           </div>
-                          <span className="text-xs font-bold text-blue-600">{formatPrice(order.totalAmount)}</span>
+                          <span className="text-xs font-bold text-black">{formatPrice(order.totalAmount)}</span>
                         </div>
                         
                         {/* 주문 내역 */}
                         <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                          <div className="flex items-center gap-1 text-xs text-gray-700">
                             {order.smallBoxQuantity > 0 && <span>1호×{order.smallBoxQuantity}</span>}
                             {order.largeBoxQuantity > 0 && <span>2호×{order.largeBoxQuantity}</span>}
                             {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
@@ -1704,19 +1704,19 @@ export default function Admin() {
                         {/* 수익 정보 - 한 줄로 압축 */}
                         <div className="flex items-center justify-between text-xs">
                           <div className="flex items-center gap-3">
-                            <span className="text-green-600">
+                            <span className="text-black">
                               입금 <span className="font-bold">{formatPrice(order.actualPaidAmount || order.totalAmount)}</span>
                             </span>
-                            <span className="text-purple-600">
+                            <span className="text-black">
                               원가 <span className="font-bold">{formatPrice(totalCost)}</span>
                             </span>
                             {(discountAmount > 0 || unpaidAmount > 0) && (
-                              <span className="text-red-600">
+                              <span className="text-black">
                                 {discountAmount > 0 ? '할인' : '미입금'} <span className="font-bold">{formatPrice(discountAmount > 0 ? discountAmount : unpaidAmount)}</span>
                               </span>
                             )}
                           </div>
-                          <span className={`font-bold ${actualProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          <span className="font-bold text-black">
                             순수익 {formatPrice(actualProfit)}
                           </span>
                         </div>
