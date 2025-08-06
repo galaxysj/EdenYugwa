@@ -110,10 +110,6 @@ export default function OrderForm() {
   };
 
   const productNames = parseProductNames();
-  
-  // Debug logging
-  console.log('Dashboard content:', dashboardContent);
-  console.log('Product names:', productNames);
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -528,42 +524,6 @@ export default function OrderForm() {
                   <div className="text-center py-8 text-gray-500">
                     <p className="text-sm">등록된 상품이 없습니다.</p>
                     <p className="text-xs">관리자가 상품을 등록하면 여기에 표시됩니다.</p>
-                  </div>
-                )}
-
-                {/* Product Information Display - Below Product Selection */}
-                {productNames && productNames.length > 0 && (
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h5 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                      <Info className="h-4 w-4" />
-                      상품 정보
-                    </h5>
-                    <div className="space-y-3">
-                      {productNames.map((product: any, index: number) => (
-                        <div key={index} className="bg-white rounded-lg p-3 border border-gray-100">
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <h6 className="font-medium text-gray-900 text-sm mb-1">
-                                {product.name}
-                              </h6>
-                              <div className="space-y-1 text-xs text-gray-600">
-                                {product.size && (
-                                  <p>크기: {product.size}</p>
-                                )}
-                                {product.weight && (
-                                  <p>무게: {product.weight}</p>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-sm font-bold text-eden-brown">
-                                {parseInt(product.price || 0).toLocaleString()}원
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
 
