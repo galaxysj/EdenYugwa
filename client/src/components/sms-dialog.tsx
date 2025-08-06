@@ -13,9 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { MessageSquare, Send, AlertCircle } from "lucide-react";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { Send, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { Order, AdminSettings } from "@shared/schema";
@@ -34,7 +33,6 @@ interface SmsDialogProps {
 export function SmsDialog({ order, children }: SmsDialogProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Check admin settings
   const { data: adminSettings } = useQuery<AdminSettings>({
@@ -50,8 +48,6 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
       hour: '2-digit',
       minute: '2-digit'
     });
-    
-
     
     if (paymentStatus === 'confirmed') {
       return `입금이 확인되었습니다. (확인시간: ${timeStr})`;
@@ -86,33 +82,29 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
     form.setValue('message', `[에덴한과] ${order.customerName}님, 주문이 접수되었습니다. (주문시간: ${timeStr}) 감사합니다.`);
   };
 
-  const sendSMSMutation = useMutation({
-    mutationFn: (data: { orderId: number; phoneNumber: string; message: string }) =>
-      api.sms.send(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+  // iOS 단축어 링크로 SMS 발송하는 함수
+  const sendSMSViaShortcut = (phoneNumber: string, message: string) => {
+    const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(phoneNumber + '/' + message)}`;
+    
+    try {
+      window.open(shortcutUrl, '_self');
       toast({
-        title: "SMS 발송 완료",
-        description: "고객에게 SMS가 성공적으로 발송되었습니다.",
+        title: "SMS 앱 열기 완료",
+        description: "iOS 단축어로 SMS를 발송합니다.",
       });
       setOpen(false);
       form.reset();
-    },
-    onError: () => {
+    } catch (error) {
       toast({
-        title: "SMS 발송 실패",
-        description: "SMS 발송 중 오류가 발생했습니다.",
+        title: "SMS 앱 열기 실패",
+        description: "iOS 단축어를 실행할 수 없습니다.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  };
 
   const onSubmit = (data: SmsFormData) => {
-    sendSMSMutation.mutate({
-      orderId: order.id,
-      phoneNumber: order.customerPhone,
-      message: data.message,
-    });
+    sendSMSViaShortcut(order.customerPhone, data.message);
   };
 
   const handlePresetMessage = (type: 'status' | 'payment' | 'shipping' | 'custom') => {
@@ -176,7 +168,8 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            {/* 프리셋 메시지 버튼들 */}
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 size="sm"
@@ -184,28 +177,26 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
                 onClick={() => handlePresetMessage('status')}
                 className="text-xs"
               >
-                주문상태 알림
+                주문접수 안내
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => handlePresetMessage('payment')}
+                className="text-xs"
+              >
+                입금확인 안내
               </Button>
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => handlePresetMessage('shipping')}
-                className="text-xs bg-blue-50 border-blue-200"
+                className="text-xs"
               >
-                발송안내
+                발송완료 안내
               </Button>
-              {order.paymentStatus === 'confirmed' && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handlePresetMessage('payment')}
-                  className="text-xs bg-green-50 border-green-200"
-                >
-                  입금확인 알림
-                </Button>
-              )}
               <Button
                 type="button"
                 size="sm"
@@ -245,23 +236,15 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
                 type="button"
                 variant="ghost"
                 onClick={() => setOpen(false)}
-                disabled={sendSMSMutation.isPending}
               >
                 취소
               </Button>
               <Button
                 type="submit"
-                disabled={sendSMSMutation.isPending || !adminSettings?.adminPhone}
                 className="bg-eden-brown hover:bg-eden-dark"
               >
-                {sendSMSMutation.isPending ? (
-                  "발송 중..."
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    발송하기
-                  </>
-                )}
+                <Send className="mr-2 h-4 w-4" />
+                발송하기
               </Button>
             </div>
           </form>
