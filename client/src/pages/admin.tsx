@@ -1910,15 +1910,67 @@ export default function Admin() {
             <div className="hidden md:block bg-gray-50 rounded-lg p-4">
               {(() => {
                 try {
-                  const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                  // dashboardContent.productNames는 이미 파싱된 배열이므로 JSON.parse 불필요
+                  const productNames = Array.isArray(dashboardContent.productNames) 
+                    ? dashboardContent.productNames 
+                    : (typeof dashboardContent.productNames === 'string' 
+                       ? JSON.parse(dashboardContent.productNames || '[]') 
+                       : []);
+                  
                   const productCount = productNames.length;
                   const colors = ['amber', 'orange', 'eden-brown', 'green', 'blue', 'purple', 'pink', 'indigo'];
                   
+                  // 상품이 없으면 기본 뷰로 표시
+                  if (productCount === 0) {
+                    return (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 md:gap-4 text-center">
+                        <div>
+                          <div className="font-semibold text-gray-700 mb-1 text-xs md:text-sm">주문건수</div>
+                          <div className="text-sm md:text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">한과1호</div>
+                          <div className="text-sm md:text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">한과2호</div>
+                          <div className="text-sm md:text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">보자기</div>
+                          <div className="text-sm md:text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
+                          <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
+                          <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
+                          <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
+                          <div className="text-sm md:text-lg font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
+                          <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                            {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
                   return (
                     <div className={`grid gap-2 md:gap-4 text-center ${
-                      productCount <= 3 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6' :
-                      productCount <= 5 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8' :
-                      'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9'
+                      productCount <= 3 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9' :
+                      productCount <= 5 ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-11' :
+                      'grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-12'
                     }`}>
                       <div>
                         <div className="font-semibold text-gray-700 mb-1 text-xs md:text-sm">주문건수</div>
@@ -1978,7 +2030,8 @@ export default function Admin() {
                     </div>
                   );
                 } catch (error) {
-                  // 파싱 실패 시 기본 뷰
+                  console.error('Product names parsing error:', error);
+                  // 오류 발생 시 기본 뷰
                   return (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 md:gap-4 text-center">
                       <div>
@@ -1986,16 +2039,38 @@ export default function Admin() {
                         <div className="text-sm md:text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
                       </div>
                       <div>
-                        <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">상품1</div>
+                        <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">한과1호</div>
                         <div className="text-sm md:text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
                       </div>
                       <div>
-                        <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">상품2</div>
+                        <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">한과2호</div>
                         <div className="text-sm md:text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
                       </div>
                       <div>
-                        <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">상품3</div>
+                        <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">보자기</div>
                         <div className="text-sm md:text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
+                        <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
+                        <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
+                        <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
+                        <div className="text-sm md:text-lg font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
+                        <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
+                        </div>
                       </div>
                     </div>
                   );
@@ -2032,8 +2107,34 @@ export default function Admin() {
                 
                 {(() => {
                   try {
-                    const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                    // dashboardContent.productNames는 이미 파싱된 배열이므로 JSON.parse 불필요
+                    const productNames = Array.isArray(dashboardContent.productNames) 
+                      ? dashboardContent.productNames 
+                      : (typeof dashboardContent.productNames === 'string' 
+                         ? JSON.parse(dashboardContent.productNames || '[]') 
+                         : []);
+                    
                     const colors = ['amber', 'orange', 'eden-brown', 'green', 'blue', 'purple', 'pink', 'indigo'];
+                    
+                    // 상품이 없으면 기본 상품들 표시
+                    if (productNames.length === 0) {
+                      return (
+                        <>
+                          <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                            <span className="text-xs text-amber-600">한과1호</span>
+                            <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
+                          </div>
+                          <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                            <span className="text-xs text-orange-600">한과2호</span>
+                            <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
+                          </div>
+                          <div className="flex justify-between items-center py-1 border-b border-gray-200">
+                            <span className="text-xs text-eden-brown">보자기</span>
+                            <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
+                          </div>
+                        </>
+                      );
+                    }
                     
                     return productNames.map((product: any, index: number) => {
                       const colorClass = colors[index % colors.length];
@@ -2055,20 +2156,21 @@ export default function Admin() {
                         </div>
                       );
                     });
-                  } catch {
-                    // 파싱 실패 시 기본 상품들 표시
+                  } catch (error) {
+                    console.error('Mobile product names parsing error:', error);
+                    // 오류 발생 시 기본 상품들 표시
                     return (
                       <>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="text-xs text-amber-600">상품1</span>
+                          <span className="text-xs text-amber-600">한과1호</span>
                           <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                         </div>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="text-xs text-orange-600">상품2</span>
+                          <span className="text-xs text-orange-600">한과2호</span>
                           <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                         </div>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="text-xs text-eden-brown">상품3</span>
+                          <span className="text-xs text-eden-brown">보자기</span>
                           <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                         </div>
                       </>
