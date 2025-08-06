@@ -3204,7 +3204,7 @@ export default function Admin() {
                     <TabsTrigger value="seller_shipped" className="text-xs px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
                     <TabsTrigger value="scheduled" className="text-xs px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-4 mb-2">
+                  <TabsList className="grid w-full grid-cols-3 mb-2">
                     <TabsTrigger value="delivered" className="text-xs px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
                     <TabsTrigger value="refunded" className="text-red-600 text-xs px-1">
                       환불내역 ({refundedOrders.length})
@@ -3212,10 +3212,6 @@ export default function Admin() {
                     <TabsTrigger value="revenue" className="text-purple-600 text-xs px-1">
                       <DollarSign className="h-3 w-3 mr-1" />
                       매출관리
-                    </TabsTrigger>
-                    <TabsTrigger value="trash" className="text-red-600 text-xs px-1">
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      휴지통 ({deletedOrders.length})
                     </TabsTrigger>
                   </TabsList>
                   <TabsList className="grid w-full grid-cols-1">
@@ -3227,28 +3223,7 @@ export default function Admin() {
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-                <TabsList className="hidden md:grid w-full grid-cols-7">
-                  <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
-                  <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
-                  <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
-                  <TabsTrigger value="scheduled">발송주문 ({scheduledOrders.length})</TabsTrigger>
-                  <TabsTrigger value="delivered">발송완료 ({deliveredOrders.length})</TabsTrigger>
-                  <TabsTrigger value="refunded" className="text-red-600">
-                    환불내역 ({refundedOrders.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="revenue" className="text-purple-600">
-                    <DollarSign className="h-4 w-4 mr-1" />
-                    매출관리
-                  </TabsTrigger>
-                  <TabsTrigger value="trash" className="text-red-600">
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    휴지통 ({deletedOrders.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="customers" className="text-blue-600">
-                    <Users className="h-4 w-4 mr-1" />
-                    고객관리
-                  </TabsTrigger>
-                </TabsList>
+
                 
 
 
@@ -3788,7 +3763,7 @@ export default function Admin() {
                             <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
-                                <Label htmlFor="smallBoxName">상품명</Label>
+                                <Label htmlFor="smallBoxName">한과1호 상품명</Label>
                                 <Input
                                   id="smallBoxName"
                                   value={dashboardContent.smallBoxName}
@@ -3810,7 +3785,7 @@ export default function Admin() {
                               </div>
                               
                               <div>
-                                <Label htmlFor="largeBoxName">상품명</Label>
+                                <Label htmlFor="largeBoxName">한과2호 상품명</Label>
                                 <Input
                                   id="largeBoxName"
                                   value={dashboardContent.largeBoxName}

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface AdminHeaderProps {
@@ -201,6 +201,22 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   <Edit className="h-4 w-4 mr-2" />
                   콘텐츠 관리
                 </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('trash');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start text-sm ${
+                    activeTab === 'trash' 
+                      ? 'bg-red-50 text-red-700 border border-red-200' 
+                      : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+                  }`}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  휴지통
+                </Button>
               </>
             )}
             {handleExcelDownload && (
@@ -343,6 +359,17 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     >
                       <Edit className="h-4 w-4 mr-2" />
                       콘텐츠
+                    </Button>
+                  )}
+                  {setActiveTab && (
+                    <Button 
+                      onClick={() => setActiveTab('trash')}
+                      variant="ghost" 
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      휴지통
                     </Button>
                   )}
                   {costSettingsDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{costSettingsDialog}</div>}
