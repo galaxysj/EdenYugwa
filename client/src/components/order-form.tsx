@@ -212,8 +212,16 @@ export default function OrderForm() {
       try {
         const productNames = JSON.parse(dashboardContent.productNames);
         
-        // 가격은 이제 설정에서만 관리
-        // dashboard content의 product names는 이름, 크기, 무게 정보만 포함
+        // 상품 가격을 dashboard content에서 추출
+        const wrappingProduct = productNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
+        const updatedPrices = {
+          small: productNames[0]?.price ? parseInt(productNames[0].price) : prices.small,
+          large: productNames[1]?.price ? parseInt(productNames[1].price) : prices.large,
+          wrapping: wrappingProduct?.price ? parseInt(wrappingProduct.price) : 
+                   (dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000),
+        };
+
+        setPrices(updatedPrices);
       } catch (error) {
         console.error('상품 가격 로드 실패:', error);
       }
@@ -435,97 +443,80 @@ export default function OrderForm() {
                   상품 선택
                 </h4>
                 
-                {/* Dynamic Product List - Modern List Format */}
+                {/* Dynamic Product List */}
                 {productNames && productNames.length > 0 ? (
                   <div className="space-y-4">
                     {productNames.map((product: any, index: number) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-eden-sage/50 transition-colors">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          {/* Product Info */}
+                      <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/30 shadow-sm">
+                        <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
-                            <h5 className="font-semibold text-eden-brown text-lg mb-2">
+                            <h5 className="font-semibold text-eden-brown text-base md:text-lg mb-1">
                               {product.name}
                             </h5>
-                            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                              {product.size && (
-                                <div className="flex items-center gap-1">
-                                  <span className="font-medium">크기:</span>
-                                  <span>{product.size}</span>
-                                </div>
-                              )}
-                              {product.weight && (
-                                <div className="flex items-center gap-1">
-                                  <span className="font-medium">무게:</span>
-                                  <span>{product.weight}</span>
-                                </div>
-                              )}
-                            </div>
+                            {product.size && (
+                              <p className="text-sm text-gray-600 mb-1">
+                                크기: {product.size}
+                              </p>
+                            )}
+                            {product.weight && (
+                              <p className="text-sm text-gray-600 mb-1">
+                                무게: {product.weight}
+                              </p>
+                            )}
                           </div>
-                          
-                          {/* Price and Quantity */}
-                          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
-                            {/* Price */}
-                            <div className="text-right">
-                              <div className="text-sm text-gray-500 mb-1">판매가</div>
-                              <div className="text-xl font-bold text-eden-brown">
-                                {formatPrice(
-                                  index === 0 ? prices.small : 
-                                  index === 1 ? prices.large : 
-                                  product.name?.includes('보자기') ? prices.wrapping : 
-                                  prices.small
-                                )}
-                              </div>
-                            </div>
-                            
-                            {/* Quantity Selector */}
-                            <div className="min-w-[140px]">
-                              <FormField
-                                control={form.control}
-                                name={
-                                  index === 0 ? "smallBoxQuantity" : 
-                                  index === 1 ? "largeBoxQuantity" : 
-                                  product.name?.includes('보자기') ? "wrappingQuantity" : 
-                                  "smallBoxQuantity"
-                                }
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-xs text-gray-500 block text-center mb-2">수량</FormLabel>
-                                    <FormControl>
-                                      <div className="flex items-center justify-center space-x-2">
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                          className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10 border-eden-beige"
-                                        >
-                                          -
-                                        </Button>
-                                        <Input
-                                          type="number"
-                                          min="0"
-                                          {...field}
-                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                          className="w-16 h-8 text-center text-sm font-medium border-eden-beige focus:border-eden-sage"
-                                        />
-                                        <Button 
-                                          type="button"
-                                          variant="outline" 
-                                          size="sm"
-                                          onClick={() => field.onChange(field.value + 1)}
-                                          className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10 border-eden-beige"
-                                        >
-                                          +
-                                        </Button>
-                                      </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                          <div className="text-right">
+                            <div className="text-lg md:text-xl font-bold text-eden-brown">
+                              {formatPrice(parseInt(product.price) || 0)}
                             </div>
                           </div>
                         </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name={
+                            index === 0 ? "smallBoxQuantity" : 
+                            index === 1 ? "largeBoxQuantity" : 
+                            product.name?.includes('보자기') ? "wrappingQuantity" : 
+                            "smallBoxQuantity"
+                          }
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center justify-between">
+                                <FormLabel className="text-sm font-medium text-gray-700">수량 선택</FormLabel>
+                                <FormControl>
+                                  <div className="flex items-center space-x-2">
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                      className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                    >
+                                      -
+                                    </Button>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                      className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
+                                    />
+                                    <Button 
+                                      type="button"
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => field.onChange(field.value + 1)}
+                                      className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                    >
+                                      +
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     ))}
                   </div>

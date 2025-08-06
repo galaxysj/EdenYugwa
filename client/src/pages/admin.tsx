@@ -763,8 +763,8 @@ export default function Admin() {
     shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다.",
     shippingTitle: "에덴한과 배송",
     productNames: [
-      { name: '한과1호', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-      { name: '한과2호', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+      { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+      { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
     ]
   });
 
@@ -951,8 +951,8 @@ export default function Admin() {
             updatedContent.productNames = JSON.parse(item.value || '[]');
           } catch {
             updatedContent.productNames = [
-              { name: '한과1호', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-              { name: '한과2호', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
+              { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+              { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
             ];
           }
         }
@@ -1207,8 +1207,10 @@ export default function Admin() {
   // Excel export function for admin
   const exportToExcel = (ordersList: Order[], fileName: string) => {
     const excelData = ordersList.map(order => {
-      // Get product costs from settings (removed from dashboard content)
+      // Get product costs from dashboard content first, fallback to settings
       const productNames = dashboardContent.productNames || [];
+      const smallProductCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : null;
+      const largeProductCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : null;
       const wrappingProductCost = dashboardContent.wrappingCost ? parseInt(dashboardContent.wrappingCost) : null;
       
       // Fallback to global cost settings if no product-specific cost
@@ -1216,15 +1218,13 @@ export default function Admin() {
       const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
       const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
       
-      const smallCost = smallCostSetting ? parseInt(smallCostSetting.value) : 15000;
-      const largeCost = largeCostSetting ? parseInt(largeCostSetting.value) : 16000;
+      const smallCost = smallProductCost ?? (smallCostSetting ? parseInt(smallCostSetting.value) : 15000);
+      const largeCost = largeProductCost ?? (largeCostSetting ? parseInt(largeCostSetting.value) : 16000);
       const wrappingCostValue = wrappingProductCost ?? (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000);
       
-      // Calculate totals using prices from settings (removed from dashboard content)
-      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxPrice");
-      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxPrice");
-      const smallBoxPrice = smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000;
-      const largeBoxPrice = largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000;
+      // Calculate totals using dynamic prices
+      const smallBoxPrice = productNames[0]?.price ? parseInt(productNames[0].price) : 19000;
+      const largeBoxPrice = productNames[1]?.price ? parseInt(productNames[1].price) : 21000;
       const wrappingPrice = dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000;
       
       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
@@ -4034,7 +4034,7 @@ export default function Admin() {
                               <div className="flex gap-2">
                                 <Button
                                   onClick={() => {
-                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', size: '', weight: '' }];
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', cost: '0', size: '', weight: '' }];
                                     setDashboardContent({...dashboardContent, productNames: newProductNames});
                                     
                                     // 대시보드 콘텐츠 업데이트
@@ -4071,6 +4071,8 @@ export default function Admin() {
                                     // 보자기 상품 추가
                                     const wrappingProduct = {
                                       name: dashboardContent.wrappingName || '보자기',
+                                      price: dashboardContent.wrappingPriceAmount || '1000',
+                                      cost: dashboardContent.wrappingCost || '200',
                                       size: '',
                                       weight: ''
                                     };
@@ -4103,9 +4105,9 @@ export default function Admin() {
                                   onClick={() => {
                                     if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
                                       const defaultProductNames = [
-                                        { name: '한과1호', size: '(10cm × 7cm × 7cm)', weight: '300g' },
-                                        { name: '한과2호', size: '(14.5cm × 7cm × 7cm)', weight: '450g' },
-                                        { name: '보자기', size: '', weight: '' }
+                                        { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+                                        { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' },
+                                        { name: '보자기', price: '1000', cost: '200', size: '', weight: '' }
                                       ];
                                       setDashboardContent({...dashboardContent, productNames: defaultProductNames});
                                       updateContentMutation.mutate({ 
@@ -4137,6 +4139,8 @@ export default function Admin() {
                                   <tr className="bg-gray-50 border-b border-gray-200">
                                     <th className="w-12 px-3 py-2 text-left text-xs font-medium text-gray-600">#</th>
                                     <th className="w-40 px-3 py-2 text-left text-xs font-medium text-gray-600">상품명</th>
+                                    <th className="w-28 px-3 py-2 text-left text-xs font-medium text-gray-600">판매가</th>
+                                    <th className="w-28 px-3 py-2 text-left text-xs font-medium text-gray-600">원가</th>
                                     <th className="w-32 px-3 py-2 text-left text-xs font-medium text-gray-600">크기/규격</th>
                                     <th className="w-24 px-3 py-2 text-left text-xs font-medium text-gray-600">중량</th>
                                     <th className="w-24 px-3 py-2 text-center text-xs font-medium text-gray-600">작업</th>
@@ -4157,6 +4161,32 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="상품명"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          type="number"
+                                          value={product.price || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], price: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="가격"
+                                          className="text-sm h-8 border-gray-200 focus:border-blue-300"
+                                        />
+                                      </td>
+                                      <td className="px-3 py-2">
+                                        <Input
+                                          type="number"
+                                          value={product.cost || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], cost: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="원가"
                                           className="text-sm h-8 border-gray-200 focus:border-blue-300"
                                         />
                                       </td>
@@ -4195,12 +4225,26 @@ export default function Admin() {
                                                 value: JSON.stringify(dashboardContent.productNames) 
                                               });
                                               
-                                              // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
-                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                              
-                                              toast({
-                                                title: "상품 정보 저장 완료",
-                                                description: `${product.name} 정보가 업데이트되었습니다.`,
+                                              // 개별 상품 가격을 product-prices API에도 동기화
+                                              const productPrice = parseInt(product.price) || 0;
+                                              const productCost = parseInt(product.cost) || 0;
+                                              fetch('/api/product-prices', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                  productIndex: index,
+                                                  productName: product.name,
+                                                  price: productPrice,
+                                                  cost: productCost
+                                                })
+                                              }).then(() => {
+                                                // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                                queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                                
+                                                toast({
+                                                  title: "상품 정보 저장 완료",
+                                                  description: `${product.name} 정보가 업데이트되었습니다.`,
+                                                });
                                               });
                                             }}
                                             disabled={updateContentMutation.isPending}
