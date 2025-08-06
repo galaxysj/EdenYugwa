@@ -3381,17 +3381,17 @@ export default function Admin() {
                 {/* 모바일에서는 3줄로 나누어 표시 - 설정 탭 추가 */}
                 <div className="block md:hidden">
                   <TabsList className="grid w-full grid-cols-4 mb-2">
-                    <TabsTrigger value="all" className="text-xs px-1">전체 ({allOrders.length})</TabsTrigger>
-                    <TabsTrigger value="pending" className="text-xs px-1">주문접수 ({pendingOrders.length})</TabsTrigger>
-                    <TabsTrigger value="seller_shipped" className="text-xs px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
-                    <TabsTrigger value="scheduled" className="text-xs px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                    <TabsTrigger value="all" className="text-sm px-1">전체 ({allOrders.length})</TabsTrigger>
+                    <TabsTrigger value="pending" className="text-sm px-1">주문접수 ({pendingOrders.length})</TabsTrigger>
+                    <TabsTrigger value="seller_shipped" className="text-sm px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="text-sm px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   </TabsList>
                   <TabsList className="grid w-full grid-cols-3 mb-2">
-                    <TabsTrigger value="delivered" className="text-xs px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
-                    <TabsTrigger value="refunded" className="text-red-600 text-xs px-1">
+                    <TabsTrigger value="delivered" className="text-sm px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="refunded" className="text-red-600 text-sm px-1">
                       환불내역 ({refundedOrders.length})
                     </TabsTrigger>
-                    <TabsTrigger value="revenue" className="text-purple-600 text-xs px-1">
+                    <TabsTrigger value="revenue" className="text-purple-600 text-sm px-1">
                       <DollarSign className="h-3 w-3 mr-1" />
                       매출관리
                     </TabsTrigger>
@@ -3415,16 +3415,16 @@ export default function Admin() {
                 {/* 데스크톱에서는 한 줄로 표시 */}
                 <div className="hidden md:block">
                   <TabsList className="grid w-full grid-cols-10">
-                    <TabsTrigger value="all" className="text-xs">전체 ({allOrders.length})</TabsTrigger>
-                    <TabsTrigger value="pending" className="text-xs">주문접수 ({pendingOrders.length})</TabsTrigger>
-                    <TabsTrigger value="seller_shipped" className="text-xs">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
-                    <TabsTrigger value="scheduled" className="text-xs">발송주문 ({scheduledOrders.length})</TabsTrigger>
-                    <TabsTrigger value="delivered" className="text-xs">발송완료 ({deliveredOrders.length})</TabsTrigger>
-                    <TabsTrigger value="refunded" className="text-red-600 text-xs">환불내역 ({refundedOrders.length})</TabsTrigger>
-                    <TabsTrigger value="revenue" className="text-purple-600 text-xs">매출관리</TabsTrigger>
-                    <TabsTrigger value="customers" className="text-blue-600 text-xs">고객관리</TabsTrigger>
-                    <TabsTrigger value="members" className="text-green-600 text-xs">회원관리</TabsTrigger>
-                    <TabsTrigger value="settings" className="text-orange-600 text-xs">대시보드 콘텐츠 관리</TabsTrigger>
+                    <TabsTrigger value="all" className="text-sm">전체 ({allOrders.length})</TabsTrigger>
+                    <TabsTrigger value="pending" className="text-sm">주문접수 ({pendingOrders.length})</TabsTrigger>
+                    <TabsTrigger value="seller_shipped" className="text-sm">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="text-sm">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                    <TabsTrigger value="delivered" className="text-sm">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="refunded" className="text-red-600 text-sm">환불내역 ({refundedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="revenue" className="text-purple-600 text-sm">매출관리</TabsTrigger>
+                    <TabsTrigger value="customers" className="text-blue-600 text-sm">고객관리</TabsTrigger>
+                    <TabsTrigger value="members" className="text-green-600 text-sm">회원관리</TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-sm">대시보드 콘텐츠 관리</TabsTrigger>
                   </TabsList>
                 </div>
 
