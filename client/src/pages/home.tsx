@@ -1,15 +1,14 @@
-import { useState } from "react";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Menu, X, Package, Settings } from "lucide-react";
+import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Package, Settings } from "lucide-react";
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, isManagerOrAdmin, isAdmin, isManager, user } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
@@ -39,8 +38,8 @@ export default function Home() {
                 </button>
               </Link>
               
-              {/* 로그인/회원가입 버튼 - 비로그인 상태에서만 표시 */}
-              {!isAuthenticated && (
+              {/* 비로그인 상태 - 로그인/회원가입 버튼 */}
+              {!isAuthenticated ? (
                 <>
                   <Link href="/login">
                     <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors">
@@ -53,76 +52,21 @@ export default function Home() {
                     </button>
                   </Link>
                 </>
+              ) : (
+                /* 로그인 상태 - 로그아웃 버튼 */
+                <button 
+                  onClick={() => {
+                    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                      .then(() => window.location.reload());
+                  }}
+                  className="text-xs bg-red-600 text-white px-3 py-1.5 rounded-full hover:bg-red-700 transition-colors"
+                >
+                  로그아웃
+                </button>
               )}
-              
-              {/* 햄버거 메뉴 버튼 */}
-              <button 
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
             </div>
 
-            {/* 모바일 드롭다운 메뉴 */}
-            {isMobileMenuOpen && (
-              <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-b border-gray-200 md:hidden z-50">
-                <div className="container mx-auto px-4 py-4">
-                  <div className="space-y-3">
-                    {!isAuthenticated ? (
-                      <>
-                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                          <button className="w-full text-left px-4 py-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                            로그인
-                          </button>
-                        </Link>
-                        <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                          <button className="w-full text-left px-4 py-2 text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                            회원가입
-                          </button>
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        {/* 관리자/매니저 버튼들 */}
-                        {user?.role === 'admin' && (
-                          <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)}>
-                            <button className="w-full text-left px-4 py-2 text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                              관리자 패널
-                            </button>
-                          </Link>
-                        )}
-                        {(user?.role === 'admin' || user?.role === 'manager') && (
-                          <Link href="/manager" onClick={() => setIsMobileMenuOpen(false)}>
-                            <button className="w-full text-left px-4 py-2 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                              매니저 패널
-                            </button>
-                          </Link>
-                        )}
-                        <button 
-                          onClick={async () => {
-                            try {
-                              const response = await fetch('/api/auth/logout', {
-                                method: 'POST',
-                                credentials: 'include'
-                              });
-                              if (response.ok) {
-                                window.location.reload();
-                              }
-                            } catch (error) {
-                              console.error('로그아웃 오류:', error);
-                            }
-                          }}
-                          className="w-full text-left px-4 py-2 text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                        >
-                          로그아웃
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+
             
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
@@ -194,92 +138,10 @@ export default function Home() {
 
             </nav>
 
-            {/* Mobile Menu Button - Desktop only */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden md:block"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+
           </div>
 
-          {/* Mobile Navigation Menu */}
-          {isMobileMenuOpen && (
-            <nav className="md:hidden mt-4 pb-4 border-t border-eden-beige pt-4">
-              <div className="flex flex-col space-y-4">
-                <button 
-                  onClick={() => {
-                    scrollToSection('home');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="text-left text-eden-dark hover:text-eden-brown transition-colors py-2"
-                >
-                  홈
-                </button>
-                <button 
-                  onClick={() => {
-                    scrollToSection('about');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="text-left text-eden-dark hover:text-eden-brown transition-colors py-2"
-                >
-                  소개
-                </button>
-                <button 
-                  onClick={() => {
-                    scrollToSection('order');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="text-left text-eden-dark hover:text-eden-brown transition-colors py-2"
-                >
-                  주문하기
-                </button>
-                <Link href="/order-lookup">
-                  <button 
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-3 px-4 w-full border border-eden-brown rounded-lg bg-white hover:bg-eden-brown hover:text-white"
-                  >
-                    📋 주문 조회
-                  </button>
-                </Link>
-                {!isAuthenticated && (
-                  <Link href="/login">
-                    <button 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
-                    >
-                      로그인/회원가입
-                    </button>
-                  </Link>
-                )}
 
-                {isAuthenticated && (
-                  <button 
-                    className="text-left text-eden-brown hover:text-eden-dark transition-colors py-2 w-full border border-eden-brown rounded px-3 bg-white hover:bg-eden-brown hover:text-white"
-                    onClick={async () => {
-                      setIsMobileMenuOpen(false);
-                      try {
-                        const response = await fetch('/api/auth/logout', {
-                          method: 'POST',
-                          credentials: 'include'
-                        });
-                        if (response.ok) {
-                          window.location.href = '/';
-                        }
-                      } catch (error) {
-                        console.error('로그아웃 실패:', error);
-                      }
-                    }}
-                  >
-                    로그아웃
-                  </button>
-                )}
-
-              </div>
-            </nav>
-          )}
         </div>
       </header>
       {/* Order Section - Main Content */}
