@@ -1795,6 +1795,27 @@ export default function Admin() {
       acc.largeBoxQuantity += order.largeBoxQuantity;
       acc.wrappingQuantity += order.wrappingQuantity;
       
+      // Handle dynamic product quantities
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          
+          // Add dynamic quantities to accumulator
+          if (!acc.dynamicProductQuantities) acc.dynamicProductQuantities = {};
+          Object.entries(dynamicQty).forEach(([index, quantity]) => {
+            const productIndex = parseInt(index);
+            if (!acc.dynamicProductQuantities[productIndex]) {
+              acc.dynamicProductQuantities[productIndex] = 0;
+            }
+            acc.dynamicProductQuantities[productIndex] += quantity;
+          });
+        } catch (error) {
+          console.error('Error parsing dynamic product quantities:', error);
+        }
+      }
+      
       // Calculate shipping fees and count orders with shipping
       if (shippingCost > 0) acc.shippingOrders++;
       acc.shippingAmount += shippingCost;
@@ -1815,7 +1836,8 @@ export default function Admin() {
       smallBoxQuantity: 0,
       largeBoxQuantity: 0,
       wrappingQuantity: 0,
-      shippingOrders: 0
+      shippingOrders: 0,
+      dynamicProductQuantities: {}
     });
     
     const handleRevenueExcelDownload = async () => {
@@ -2026,6 +2048,10 @@ export default function Admin() {
                         if (index === 0) quantity = filteredTotals.smallBoxQuantity;
                         else if (index === 1) quantity = filteredTotals.largeBoxQuantity;
                         else if (index === 2 || product.name?.includes('보자기')) quantity = filteredTotals.wrappingQuantity;
+                        else {
+                          // 새로 추가된 상품들은 동적 상품 수량에서 가져오기
+                          quantity = filteredTotals.dynamicProductQuantities?.[index] || 0;
+                        }
                         
                         return (
                           <div key={index}>
@@ -2184,6 +2210,10 @@ export default function Admin() {
                       if (index === 0) quantity = filteredTotals.smallBoxQuantity;
                       else if (index === 1) quantity = filteredTotals.largeBoxQuantity;
                       else if (index === 2 || product.name?.includes('보자기')) quantity = filteredTotals.wrappingQuantity;
+                      else {
+                        // 새로 추가된 상품들은 동적 상품 수량에서 가져오기
+                        quantity = filteredTotals.dynamicProductQuantities?.[index] || 0;
+                      }
                       
                       return (
                         <div key={index} className="flex justify-between items-center py-1 border-b border-gray-200">

@@ -430,6 +430,7 @@ export default function OrderForm() {
       totalAmount,
       scheduledDate: data.scheduledDate ? data.scheduledDate.toISOString() : null,
       status: data.scheduledDate ? 'scheduled' : 'pending',
+      dynamicProductQuantities: Object.keys(dynamicQuantities).length > 0 ? dynamicQuantities : null,
     };
     
     createOrderMutation.mutate(orderData);

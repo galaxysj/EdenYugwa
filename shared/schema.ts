@@ -23,6 +23,7 @@ export const orders = pgTable("orders", {
   smallBoxQuantity: integer("small_box_quantity").notNull().default(0), // 소박스(한과1호) 수량
   largeBoxQuantity: integer("large_box_quantity").notNull().default(0), // 대박스(한과2호) 수량
   wrappingQuantity: integer("wrapping_quantity").notNull().default(0), // 보자기 상품 수량
+  dynamicProductQuantities: jsonb("dynamic_product_quantities"), // 동적 상품 수량 저장용 JSON 필드
   shippingFee: integer("shipping_fee").notNull().default(0), // 배송비
   totalAmount: integer("total_amount").notNull(),
   actualPaidAmount: integer("actual_paid_amount").default(0), // 실제 입금된 금액
