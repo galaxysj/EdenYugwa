@@ -2614,22 +2614,24 @@ export default function Admin() {
                 {isExpanded && (
                   <div className="px-3 pb-3 border-t border-gray-100">
                     {/* 주문내역 */}
-                    <div className="flex items-center justify-between mb-2 pt-2">
-                      <div className="flex items-center gap-1 text-xs text-gray-700">
-                        {order.smallBoxQuantity > 0 && <span>한과1호(약1.1kg)×{order.smallBoxQuantity}</span>}
-                        {order.largeBoxQuantity > 0 && <span>한과2호(약2.5kg)×{order.largeBoxQuantity}</span>}
-                        {order.wrappingQuantity > 0 && <span>보자기×{order.wrappingQuantity}</span>}
+                    <div className="mb-2 pt-2">
+                      <div className="text-xs text-gray-700 space-y-0.5 mb-2">
+                        {order.smallBoxQuantity > 0 && <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>}
+                        {order.largeBoxQuantity > 0 && <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>}
+                        {order.wrappingQuantity > 0 && <div>보자기×{order.wrappingQuantity}개</div>}
                       </div>
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                        order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {order.status === 'scheduled' ? '발송주문' :
-                         order.status === 'delivered' ? '발송완료' :
-                         order.status === 'seller_shipped' ? '발송대기' : '주문접수'}
-                      </span>
+                      <div className="flex justify-end">
+                        <span className={`px-2 py-0.5 rounded text-xs ${
+                          order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {order.status === 'scheduled' ? '발송주문' :
+                           order.status === 'delivered' ? '발송완료' :
+                           order.status === 'seller_shipped' ? '발송대기' : '주문접수'}
+                        </span>
+                      </div>
                     </div>
 
                     {/* 연락처, 주소 */}
@@ -3558,10 +3560,6 @@ export default function Admin() {
                 </TabsContent>
                 
                 <TabsContent value="members" className="mt-6">
-                  <UserManagement />
-                </TabsContent>
-                
-                <TabsContent value="users" className="mt-6">
                   <UserManagement />
                 </TabsContent>
 
