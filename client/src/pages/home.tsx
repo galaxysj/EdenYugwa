@@ -30,10 +30,10 @@ export default function Home() {
             </div>
             
             {/* 모바일 메뉴 버튼 */}
-            <div className="flex md:hidden items-center gap-2">
+            <div className="flex md:hidden items-center gap-1.5">
               {/* 주문조회 버튼 - 항상 표시 */}
               <Link href="/order-lookup">
-                <button className="text-xs bg-eden-sage text-white px-3 py-1.5 rounded-full hover:bg-eden-brown transition-colors">
+                <button className="text-xs bg-eden-sage text-white px-2.5 py-1.5 rounded-md hover:bg-eden-brown transition-colors font-medium">
                   주문조회
                 </button>
               </Link>
@@ -42,12 +42,12 @@ export default function Home() {
               {!isAuthenticated ? (
                 <>
                   <Link href="/login">
-                    <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors">
+                    <button className="text-xs bg-blue-500 text-white px-2.5 py-1.5 rounded-md hover:bg-blue-600 transition-colors font-medium">
                       로그인
                     </button>
                   </Link>
                   <Link href="/register">
-                    <button className="text-xs bg-gray-600 text-white px-3 py-1.5 rounded-full hover:bg-gray-700 transition-colors">
+                    <button className="text-xs bg-gray-500 text-white px-2.5 py-1.5 rounded-md hover:bg-gray-600 transition-colors font-medium">
                       회원가입
                     </button>
                   </Link>
@@ -59,7 +59,7 @@ export default function Home() {
                     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
                       .then(() => window.location.reload());
                   }}
-                  className="text-xs bg-red-600 text-white px-3 py-1.5 rounded-full hover:bg-red-700 transition-colors"
+                  className="text-xs bg-red-500 text-white px-2.5 py-1.5 rounded-md hover:bg-red-600 transition-colors font-medium"
                 >
                   로그아웃
                 </button>
