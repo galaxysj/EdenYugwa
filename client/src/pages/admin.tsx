@@ -3387,6 +3387,29 @@ export default function Admin() {
                   <CustomerManagement />
                 </TabsContent>
                 
+                <TabsContent value="members" className="mt-6">
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                          <Users className="h-5 w-5" />
+                          회원관리
+                        </CardTitle>
+                        <p className="text-sm text-gray-600">
+                          등록된 회원들의 정보를 관리합니다.
+                        </p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                          <p>회원관리 기능은 준비 중입니다.</p>
+                          <p className="text-sm mt-2">현재는 사용자관리 탭에서 계정을 관리할 수 있습니다.</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+                
                 <TabsContent value="users" className="mt-6">
                   <UserManagement />
                 </TabsContent>
