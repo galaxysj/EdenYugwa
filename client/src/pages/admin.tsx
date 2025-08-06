@@ -307,8 +307,8 @@ function AdminInfoSettingsDialog() {
   );
 }
 
-// Cost Settings Dialog Component
-function CostSettingsDialog() {
+// Price Settings Dialog Component
+function PriceSettingsDialog() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -317,9 +317,15 @@ function CostSettingsDialog() {
     queryKey: ["/api/settings"],
   });
   
+  // Cost settings (원가)
   const [smallBoxCost, setSmallBoxCost] = useState("");
   const [largeBoxCost, setLargeBoxCost] = useState("");
   const [wrappingCost, setWrappingCost] = useState("");
+  // Price settings (판매가)
+  const [smallBoxPrice, setSmallBoxPrice] = useState("");
+  const [largeBoxPrice, setLargeBoxPrice] = useState("");
+  const [wrappingPrice, setWrappingPrice] = useState("");
+  // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
   
@@ -329,18 +335,24 @@ function CostSettingsDialog() {
       const smallCostSetting = settings.find(s => s.key === "smallBoxCost");
       const largeCostSetting = settings.find(s => s.key === "largeBoxCost");
       const wrappingCostSetting = settings.find(s => s.key === "wrappingCost");
+      const smallPriceSetting = settings.find(s => s.key === "smallBoxPrice");
+      const largePriceSetting = settings.find(s => s.key === "largeBoxPrice");
+      const wrappingPriceSetting = settings.find(s => s.key === "wrappingPrice");
       const shippingFeeSetting = settings.find(s => s.key === "shippingFee");
       const thresholdSetting = settings.find(s => s.key === "freeShippingThreshold");
       
       setSmallBoxCost(smallCostSetting?.value || "");
       setLargeBoxCost(largeCostSetting?.value || "");
       setWrappingCost(wrappingCostSetting?.value || "");
+      setSmallBoxPrice(smallPriceSetting?.value || "");
+      setLargeBoxPrice(largePriceSetting?.value || "");
+      setWrappingPrice(wrappingPriceSetting?.value || "");
       setShippingFee(shippingFeeSetting?.value || "");
       setFreeShippingThreshold(thresholdSetting?.value || "");
     }
   }, [settings]);
   
-  const updateCostMutation = useMutation({
+  const updatePriceMutation = useMutation({
     mutationFn: async (data: { key: string; value: string; description: string }) => {
       return await api.settings.create(data);
     },
@@ -348,22 +360,22 @@ function CostSettingsDialog() {
       queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       toast({
-        title: "원가 설정 완료",
-        description: "전역 원가 설정이 업데이트되었습니다.",
+        title: "가격 설정 완료",
+        description: "가격 설정이 업데이트되었습니다.",
       });
       setOpen(false);
     },
     onError: () => {
       toast({
         title: "오류 발생",
-        description: "원가 설정 업데이트에 실패했습니다.",
+        description: "가격 설정 업데이트에 실패했습니다.",
         variant: "destructive",
       });
     },
   });
   
   const handleSave = async () => {
-    if (!smallBoxCost || !largeBoxCost || !wrappingCost || !shippingFee || !freeShippingThreshold) {
+    if (!smallBoxCost || !largeBoxCost || !wrappingCost || !smallBoxPrice || !largeBoxPrice || !wrappingPrice || !shippingFee || !freeShippingThreshold) {
       toast({
         title: "입력 오류",
         description: "모든 설정 정보를 입력해주세요.",
@@ -373,31 +385,52 @@ function CostSettingsDialog() {
     }
     
     try {
-      await updateCostMutation.mutateAsync({
+      // Cost settings (원가)
+      await updatePriceMutation.mutateAsync({
         key: "smallBoxCost",
         value: smallBoxCost,
         description: "한과1호 (소박스) 원가"
       });
       
-      await updateCostMutation.mutateAsync({
+      await updatePriceMutation.mutateAsync({
         key: "largeBoxCost", 
         value: largeBoxCost,
         description: "한과2호 (대박스) 원가"
       });
       
-      await updateCostMutation.mutateAsync({
+      await updatePriceMutation.mutateAsync({
         key: "wrappingCost",
         value: wrappingCost,
         description: "보자기 원가"
       });
       
-      await updateCostMutation.mutateAsync({
+      // Price settings (판매가)
+      await updatePriceMutation.mutateAsync({
+        key: "smallBoxPrice",
+        value: smallBoxPrice,
+        description: "한과1호 (소박스) 판매가"
+      });
+      
+      await updatePriceMutation.mutateAsync({
+        key: "largeBoxPrice",
+        value: largeBoxPrice,
+        description: "한과2호 (대박스) 판매가"
+      });
+      
+      await updatePriceMutation.mutateAsync({
+        key: "wrappingPrice",
+        value: wrappingPrice,
+        description: "보자기 판매가"
+      });
+      
+      // Shipping settings
+      await updatePriceMutation.mutateAsync({
         key: "shippingFee",
         value: shippingFee,
         description: "배송비 (6개 미만 주문 시)"
       });
       
-      await updateCostMutation.mutateAsync({
+      await updatePriceMutation.mutateAsync({
         key: "freeShippingThreshold",
         value: freeShippingThreshold,
         description: "무료배송 최소 수량"
@@ -412,14 +445,14 @@ function CostSettingsDialog() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="flex items-center gap-2">
           <Cog className="w-4 h-4" />
-          원가 설정
+          가격 설정
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>전역 원가 및 배송비 설정</DialogTitle>
+          <DialogTitle>가격 설정</DialogTitle>
           <DialogDescription>
-            모든 주문에 적용할 기본 원가와 배송비 정책을 설정합니다.
+            상품 원가, 판매가, 배송비 정책을 설정합니다.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -453,6 +486,46 @@ function CostSettingsDialog() {
               placeholder="원가 입력 (원)"
             />
           </div>
+          
+          <div className="border-t border-gray-200 pt-4">
+            <div className="mb-3">
+              <h4 className="font-medium text-gray-900">상품 판매가</h4>
+              <p className="text-sm text-gray-600">주문 폼에 표시될 판매가격입니다</p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="smallBoxPrice">한과1호 (소박스) 판매가</Label>
+                <Input
+                  id="smallBoxPrice"
+                  type="number"
+                  value={smallBoxPrice}
+                  onChange={(e) => setSmallBoxPrice(e.target.value)}
+                  placeholder="판매가 입력 (원)"
+                />
+              </div>
+              <div>
+                <Label htmlFor="largeBoxPrice">한과2호 (대박스) 판매가</Label>
+                <Input
+                  id="largeBoxPrice"
+                  type="number"
+                  value={largeBoxPrice}
+                  onChange={(e) => setLargeBoxPrice(e.target.value)}
+                  placeholder="판매가 입력 (원)"
+                />
+              </div>
+              <div>
+                <Label htmlFor="wrappingPrice">보자기 판매가</Label>
+                <Input
+                  id="wrappingPrice"
+                  type="number"
+                  value={wrappingPrice}
+                  onChange={(e) => setWrappingPrice(e.target.value)}
+                  placeholder="판매가 입력 (원)"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="border-t border-gray-200 pt-4">
             <div className="mb-3">
               <h4 className="font-medium text-gray-900">배송비 설정</h4>
@@ -488,9 +561,9 @@ function CostSettingsDialog() {
           </Button>
           <Button 
             onClick={handleSave}
-            disabled={updateCostMutation.isPending}
+            disabled={updatePriceMutation.isPending}
           >
-            {updateCostMutation.isPending ? "저장 중..." : "저장"}
+            {updatePriceMutation.isPending ? "저장 중..." : "저장"}
           </Button>
         </div>
       </DialogContent>
@@ -1530,9 +1603,9 @@ export default function Admin() {
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
                       // Get product price settings
-                      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
-                      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
-                      const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+                      const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxPrice");
+                      const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxPrice");
+                      const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingPrice");
                       const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
                       const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
                       
@@ -1711,9 +1784,9 @@ export default function Admin() {
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
                   // Get product price settings  
-                  const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
-                  const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
-                  const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+                  const smallBoxPriceSetting = settings?.find((s: Setting) => s.key === "smallBoxPrice");
+                  const largeBoxPriceSetting = settings?.find((s: Setting) => s.key === "largeBoxPrice");
+                  const wrappingPriceSetting = settings?.find((s: Setting) => s.key === "wrappingPrice");
                   const shippingFeeSetting = settings?.find((s: Setting) => s.key === "shippingFee");
                   const freeShippingThresholdSetting = settings?.find((s: Setting) => s.key === "freeShippingThreshold");
                   
@@ -3060,7 +3133,7 @@ export default function Admin() {
         handleExcelDownload={handleExcelDownload}
         setActiveTab={setActiveTab}
         activeTab={activeTab}
-        costSettingsDialog={<CostSettingsDialog />}
+        costSettingsDialog={<PriceSettingsDialog />}
         passwordChangeDialog={<PasswordChangeDialog />}
       />
 
@@ -3618,7 +3691,7 @@ export default function Admin() {
                       <CardContent>
                         {/* 컴팩트한 설정 버튼들 */}
                         <div className="flex flex-wrap gap-3 mb-6">
-                          <CostSettingsDialog />
+                          <PriceSettingsDialog />
                           <AdminInfoSettingsDialog />
                           <PasswordChangeDialog 
                             triggerComponent={

@@ -102,14 +102,14 @@ export default function PublicOrder() {
         const response = await fetch("/api/settings");
         const settings = await response.json();
 
-        const smallBoxCostSetting = settings.find((s: any) => s.key === "smallBoxCost");
-        const largeBoxCostSetting = settings.find((s: any) => s.key === "largeBoxCost");
-        const wrappingCostSetting = settings.find((s: any) => s.key === "wrappingCost");
+        const smallBoxPriceSetting = settings.find((s: any) => s.key === "smallBoxPrice");
+        const largeBoxPriceSetting = settings.find((s: any) => s.key === "largeBoxPrice");
+        const wrappingPriceSetting = settings.find((s: any) => s.key === "wrappingPrice");
 
         setPrices({
-          small: smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 19000,
-          large: largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 21000,
-          wrapping: wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000,
+          small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
+          large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
+          wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
         });
       } catch (error) {
         console.error('가격 설정 로드 실패:', error);

@@ -153,14 +153,14 @@ export default function OrderForm() {
         });
 
         // 상품 가격 설정 업데이트
-        const smallBoxCostSetting = allSettings.find((s: any) => s.key === "smallBoxCost");
-        const largeBoxCostSetting = allSettings.find((s: any) => s.key === "largeBoxCost");
-        const wrappingCostSetting = allSettings.find((s: any) => s.key === "wrappingCost");
+        const smallBoxPriceSetting = allSettings.find((s: any) => s.key === "smallBoxPrice");
+        const largeBoxPriceSetting = allSettings.find((s: any) => s.key === "largeBoxPrice");
+        const wrappingPriceSetting = allSettings.find((s: any) => s.key === "wrappingPrice");
 
         setPrices({
-          small: smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 19000,
-          large: largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 21000,
-          wrapping: wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000,
+          small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
+          large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
+          wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
         });
 
       } catch (error) {
