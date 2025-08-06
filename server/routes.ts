@@ -177,6 +177,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userAgent,
             expiresAt,
           });
+
+          // 현재 세션에 대한 로그인 기록이 없으면 생성 (페이지 새로고침 등에 대해)
+          await sessionService.logLoginAttempt({
+            username: user.username,
+            ipAddress,
+            userAgent,
+            success: true,
+            failureReason: null,
+          });
         } else {
           // 세션 활동 업데이트
           await sessionService.updateSessionActivity(req.sessionID);
@@ -264,6 +273,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/login-history", requireAuth, async (req, res) => {
     try {
       const user = req.user as User;
+      
+      // 현재 세션의 로그인 기록이 없다면 생성 (기존 세션에 대해)
+      const existingHistory = await sessionService.getUserLoginHistory(user.username);
+      if (existingHistory.length === 0 && req.sessionID) {
+        const ipAddress = req.ip || req.connection.remoteAddress || '127.0.0.1';
+        const userAgent = req.get('User-Agent') || '';
+        
+        await sessionService.logLoginAttempt({
+          username: user.username,
+          ipAddress,
+          userAgent,
+          success: true,
+          failureReason: null,
+        });
+      }
+      
       const history = await sessionService.getUserLoginHistory(user.username);
       res.json(history);
     } catch (error) {
