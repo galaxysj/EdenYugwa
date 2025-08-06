@@ -208,7 +208,7 @@ export default function Home() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto">
               {dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2">
+            <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line">
               {dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^"}
             </p>
           </div>
