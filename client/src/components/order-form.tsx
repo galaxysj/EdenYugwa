@@ -142,55 +142,42 @@ export default function OrderForm() {
     },
   });
 
-  // 배송비 설정 및 상품 가격 로드
+  // 배송비 설정 및 상품 가격 로드 (dashboard-content 연동)
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [shippingFeeResponse, thresholdResponse, settingsResponse, productPricesResponse] = await Promise.all([
+        const [shippingFeeResponse, thresholdResponse, settingsResponse] = await Promise.all([
           fetch("/api/settings/shippingFee"),
           fetch("/api/settings/freeShippingThreshold"),
-          fetch("/api/settings"),
-          fetch("/api/product-prices")
+          fetch("/api/settings")
         ]);
 
         const shippingFeeSetting = await shippingFeeResponse.json();
         const thresholdSetting = await thresholdResponse.json();
         const allSettings = await settingsResponse.json();
-        const productPrices = await productPricesResponse.json();
 
         setShippingSettings({
           shippingFee: parseInt(shippingFeeSetting.value) || 4000,
           freeShippingThreshold: parseInt(thresholdSetting.value) || 6
         });
 
-        // 상품 가격을 product prices API에서 로드 (우선순위: productPrices > settings)
+        // 기본 가격 설정
         let priceData = {
           small: 19000,
           large: 21000,
           wrapping: 1000,
         };
 
-        // Product prices API에서 가격 정보 로드
-        if (Array.isArray(productPrices) && productPrices.length > 0) {
-          const smallBoxProduct = productPrices.find((p: any) => p.productIndex === 0);
-          const largeBoxProduct = productPrices.find((p: any) => p.productIndex === 1);
-          const wrappingProduct = productPrices.find((p: any) => p.productIndex === 2);
+        // 폴백: 기존 settings 사용
+        const smallBoxPriceSetting = allSettings.find((s: any) => s.key === "smallBoxPrice");
+        const largeBoxPriceSetting = allSettings.find((s: any) => s.key === "largeBoxPrice");
+        const wrappingPriceSetting = allSettings.find((s: any) => s.key === "wrappingPrice");
 
-          if (smallBoxProduct) priceData.small = smallBoxProduct.price;
-          if (largeBoxProduct) priceData.large = largeBoxProduct.price;
-          if (wrappingProduct) priceData.wrapping = wrappingProduct.price;
-        } else {
-          // 폴백: 기존 settings 사용
-          const smallBoxPriceSetting = allSettings.find((s: any) => s.key === "smallBoxPrice");
-          const largeBoxPriceSetting = allSettings.find((s: any) => s.key === "largeBoxPrice");
-          const wrappingPriceSetting = allSettings.find((s: any) => s.key === "wrappingPrice");
-
-          priceData = {
-            small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
-            large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
-            wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
-          };
-        }
+        priceData = {
+          small: smallBoxPriceSetting ? parseInt(smallBoxPriceSetting.value) : 19000,
+          large: largeBoxPriceSetting ? parseInt(largeBoxPriceSetting.value) : 21000,
+          wrapping: wrappingPriceSetting ? parseInt(wrappingPriceSetting.value) : 1000,
+        };
 
         setPrices(priceData);
 
@@ -202,6 +189,27 @@ export default function OrderForm() {
 
     loadSettings();
   }, []);
+
+  // Dashboard content에서 상품 가격 동적 로드
+  useEffect(() => {
+    if (dashboardContent && dashboardContent.productNames) {
+      try {
+        const productNames = JSON.parse(dashboardContent.productNames);
+        
+        // 상품 가격을 dashboard content에서 추출
+        const wrappingProduct = productNames.find((p: any) => p.name === '보자기');
+        const updatedPrices = {
+          small: productNames[0]?.price ? parseInt(productNames[0].price) : prices.small,
+          large: productNames[1]?.price ? parseInt(productNames[1].price) : prices.large,
+          wrapping: wrappingProduct?.price ? parseInt(wrappingProduct.price) : 1000,
+        };
+
+        setPrices(updatedPrices);
+      } catch (error) {
+        console.error('상품 가격 로드 실패:', error);
+      }
+    }
+  }, [dashboardContent]);
 
   // 로그인된 사용자의 정보로 폼 초기화
   useEffect(() => {
@@ -496,10 +504,24 @@ export default function OrderForm() {
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <h5 className="font-semibold text-black text-sm md:text-base">
-                                  {dashboardContent.smallBoxName || "한과1호(약 1.1kg)"}
+                                  {(() => {
+                                    try {
+                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                                      return productNames[0]?.name || "한과1호(약 1.1kg)";
+                                    } catch {
+                                      return dashboardContent.smallBoxName || "한과1호(약 1.1kg)";
+                                    }
+                                  })()}
                                 </h5>
                                 <p className="text-xs text-black mt-1">
-                                  {dashboardContent.smallBoxDimensions || "약 35.5×21×11.2cm"}
+                                  {(() => {
+                                    try {
+                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                                      return productNames[0]?.size || "약 35.5×21×11.2cm";
+                                    } catch {
+                                      return dashboardContent.smallBoxDimensions || "약 35.5×21×11.2cm";
+                                    }
+                                  })()}
                                 </p>
                               </div>
                               <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
@@ -555,10 +577,24 @@ export default function OrderForm() {
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <h5 className="font-semibold text-black text-sm md:text-base">
-                                  {dashboardContent.largeBoxName || "한과2호(약 1.3kg)"}
+                                  {(() => {
+                                    try {
+                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                                      return productNames[1]?.name || "한과2호(약 1.3kg)";
+                                    } catch {
+                                      return dashboardContent.largeBoxName || "한과2호(약 1.3kg)";
+                                    }
+                                  })()}
                                 </h5>
                                 <p className="text-xs text-black mt-1">
-                                  {dashboardContent.largeBoxDimensions || "약 37×23×11.5cm"}
+                                  {(() => {
+                                    try {
+                                      const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                                      return productNames[1]?.size || "약 37×23×11.5cm";
+                                    } catch {
+                                      return dashboardContent.largeBoxDimensions || "약 37×23×11.5cm";
+                                    }
+                                  })()}
                                 </p>
                               </div>
                               <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
@@ -615,8 +651,18 @@ export default function OrderForm() {
                       <div>
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">{dashboardContent.wrappingName || "보자기"}</h5>
-                            <p className="text-xs text-black mt-1">{dashboardContent.wrappingPrice || "개당 1,000원"}</p>
+                            <h5 className="font-semibold text-black text-sm md:text-base">
+                              {(() => {
+                                try {
+                                  const productNames = JSON.parse(dashboardContent.productNames || '[]');
+                                  const wrappingProduct = productNames.find((p: any) => p.name === '보자기');
+                                  return wrappingProduct?.name || dashboardContent.wrappingName || "보자기";
+                                } catch {
+                                  return dashboardContent.wrappingName || "보자기";
+                                }
+                              })()}
+                            </h5>
+                            <p className="text-xs text-black mt-1">개당 {formatPrice(prices.wrapping)}</p>
                           </div>
                           <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.wrapping)}</span>
                         </div>
