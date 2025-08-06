@@ -59,34 +59,29 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
     },
   });
 
-  const sendSMSMutation = useMutation({
-    mutationFn: api.sms.send,
-    onSuccess: () => {
-      toast({
-        title: "SMS 발송 완료",
-        description: "고객에게 SMS가 성공적으로 발송되었습니다.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "SMS 발송 실패",
-        description: "SMS 발송 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const handleStatusChange = (orderId: number, newStatus: string) => {
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
+  // iOS 단축어 링크로 SMS 발송하는 함수
   const handleSendSMS = (order: Order) => {
     const statusMessage = getStatusMessage(order.status);
-    sendSMSMutation.mutate({
-      orderId: order.id,
-      phoneNumber: order.customerPhone,
-      message: `[에덴한과] ${order.customerName}님, ${statusMessage}`,
-    });
+    const message = `[에덴한과] ${order.customerName}님, ${statusMessage}`;
+    const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(order.customerPhone + '/' + message)}`;
+    
+    try {
+      window.open(shortcutUrl, '_self');
+      toast({
+        title: "SMS 앱 열기 완료",
+        description: "iOS 단축어로 SMS를 발송합니다.",
+      });
+    } catch (error) {
+      toast({
+        title: "SMS 앱 열기 실패",
+        description: "iOS 단축어를 실행할 수 없습니다.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusMessage = (status: string) => {
@@ -237,7 +232,6 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                   <Button
                                     size="sm"
                                     onClick={() => handleSendSMS(order)}
-                                    disabled={sendSMSMutation.isPending}
                                     className="bg-green-500 text-white hover:bg-green-600"
                                   >
                                     <MessageSquare className="h-4 w-4 mr-1" />
