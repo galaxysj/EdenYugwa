@@ -39,6 +39,15 @@ export default function Home() {
                 </button>
               </Link>
               
+              {/* 로그인/회원가입 버튼 - 비로그인 상태에서만 표시 */}
+              {!isAuthenticated && (
+                <Link href="/login">
+                  <button className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full hover:bg-blue-700 transition-colors">
+                    로그인
+                  </button>
+                </Link>
+              )}
+              
               {/* 햄버거 메뉴 버튼 */}
               <button 
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
