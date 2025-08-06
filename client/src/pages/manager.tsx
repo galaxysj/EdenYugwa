@@ -852,54 +852,72 @@ export default function ManagerDashboard() {
                           <div key={order.id} className={`border border-gray-200 rounded-lg bg-white ${
                             order.paymentStatus !== 'confirmed' ? 'border-red-200 bg-red-50' : ''
                           }`}>
-                            {/* 간결한 리스트 뷰 - 항상 표시 */}
-                            <div 
-                              className="p-3 cursor-pointer hover:bg-gray-50"
-                              onClick={() => toggleOrderExpansion(order.id)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedOrders.has(order.id)}
-                                    onChange={(e) => {
-                                      e.stopPropagation();
-                                      const newSet = new Set(selectedOrders);
-                                      if (e.target.checked) {
-                                        newSet.add(order.id);
-                                      } else {
-                                        newSet.delete(order.id);
-                                      }
-                                      setSelectedOrders(newSet);
-                                    }}
-                                    className="rounded w-4 h-4"
-                                  />
-                                  <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
-                                  <span className="text-black text-xs">{order.customerName}</span>
-                                  <span className={`px-2 py-0.5 rounded text-xs ${
-                                    order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                    order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
-                                    order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
-                                    'bg-red-100 text-red-700'
-                                  }`}>
-                                    {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분' :
-                                     order.paymentStatus === 'confirmed' ? '완료' :
-                                     order.paymentStatus === 'partial' ? '부분' :
-                                     order.paymentStatus === 'refunded' ? '환불' : '미입금'}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold text-blue-600 text-xs">{(order.totalAmount || 0).toLocaleString()}원</span>
-                                  <span className="text-xs text-gray-400">
-                                    {isExpanded ? '▲' : '▼'}
-                                  </span>
+                            {/* 간결한 리스트 뷰 - 확장되지 않았을 때만 표시 */}
+                            {!isExpanded && (
+                              <div 
+                                className="p-3 cursor-pointer hover:bg-gray-50"
+                                onClick={() => toggleOrderExpansion(order.id)}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedOrders.has(order.id)}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        const newSet = new Set(selectedOrders);
+                                        if (e.target.checked) {
+                                          newSet.add(order.id);
+                                        } else {
+                                          newSet.delete(order.id);
+                                        }
+                                        setSelectedOrders(newSet);
+                                      }}
+                                      className="rounded w-4 h-4"
+                                    />
+                                    <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
+                                    <span className="text-black text-xs">{order.customerName}</span>
+                                    <span className={`px-2 py-0.5 rounded text-xs ${
+                                      order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                      order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                                      order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분' :
+                                       order.paymentStatus === 'confirmed' ? '완료' :
+                                       order.paymentStatus === 'partial' ? '부분' :
+                                       order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-blue-600 text-xs">{(order.totalAmount || 0).toLocaleString()}원</span>
+                                    <span className="text-xs text-gray-400">
+                                      ▼
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            )}
 
                             {/* 확장형 상세 뷰 - 클릭시에만 표시 */}
                             {isExpanded && (
-                              <div className="px-3 pb-3 border-t border-gray-100">
+                              <div className="p-3">
+                                {/* 헤더: 주문번호, 고객명, 뒤로가기 */}
+                                <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-gray-900 text-sm">#{order.orderNumber}</span>
+                                    <span className="text-gray-700 text-sm">{order.customerName}</span>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleOrderExpansion(order.id);
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 text-sm"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
                                 {/* 주문내역과 입금/주문상태 */}
                                 <div className="mb-2 pt-2">
                                   <div className="flex items-center justify-between mb-1">
