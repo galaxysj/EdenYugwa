@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X } from "lucide-react";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit } from "lucide-react";
 import { useState } from "react";
 
 interface AdminHeaderProps {
@@ -185,6 +185,22 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   <Cog className="h-4 w-4 mr-2" />
                   설정
                 </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('content');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start text-sm ${
+                    activeTab === 'content' 
+                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                      : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                  }`}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  콘텐츠 관리
+                </Button>
               </>
             )}
             {handleExcelDownload && (
@@ -318,6 +334,17 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                       설정
                     </Button>
                   </Link>
+                  {setActiveTab && (
+                    <Button 
+                      onClick={() => setActiveTab('content')}
+                      variant="ghost" 
+                      size="sm"
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50 px-3 py-2"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      콘텐츠
+                    </Button>
+                  )}
                   {costSettingsDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{costSettingsDialog}</div>}
                   {passwordChangeDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{passwordChangeDialog}</div>}
                   {handleExcelDownload && (
