@@ -377,11 +377,12 @@ function PriceSettingsDialog() {
       
       // Load product prices
       const newProductPrices: {[key: string]: {cost: string, price: string}} = {};
-      localProductNames.forEach((product: any) => {
-        const costSetting = settings.find(s => s.key === `${product.key}Cost`);
-        const priceSetting = settings.find(s => s.key === `${product.key}Price`);
+      localProductNames.forEach((product: any, index: number) => {
+        const productKey = product.key || `product_${index}`;
+        const costSetting = settings.find(s => s.key === `${productKey}Cost`);
+        const priceSetting = settings.find(s => s.key === `${productKey}Price`);
         
-        newProductPrices[product.key] = {
+        newProductPrices[productKey] = {
           cost: costSetting?.value || "",
           price: priceSetting?.value || ""
         };
@@ -508,73 +509,76 @@ function PriceSettingsDialog() {
                       </tr>
                     </thead>
                     <tbody>
-                      {localProductNames.map((product: any, index: number) => (
-                        <tr key={index} className="hover:bg-gray-50 transition-colors duration-150 border-b last:border-b-0">
-                          <td className="px-3 py-3 text-sm font-medium text-gray-900">
-                            {product.name}
-                          </td>
-                          <td className="px-3 py-3">
-                            <div className="flex gap-2">
-                              <Input
-                                type="number"
-                                placeholder="원가 입력"
-                                value={productPrices[product.key]?.cost || ""}
-                                onChange={(e) => setProductPrices(prev => ({
-                                  ...prev,
-                                  [product.key]: {
-                                    cost: e.target.value,
-                                    price: prev[product.key]?.price || ""
-                                  }
-                                }))}
-                                className="flex-1 text-sm"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => saveIndividualPrice(
-                                  product.key, 
-                                  'cost', 
-                                  productPrices[product.key]?.cost || "", 
-                                  product.name
-                                )}
-                                disabled={savingPrices[`${product.key}-cost`] || !productPrices[product.key]?.cost}
-                                className="px-2 text-xs"
-                              >
-                                {savingPrices[`${product.key}-cost`] ? '저장중...' : '저장'}
-                              </Button>
-                            </div>
-                          </td>
-                          <td className="px-3 py-3">
-                            <div className="flex gap-2">
-                              <Input
-                                type="number"
-                                placeholder="판매가 입력"
-                                value={productPrices[product.key]?.price || ""}
-                                onChange={(e) => setProductPrices(prev => ({
-                                  ...prev,
-                                  [product.key]: {
-                                    cost: prev[product.key]?.cost || "",
-                                    price: e.target.value
-                                  }
-                                }))}
-                                className="flex-1 text-sm"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => saveIndividualPrice(
-                                  product.key, 
-                                  'price', 
-                                  productPrices[product.key]?.price || "", 
-                                  product.name
-                                )}
-                                disabled={savingPrices[`${product.key}-price`] || !productPrices[product.key]?.price}
-                                className="px-2 text-xs"
-                              >
-                                {savingPrices[`${product.key}-price`] ? '저장중...' : '저장'}
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {localProductNames.map((product: any, index: number) => {
+                        const productKey = product.key || `product_${index}`;
+                        return (
+                          <tr key={index} className="hover:bg-gray-50 transition-colors duration-150 border-b last:border-b-0">
+                            <td className="px-3 py-3 text-sm font-medium text-gray-900">
+                              {product.name}
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="flex gap-2">
+                                <Input
+                                  type="number"
+                                  placeholder="원가 입력"
+                                  value={productPrices[productKey]?.cost || ""}
+                                  onChange={(e) => setProductPrices(prev => ({
+                                    ...prev,
+                                    [productKey]: {
+                                      cost: e.target.value,
+                                      price: prev[productKey]?.price || ""
+                                    }
+                                  }))}
+                                  className="flex-1 text-sm"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => saveIndividualPrice(
+                                    productKey, 
+                                    'cost', 
+                                    productPrices[productKey]?.cost || "", 
+                                    product.name
+                                  )}
+                                  disabled={savingPrices[`${productKey}-cost`] || !productPrices[productKey]?.cost}
+                                  className="px-2 text-xs"
+                                >
+                                  {savingPrices[`${productKey}-cost`] ? '저장중...' : '저장'}
+                                </Button>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="flex gap-2">
+                                <Input
+                                  type="number"
+                                  placeholder="판매가 입력"
+                                  value={productPrices[productKey]?.price || ""}
+                                  onChange={(e) => setProductPrices(prev => ({
+                                    ...prev,
+                                    [productKey]: {
+                                      cost: prev[productKey]?.cost || "",
+                                      price: e.target.value
+                                    }
+                                  }))}
+                                  className="flex-1 text-sm"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => saveIndividualPrice(
+                                    productKey, 
+                                    'price', 
+                                    productPrices[productKey]?.price || "", 
+                                    product.name
+                                  )}
+                                  disabled={savingPrices[`${productKey}-price`] || !productPrices[productKey]?.price}
+                                  className="px-2 text-xs"
+                                >
+                                  {savingPrices[`${productKey}-price`] ? '저장중...' : '저장'}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
