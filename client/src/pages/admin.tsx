@@ -690,6 +690,9 @@ export default function Admin() {
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
   const [selectedShippingItems, setSelectedShippingItems] = useState<Set<number>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
+  
+  // 개별 저장 버튼 로딩 상태
+  const [savingButtons, setSavingButtons] = useState<{[key: string]: boolean}>({});
 
   // Dashboard content management state
   const [dashboardContent, setDashboardContent] = useState({
@@ -4120,25 +4123,40 @@ export default function Admin() {
                                         <div className="flex gap-1 justify-center">
                                           <Button
                                             size="sm"
-                                            onClick={() => {
-                                              // 상품 정보를 대시보드 콘텐츠에 저장
-                                              updateContentMutation.mutate({ 
-                                                key: 'productNames', 
-                                                value: JSON.stringify(dashboardContent.productNames) 
-                                              });
+                                            onClick={async () => {
+                                              const buttonKey = `product-${index}`;
+                                              if (savingButtons[buttonKey]) return; // 이미 진행 중이면 중단
                                               
-                                              // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
-                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: true}));
                                               
-                                              toast({
-                                                title: "상품 정보 저장 완료",
-                                                description: `${product.name} 정보가 업데이트되었습니다.`,
-                                              });
+                                              try {
+                                                // 상품 정보를 대시보드 콘텐츠에 저장
+                                                await updateContentMutation.mutateAsync({ 
+                                                  key: 'productNames', 
+                                                  value: JSON.stringify(dashboardContent.productNames) 
+                                                });
+                                                
+                                                // 대시보드 콘텐츠 쿼리 무효화하여 실시간 업데이트
+                                                queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                                
+                                                toast({
+                                                  title: "상품 정보 저장 완료",
+                                                  description: `${product.name} 정보가 업데이트되었습니다.`,
+                                                });
+                                              } catch (error) {
+                                                toast({
+                                                  title: "저장 실패",
+                                                  description: "상품 정보 저장 중 오류가 발생했습니다.",
+                                                  variant: "destructive"
+                                                });
+                                              } finally {
+                                                setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                              }
                                             }}
-                                            disabled={updateContentMutation.isPending}
+                                            disabled={savingButtons[`product-${index}`] || updateContentMutation.isPending}
                                             className="h-7 px-2 text-xs"
                                           >
-                                            저장
+                                            {savingButtons[`product-${index}`] ? '저장중...' : '저장'}
                                           </Button>
                                           <Button
                                             onClick={() => {
@@ -4227,14 +4245,35 @@ export default function Admin() {
                                   />
                                   <Button
                                     size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'mainTitle', 
-                                      value: dashboardContent.mainTitle 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
+                                    onClick={async () => {
+                                      const buttonKey = 'mainTitle';
+                                      if (savingButtons[buttonKey]) return;
+                                      
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                      
+                                      try {
+                                        await updateContentMutation.mutateAsync({ 
+                                          key: 'mainTitle', 
+                                          value: dashboardContent.mainTitle 
+                                        });
+                                        toast({
+                                          title: "저장 완료",
+                                          description: "메인 제목이 저장되었습니다.",
+                                        });
+                                      } catch (error) {
+                                        toast({
+                                          title: "저장 실패",
+                                          description: "저장 중 오류가 발생했습니다.",
+                                          variant: "destructive"
+                                        });
+                                      } finally {
+                                        setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                      }
+                                    }}
+                                    disabled={savingButtons['mainTitle'] || updateContentMutation.isPending}
                                     className="px-3"
                                   >
-                                    저장
+                                    {savingButtons['mainTitle'] ? '저장중...' : '저장'}
                                   </Button>
                                 </div>
                               </div>
@@ -4250,14 +4289,35 @@ export default function Admin() {
                                   />
                                   <Button
                                     size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'mainDescription', 
-                                      value: dashboardContent.mainDescription 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
+                                    onClick={async () => {
+                                      const buttonKey = 'mainDescription';
+                                      if (savingButtons[buttonKey]) return;
+                                      
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                      
+                                      try {
+                                        await updateContentMutation.mutateAsync({ 
+                                          key: 'mainDescription', 
+                                          value: dashboardContent.mainDescription 
+                                        });
+                                        toast({
+                                          title: "저장 완료",
+                                          description: "메인 설명이 저장되었습니다.",
+                                        });
+                                      } catch (error) {
+                                        toast({
+                                          title: "저장 실패",
+                                          description: "저장 중 오류가 발생했습니다.",
+                                          variant: "destructive"
+                                        });
+                                      } finally {
+                                        setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                      }
+                                    }}
+                                    disabled={savingButtons['mainDescription'] || updateContentMutation.isPending}
                                     className="px-3"
                                   >
-                                    저장
+                                    {savingButtons['mainDescription'] ? '저장중...' : '저장'}
                                   </Button>
                                 </div>
                               </div>
@@ -4319,14 +4379,35 @@ export default function Admin() {
                                 />
                                 <Button
                                   size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'aboutText', 
-                                    value: dashboardContent.aboutText 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
+                                  onClick={async () => {
+                                    const buttonKey = 'aboutText';
+                                    if (savingButtons[buttonKey]) return;
+                                    
+                                    setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                    
+                                    try {
+                                      await updateContentMutation.mutateAsync({ 
+                                        key: 'aboutText', 
+                                        value: dashboardContent.aboutText 
+                                      });
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "소개글이 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    } finally {
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                    }
+                                  }}
+                                  disabled={savingButtons['aboutText'] || updateContentMutation.isPending}
                                   className="px-3 self-start"
                                 >
-                                  저장
+                                  {savingButtons['aboutText'] ? '저장중...' : '저장'}
                                 </Button>
                               </div>
                             </div>
@@ -4369,14 +4450,35 @@ export default function Admin() {
                                 />
                                 <Button
                                   size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'shippingTitle', 
-                                    value: dashboardContent.shippingTitle || '' 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
+                                  onClick={async () => {
+                                    const buttonKey = 'shippingTitle';
+                                    if (savingButtons[buttonKey]) return;
+                                    
+                                    setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                    
+                                    try {
+                                      await updateContentMutation.mutateAsync({ 
+                                        key: 'shippingTitle', 
+                                        value: dashboardContent.shippingTitle || '' 
+                                      });
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "배송 섹션 제목이 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    } finally {
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                    }
+                                  }}
+                                  disabled={savingButtons['shippingTitle'] || updateContentMutation.isPending}
                                   className="px-3"
                                 >
-                                  저장
+                                  {savingButtons['shippingTitle'] ? '저장중...' : '저장'}
                                 </Button>
                               </div>
                             </div>
@@ -4393,14 +4495,35 @@ export default function Admin() {
                                 />
                                 <Button
                                   size="sm"
-                                  onClick={() => updateContentMutation.mutate({ 
-                                    key: 'shippingInfo', 
-                                    value: dashboardContent.shippingInfo 
-                                  })}
-                                  disabled={updateContentMutation.isPending}
+                                  onClick={async () => {
+                                    const buttonKey = 'shippingInfo';
+                                    if (savingButtons[buttonKey]) return;
+                                    
+                                    setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                    
+                                    try {
+                                      await updateContentMutation.mutateAsync({ 
+                                        key: 'shippingInfo', 
+                                        value: dashboardContent.shippingInfo 
+                                      });
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "배송 안내 내용이 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    } finally {
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                    }
+                                  }}
+                                  disabled={savingButtons['shippingInfo'] || updateContentMutation.isPending}
                                   className="px-3 self-start"
                                 >
-                                  저장
+                                  {savingButtons['shippingInfo'] ? '저장중...' : '저장'}
                                 </Button>
                               </div>
                             </div>
@@ -4443,14 +4566,35 @@ export default function Admin() {
                                   />
                                   <Button
                                     size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'bankAccount', 
-                                      value: dashboardContent.bankAccount 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
+                                    onClick={async () => {
+                                      const buttonKey = 'bankAccount';
+                                      if (savingButtons[buttonKey]) return;
+                                      
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                      
+                                      try {
+                                        await updateContentMutation.mutateAsync({ 
+                                          key: 'bankAccount', 
+                                          value: dashboardContent.bankAccount 
+                                        });
+                                        toast({
+                                          title: "저장 완료",
+                                          description: "입금 계좌가 저장되었습니다.",
+                                        });
+                                      } catch (error) {
+                                        toast({
+                                          title: "저장 실패",
+                                          description: "저장 중 오류가 발생했습니다.",
+                                          variant: "destructive"
+                                        });
+                                      } finally {
+                                        setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                      }
+                                    }}
+                                    disabled={savingButtons['bankAccount'] || updateContentMutation.isPending}
                                     className="px-3"
                                   >
-                                    저장
+                                    {savingButtons['bankAccount'] ? '저장중...' : '저장'}
                                   </Button>
                                 </div>
                               </div>
@@ -4466,14 +4610,35 @@ export default function Admin() {
                                   />
                                   <Button
                                     size="sm"
-                                    onClick={() => updateContentMutation.mutate({ 
-                                      key: 'bankMessage', 
-                                      value: dashboardContent.bankMessage 
-                                    })}
-                                    disabled={updateContentMutation.isPending}
+                                    onClick={async () => {
+                                      const buttonKey = 'bankMessage';
+                                      if (savingButtons[buttonKey]) return;
+                                      
+                                      setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                      
+                                      try {
+                                        await updateContentMutation.mutateAsync({ 
+                                          key: 'bankMessage', 
+                                          value: dashboardContent.bankMessage 
+                                        });
+                                        toast({
+                                          title: "저장 완료",
+                                          description: "입금 안내 메시지가 저장되었습니다.",
+                                        });
+                                      } catch (error) {
+                                        toast({
+                                          title: "저장 실패",
+                                          description: "저장 중 오류가 발생했습니다.",
+                                          variant: "destructive"
+                                        });
+                                      } finally {
+                                        setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                      }
+                                    }}
+                                    disabled={savingButtons['bankMessage'] || updateContentMutation.isPending}
                                     className="px-3 self-start"
                                   >
-                                    저장
+                                    {savingButtons['bankMessage'] ? '저장중...' : '저장'}
                                   </Button>
                                 </div>
                               </div>
