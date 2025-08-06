@@ -1272,7 +1272,7 @@ export default function Admin() {
           <div>
             <h3 className="text-sm md:text-lg font-semibold">매출 관리 리포트</h3>
             <p className="text-xs md:text-sm text-gray-600 mt-1">
-              입금완료된 모든 주문 (발송예약, 발송완료 포함)
+              입금완료된 모든 주문 (발송주문, 발송완료 포함)
             </p>
           </div>
           <Button onClick={handleRevenueExcelDownload} className="flex items-center gap-2 text-xs md:text-sm px-2 md:px-4">
@@ -2666,7 +2666,7 @@ export default function Admin() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">주문접수</SelectItem>
-                      <SelectItem value="scheduled">발송예약</SelectItem>
+                      <SelectItem value="scheduled">발송주문</SelectItem>
                       <SelectItem value="seller_shipped">발송대기</SelectItem>
                       <SelectItem value="delivered">발송완료</SelectItem>
                     </SelectContent>
