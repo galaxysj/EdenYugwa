@@ -261,8 +261,13 @@ export default function Home() {
                 <h3 className="text-lg md:text-xl font-bold text-eden-brown mb-4 text-center font-korean">
                   상품 정보
                 </h3>
-                <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-                  {dashboardContent.productNames.slice(0, 2).map((product: any, index: number) => (
+                <div className={`grid gap-4 md:gap-6 ${
+                  dashboardContent.productNames.length === 1 ? 'grid-cols-1 max-w-md mx-auto' :
+                  dashboardContent.productNames.length === 2 ? 'md:grid-cols-2' :
+                  dashboardContent.productNames.length === 3 ? 'md:grid-cols-3' :
+                  'md:grid-cols-2 lg:grid-cols-3'
+                }`}>
+                  {dashboardContent.productNames.map((product: any, index: number) => (
                     <div key={index} className="bg-white rounded-lg p-4 shadow-sm border border-eden-beige/30">
                       <h4 className="font-semibold text-eden-brown text-base md:text-lg mb-2">
                         {product.name}
@@ -274,7 +279,8 @@ export default function Home() {
                       )}
                       <div className="text-lg font-bold text-eden-brown">
                         {index === 0 ? (settings?.find((s: any) => s.key === 'smallBoxPrice')?.value || '10,000원') : 
-                         (settings?.find((s: any) => s.key === 'largeBoxPrice')?.value || '20,000원')}
+                         index === 1 ? (settings?.find((s: any) => s.key === 'largeBoxPrice')?.value || '20,000원') :
+                         '가격 문의'}
                       </div>
                     </div>
                   ))}

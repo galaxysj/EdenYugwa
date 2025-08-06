@@ -397,135 +397,194 @@ export default function OrderForm() {
                 </h4>
                 
                 <div className="space-y-3 md:space-y-4">
-                  {/* Product Selection - All in One Interface */}
+                  {/* Product Selection - Dynamic Product List */}
                   <div className="border-2 border-eden-beige rounded-lg p-3 md:p-4">
                     <div className="space-y-3 md:space-y-4">
-                      {/* 한과1호 Selection */}
-                      <div>
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">
-                              {dashboardContent.productNames && dashboardContent.productNames[0] ? 
-                                `${dashboardContent.productNames[0].name}${dashboardContent.productNames[0].size ? `(${dashboardContent.productNames[0].size})` : ''}` : 
-                                (dashboardContent.smallBoxName || "한과1호(약 1.1kg)")
-                              }
-                            </h5>
-                            <p className="text-xs text-black mt-1">
-                              {dashboardContent.productNames && dashboardContent.productNames[0] && dashboardContent.productNames[0].size ? 
-                                dashboardContent.productNames[0].size : 
-                                (dashboardContent.smallBoxDimensions || "약 35.5×21×11.2cm")
-                              }
-                            </p>
-                          </div>
-                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="smallBoxQuantity"
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormLabel className="text-sm font-medium">수량</FormLabel>
-                                <FormControl>
-                                  <div className="flex items-center space-x-1">
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-7 h-7 p-0 text-xs"
-                                    >
-                                      -
-                                    </Button>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-12 h-7 text-center text-xs px-1"
-                                    />
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(field.value + 1)}
-                                      className="w-7 h-7 p-0 text-xs"
-                                    >
-                                      +
-                                    </Button>
-                                  </div>
-                                </FormControl>
+                      {/* Dynamic Products from Content Management */}
+                      {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 ? (
+                        dashboardContent.productNames.map((product: any, index: number) => (
+                          <div key={index}>
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h5 className="font-semibold text-black text-sm md:text-base">
+                                  {product.name}{product.size ? `(${product.size})` : ''}
+                                </h5>
+                                {product.size && (
+                                  <p className="text-xs text-black mt-1">{product.size}</p>
+                                )}
                               </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      {/* Divider */}
-                      <div className="border-t border-eden-beige/50"></div>
-
-                      {/* 한과2호 Selection */}
-                      <div>
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h5 className="font-semibold text-black text-sm md:text-base">
-                              {dashboardContent.productNames && dashboardContent.productNames[1] ? 
-                                `${dashboardContent.productNames[1].name}${dashboardContent.productNames[1].size ? `(${dashboardContent.productNames[1].size})` : ''}` : 
-                                (dashboardContent.largeBoxName || "한과2호(약 1.3kg)")
-                              }
-                            </h5>
-                            <p className="text-xs text-black mt-1">
-                              {dashboardContent.productNames && dashboardContent.productNames[1] && dashboardContent.productNames[1].size ? 
-                                dashboardContent.productNames[1].size : 
-                                (dashboardContent.largeBoxDimensions || "약 37×23×11.5cm")
-                              }
-                            </p>
-                          </div>
-                          <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name="largeBoxQuantity"
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center space-x-2">
-                                <FormLabel className="text-sm font-medium">수량</FormLabel>
-                                <FormControl>
-                                  <div className="flex items-center space-x-1">
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(Math.max(0, field.value - 1))}
-                                      className="w-7 h-7 p-0 text-xs"
-                                    >
-                                      -
-                                    </Button>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                                      className="w-12 h-7 text-center text-xs px-1"
-                                    />
-                                    <Button 
-                                      type="button"
-                                      variant="outline" 
-                                      size="sm"
-                                      onClick={() => field.onChange(field.value + 1)}
-                                      className="w-7 h-7 p-0 text-xs"
-                                    >
-                                      +
-                                    </Button>
+                              <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">
+                                {index === 0 ? formatPrice(prices.small) : 
+                                 index === 1 ? formatPrice(prices.large) :
+                                 '가격 문의'}
+                              </span>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name={index === 0 ? "smallBoxQuantity" : index === 1 ? "largeBoxQuantity" : `product${index}Quantity`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center space-x-2">
+                                    <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                    <FormControl>
+                                      <div className="flex items-center space-x-1">
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                          className="w-7 h-7 p-0 text-xs"
+                                        >
+                                          -
+                                        </Button>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                          className="w-12 h-7 text-center text-xs px-1"
+                                        />
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => field.onChange(field.value + 1)}
+                                          className="w-7 h-7 p-0 text-xs"
+                                        >
+                                          +
+                                        </Button>
+                                      </div>
+                                    </FormControl>
                                   </div>
-                                </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            {/* Divider between products */}
+                            {index < dashboardContent.productNames.length - 1 && (
+                              <div className="border-t border-eden-beige/50 mt-3"></div>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        // Fallback to default products if no dynamic products are configured
+                        <>
+                          {/* 한과1호 Selection */}
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h5 className="font-semibold text-black text-sm md:text-base">
+                                  {dashboardContent.smallBoxName || "한과1호(약 1.1kg)"}
+                                </h5>
+                                <p className="text-xs text-black mt-1">
+                                  {dashboardContent.smallBoxDimensions || "약 35.5×21×11.2cm"}
+                                </p>
                               </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                              <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.small)}</span>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name="smallBoxQuantity"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center space-x-2">
+                                    <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                    <FormControl>
+                                      <div className="flex items-center space-x-1">
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                          className="w-7 h-7 p-0 text-xs"
+                                        >
+                                          -
+                                        </Button>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                          className="w-12 h-7 text-center text-xs px-1"
+                                        />
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => field.onChange(field.value + 1)}
+                                          className="w-7 h-7 p-0 text-xs"
+                                        >
+                                          +
+                                        </Button>
+                                      </div>
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          {/* Divider */}
+                          <div className="border-t border-eden-beige/50"></div>
+
+                          {/* 한과2호 Selection */}
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h5 className="font-semibold text-black text-sm md:text-base">
+                                  {dashboardContent.largeBoxName || "한과2호(약 1.3kg)"}
+                                </h5>
+                                <p className="text-xs text-black mt-1">
+                                  {dashboardContent.largeBoxDimensions || "약 37×23×11.5cm"}
+                                </p>
+                              </div>
+                              <span className="text-lg md:text-xl font-bold text-black whitespace-nowrap">{formatPrice(prices.large)}</span>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name="largeBoxQuantity"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center space-x-2">
+                                    <FormLabel className="text-sm font-medium">수량</FormLabel>
+                                    <FormControl>
+                                      <div className="flex items-center space-x-1">
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => field.onChange(Math.max(0, field.value - 1))}
+                                          className="w-7 h-7 p-0 text-xs"
+                                        >
+                                          -
+                                        </Button>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          {...field}
+                                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                                          className="w-12 h-7 text-center text-xs px-1"
+                                        />
+                                        <Button 
+                                          type="button"
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => field.onChange(field.value + 1)}
+                                          className="w-7 h-7 p-0 text-xs"
+                                        >
+                                          +
+                                        </Button>
+                                      </div>
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </>
+                      )}
 
                       {/* Divider */}
                       <div className="border-t border-eden-beige/50"></div>
