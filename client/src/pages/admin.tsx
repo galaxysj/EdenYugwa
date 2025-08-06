@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -3755,16 +3755,74 @@ export default function Admin() {
                   <div className="space-y-6">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
-                          <Edit className="h-5 w-5" />
-                          대시보드 콘텐츠 관리
-                        </CardTitle>
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                            <Edit className="h-5 w-5" />
+                            대시보드 콘텐츠 관리
+                          </CardTitle>
+                          <Button
+                            onClick={() => {
+                              if (confirm('모든 콘텐츠를 기본값으로 완전히 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                                const defaultContent = {
+                                  smallBoxName: "한과1호(약 1.1kg)",
+                                  largeBoxName: "한과2호(약 1.3kg)", 
+                                  smallBoxDimensions: "약 35.5×21×11.2cm",
+                                  largeBoxDimensions: "약 37×23×11.5cm",
+                                  wrappingName: "보자기",
+                                  wrappingPrice: "개당 +1,000원",
+                                  mainTitle: "진안에서 온 정성 가득 유과",
+                                  mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                  heroImageUrl: "",
+                                  aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                };
+                                setDashboardContent({...dashboardContent, ...defaultContent});
+                                // 각각 업데이트
+                                Object.entries(defaultContent).forEach(([key, value]) => {
+                                  updateContentMutation.mutate({ key, value });
+                                });
+                                toast({ title: "모든 콘텐츠가 기본값으로 초기화되었습니다." });
+                              }
+                            }}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <RotateCcw className="h-4 w-4 mr-1" />
+                            전체 초기화
+                          </Button>
+                        </div>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-6">
                           {/* 상품명 설정 */}
                           <div className="space-y-4">
-                            <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      smallBoxName: "한과1호(약 1.1kg)",
+                                      largeBoxName: "한과2호(약 1.3kg)", 
+                                      smallBoxDimensions: "약 35.5×21×11.2cm",
+                                      largeBoxDimensions: "약 37×23×11.5cm",
+                                      wrappingName: "보자기",
+                                      wrappingPrice: "개당 +1,000원"
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                상품정보 되돌리기
+                              </Button>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-4">
                                 <div>
@@ -3906,7 +3964,32 @@ export default function Admin() {
 
                           {/* 메인 대시보드 콘텐츠 */}
                           <div className="space-y-4">
-                            <h3 className="text-sm font-medium text-gray-900">메인 대시보드 콘텐츠</h3>
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">메인 대시보드 콘텐츠</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('메인 대시보드 콘텐츠를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      mainTitle: "진안에서 온 정성 가득 유과",
+                                      mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                      heroImageUrl: "",
+                                      aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    // 각각 업데이트
+                                    Object.entries(defaultContent).forEach(([key, value]) => {
+                                      updateContentMutation.mutate({ key, value });
+                                    });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                콘텐츠 되돌리기
+                              </Button>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <Label htmlFor="mainTitle">메인 제목</Label>
