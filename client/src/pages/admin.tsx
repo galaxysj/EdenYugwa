@@ -2497,7 +2497,7 @@ export default function Admin() {
                           <SelectItem value="pending">주문접수</SelectItem>
                           <SelectItem value="seller_shipped">발송대기</SelectItem>
                           <SelectItem value="scheduled">발송주문</SelectItem>
-                          <SelectItem value="delivered" disabled={!order.sellerShipped}>발송완료</SelectItem>
+                          {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
                         </SelectContent>
                       </Select>
                     </td>
@@ -2697,7 +2697,7 @@ export default function Admin() {
                           <SelectItem value="pending">주문접수</SelectItem>
                           <SelectItem value="scheduled">발송주문</SelectItem>
                           <SelectItem value="seller_shipped">발송대기</SelectItem>
-                          <SelectItem value="delivered">발송완료</SelectItem>
+                          {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
                         </SelectContent>
                       </Select>
                     </div>
@@ -2862,6 +2862,15 @@ export default function Admin() {
   };
 
   const handleStatusChange = (orderId: number, newStatus: string) => {
+    // 관리자는 발송완료(delivered) 상태로 변경할 수 없음 - 매니저만 가능
+    if (newStatus === 'delivered') {
+      toast({
+        title: "권한 없음",
+        description: "발송완료 처리는 매니저만 할 수 있습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 

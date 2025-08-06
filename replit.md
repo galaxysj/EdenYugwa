@@ -125,4 +125,6 @@ Using Drizzle ORM with PostgreSQL:
 
 **Enhanced User Management Interface**: Modified manager user change functionality to display all registered users (admin, manager, and general users) instead of filtering only general users. The selection dialog now shows user roles for clear identification and allows promotion of any registered user to manager role. Updated August 4, 2025.
 
+**Admin-Manager Role Separation for Order Status**: Implemented role-based restrictions preventing admin users from changing order status to "발송완료" (delivered), ensuring only managers can mark orders as delivered. Admin interface no longer shows "발송완료" option in status dropdown menus, and attempts to change status to delivered are blocked with appropriate error messages. This separation maintains proper workflow where managers handle final delivery confirmation while admins manage other order statuses. Updated August 6, 2025.
+
 The application is designed for scalability with clear separation of concerns and ready for production deployment with database persistence and SMS integration.

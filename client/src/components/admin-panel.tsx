@@ -60,6 +60,15 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
   });
 
   const handleStatusChange = (orderId: number, newStatus: string) => {
+    // 관리자는 발송완료(delivered) 상태로 변경할 수 없음 - 매니저만 가능
+    if (newStatus === 'delivered') {
+      toast({
+        title: "권한 없음", 
+        description: "발송완료 처리는 매니저만 할 수 있습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
@@ -237,7 +246,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                       <SelectItem value="pending">주문 접수</SelectItem>
                                       <SelectItem value="preparing">제작 중</SelectItem>
                                       <SelectItem value="shipping">배송 중</SelectItem>
-                                      <SelectItem value="delivered">배송 완료</SelectItem>
+                                      {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
                                     </SelectContent>
                                   </Select>
                                 </td>
