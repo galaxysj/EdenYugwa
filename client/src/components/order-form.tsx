@@ -450,22 +450,22 @@ export default function OrderForm() {
                       <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/30 shadow-sm">
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
-                            <h5 className="font-semibold text-eden-brown text-base md:text-lg mb-1">
+                            <h5 className="font-semibold text-black text-sm md:text-base mb-1">
                               {product.name}
                             </h5>
                             {product.size && (
-                              <p className="text-sm text-gray-600 mb-1">
+                              <p className="text-xs text-gray-600 mb-1">
                                 크기: {product.size}
                               </p>
                             )}
                             {product.weight && (
-                              <p className="text-sm text-gray-600 mb-1">
+                              <p className="text-xs text-gray-600 mb-1">
                                 무게: {product.weight}
                               </p>
                             )}
                           </div>
                           <div className="text-right">
-                            <div className="text-lg md:text-xl font-bold text-eden-brown">
+                            <div className="text-base md:text-lg font-bold text-black">
                               {formatPrice(parseInt(product.price) || 0)}
                             </div>
                           </div>
