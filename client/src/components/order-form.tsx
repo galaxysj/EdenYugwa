@@ -94,6 +94,26 @@ export default function OrderForm() {
     acc[item.key] = item.value;
     return acc;
   }, {}) : {};
+
+  // Parse product names safely
+  const parseProductNames = () => {
+    try {
+      if (!dashboardContent.productNames) return [];
+      if (typeof dashboardContent.productNames === 'string') {
+        return JSON.parse(dashboardContent.productNames);
+      }
+      return Array.isArray(dashboardContent.productNames) ? dashboardContent.productNames : [];
+    } catch (error) {
+      console.error('Error parsing product names:', error);
+      return [];
+    }
+  };
+
+  const productNames = parseProductNames();
+  
+  // Debug logging
+  console.log('Dashboard content:', dashboardContent);
+  console.log('Product names:', productNames);
   const [totalAmount, setTotalAmount] = useState(0);
   const [showShippingAlert, setShowShippingAlert] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -428,9 +448,9 @@ export default function OrderForm() {
                 </h4>
                 
                 {/* Dynamic Product List */}
-                {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 ? (
+                {productNames && productNames.length > 0 ? (
                   <div className="space-y-4">
-                    {dashboardContent.productNames.map((product: any, index: number) => (
+                    {productNames.map((product: any, index: number) => (
                       <div key={index} className="bg-gradient-to-br from-eden-sage/5 to-eden-brown/5 rounded-lg p-4 border border-eden-beige/30 shadow-sm">
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
@@ -512,14 +532,14 @@ export default function OrderForm() {
                 )}
 
                 {/* Product Information Display - Below Product Selection */}
-                {dashboardContent.productNames && Array.isArray(dashboardContent.productNames) && dashboardContent.productNames.length > 0 && (
+                {productNames && productNames.length > 0 && (
                   <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h5 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
                       <Info className="h-4 w-4" />
                       상품 정보
                     </h5>
                     <div className="space-y-3">
-                      {dashboardContent.productNames.map((product: any, index: number) => (
+                      {productNames.map((product: any, index: number) => (
                         <div key={index} className="bg-white rounded-lg p-3 border border-gray-100">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
