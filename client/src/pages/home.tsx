@@ -201,22 +201,42 @@ export default function Home() {
 
           {/* Product Images */}
           <div className="max-w-4xl mx-auto mb-8 md:mb-16">
-            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-              <div className="flex justify-center">
-                <img 
-                  src={dashboardContent.heroImageUrl || edenHangwaImage} 
-                  alt="에덴한과 유과 상품" 
-                  className="rounded-xl shadow-md w-full max-w-xs md:max-w-sm"
-                />
+            {dashboardContent.heroImages && dashboardContent.heroImages.length > 0 ? (
+              <div className={`grid gap-4 md:gap-6 ${
+                dashboardContent.heroImages.length === 1 ? 'grid-cols-1 max-w-md mx-auto' :
+                dashboardContent.heroImages.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
+                dashboardContent.heroImages.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+                'grid-cols-2 md:grid-cols-2'
+              }`}>
+                {dashboardContent.heroImages.map((imageUrl: string, index: number) => (
+                  <div key={index} className="flex justify-center">
+                    <img 
+                      src={imageUrl} 
+                      alt={`에덴한과 유과 상품 ${index + 1}`} 
+                      className="rounded-xl shadow-md w-full max-w-xs md:max-w-sm object-cover aspect-square"
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="hidden md:flex justify-center">
-                <img 
-                  src={edenHangwaImage2} 
-                  alt="에덴한과 유과 상품" 
-                  className="rounded-xl shadow-md w-full max-w-sm"
-                />
+            ) : (
+              // Fallback to default images when no custom images
+              <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                <div className="flex justify-center">
+                  <img 
+                    src={edenHangwaImage} 
+                    alt="에덴한과 유과 상품" 
+                    className="rounded-xl shadow-md w-full max-w-xs md:max-w-sm"
+                  />
+                </div>
+                <div className="hidden md:flex justify-center">
+                  <img 
+                    src={edenHangwaImage2} 
+                    alt="에덴한과 유과 상품" 
+                    className="rounded-xl shadow-md w-full max-w-sm"
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Bank Account Information */}

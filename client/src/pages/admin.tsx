@@ -749,47 +749,75 @@ export default function Admin() {
     wrappingPrice: "개당 +1,000원",
     mainTitle: "이든 한과",
     mainDescription: "전통 한과를 맛보세요",
-    heroImageUrl: "",
+    heroImages: [],
     aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
     bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
     bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
   });
 
-  // Handle image upload
+  // Handle multiple image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Check total images limit (max 4)
+    if (dashboardContent.heroImages.length + files.length > 4) {
       toast({ 
-        title: "파일 크기 오류", 
-        description: "이미지 파일은 5MB 이하여야 합니다.",
+        title: "이미지 개수 제한", 
+        description: "최대 4개의 이미지까지 업로드 가능합니다.",
         variant: "destructive"
       });
       return;
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({ 
-        title: "파일 형식 오류", 
-        description: "이미지 파일만 업로드 가능합니다.",
-        variant: "destructive"
-      });
-      return;
+    // Validate each file
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ 
+          title: "파일 크기 오류", 
+          description: `${file.name}: 이미지 파일은 5MB 이하여야 합니다.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({ 
+          title: "파일 형식 오류", 
+          description: `${file.name}: 이미지 파일만 업로드 가능합니다.`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     try {
-      // Convert file to base64 data URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        setDashboardContent({...dashboardContent, heroImageUrl: imageUrl});
-        updateContentMutation.mutate({ key: 'heroImageUrl', value: imageUrl });
-        toast({ title: "이미지가 업로드되었습니다." });
-      };
-      reader.readAsDataURL(file);
+      const newImages = [];
+      let processedCount = 0;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          const imageUrl = e.target?.result as string;
+          newImages.push(imageUrl);
+          processedCount++;
+
+          if (processedCount === files.length) {
+            const updatedImages = [...dashboardContent.heroImages, ...newImages];
+            setDashboardContent({...dashboardContent, heroImages: updatedImages});
+            updateContentMutation.mutate({ key: 'heroImages', value: JSON.stringify(updatedImages) });
+            toast({ title: `${files.length}개 이미지가 업로드되었습니다.` });
+          }
+        };
+        
+        reader.readAsDataURL(file);
+      }
     } catch (error) {
       toast({ 
         title: "업로드 실패", 
@@ -797,6 +825,14 @@ export default function Admin() {
         variant: "destructive"
       });
     }
+  };
+
+  // Remove image function
+  const removeImage = (index: number) => {
+    const updatedImages = dashboardContent.heroImages.filter((_, i) => i !== index);
+    setDashboardContent({...dashboardContent, heroImages: updatedImages});
+    updateContentMutation.mutate({ key: 'heroImages', value: JSON.stringify(updatedImages) });
+    toast({ title: "이미지가 삭제되었습니다." });
   };
 
   // Fetch dashboard content
@@ -817,7 +853,13 @@ export default function Admin() {
         if (item.key === 'wrappingPrice') updatedContent.wrappingPrice = item.value;
         if (item.key === 'mainTitle') updatedContent.mainTitle = item.value;
         if (item.key === 'mainDescription') updatedContent.mainDescription = item.value;
-        if (item.key === 'heroImageUrl') updatedContent.heroImageUrl = item.value;
+        if (item.key === 'heroImages') {
+          try {
+            updatedContent.heroImages = JSON.parse(item.value || '[]');
+          } catch {
+            updatedContent.heroImages = [];
+          }
+        }
         if (item.key === 'aboutText') updatedContent.aboutText = item.value;
         if (item.key === 'bankAccount') updatedContent.bankAccount = item.value;
         if (item.key === 'bankMessage') updatedContent.bankMessage = item.value;
@@ -3824,7 +3866,7 @@ export default function Admin() {
                                   wrappingPrice: "개당 +1,000원",
                                   mainTitle: "진안에서 온 정성 가득 유과",
                                   mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
-                                  heroImageUrl: "",
+                                  heroImages: [],
                                   aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
                                   bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
                                   bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
@@ -4026,7 +4068,7 @@ export default function Admin() {
                                     const defaultContent = {
                                       mainTitle: "진안에서 온 정성 가득 유과",
                                       mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
-                                      heroImageUrl: "",
+                                      heroImages: [],
                                       aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
                                     };
                                     setDashboardContent({...dashboardContent, ...defaultContent});
@@ -4095,35 +4137,53 @@ export default function Admin() {
                           <div className="space-y-4">
                             <div>
                               <Label htmlFor="heroImageFile">히어로 이미지 업로드</Label>
-                              <div className="mt-1 space-y-2">
+                              <div className="mt-1 space-y-3">
                                 <Input
                                   id="heroImageFile"
                                   type="file"
                                   accept="image/*"
+                                  multiple
                                   onChange={handleImageUpload}
                                   className="cursor-pointer"
+                                  disabled={dashboardContent.heroImages.length >= 4}
                                 />
-                                {dashboardContent.heroImageUrl && (
-                                  <div className="relative">
-                                    <img 
-                                      src={dashboardContent.heroImageUrl} 
-                                      alt="히어로 이미지 미리보기" 
-                                      className="w-full h-32 object-cover rounded border"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      onClick={() => {
-                                        setDashboardContent({...dashboardContent, heroImageUrl: ""});
-                                        updateContentMutation.mutate({ key: 'heroImageUrl', value: '' });
-                                      }}
-                                      className="absolute top-2 right-2"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
+                                
+                                {/* Image Grid Display */}
+                                {dashboardContent.heroImages.length > 0 && (
+                                  <div className={`grid gap-2 ${
+                                    dashboardContent.heroImages.length === 1 ? 'grid-cols-1' :
+                                    dashboardContent.heroImages.length === 2 ? 'grid-cols-2' :
+                                    dashboardContent.heroImages.length === 3 ? 'grid-cols-3' :
+                                    'grid-cols-2'
+                                  }`}>
+                                    {dashboardContent.heroImages.map((imageUrl, index) => (
+                                      <div key={index} className="relative group">
+                                        <img 
+                                          src={imageUrl} 
+                                          alt={`히어로 이미지 ${index + 1}`} 
+                                          className="w-full h-24 object-cover rounded border hover:opacity-80 transition-opacity"
+                                        />
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          onClick={() => removeImage(index)}
+                                          className="absolute top-1 right-1 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    ))}
                                   </div>
                                 )}
-                                <p className="text-xs text-gray-500">JPG, PNG, GIF 파일을 업로드하세요</p>
+                                
+                                <div className="flex justify-between items-center text-xs text-gray-500">
+                                  <span>JPG, PNG, GIF 파일을 업로드하세요 (최대 4개)</span>
+                                  <span>{dashboardContent.heroImages.length}/4</span>
+                                </div>
+                                
+                                {dashboardContent.heroImages.length >= 4 && (
+                                  <p className="text-xs text-amber-600">최대 4개의 이미지까지 업로드 가능합니다. 새 이미지를 추가하려면 기존 이미지를 삭제해주세요.</p>
+                                )}
                               </div>
                             </div>
                             
