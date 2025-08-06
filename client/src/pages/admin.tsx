@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw } from "lucide-react";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -753,6 +753,50 @@ export default function Admin() {
     aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
   });
 
+  // Handle image upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ 
+        title: "파일 크기 오류", 
+        description: "이미지 파일은 5MB 이하여야 합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ 
+        title: "파일 형식 오류", 
+        description: "이미지 파일만 업로드 가능합니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Convert file to base64 data URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        setDashboardContent({...dashboardContent, heroImageUrl: imageUrl});
+        updateContentMutation.mutate({ key: 'heroImageUrl', value: imageUrl });
+        toast({ title: "이미지가 업로드되었습니다." });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast({ 
+        title: "업로드 실패", 
+        description: "이미지 업로드 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Fetch dashboard content
   const { data: contentData } = useQuery<DashboardContent[]>({
     queryKey: ["/api/dashboard-content"],
@@ -765,6 +809,10 @@ export default function Admin() {
       contentData.forEach(item => {
         if (item.key === 'smallBoxName') updatedContent.smallBoxName = item.value;
         if (item.key === 'largeBoxName') updatedContent.largeBoxName = item.value;
+        if (item.key === 'smallBoxDimensions') updatedContent.smallBoxDimensions = item.value;
+        if (item.key === 'largeBoxDimensions') updatedContent.largeBoxDimensions = item.value;
+        if (item.key === 'wrappingName') updatedContent.wrappingName = item.value;
+        if (item.key === 'wrappingPrice') updatedContent.wrappingPrice = item.value;
         if (item.key === 'mainTitle') updatedContent.mainTitle = item.value;
         if (item.key === 'mainDescription') updatedContent.mainDescription = item.value;
         if (item.key === 'heroImageUrl') updatedContent.heroImageUrl = item.value;
@@ -4040,25 +4088,37 @@ export default function Admin() {
                           {/* 추가 콘텐츠 */}
                           <div className="space-y-4">
                             <div>
-                              <Label htmlFor="heroImageUrl">히어로 이미지 URL</Label>
-                              <Input
-                                id="heroImageUrl"
-                                value={dashboardContent.heroImageUrl}
-                                onChange={(e) => setDashboardContent({...dashboardContent, heroImageUrl: e.target.value})}
-                                placeholder="이미지 URL을 입력하세요"
-                                className="mt-1"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={() => updateContentMutation.mutate({ 
-                                  key: 'heroImageUrl', 
-                                  value: dashboardContent.heroImageUrl 
-                                })}
-                                disabled={updateContentMutation.isPending}
-                                className="mt-2"
-                              >
-                                {updateContentMutation.isPending ? "저장 중..." : "저장"}
-                              </Button>
+                              <Label htmlFor="heroImageFile">히어로 이미지 업로드</Label>
+                              <div className="mt-1 space-y-2">
+                                <Input
+                                  id="heroImageFile"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleImageUpload}
+                                  className="cursor-pointer"
+                                />
+                                {dashboardContent.heroImageUrl && (
+                                  <div className="relative">
+                                    <img 
+                                      src={dashboardContent.heroImageUrl} 
+                                      alt="히어로 이미지 미리보기" 
+                                      className="w-full h-32 object-cover rounded border"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => {
+                                        setDashboardContent({...dashboardContent, heroImageUrl: ""});
+                                        updateContentMutation.mutate({ key: 'heroImageUrl', value: '' });
+                                      }}
+                                      className="absolute top-2 right-2"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                                <p className="text-xs text-gray-500">JPG, PNG, GIF 파일을 업로드하세요</p>
+                              </div>
                             </div>
                             
                             <div>
