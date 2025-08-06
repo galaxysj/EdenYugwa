@@ -375,19 +375,22 @@ function PriceSettingsDialog() {
       setShippingFee(shippingFeeSetting?.value || "");
       setFreeShippingThreshold(thresholdSetting?.value || "");
       
-      // Load product prices
-      const newProductPrices: {[key: string]: {cost: string, price: string}} = {};
-      localProductNames.forEach((product: any, index: number) => {
-        const productKey = product.key || `product_${index}`;
-        const costSetting = settings.find(s => s.key === `${productKey}Cost`);
-        const priceSetting = settings.find(s => s.key === `${productKey}Price`);
-        
-        newProductPrices[productKey] = {
-          cost: costSetting?.value || "",
-          price: priceSetting?.value || ""
-        };
+      // Load product prices only if they don't already exist (preserve current input)
+      setProductPrices(prevPrices => {
+        const newProductPrices: {[key: string]: {cost: string, price: string}} = {};
+        localProductNames.forEach((product: any, index: number) => {
+          const productKey = product.key || `product_${index}`;
+          const costSetting = settings.find(s => s.key === `${productKey}Cost`);
+          const priceSetting = settings.find(s => s.key === `${productKey}Price`);
+          
+          // Only update from database if no current input exists
+          newProductPrices[productKey] = {
+            cost: prevPrices[productKey]?.cost || costSetting?.value || "",
+            price: prevPrices[productKey]?.price || priceSetting?.value || ""
+          };
+        });
+        return newProductPrices;
       });
-      setProductPrices(newProductPrices);
     }
   }, [settings, localProductNames]);
   
@@ -408,6 +411,20 @@ function PriceSettingsDialog() {
     },
   });
 
+  // Individual price save mutation without cache invalidation
+  const saveIndividualPriceMutation = useMutation({
+    mutationFn: async (data: { key: string; value: string; description: string }) => {
+      return await api.settings.create(data);
+    },
+    onError: () => {
+      toast({
+        title: "오류 발생",
+        description: "설정 업데이트에 실패했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Individual price save function
   const saveIndividualPrice = async (productKey: string, priceType: 'cost' | 'price', value: string, productName: string) => {
     const saveKey = `${productKey}-${priceType}`;
@@ -416,7 +433,7 @@ function PriceSettingsDialog() {
     setSavingPrices(prev => ({...prev, [saveKey]: true}));
     
     try {
-      await updateShippingMutation.mutateAsync({
+      await saveIndividualPriceMutation.mutateAsync({
         key: `${productKey}${priceType === 'cost' ? 'Cost' : 'Price'}`,
         value: value,
         description: `${productName} ${priceType === 'cost' ? '원가' : '판매가'}`
