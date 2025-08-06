@@ -97,6 +97,42 @@ export default function ManagerDashboard() {
     queryKey: ["/api/admin-settings"],
   });
 
+  // Fetch dashboard content for dynamic product names
+  const { data: contentData } = useQuery({
+    queryKey: ['/api/dashboard-content'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Convert array to object for easier access
+  const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
+    acc[item.key] = item.value;
+    return acc;
+  }, {}) : {};
+
+  // Parse product names safely
+  const getProductNames = () => {
+    try {
+      if (!dashboardContent.productNames) return [];
+      if (typeof dashboardContent.productNames === 'string') {
+        return JSON.parse(dashboardContent.productNames);
+      }
+      return Array.isArray(dashboardContent.productNames) ? dashboardContent.productNames : [];
+    } catch (error) {
+      console.error('Error parsing product names:', error);
+      return [];
+    }
+  };
+
+  const productNames = getProductNames();
+
+  // Get dynamic product name by index
+  const getProductName = (index: number, fallback: string) => {
+    if (productNames && productNames[index]) {
+      return productNames[index].name;
+    }
+    return fallback;
+  };
+
   // 필터링 로직 (매니저용 - 관리자가 설정한 발송주문과 발송완료만 표시)
   const filteredOrders = (orders as Order[]).filter(order => {
     // 서버에서 이미 scheduled/delivered만 반환하므로 추가 필터링 불필요
@@ -183,9 +219,9 @@ export default function ManagerDashboard() {
       '전화번호': order.customerPhone,
       '주소': `${order.address1} ${order.address2 || ''}`.trim(),
       '상품': [
-        order.smallBoxQuantity > 0 ? `한과1호(약1.1kg)×${order.smallBoxQuantity}개` : '',
-        order.largeBoxQuantity > 0 ? `한과2호(약2.5kg)×${order.largeBoxQuantity}개` : '',
-        order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
+        order.smallBoxQuantity > 0 ? `{getProductName(0, '한과1호')}×${order.smallBoxQuantity}개` : '',
+        order.largeBoxQuantity > 0 ? `{getProductName(1, '한과2호')}×${order.largeBoxQuantity}개` : '',
+        order.wrappingQuantity > 0 ? `{getProductName(2, '보자기')}×${order.wrappingQuantity}개` : ''
       ].filter(Boolean).join(', '),
       '주문금액': order.totalAmount,
       '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
@@ -722,13 +758,13 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
+                                  <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
+                                  <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
-                                  <div>보자기×{order.wrappingQuantity}개</div>
+                                  <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                                 )}
                               </div>
                             </td>
@@ -929,9 +965,9 @@ export default function ManagerDashboard() {
                                 {/* 주문내역 */}
                                 <div className="mb-2 pt-2">
                                   <div className="text-xs text-gray-700 mb-2 space-y-0.5">
-                                    {order.smallBoxQuantity > 0 && <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>}
-                                    {order.largeBoxQuantity > 0 && <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>}
-                                    {order.wrappingQuantity > 0 && <div>보자기×{order.wrappingQuantity}개</div>}
+                                    {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
+                                    {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
+                                    {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                                   </div>
                                   
                                   {/* 입금상태와 주문상태 - 관리자와 동일한 표시 */}
@@ -1221,13 +1257,13 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
+                                  <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
+                                  <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
-                                  <div>보자기×{order.wrappingQuantity}개</div>
+                                  <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                                 )}
                               </div>
                             </td>
@@ -1384,9 +1420,9 @@ export default function ManagerDashboard() {
                           {/* 중간: 주문내역 */}
                           <div className="mb-2">
                             <div className="text-xs text-gray-700 space-y-0.5 mb-2">
-                              {order.smallBoxQuantity > 0 && <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>}
-                              {order.largeBoxQuantity > 0 && <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>}
-                              {order.wrappingQuantity > 0 && <div>보자기×{order.wrappingQuantity}개</div>}
+                              {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
+                              {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
+                              {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
                               <span className={`px-2 py-0.5 rounded ${
@@ -1585,13 +1621,13 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2 min-w-[80px]">
                               <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
+                                  <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
+                                  <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
-                                  <div>보자기×{order.wrappingQuantity}개</div>
+                                  <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                                 )}
                               </div>
                             </td>
@@ -1748,9 +1784,9 @@ export default function ManagerDashboard() {
                           {/* 중간: 주문내역 */}
                           <div className="mb-2">
                             <div className="text-xs text-gray-700 space-y-0.5 mb-2">
-                              {order.smallBoxQuantity > 0 && <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>}
-                              {order.largeBoxQuantity > 0 && <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>}
-                              {order.wrappingQuantity > 0 && <div>보자기×{order.wrappingQuantity}개</div>}
+                              {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
+                              {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
+                              {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
                               <span className={`px-2 py-0.5 rounded ${

@@ -1823,15 +1823,15 @@ export default function Admin() {
                   <span className="text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-amber-600">한과1호</span>
+                  <span className="text-xs text-amber-600">{dashboardContent.productNames?.[0]?.name || '한과1호'}</span>
                   <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-orange-600">한과2호</span>
+                  <span className="text-xs text-orange-600">{dashboardContent.productNames?.[1]?.name || '한과2호'}</span>
                   <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-eden-brown">보자기</span>
+                  <span className="text-xs text-eden-brown">{dashboardContent.productNames?.[2]?.name || '보자기'}</span>
                   <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
@@ -1894,6 +1894,14 @@ export default function Admin() {
                       // Get shipping fee from order
                       const shippingFee = order.shippingFee || 0;
                       
+                      // Get dynamic product names from dashboard content
+                      const getProductName = (index: number, fallback: string) => {
+                        if (dashboardContent.productNames && dashboardContent.productNames[index]) {
+                          return dashboardContent.productNames[index].name;
+                        }
+                        return fallback;
+                      };
+                      
                       // Use historical cost data stored in order for profit calculations
                       const smallCost = order.smallBoxCost || 0;
                       const largeCost = order.largeBoxCost || 0;
@@ -1921,13 +1929,13 @@ export default function Admin() {
                           <td className="py-4 px-4 text-sm">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800">한과한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800">한과한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="font-medium text-gray-800">보자기×{order.wrappingQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                               )}
                             </div>
                           </td>
@@ -1977,17 +1985,17 @@ export default function Admin() {
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
                                 <div className="text-purple-600">
-                                  한과1호: {formatPrice(smallBoxesCost)}
+                                  {getProductName(0, '한과1호')}: {formatPrice(smallBoxesCost)}
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
                                 <div className="text-purple-600">
-                                  한과2호: {formatPrice(largeBoxesCost)}
+                                  {getProductName(1, '한과2호')}: {formatPrice(largeBoxesCost)}
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-purple-600">
-                                  보자기: {formatPrice(wrappingCostTotal)}
+                                  {getProductName(2, '보자기')}: {formatPrice(wrappingCostTotal)}
                                 </div>
                               )}
                               {shippingFee > 0 && (
@@ -2104,9 +2112,9 @@ export default function Admin() {
                         {/* 주문 정보 */}
                         <div className="text-xs text-gray-600 mb-2">
                           {new Date(order.createdAt).toLocaleDateString('ko-KR')} • 
-                          {order.smallBoxQuantity > 0 && ` 1호×${order.smallBoxQuantity}`}
-                          {order.largeBoxQuantity > 0 && ` 2호×${order.largeBoxQuantity}`}
-                          {order.wrappingQuantity > 0 && ` 보자기×${order.wrappingQuantity}`}
+                          {order.smallBoxQuantity > 0 && ` ${dashboardContent.productNames?.[0]?.name || '한과1호'}×${order.smallBoxQuantity}`}
+                          {order.largeBoxQuantity > 0 && ` ${dashboardContent.productNames?.[1]?.name || '한과2호'}×${order.largeBoxQuantity}`}
+                          {order.wrappingQuantity > 0 && ` ${dashboardContent.productNames?.[2]?.name || '보자기'}×${order.wrappingQuantity}`}
                         </div>
                         
                         {/* 수익 요약 */}
