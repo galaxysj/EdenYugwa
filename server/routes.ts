@@ -4,7 +4,7 @@ import passport from "./auth";
 import { requireAuth, requireAdmin, requireManagerOrAdmin } from "./auth";
 import { userService } from "./user-service";
 import { storage } from "./storage";
-import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, type Order, type InsertCustomer, type User } from "@shared/schema";
+import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, type Order, type InsertCustomer, type User, type DashboardContent } from "@shared/schema";
 import * as XLSX from "xlsx";
 import multer from "multer";
 
@@ -1752,6 +1752,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error uploading customer file:", error);
       res.status(500).json({ error: "파일 업로드 처리 중 오류가 발생했습니다" });
+    }
+  });
+
+  // Dashboard content management routes (admin only)
+  app.get("/api/dashboard-content", requireAdmin, async (req, res) => {
+    try {
+      const content = await storage.getAllDashboardContent();
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching dashboard content:", error);
+      res.status(500).json({ message: "대시보드 콘텐츠 조회에 실패했습니다" });
+    }
+  });
+
+  app.get("/api/dashboard-content/:key", requireAdmin, async (req, res) => {
+    try {
+      const content = await storage.getDashboardContent(req.params.key);
+      if (!content) {
+        return res.status(404).json({ message: "콘텐츠를 찾을 수 없습니다" });
+      }
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching dashboard content:", error);
+      res.status(500).json({ message: "대시보드 콘텐츠 조회에 실패했습니다" });
+    }
+  });
+
+  app.post("/api/dashboard-content", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertDashboardContentSchema.parse(req.body);
+      const content = await storage.setDashboardContent(validatedData.key, validatedData.value, validatedData.type);
+      res.status(201).json(content);
+    } catch (error) {
+      console.error("Error creating dashboard content:", error);
+      res.status(500).json({ message: "대시보드 콘텐츠 생성에 실패했습니다" });
+    }
+  });
+
+  app.patch("/api/dashboard-content/:key", requireAdmin, async (req, res) => {
+    try {
+      const { value, type } = req.body;
+      const content = await storage.setDashboardContent(req.params.key, value, type);
+      res.json(content);
+    } catch (error) {
+      console.error("Error updating dashboard content:", error);
+      res.status(500).json({ message: "대시보드 콘텐츠 업데이트에 실패했습니다" });
     }
   });
 

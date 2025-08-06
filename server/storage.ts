@@ -1,4 +1,4 @@
-import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser } from "@shared/schema";
+import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
@@ -65,6 +65,12 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUserRole(id: number, role: string): Promise<User | undefined>;
+  
+  // Dashboard content management
+  getDashboardContent(key: string): Promise<DashboardContent | undefined>;
+  setDashboardContent(key: string, value: string, type?: string): Promise<DashboardContent>;
+  getAllDashboardContent(): Promise<DashboardContent[]>;
+  updateDashboardContent(key: string, value: string): Promise<DashboardContent | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -998,6 +1004,51 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user || undefined;
+  }
+
+  // Dashboard content management
+  async getDashboardContent(key: string): Promise<DashboardContent | undefined> {
+    const [content] = await db.select().from(dashboardContent).where(eq(dashboardContent.key, key));
+    return content || undefined;
+  }
+
+  async setDashboardContent(key: string, value: string, type: string = 'text'): Promise<DashboardContent> {
+    const existing = await this.getDashboardContent(key);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(dashboardContent)
+        .set({ 
+          value,
+          type,
+          updatedAt: new Date()  
+        })
+        .where(eq(dashboardContent.key, key))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(dashboardContent)
+        .values({ key, value, type })
+        .returning();
+      return created;
+    }
+  }
+
+  async getAllDashboardContent(): Promise<DashboardContent[]> {
+    return await db.select().from(dashboardContent);
+  }
+
+  async updateDashboardContent(key: string, value: string): Promise<DashboardContent | undefined> {
+    const [updated] = await db
+      .update(dashboardContent)
+      .set({ 
+        value,
+        updatedAt: new Date()  
+      })
+      .where(eq(dashboardContent.key, key))
+      .returning();
+    return updated || undefined;
   }
 }
 

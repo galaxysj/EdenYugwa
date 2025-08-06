@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminHeader } from "@/components/admin-header";
-import type { Order, Setting } from "@shared/schema";
+import type { Order, Setting, DashboardContent } from "@shared/schema";
 import * as XLSX from 'xlsx';
 
 
@@ -737,6 +737,66 @@ export default function Admin() {
   const [selectedTrashItems, setSelectedTrashItems] = useState<Set<number>>(new Set());
   const [selectedShippingItems, setSelectedShippingItems] = useState<Set<number>>(new Set());
   const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
+
+  // Dashboard content management state
+  const [dashboardContent, setDashboardContent] = useState({
+    smallBoxName: "한과1호(약 1.1kg) 약 35.5×21×11.2cm",
+    largeBoxName: "한과2호(약 2kg) 약 50×25×15cm",
+    mainTitle: "이든 한과",
+    mainDescription: "전통 한과를 맛보세요",
+    heroImageUrl: "",
+    aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+  });
+
+  // Fetch dashboard content
+  const { data: contentData } = useQuery<DashboardContent[]>({
+    queryKey: ["/api/dashboard-content"],
+  });
+
+  // Load dashboard content from API
+  useEffect(() => {
+    if (contentData) {
+      const updatedContent = { ...dashboardContent };
+      contentData.forEach(item => {
+        if (item.key === 'smallBoxName') updatedContent.smallBoxName = item.value;
+        if (item.key === 'largeBoxName') updatedContent.largeBoxName = item.value;
+        if (item.key === 'mainTitle') updatedContent.mainTitle = item.value;
+        if (item.key === 'mainDescription') updatedContent.mainDescription = item.value;
+        if (item.key === 'heroImageUrl') updatedContent.heroImageUrl = item.value;
+        if (item.key === 'aboutText') updatedContent.aboutText = item.value;
+      });
+      setDashboardContent(updatedContent);
+    }
+  }, [contentData]);
+
+  // Dashboard content mutation
+  const updateContentMutation = useMutation({
+    mutationFn: async ({ key, value, type = 'text' }: { key: string; value: string; type?: string }) => {
+      const response = await fetch(`/api/dashboard-content/${key}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ value, type })
+      });
+      if (!response.ok) throw new Error('Content update failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard-content"] });
+      toast({
+        title: "콘텐츠 업데이트 완료",
+        description: "대시보드 콘텐츠가 성공적으로 업데이트되었습니다.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "업데이트 실패",
+        description: "콘텐츠 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+  
   const [selectedOrderItems, setSelectedOrderItems] = useState<Set<number>>(new Set());
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
@@ -3168,10 +3228,16 @@ export default function Admin() {
                       설정
                     </TabsTrigger>
                   </TabsList>
+                  <TabsList className="grid w-full grid-cols-1 mt-2">
+                    <TabsTrigger value="content" className="text-green-600 text-xs px-1">
+                      <Edit className="h-3 w-3 mr-1" />
+                      대시보드 콘텐츠 관리
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-                <TabsList className="hidden md:grid w-full grid-cols-8">
+                <TabsList className="hidden md:grid w-full grid-cols-9">
                   <TabsTrigger value="all">전체 ({allOrders.length})</TabsTrigger>
                   <TabsTrigger value="pending">주문접수 ({pendingOrders.length})</TabsTrigger>
                   <TabsTrigger value="seller_shipped">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -3195,6 +3261,10 @@ export default function Admin() {
                   <TabsTrigger value="settings" className="text-orange-600">
                     <Cog className="h-4 w-4 mr-1" />
                     설정
+                  </TabsTrigger>
+                  <TabsTrigger value="content" className="text-green-600">
+                    <Edit className="h-4 w-4 mr-1" />
+                    콘텐츠
                   </TabsTrigger>
                 </TabsList>
                 
@@ -3698,6 +3768,187 @@ export default function Admin() {
                               </div>
                             ))}
                           </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="content" className="mt-6">
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                          <Edit className="h-5 w-5" />
+                          대시보드 콘텐츠 관리
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-6">
+                          {/* 상품명 설정 */}
+                          <div className="space-y-4">
+                            <h3 className="text-sm font-medium text-gray-900">상품명 설정</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="smallBoxName">한과1호 (소박스) 상품명</Label>
+                                <Input
+                                  id="smallBoxName"
+                                  value={dashboardContent.smallBoxName}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, smallBoxName: e.target.value})}
+                                  placeholder="한과1호 상품명을 입력하세요"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'smallBoxName', 
+                                    value: dashboardContent.smallBoxName 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="largeBoxName">한과2호 (대박스) 상품명</Label>
+                                <Input
+                                  id="largeBoxName"
+                                  value={dashboardContent.largeBoxName}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, largeBoxName: e.target.value})}
+                                  placeholder="한과2호 상품명을 입력하세요"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'largeBoxName', 
+                                    value: dashboardContent.largeBoxName 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 메인 대시보드 콘텐츠 */}
+                          <div className="space-y-4">
+                            <h3 className="text-sm font-medium text-gray-900">메인 대시보드 콘텐츠</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="mainTitle">메인 제목</Label>
+                                <Input
+                                  id="mainTitle"
+                                  value={dashboardContent.mainTitle}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
+                                  placeholder="메인 제목을 입력하세요"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'mainTitle', 
+                                    value: dashboardContent.mainTitle 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                              
+                              <div>
+                                <Label htmlFor="mainDescription">메인 설명</Label>
+                                <Input
+                                  id="mainDescription"
+                                  value={dashboardContent.mainDescription}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
+                                  placeholder="메인 설명을 입력하세요"
+                                  className="mt-1"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'mainDescription', 
+                                    value: dashboardContent.mainDescription 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 추가 콘텐츠 */}
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="heroImageUrl">히어로 이미지 URL</Label>
+                              <Input
+                                id="heroImageUrl"
+                                value={dashboardContent.heroImageUrl}
+                                onChange={(e) => setDashboardContent({...dashboardContent, heroImageUrl: e.target.value})}
+                                placeholder="이미지 URL을 입력하세요"
+                                className="mt-1"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => updateContentMutation.mutate({ 
+                                  key: 'heroImageUrl', 
+                                  value: dashboardContent.heroImageUrl 
+                                })}
+                                disabled={updateContentMutation.isPending}
+                                className="mt-2"
+                              >
+                                {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                              </Button>
+                            </div>
+                            
+                            <div>
+                              <Label htmlFor="aboutText">소개 텍스트</Label>
+                              <Textarea
+                                id="aboutText"
+                                value={dashboardContent.aboutText}
+                                onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
+                                placeholder="소개 텍스트를 입력하세요"
+                                className="mt-1"
+                                rows={4}
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => updateContentMutation.mutate({ 
+                                  key: 'aboutText', 
+                                  value: dashboardContent.aboutText 
+                                })}
+                                disabled={updateContentMutation.isPending}
+                                className="mt-2"
+                              >
+                                {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* 현재 저장된 콘텐츠 미리보기 */}
+                          {contentData && contentData.length > 0 && (
+                            <div className="space-y-2">
+                              <h3 className="text-sm font-medium text-gray-900">현재 저장된 콘텐츠</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+                                {contentData.map((content) => (
+                                  <div key={content.id} className="bg-gray-50 rounded p-2">
+                                    <div className="text-gray-600 truncate text-xs font-medium">{content.key}</div>
+                                    <div className="text-gray-900 text-xs mt-1 break-words">
+                                      {content.value.length > 50 ? `${content.value.substring(0, 50)}...` : content.value}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

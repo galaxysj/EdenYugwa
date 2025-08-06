@@ -174,6 +174,25 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type Setting = typeof settings.$inferSelect;
 
+// Dashboard content management schema
+export const dashboardContent = pgTable("dashboard_content", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(), // 'welcomeTitle', 'welcomeSubtitle', 'welcomeDescription', 'heroImage', 'smallBoxName', 'largeBoxName', 'wrappingName'
+  value: text("value").notNull(),
+  type: text("type").notNull().default("text"), // 'text', 'image', 'html'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertDashboardContentSchema = createInsertSchema(dashboardContent).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertDashboardContent = z.infer<typeof insertDashboardContentSchema>;
+export type DashboardContent = typeof dashboardContent.$inferSelect;
+
 // Admin settings schema for business information
 export const adminSettings = pgTable("admin_settings", {
   id: serial("id").primaryKey(),
