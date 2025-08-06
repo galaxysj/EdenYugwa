@@ -97,6 +97,7 @@ export default function OrderForm() {
 
   // State for product names with updated prices
   const [productNames, setProductNames] = useState<any[]>([]);
+  const [dynamicQuantities, setDynamicQuantities] = useState<{[key: number]: number}>({});
 
   // Parse product names safely and load prices
   const parseProductNames = () => {
@@ -395,17 +396,27 @@ export default function OrderForm() {
   useEffect(() => {
     const [smallBoxQuantity, largeBoxQuantity, wrappingQuantity] = watchedValues;
     
-    // 동적 상품 가격을 사용하여 계산
-    const smallBoxTotal = getCurrentPrice(0, prices.small) * smallBoxQuantity;
-    const largeBoxTotal = getCurrentPrice(1, prices.large) * largeBoxQuantity;
-    const wrappingTotal = wrappingQuantity * getCurrentPrice(2, prices.wrapping);
-    const totalQuantity = smallBoxQuantity + largeBoxQuantity;
+    // 모든 동적 상품의 총액 계산
+    let productsTotal = 0;
+    if (productNames && productNames.length > 0) {
+      productNames.forEach((product: any, index: number) => {
+        productsTotal += calculateProductTotal(index, product.name);
+      });
+    } else {
+      // 폴백: 기본 상품들 계산
+      const smallBoxTotal = getCurrentPrice(0, prices.small) * smallBoxQuantity;
+      const largeBoxTotal = getCurrentPrice(1, prices.large) * largeBoxQuantity;
+      const wrappingTotal = wrappingQuantity * getCurrentPrice(2, prices.wrapping);
+      productsTotal = smallBoxTotal + largeBoxTotal + wrappingTotal;
+    }
+    
+    const currentTotalQuantity = getTotalQuantity();
     
     // 배송비 계산: 6개 이상이면 무료, 미만이면 4000원
-    const calculatedShippingFee = totalQuantity >= shippingSettings.freeShippingThreshold ? 0 : (totalQuantity > 0 ? shippingSettings.shippingFee : 0);
+    const calculatedShippingFee = currentTotalQuantity >= shippingSettings.freeShippingThreshold ? 0 : (currentTotalQuantity > 0 ? shippingSettings.shippingFee : 0);
     setShippingFee(calculatedShippingFee);
     
-    const total = smallBoxTotal + largeBoxTotal + wrappingTotal + calculatedShippingFee;
+    const total = productsTotal + calculatedShippingFee;
     setTotalAmount(total);
   }, [watchedValues, prices, shippingSettings, productNames]);
 
@@ -488,7 +499,31 @@ export default function OrderForm() {
   const smallBoxQuantity = form.watch("smallBoxQuantity");
   const largeBoxQuantity = form.watch("largeBoxQuantity");
   const wrappingQuantity = form.watch("wrappingQuantity");
-  const totalQuantity = smallBoxQuantity + largeBoxQuantity;
+  
+  // 동적 상품 수량 계산
+  const getDynamicProductQuantity = (productIndex: number, productName: string) => {
+    if (productIndex === 0) return smallBoxQuantity;
+    if (productIndex === 1) return largeBoxQuantity;
+    if (productIndex === 2 || productName?.includes('보자기')) return wrappingQuantity;
+    
+    // 새로 추가된 상품들은 독립적인 수량 상태 사용
+    return dynamicQuantities[productIndex] || 0;
+  };
+  
+  // 전체 수량 계산 (모든 동적 상품 포함)
+  const getTotalQuantity = () => {
+    if (!productNames || productNames.length === 0) {
+      return smallBoxQuantity + largeBoxQuantity;
+    }
+    
+    let total = 0;
+    productNames.forEach((product: any, index: number) => {
+      total += getDynamicProductQuantity(index, product.name);
+    });
+    return total;
+  };
+  
+  const totalQuantity = getTotalQuantity();
   
   // 동적 상품 가격을 사용하여 총액 계산
   const getCurrentPrice = (index: number, fallbackPrice: number) => {
@@ -496,6 +531,13 @@ export default function OrderForm() {
       return parseInt(productNames[index].price) || fallbackPrice;
     }
     return fallbackPrice;
+  };
+  
+  // 모든 동적 상품의 총액 계산
+  const calculateProductTotal = (productIndex: number, productName: string) => {
+    const quantity = getDynamicProductQuantity(productIndex, productName);
+    const price = getCurrentPrice(productIndex, 0);
+    return quantity * price;
   };
   
   const smallBoxTotal = getCurrentPrice(0, prices.small) * smallBoxQuantity;
@@ -544,13 +586,13 @@ export default function OrderForm() {
                           </div>
                         </div>
                         
-                        <FormField
+                        {index <= 2 ? (
+                          <FormField
                           control={form.control}
                           name={
                             index === 0 ? "smallBoxQuantity" : 
                             index === 1 ? "largeBoxQuantity" : 
-                            product.name?.includes('보자기') ? "wrappingQuantity" : 
-                            "smallBoxQuantity"
+                            "wrappingQuantity"
                           }
                           render={({ field }) => (
                             <FormItem>
@@ -590,6 +632,49 @@ export default function OrderForm() {
                             </FormItem>
                           )}
                         />
+                        ) : (
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-medium text-gray-700">수량 선택</label>
+                              <div className="flex items-center space-x-2">
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    const newQuantity = Math.max(0, (dynamicQuantities[index] || 0) - 1);
+                                    setDynamicQuantities(prev => ({...prev, [index]: newQuantity}));
+                                  }}
+                                  className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={dynamicQuantities[index] || 0}
+                                  onChange={(e) => {
+                                    const newQuantity = parseInt(e.target.value) || 0;
+                                    setDynamicQuantities(prev => ({...prev, [index]: newQuantity}));
+                                  }}
+                                  className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
+                                />
+                                <Button 
+                                  type="button"
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    const newQuantity = (dynamicQuantities[index] || 0) + 1;
+                                    setDynamicQuantities(prev => ({...prev, [index]: newQuantity}));
+                                  }}
+                                  className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -868,24 +953,10 @@ export default function OrderForm() {
                         {/* 동적 상품 목록을 기반으로 주문 요약 생성 */}
                         {productNames && productNames.length > 0 ? (
                           productNames.map((product: any, index: number) => {
-                            let quantity = 0;
-                            let fieldName = '';
-                            
-                            // 각 상품별 수량 매핑
-                            if (index === 0) {
-                              quantity = smallBoxQuantity;
-                              fieldName = 'smallBoxQuantity';
-                            } else if (index === 1) {
-                              quantity = largeBoxQuantity;
-                              fieldName = 'largeBoxQuantity';
-                            } else if (index === 2 || product.name === '보자기') {
-                              quantity = wrappingQuantity;
-                              fieldName = 'wrappingQuantity';
-                            }
+                            const quantity = getDynamicProductQuantity(index, product.name);
                             
                             if (quantity > 0) {
-                              const price = getCurrentPrice(index, 0);
-                              const total = price * quantity;
+                              const total = calculateProductTotal(index, product.name);
                               
                               return (
                                 <div key={index} className="flex justify-between">
