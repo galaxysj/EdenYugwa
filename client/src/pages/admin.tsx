@@ -358,6 +358,9 @@ function PriceSettingsDialog() {
   // Content management focuses on product names only
   // Price and cost management is handled in the "가격 설정" tab
   
+  // Product price states
+  const [productPrices, setProductPrices] = useState<{[key: string]: {cost: string, price: string}}>({});
+  
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
@@ -370,8 +373,21 @@ function PriceSettingsDialog() {
       
       setShippingFee(shippingFeeSetting?.value || "");
       setFreeShippingThreshold(thresholdSetting?.value || "");
+      
+      // Load product prices
+      const newProductPrices: {[key: string]: {cost: string, price: string}} = {};
+      localProductNames.forEach((product: any) => {
+        const costSetting = settings.find(s => s.key === `${product.key}Cost`);
+        const priceSetting = settings.find(s => s.key === `${product.key}Price`);
+        
+        newProductPrices[product.key] = {
+          cost: costSetting?.value || "",
+          price: priceSetting?.value || ""
+        };
+      });
+      setProductPrices(newProductPrices);
     }
-  }, [settings]);
+  }, [settings, localProductNames]);
   
   const updateShippingMutation = useMutation({
     mutationFn: async (data: { key: string; value: string; description: string }) => {
@@ -406,6 +422,27 @@ function PriceSettingsDialog() {
     }
     
     try {
+      // Save product prices first
+      for (const product of localProductNames) {
+        const productPrice = productPrices[product.key];
+        if (productPrice) {
+          if (productPrice.cost) {
+            await updateShippingMutation.mutateAsync({
+              key: `${product.key}Cost`,
+              value: productPrice.cost,
+              description: `${product.name} 원가`
+            });
+          }
+          if (productPrice.price) {
+            await updateShippingMutation.mutateAsync({
+              key: `${product.key}Price`,
+              value: productPrice.price,
+              description: `${product.name} 판매가`
+            });
+          }
+        }
+      }
+      
       // Shipping settings
       await updateShippingMutation.mutateAsync({
         key: "shippingFee",
@@ -419,8 +456,18 @@ function PriceSettingsDialog() {
         description: "무료배송 최소 수량"
       });
       
+      toast({
+        title: "저장 완료",
+        description: "상품 가격 및 배송비 설정이 저장되었습니다.",
+      });
+      
     } catch (error) {
-      console.error("배송비 설정 저장 오류:", error);
+      console.error("가격 설정 저장 오류:", error);
+      toast({
+        title: "저장 실패",
+        description: "설정 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -448,27 +495,54 @@ function PriceSettingsDialog() {
             {localProductNames && localProductNames.length > 0 ? (
               <div className="space-y-3">
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full border border-gray-200 rounded-lg">
                     <thead>
-                      <tr className="bg-gray-50 rounded-t-lg">
-                        <th className="px-4 py-3 text-left text-base font-semibold text-gray-800">상품명</th>
+                      <tr className="bg-gray-50">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b">상품명</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b">원가 (원)</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b">판매가 (원)</th>
                       </tr>
                     </thead>
                     <tbody>
                       {localProductNames.map((product: any, index: number) => (
-                        <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
-                          <td className="px-4 py-3 text-base font-medium text-gray-900">
+                        <tr key={index} className="hover:bg-gray-50 transition-colors duration-150 border-b last:border-b-0">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">
                             {product.name}
+                          </td>
+                          <td className="px-4 py-3">
+                            <Input
+                              type="number"
+                              placeholder="원가 입력"
+                              value={productPrices[product.key]?.cost || ""}
+                              onChange={(e) => setProductPrices(prev => ({
+                                ...prev,
+                                [product.key]: {
+                                  cost: e.target.value,
+                                  price: prev[product.key]?.price || ""
+                                }
+                              }))}
+                              className="w-full text-sm"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <Input
+                              type="number"
+                              placeholder="판매가 입력"
+                              value={productPrices[product.key]?.price || ""}
+                              onChange={(e) => setProductPrices(prev => ({
+                                ...prev,
+                                [product.key]: {
+                                  cost: prev[product.key]?.cost || "",
+                                  price: e.target.value
+                                }
+                              }))}
+                              className="w-full text-sm"
+                            />
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                </div>
-                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    💡 상품의 판매가와 원가는 <strong>"가격 설정"</strong> 탭에서 관리할 수 있습니다.
-                  </p>
                 </div>
               </div>
             ) : (
