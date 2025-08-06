@@ -752,7 +752,8 @@ export default function Admin() {
     heroImages: [],
     aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
     bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
-    bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+    bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다",
+    shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
   });
 
   // Handle multiple image upload
@@ -760,11 +761,11 @@ export default function Admin() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    // Check total images limit (max 4)
-    if (dashboardContent.heroImages.length + files.length > 4) {
+    // Check total images limit (max 8)
+    if (dashboardContent.heroImages.length + files.length > 8) {
       toast({ 
         title: "이미지 개수 제한", 
-        description: "최대 4개의 이미지까지 업로드 가능합니다.",
+        description: "최대 8개의 이미지까지 업로드 가능합니다.",
         variant: "destructive"
       });
       return;
@@ -799,18 +800,62 @@ export default function Admin() {
       // Show loading state
       toast({ title: "이미지 업로드 중..." });
 
-      // Process files sequentially to maintain order
+      // Process files with compression
       const newImages: string[] = [];
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const imageUrl = await new Promise<string>((resolve, reject) => {
+        
+        // Compress image before processing
+        const compressedImageUrl = await new Promise<string>((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          
+          img.onload = () => {
+            // Set max dimensions to reduce file size
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let { width, height } = img;
+            
+            // Calculate new dimensions
+            if (width > height) {
+              if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = (width * maxHeight) / height;
+                height = maxHeight;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw and compress
+            ctx?.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8); // 80% quality
+            resolve(compressedDataUrl);
+          };
+          
+          img.onerror = () => {
+            // Fallback to original if compression fails
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          };
+          
           const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target?.result as string);
-          reader.onerror = reject;
+          reader.onload = (e) => {
+            img.src = e.target?.result as string;
+          };
           reader.readAsDataURL(file);
         });
-        newImages.push(imageUrl);
+        
+        newImages.push(compressedImageUrl);
       }
 
       // Update state and save to database
@@ -827,7 +872,7 @@ export default function Admin() {
         console.error('Database save error:', dbError);
         toast({ 
           title: "저장 실패", 
-          description: "이미지는 업로드되었지만 데이터베이스 저장에 실패했습니다.",
+          description: "이미지가 압축되었지만 저장에 실패했습니다. 이미지 크기를 줄여보세요.",
           variant: "destructive"
         });
       }
@@ -885,6 +930,7 @@ export default function Admin() {
         if (item.key === 'aboutText') updatedContent.aboutText = item.value;
         if (item.key === 'bankAccount') updatedContent.bankAccount = item.value;
         if (item.key === 'bankMessage') updatedContent.bankMessage = item.value;
+        if (item.key === 'shippingInfo') updatedContent.shippingInfo = item.value;
       });
       setDashboardContent(updatedContent);
     }
@@ -4167,23 +4213,29 @@ export default function Admin() {
                                   multiple
                                   onChange={handleImageUpload}
                                   className="cursor-pointer"
-                                  disabled={dashboardContent.heroImages.length >= 4}
+                                  disabled={dashboardContent.heroImages.length >= 8}
                                 />
                                 
                                 {/* Image Grid Display */}
                                 {dashboardContent.heroImages.length > 0 && (
                                   <div className={`grid gap-2 ${
-                                    dashboardContent.heroImages.length === 1 ? 'grid-cols-1' :
+                                    dashboardContent.heroImages.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' :
                                     dashboardContent.heroImages.length === 2 ? 'grid-cols-2' :
                                     dashboardContent.heroImages.length === 3 ? 'grid-cols-3' :
-                                    'grid-cols-2'
+                                    dashboardContent.heroImages.length === 4 ? 'grid-cols-2' :
+                                    dashboardContent.heroImages.length === 5 ? 'grid-cols-3' :
+                                    dashboardContent.heroImages.length === 6 ? 'grid-cols-3' :
+                                    'grid-cols-4'
                                   }`}>
                                     {dashboardContent.heroImages.map((imageUrl, index) => (
                                       <div key={index} className="relative group">
                                         <img 
                                           src={imageUrl} 
                                           alt={`히어로 이미지 ${index + 1}`} 
-                                          className="w-full h-24 object-cover rounded border hover:opacity-80 transition-opacity"
+                                          className={`w-full object-cover rounded border hover:opacity-80 transition-opacity ${
+                                            dashboardContent.heroImages.length === 1 ? 'h-32' :
+                                            dashboardContent.heroImages.length <= 4 ? 'h-24' : 'h-20'
+                                          }`}
                                         />
                                         <Button
                                           size="sm"
@@ -4199,12 +4251,12 @@ export default function Admin() {
                                 )}
                                 
                                 <div className="flex justify-between items-center text-xs text-gray-500">
-                                  <span>JPG, PNG, GIF 파일을 업로드하세요 (최대 4개)</span>
-                                  <span>{dashboardContent.heroImages.length}/4</span>
+                                  <span>JPG, PNG, GIF 파일을 업로드하세요 (최대 8개)</span>
+                                  <span>{dashboardContent.heroImages.length}/8</span>
                                 </div>
                                 
-                                {dashboardContent.heroImages.length >= 4 && (
-                                  <p className="text-xs text-amber-600">최대 4개의 이미지까지 업로드 가능합니다. 새 이미지를 추가하려면 기존 이미지를 삭제해주세요.</p>
+                                {dashboardContent.heroImages.length >= 8 && (
+                                  <p className="text-xs text-amber-600">최대 8개의 이미지까지 업로드 가능합니다. 새 이미지를 추가하려면 기존 이미지를 삭제해주세요.</p>
                                 )}
                               </div>
                             </div>
@@ -4230,6 +4282,55 @@ export default function Admin() {
                               >
                                 {updateContentMutation.isPending ? "저장 중..." : "저장"}
                               </Button>
+                            </div>
+                          </div>
+
+                          {/* 배송 안내 정보 */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-sm font-medium text-gray-900">배송 안내 정보</h3>
+                              <Button
+                                onClick={() => {
+                                  if (confirm('배송 안내 정보를 기본값으로 되돌리시겠습니까?')) {
+                                    const defaultContent = {
+                                      shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
+                                    };
+                                    setDashboardContent({...dashboardContent, ...defaultContent});
+                                    updateContentMutation.mutate({ key: 'shippingInfo', value: defaultContent.shippingInfo });
+                                  }
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                배송정보 되돌리기
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-4">
+                              <div>
+                                <Label htmlFor="shippingInfo">배송 안내 내용</Label>
+                                <Textarea
+                                  id="shippingInfo"
+                                  value={dashboardContent.shippingInfo}
+                                  onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
+                                  placeholder="배송 관련 안내사항을 입력하세요"
+                                  className="mt-1"
+                                  rows={6}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateContentMutation.mutate({ 
+                                    key: 'shippingInfo', 
+                                    value: dashboardContent.shippingInfo 
+                                  })}
+                                  disabled={updateContentMutation.isPending}
+                                  className="mt-2"
+                                >
+                                  {updateContentMutation.isPending ? "저장 중..." : "저장"}
+                                </Button>
+                                <p className="text-xs text-gray-500 mt-1">• 로 시작하는 항목들로 작성하면 리스트 형태로 표시됩니다</p>
+                              </div>
                             </div>
                           </div>
 

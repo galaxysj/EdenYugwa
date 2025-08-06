@@ -20,7 +20,15 @@ export default function Home() {
 
   // Convert array to object for easier access
   const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
-    acc[item.key] = item.value;
+    if (item.key === 'heroImages') {
+      try {
+        acc[item.key] = JSON.parse(item.value || '[]');
+      } catch {
+        acc[item.key] = [];
+      }
+    } else {
+      acc[item.key] = item.value;
+    }
     return acc;
   }, {}) : {};
 
@@ -202,18 +210,25 @@ export default function Home() {
           {/* Product Images */}
           <div className="max-w-4xl mx-auto mb-8 md:mb-16">
             {dashboardContent.heroImages && dashboardContent.heroImages.length > 0 ? (
-              <div className={`grid gap-4 md:gap-6 ${
+              <div className={`grid gap-3 md:gap-4 ${
                 dashboardContent.heroImages.length === 1 ? 'grid-cols-1 max-w-md mx-auto' :
                 dashboardContent.heroImages.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
                 dashboardContent.heroImages.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
-                'grid-cols-2 md:grid-cols-2'
+                dashboardContent.heroImages.length === 4 ? 'grid-cols-2 md:grid-cols-2' :
+                dashboardContent.heroImages.length === 5 ? 'grid-cols-2 md:grid-cols-3' :
+                dashboardContent.heroImages.length === 6 ? 'grid-cols-2 md:grid-cols-3' :
+                'grid-cols-2 md:grid-cols-4'
               }`}>
                 {dashboardContent.heroImages.map((imageUrl: string, index: number) => (
                   <div key={index} className="flex justify-center">
                     <img 
                       src={imageUrl} 
                       alt={`에덴한과 유과 상품 ${index + 1}`} 
-                      className="rounded-xl shadow-md w-full max-w-xs md:max-w-sm object-cover aspect-square"
+                      className={`rounded-xl shadow-md w-full object-cover ${
+                        dashboardContent.heroImages.length === 1 ? 'max-w-md aspect-square' :
+                        dashboardContent.heroImages.length <= 4 ? 'max-w-xs md:max-w-sm aspect-square' :
+                        'max-w-[150px] md:max-w-[180px] aspect-square'
+                      }`}
                     />
                   </div>
                 ))}
@@ -238,6 +253,20 @@ export default function Home() {
               </div>
             )}
           </div>
+
+          {/* Shipping Information */}
+          {dashboardContent.shippingInfo && (
+            <div className="max-w-2xl mx-auto mb-6 md:mb-8">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 md:p-6 border border-blue-200 mx-2 md:mx-0">
+                <h3 className="text-lg font-bold text-eden-brown mb-3 text-center">에덴한과 배송</h3>
+                <div className="text-sm text-gray-700 space-y-1">
+                  {dashboardContent.shippingInfo.split('\n').map((line: string, index: number) => (
+                    <div key={index} className="leading-relaxed">{line}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Bank Account Information */}
           <div className="max-w-lg mx-auto mb-6 md:mb-8">
