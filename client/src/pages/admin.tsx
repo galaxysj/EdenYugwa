@@ -4227,7 +4227,7 @@ export default function Admin() {
                                                 setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                               }
                                             }}
-                                            disabled={savingButtons[`product-${index}`] || updateContentMutation.isPending}
+                                            disabled={savingButtons[`product-${index}`]}
                                             className="h-7 px-2 text-xs"
                                           >
                                             {savingButtons[`product-${index}`] ? '저장중...' : '저장'}
@@ -4344,7 +4344,7 @@ export default function Admin() {
                                         setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                       }
                                     }}
-                                    disabled={savingButtons['mainTitle'] || updateContentMutation.isPending}
+                                    disabled={savingButtons['mainTitle']}
                                     className="px-3"
                                   >
                                     {savingButtons['mainTitle'] ? '저장중...' : '저장'}
@@ -4388,7 +4388,7 @@ export default function Admin() {
                                         setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                       }
                                     }}
-                                    disabled={savingButtons['mainDescription'] || updateContentMutation.isPending}
+                                    disabled={savingButtons['mainDescription']}
                                     className="px-3"
                                   >
                                     {savingButtons['mainDescription'] ? '저장중...' : '저장'}
@@ -4478,7 +4478,7 @@ export default function Admin() {
                                       setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                     }
                                   }}
-                                  disabled={savingButtons['aboutText'] || updateContentMutation.isPending}
+                                  disabled={savingButtons['aboutText']}
                                   className="px-3 self-start"
                                 >
                                   {savingButtons['aboutText'] ? '저장중...' : '저장'}
@@ -4549,7 +4549,7 @@ export default function Admin() {
                                       setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                     }
                                   }}
-                                  disabled={savingButtons['shippingTitle'] || updateContentMutation.isPending}
+                                  disabled={savingButtons['shippingTitle']}
                                   className="px-3"
                                 >
                                   {savingButtons['shippingTitle'] ? '저장중...' : '저장'}
@@ -4594,7 +4594,7 @@ export default function Admin() {
                                       setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                     }
                                   }}
-                                  disabled={savingButtons['shippingInfo'] || updateContentMutation.isPending}
+                                  disabled={savingButtons['shippingInfo']}
                                   className="px-3 self-start"
                                 >
                                   {savingButtons['shippingInfo'] ? '저장중...' : '저장'}
@@ -4665,7 +4665,7 @@ export default function Admin() {
                                         setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                       }
                                     }}
-                                    disabled={savingButtons['bankAccount'] || updateContentMutation.isPending}
+                                    disabled={savingButtons['bankAccount']}
                                     className="px-3"
                                   >
                                     {savingButtons['bankAccount'] ? '저장중...' : '저장'}
@@ -4709,7 +4709,7 @@ export default function Admin() {
                                         setSavingButtons(prev => ({...prev, [buttonKey]: false}));
                                       }
                                     }}
-                                    disabled={savingButtons['bankMessage'] || updateContentMutation.isPending}
+                                    disabled={savingButtons['bankMessage']}
                                     className="px-3 self-start"
                                   >
                                     {savingButtons['bankMessage'] ? '저장중...' : '저장'}
