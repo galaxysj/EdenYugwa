@@ -4726,7 +4726,7 @@ export default function Admin() {
             ) : (
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 {/* 모바일에서는 3줄로 나누어 표시 - 설정 탭 추가 */}
-                <div className="block md:hidden sticky top-16 z-40 bg-white border-b border-gray-200 pb-2 mb-4">
+                <div className="block md:hidden sticky top-16 z-[90] bg-white border-b border-gray-200 pb-2 mb-4">
                   <TabsList className="grid w-full grid-cols-4 mb-2">
                     <TabsTrigger value="all" className="admin-tab-trigger px-1">전체 ({allOrders.length})</TabsTrigger>
                     <TabsTrigger value="pending" className="admin-tab-trigger px-1">주문접수 ({pendingOrders.length})</TabsTrigger>
@@ -4768,7 +4768,7 @@ export default function Admin() {
                 </div>
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
-                <div className="hidden md:block sticky top-16 z-40 bg-white border-b border-gray-200 pb-2 mb-4">
+                <div className="hidden md:block sticky top-16 z-[90] bg-white border-b border-gray-200 pb-2 mb-4">
                   <TabsList className="grid w-full grid-cols-12">
                     <TabsTrigger value="all" className="admin-tab-trigger">전체 ({allOrders.length})</TabsTrigger>
                     <TabsTrigger value="pending" className="admin-tab-trigger">주문접수 ({pendingOrders.length})</TabsTrigger>

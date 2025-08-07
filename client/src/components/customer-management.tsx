@@ -490,111 +490,53 @@ export function CustomerManagement() {
                 <div className="text-sm md:text-base">등록된 고객이 없습니다. 첫 고객을 등록해보세요.</div>
               </div>
             ) : (
-              <>
-                {/* 데스크탑 테이블 뷰 */}
-                <div className="hidden md:block overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-xs md:text-sm">고객명</TableHead>
-                        <TableHead className="text-xs md:text-sm">연락처</TableHead>
-                        <TableHead className="text-xs md:text-sm">주소</TableHead>
-                        <TableHead className="text-xs md:text-sm">주문수</TableHead>
-                        <TableHead className="text-xs md:text-sm">총금액</TableHead>
-                        <TableHead className="text-xs md:text-sm">액션</TableHead>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs md:text-sm">고객명</TableHead>
+                      <TableHead className="text-xs md:text-sm">연락처</TableHead>
+                      <TableHead className="text-xs md:text-sm">주소</TableHead>
+                      <TableHead className="text-xs md:text-sm">주문수</TableHead>
+                      <TableHead className="text-xs md:text-sm">총금액</TableHead>
+                      <TableHead className="text-xs md:text-sm">액션</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {customers.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell className="text-xs md:text-sm font-medium">{customer.customerName}</TableCell>
+                        <TableCell className="text-xs md:text-sm">{formatPhoneNumber(customer.customerPhone)}</TableCell>
+                        <TableCell className="text-xs md:text-sm max-w-[200px] truncate">
+                          {customer.address1 ? `${customer.address1} ${customer.address2 || ''}`.trim() : '-'}
+                        </TableCell>
+                        <TableCell className="text-xs md:text-sm">{customer.orderCount || 0}</TableCell>
+                        <TableCell className="text-xs md:text-sm">{formatAmount(customer.totalSpent || 0)}</TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(customer)}
+                              className="text-xs"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteCustomerMutation.mutate(customer.id)}
+                              className="text-xs"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {customers.map((customer) => (
-                        <TableRow key={customer.id}>
-                          <TableCell className="text-xs md:text-sm font-medium">{customer.customerName}</TableCell>
-                          <TableCell className="text-xs md:text-sm">{formatPhoneNumber(customer.customerPhone)}</TableCell>
-                          <TableCell className="text-xs md:text-sm max-w-[200px] truncate">
-                            {customer.address1 ? `${customer.address1} ${customer.address2 || ''}`.trim() : '-'}
-                          </TableCell>
-                          <TableCell className="text-xs md:text-sm">{customer.orderCount || 0}</TableCell>
-                          <TableCell className="text-xs md:text-sm">{formatAmount(customer.totalOrderAmount || 0)}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEdit(customer)}
-                                className="text-xs"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteCustomerMutation.mutate(customer.id)}
-                                className="text-xs"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* 모바일 리스트 뷰 */}
-                <div className="md:hidden space-y-2">
-                  {customers.map((customer) => (
-                    <div key={customer.id} className="bg-white border border-gray-200 rounded-lg p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        {/* 왼쪽: 고객 정보 */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-sm truncate">{customer.customerName}</h3>
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                              {customer.orderCount || 0}회
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-gray-600 mb-1">
-                            <Phone className="h-3 w-3" />
-                            <span>{formatPhoneNumber(customer.customerPhone)}</span>
-                            <span className="mx-1">•</span>
-                            <span className="font-medium text-green-600">
-                              {formatAmount(customer.totalOrderAmount || 0)}
-                            </span>
-                          </div>
-                          {customer.address1 && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <MapPin className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">
-                                {`${customer.address1} ${customer.address2 || ''}`.trim()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* 오른쪽: 작업 버튼 */}
-                        <div className="flex gap-1 ml-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(customer)}
-                            className="text-xs px-2 py-1 h-auto"
-                          >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteCustomerMutation.mutate(customer.id)}
-                            className="text-xs px-2 py-1 h-auto text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </TabsContent>
           
@@ -608,9 +550,7 @@ export function CustomerManagement() {
                 <div className="text-sm md:text-base">휴지통이 비어있습니다.</div>
               </div>
             ) : (
-              <>
-                {/* 데스크탑 테이블 뷰 */}
-                <div className="hidden md:block overflow-x-auto">
+              <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -626,7 +566,7 @@ export function CustomerManagement() {
                           <TableCell className="text-xs md:text-sm font-medium">{customer.customerName}</TableCell>
                           <TableCell className="text-xs md:text-sm">{formatPhoneNumber(customer.customerPhone)}</TableCell>
                           <TableCell className="text-xs md:text-sm">
-                            {customer.deletedAt ? formatLastOrderDate(customer.deletedAt) : '-'}
+                            {customer.deletedAt ? formatLastOrderDate(customer.deletedAt.toString()) : '-'}
                           </TableCell>
                           <TableCell>
                             <Button
@@ -642,47 +582,7 @@ export function CustomerManagement() {
                       ))}
                     </TableBody>
                   </Table>
-                </div>
-
-                {/* 모바일 리스트 뷰 */}
-                <div className="md:hidden space-y-2">
-                  {trashedCustomers.map((customer) => (
-                    <div key={customer.id} className="bg-gray-50 border border-gray-300 rounded-lg p-3">
-                      <div className="flex items-center justify-between">
-                        {/* 왼쪽: 고객 정보 */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium text-sm text-gray-600 truncate">{customer.customerName}</h3>
-                            <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded">
-                              삭제됨
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                            <Phone className="h-3 w-3" />
-                            <span>{formatPhoneNumber(customer.customerPhone)}</span>
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            삭제일: {customer.deletedAt ? formatLastOrderDate(customer.deletedAt) : '-'}
-                          </div>
-                        </div>
-                        
-                        {/* 오른쪽: 복구 버튼 */}
-                        <div className="ml-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => restoreCustomerMutation.mutate(customer.id)}
-                            className="text-xs px-2 py-1 h-auto"
-                          >
-                            <RefreshCw className="h-3 w-3 mr-1" />
-                            복구
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
+              </div>
             )}
           </TabsContent>
         </Tabs>
