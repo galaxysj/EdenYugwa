@@ -5205,13 +5205,25 @@ export default function Admin() {
                   <div className="space-y-6">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
-                          <Shield className="h-5 w-5" />
-                          통합 보안 관리
-                        </CardTitle>
-                        <p className="text-sm text-gray-600">
-                          보안 설정, 활성 세션, 로그인 기록, 접근 제어를 한 화면에서 관리할 수 있습니다.
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                              <Shield className="h-5 w-5" />
+                              통합 보안 관리
+                            </CardTitle>
+                            <p className="text-sm text-gray-600">
+                              보안 설정, 활성 세션, 로그인 기록, 접근 제어를 한 화면에서 관리할 수 있습니다.
+                            </p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setActiveTab("all")}
+                            className="flex items-center gap-2"
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                            뒤로가기
+                          </Button>
+                        </div>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-8">
