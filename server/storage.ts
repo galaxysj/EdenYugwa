@@ -295,9 +295,14 @@ export class DatabaseStorage implements IStorage {
       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
       const shippingFee = totalItems >= 6 ? 0 : 4000;
       
-      // Calculate net profit
-      const actualPaid = order.actualPaidAmount || 0;
-      const netProfit = actualPaid - totalCost - shippingFee;
+      // Calculate net profit: 총매출 - 원가 - 할인/미입금금액
+      const totalRevenue = order.totalAmount || 0; // 총 매출
+      const actualPaid = order.actualPaidAmount || totalRevenue; // 실제결제금액 (없으면 총액)
+      const discountAmount = order.discountAmount || 0; // 할인금액
+      const unpaidAmount = totalRevenue - actualPaid; // 미입금금액
+      const totalDeduction = discountAmount + unpaidAmount; // 총 차감금액 (할인 + 미입금)
+      
+      const netProfit = totalRevenue - totalCost - totalDeduction;
       
       return {
         ...order,
