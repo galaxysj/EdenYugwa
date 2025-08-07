@@ -3672,15 +3672,66 @@ export default function Admin() {
                     </td>
                     <td className="col-order-details">
                       <div className="text-xs space-y-0.5">
-                        {order.smallBoxQuantity > 0 && (
-                          <div>한과한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>
-                        )}
-                        {order.largeBoxQuantity > 0 && (
-                          <div>한과한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>
-                        )}
-                        {order.wrappingQuantity > 0 && (
-                          <div>보자기×{order.wrappingQuantity}개</div>
-                        )}
+                        {(() => {
+                          // 동적 상품 이름 가져오기
+                          const getProductName = (index: number) => {
+                            try {
+                              const productNames = Array.isArray(dashboardContent.productNames) 
+                                ? dashboardContent.productNames 
+                                : JSON.parse(dashboardContent.productNames || '[]');
+                              
+                              if (productNames[index] && productNames[index].name) {
+                                return productNames[index].name;
+                              }
+                              
+                              // 기본값 반환
+                              if (index === 0) return '한과1호';
+                              if (index === 1) return '한과2호';
+                              if (index === 2) return '보자기';
+                              return `상품${index + 1}`;
+                            } catch (error) {
+                              console.error('상품명 파싱 오류:', error);
+                              if (index === 0) return '한과1호';
+                              if (index === 1) return '한과2호';
+                              if (index === 2) return '보자기';
+                              return `상품${index + 1}`;
+                            }
+                          };
+
+                          const details = [];
+                          
+                          // 기본 상품들
+                          if (order.smallBoxQuantity > 0) {
+                            details.push(<div key="small">{getProductName(0)}×{order.smallBoxQuantity}개</div>);
+                          }
+                          if (order.largeBoxQuantity > 0) {
+                            details.push(<div key="large">{getProductName(1)}×{order.largeBoxQuantity}개</div>);
+                          }
+                          if (order.wrappingQuantity > 0) {
+                            details.push(<div key="wrapping">{getProductName(2)}×{order.wrappingQuantity}개</div>);
+                          }
+
+                          // 동적 상품들
+                          if (order.dynamicProductQuantities) {
+                            try {
+                              const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                ? JSON.parse(order.dynamicProductQuantities) 
+                                : order.dynamicProductQuantities;
+
+                              Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                const idx = parseInt(index);
+                                const qty = Number(quantity);
+                                if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+                                  details.push(<div key={`dynamic-${idx}`}>{getProductName(idx)}×{qty}개</div>);
+                                }
+                              });
+                            } catch (error) {
+                              console.error('동적 상품 수량 파싱 오류:', error);
+                            }
+                          }
+
+                          return details.length > 0 ? details : <div>주문상품 없음</div>;
+                        })()}
                       </div>
                     </td>
                     <td className="col-phone">
@@ -3936,9 +3987,66 @@ export default function Admin() {
                     {/* 주문내역 */}
                     <div className="mb-2 pt-2">
                       <div className="text-xs text-gray-700 space-y-0.5 mb-2">
-                        {order.smallBoxQuantity > 0 && <div>한과1호(약1.1kg)×{order.smallBoxQuantity}개</div>}
-                        {order.largeBoxQuantity > 0 && <div>한과2호(약2.5kg)×{order.largeBoxQuantity}개</div>}
-                        {order.wrappingQuantity > 0 && <div>보자기×{order.wrappingQuantity}개</div>}
+                        {(() => {
+                          // 동적 상품 이름 가져오기
+                          const getProductName = (index: number) => {
+                            try {
+                              const productNames = Array.isArray(dashboardContent.productNames) 
+                                ? dashboardContent.productNames 
+                                : JSON.parse(dashboardContent.productNames || '[]');
+                              
+                              if (productNames[index] && productNames[index].name) {
+                                return productNames[index].name;
+                              }
+                              
+                              // 기본값 반환
+                              if (index === 0) return '한과1호';
+                              if (index === 1) return '한과2호';
+                              if (index === 2) return '보자기';
+                              return `상품${index + 1}`;
+                            } catch (error) {
+                              console.error('상품명 파싱 오류:', error);
+                              if (index === 0) return '한과1호';
+                              if (index === 1) return '한과2호';
+                              if (index === 2) return '보자기';
+                              return `상품${index + 1}`;
+                            }
+                          };
+
+                          const details = [];
+                          
+                          // 기본 상품들
+                          if (order.smallBoxQuantity > 0) {
+                            details.push(<div key="small">{getProductName(0)}×{order.smallBoxQuantity}개</div>);
+                          }
+                          if (order.largeBoxQuantity > 0) {
+                            details.push(<div key="large">{getProductName(1)}×{order.largeBoxQuantity}개</div>);
+                          }
+                          if (order.wrappingQuantity > 0) {
+                            details.push(<div key="wrapping">{getProductName(2)}×{order.wrappingQuantity}개</div>);
+                          }
+
+                          // 동적 상품들
+                          if (order.dynamicProductQuantities) {
+                            try {
+                              const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                ? JSON.parse(order.dynamicProductQuantities) 
+                                : order.dynamicProductQuantities;
+
+                              Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                const idx = parseInt(index);
+                                const qty = Number(quantity);
+                                if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+                                  details.push(<div key={`dynamic-${idx}`}>{getProductName(idx)}×{qty}개</div>);
+                                }
+                              });
+                            } catch (error) {
+                              console.error('동적 상품 수량 파싱 오류:', error);
+                            }
+                          }
+
+                          return details.length > 0 ? details : <div>주문상품 없음</div>;
+                        })()}
                       </div>
                       <div className="flex justify-end">
                         <span className={`px-2 py-0.5 rounded text-xs ${
