@@ -213,12 +213,12 @@ export function UserManagement() {
                   {/* 왼쪽: 사용자 정보 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium admin-text-xxs truncate">{user.name}</h3>
+                      <h3 className="font-medium admin-text-xxs truncate whitespace-nowrap overflow-hidden">{user.name}</h3>
                       {getRoleBadge(user.role)}
                     </div>
                     <div className="flex items-center gap-3 admin-text-xs text-gray-500">
-                      <span className="admin-text-xxs">@{user.username}</span>
-                      <span className="flex items-center gap-1 admin-text-xxs">
+                      <span className="admin-text-xxs whitespace-nowrap overflow-hidden">@{user.username}</span>
+                      <span className="flex items-center gap-1 admin-text-xxs whitespace-nowrap overflow-hidden">
                         <Phone className="h-3 w-3" />
                         {user.phoneNumber}
                       </span>
@@ -250,7 +250,7 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'manager')}
                           disabled={updateRoleMutation.isPending}
-                          className="admin-text-xxs px-2 py-1 h-6"
+                          className="admin-text-xxs px-1 py-0.5 h-5"
                         >
                           승격
                         </Button>
@@ -260,7 +260,7 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'user')}
                           disabled={updateRoleMutation.isPending}
-                          className="admin-text-xxs px-2 py-1 h-6"
+                          className="admin-text-xxs px-1 py-0.5 h-5"
                         >
                           일반
                         </Button>
