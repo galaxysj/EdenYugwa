@@ -2863,6 +2863,14 @@ export default function Admin() {
                 {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
+                  // 주문 시점의 실제 상품명을 사용하기 위한 함수 (현재 콘텐츠관리의 상품명 참조)
+                  const getOrderTimeProductName = (index: number, fallback: string) => {
+                    if (dashboardContent.productNames && dashboardContent.productNames[index]) {
+                      return dashboardContent.productNames[index].name;
+                    }
+                    return fallback;
+                  };
+                  
                   // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                   const productNames = dashboardContent.productNames || [];
                   
