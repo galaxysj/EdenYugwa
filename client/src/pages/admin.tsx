@@ -5214,355 +5214,322 @@ export default function Admin() {
                         </p>
                       </CardHeader>
                       <CardContent>
-                        <Tabs defaultValue="security-settings" className="w-full">
-                          <TabsList className="grid w-full grid-cols-4">
-                            <TabsTrigger value="security-settings">
-                              <Key className="h-4 w-4 mr-2" />
-                              보안설정
-                            </TabsTrigger>
-                            <TabsTrigger value="active-sessions">
-                              <Monitor className="h-4 w-4 mr-2" />
-                              활성세션
-                            </TabsTrigger>
-                            <TabsTrigger value="login-history">
-                              <Activity className="h-4 w-4 mr-2" />
-                              로그인기록
-                            </TabsTrigger>
-                            <TabsTrigger value="access-control">
-                              <Lock className="h-4 w-4 mr-2" />
-                              접근제어
-                            </TabsTrigger>
-                          </TabsList>
-
-                          {/* 보안설정 탭 */}
-                          <TabsContent value="security-settings">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>보안 설정</CardTitle>
-                                <p className="text-sm text-gray-600">
-                                  계정 보안 설정을 관리할 수 있습니다.
-                                </p>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                <div className="flex flex-col space-y-4">
-                                  <PasswordChangeDialog 
-                                    triggerComponent={
-                                      <Button variant="outline" className="w-full justify-start">
-                                        <Key className="h-4 w-4 mr-2" />
-                                        비밀번호 변경
-                                      </Button>
-                                    }
-                                  />
-                                  
-                                  <div className="border rounded-lg p-4">
-                                    <h3 className="font-medium mb-2 flex items-center">
-                                      <Shield className="h-4 w-4 mr-2" />
-                                      계정 보안 상태
-                                    </h3>
-                                    <div className="space-y-2 text-sm">
-                                      <div className="flex justify-between">
-                                        <span>현재 활성 세션</span>
-                                        <Badge variant="outline">{sessions.length}개</Badge>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span>접근 제어 활성화</span>
-                                        <Badge variant={accessSettings?.isEnabled ? "default" : "secondary"}>
-                                          {accessSettings?.isEnabled ? "활성" : "비활성"}
-                                        </Badge>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span>최대 동시 세션</span>
-                                        <span>{accessSettings?.maxConcurrentSessions || 3}개</span>
-                                      </div>
+                        <div className="space-y-8">
+                          {/* 보안설정 섹션 */}
+                          <div>
+                            <h3 className="text-lg font-medium mb-4 flex items-center">
+                              <Key className="h-5 w-5 mr-2" />
+                              보안 설정
+                            </h3>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              <div className="flex flex-col space-y-4">
+                                <PasswordChangeDialog 
+                                  triggerComponent={
+                                    <Button variant="outline" className="w-full justify-start">
+                                      <Key className="h-4 w-4 mr-2" />
+                                      비밀번호 변경
+                                    </Button>
+                                  }
+                                />
+                                
+                                <div className="border rounded-lg p-4">
+                                  <h4 className="font-medium mb-2 flex items-center">
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    계정 보안 상태
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span>현재 활성 세션</span>
+                                      <Badge variant="outline">{sessions.length}개</Badge>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>접근 제어 활성화</span>
+                                      <Badge variant={accessSettings?.isEnabled ? "default" : "secondary"}>
+                                        {accessSettings?.isEnabled ? "활성" : "비활성"}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>최대 동시 세션</span>
+                                      <span>{accessSettings?.maxConcurrentSessions || 3}개</span>
                                     </div>
                                   </div>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          </TabsContent>
+                              </div>
+                            </div>
+                          </div>
 
-                          {/* 활성세션 탭 */}
-                          <TabsContent value="active-sessions">
-                            <Card>
-                              <CardHeader>
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <CardTitle>활성 세션</CardTitle>
-                                    <p className="text-sm text-gray-600">
-                                      현재 로그인된 모든 세션을 확인하고 관리할 수 있습니다.
-                                    </p>
-                                  </div>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/auth/sessions'] })}
-                                  >
-                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                    새로고침
-                                  </Button>
-                                </div>
-                              </CardHeader>
-                              <CardContent>
-                                {sessionsLoading ? (
-                                  <div className="text-center py-8">세션 정보를 불러오는 중...</div>
-                                ) : sessions.length === 0 ? (
-                                  <div className="text-center py-8 text-gray-500">
-                                    활성 세션이 없습니다.
-                                  </div>
-                                ) : (
-                                  <div className="space-y-4">
-                                    {sessions.map((session) => (
-                                      <div key={session.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                          <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                              {getDeviceIcon(session.deviceType)}
-                                              <span className="font-medium">
-                                                {getDeviceTypeLabel(session.deviceType)}
-                                              </span>
-                                              {session.isCurrent && (
-                                                <Badge variant="default" className="text-xs">현재 세션</Badge>
-                                              )}
-                                            </div>
-                                            
-                                            <div className="text-sm text-gray-600 space-y-1">
-                                              <div className="flex items-center gap-2">
-                                                <MapPin className="h-3 w-3" />
-                                                <span>{session.location || '알 수 없음'}</span>
-                                                <span className="text-gray-400">•</span>
-                                                <span>{session.ipAddress}</span>
-                                              </div>
-                                              <div className="text-xs text-gray-500">
-                                                마지막 활동: {format(new Date(session.lastActivity), 'PPpp', { locale: ko })}
-                                              </div>
-                                            </div>
+                          <Separator />
+
+                          {/* 활성세션 섹션 */}
+                          <div>
+                            <div className="flex justify-between items-center mb-4">
+                              <h3 className="text-lg font-medium flex items-center">
+                                <Monitor className="h-5 w-5 mr-2" />
+                                활성 세션
+                              </h3>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/auth/sessions'] })}
+                              >
+                                <RefreshCw className="h-4 w-4 mr-2" />
+                                새로고침
+                              </Button>
+                            </div>
+                            
+                            {sessionsLoading ? (
+                              <div className="text-center py-8">세션 정보를 불러오는 중...</div>
+                            ) : sessions.length === 0 ? (
+                              <div className="text-center py-8 text-gray-500">
+                                활성 세션이 없습니다.
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {sessions.map((session) => (
+                                  <div key={session.id} className="border rounded-lg p-4">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          {getDeviceIcon(session.deviceType)}
+                                          <span className="font-medium">
+                                            {getDeviceTypeLabel(session.deviceType)}
+                                          </span>
+                                          {session.isCurrent && (
+                                            <Badge variant="default" className="text-xs">현재 세션</Badge>
+                                          )}
+                                        </div>
+                                        
+                                        <div className="text-sm text-gray-600 space-y-1">
+                                          <div className="flex items-center gap-2">
+                                            <MapPin className="h-3 w-3" />
+                                            <span>{session.location || '알 수 없음'}</span>
                                           </div>
-                                          
-                                          {!session.isCurrent && (
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={() => terminateSessionMutation.mutate(session.sessionId)}
-                                              disabled={terminateSessionMutation.isPending}
-                                              className="text-red-600 border-red-300 hover:bg-red-50"
-                                            >
-                                              <X className="h-4 w-4 mr-1" />
-                                              종료
-                                            </Button>
+                                          <div className="text-xs text-gray-500">
+                                            {session.ipAddress}
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            마지막 활동: {format(new Date(session.lastActivity), 'PPpp', { locale: ko })}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {!session.isCurrent && (
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => terminateSessionMutation.mutate(session.sessionId)}
+                                          disabled={terminateSessionMutation.isPending}
+                                          className="text-red-600 border-red-300 hover:bg-red-50"
+                                        >
+                                          <X className="h-4 w-4 mr-1" />
+                                          종료
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <Separator />
+
+                          {/* 로그인기록 섹션 */}
+                          <div>
+                            <h3 className="text-lg font-medium mb-4 flex items-center">
+                              <Activity className="h-5 w-5 mr-2" />
+                              로그인 기록
+                            </h3>
+                            
+                            {historyLoading ? (
+                              <div className="text-center py-8">로그인 기록을 불러오는 중...</div>
+                            ) : loginHistory.length === 0 ? (
+                              <div className="text-center py-8 text-gray-500">
+                                아직 로그인 기록이 없습니다.
+                              </div>
+                            ) : (
+                              <div className="space-y-4 max-h-96 overflow-y-auto">
+                                {loginHistory.slice(0, 10).map((attempt) => (
+                                  <div key={attempt.id} className="border rounded-lg p-4">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          {getDeviceIcon(attempt.deviceType)}
+                                          <Badge
+                                            variant={attempt.success ? "default" : "destructive"}
+                                            className="text-xs"
+                                          >
+                                            {attempt.success ? '성공' : '실패'}
+                                          </Badge>
+                                          {attempt.deviceType && (
+                                            <span className="text-sm text-gray-600">
+                                              {getDeviceTypeLabel(attempt.deviceType)}
+                                            </span>
+                                          )}
+                                        </div>
+                                        
+                                        <div className="text-sm text-gray-600 space-y-1">
+                                          <div className="flex items-center gap-2">
+                                            <MapPin className="h-3 w-3" />
+                                            <span>{attempt.location || '알 수 없음'}</span>
+                                            <span className="text-gray-400">•</span>
+                                            <span>{attempt.ipAddress}</span>
+                                          </div>
+                                          {!attempt.success && attempt.failureReason && (
+                                            <div className="text-red-600 text-xs">
+                                              실패 사유: {attempt.failureReason}
+                                            </div>
                                           )}
                                         </div>
                                       </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          </TabsContent>
-
-                          {/* 로그인기록 탭 */}
-                          <TabsContent value="login-history">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>로그인 기록</CardTitle>
-                                <p className="text-sm text-gray-600">
-                                  최근 로그인 시도 기록을 확인할 수 있습니다.
-                                </p>
-                              </CardHeader>
-                              <CardContent>
-                                {historyLoading ? (
-                                  <div className="text-center py-8">로그인 기록을 불러오는 중...</div>
-                                ) : loginHistory.length === 0 ? (
-                                  <div className="text-center py-8 text-gray-500">
-                                    아직 로그인 기록이 없습니다.
-                                  </div>
-                                ) : (
-                                  <div className="space-y-4">
-                                    {loginHistory.slice(0, 10).map((attempt) => (
-                                      <div key={attempt.id} className="border rounded-lg p-4">
-                                        <div className="flex justify-between items-start">
-                                          <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                              {getDeviceIcon(attempt.deviceType)}
-                                              <Badge
-                                                variant={attempt.success ? "default" : "destructive"}
-                                                className="text-xs"
-                                              >
-                                                {attempt.success ? '성공' : '실패'}
-                                              </Badge>
-                                              {attempt.deviceType && (
-                                                <span className="text-sm text-gray-600">
-                                                  {getDeviceTypeLabel(attempt.deviceType)}
-                                                </span>
-                                              )}
-                                            </div>
-                                            
-                                            <div className="text-sm text-gray-600 space-y-1">
-                                              <div className="flex items-center gap-2">
-                                                <MapPin className="h-3 w-3" />
-                                                <span>{attempt.location || '알 수 없음'}</span>
-                                                <span className="text-gray-400">•</span>
-                                                <span>{attempt.ipAddress}</span>
-                                              </div>
-                                              {!attempt.success && attempt.failureReason && (
-                                                <div className="text-red-600 text-xs">
-                                                  실패 사유: {attempt.failureReason}
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                          
-                                          <div className="text-xs text-gray-500">
-                                            {format(new Date(attempt.createdAt), 'PPpp', { locale: ko })}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          </TabsContent>
-
-                          {/* 접근제어 탭 */}
-                          <TabsContent value="access-control">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle>접근 제어 설정</CardTitle>
-                                <p className="text-sm text-gray-600">
-                                  로그인 접근을 제한하는 보안 규칙을 설정할 수 있습니다.
-                                </p>
-                              </CardHeader>
-                              <CardContent>
-                                {settingsLoading ? (
-                                  <div className="text-center py-8">설정을 불러오는 중...</div>
-                                ) : (
-                                  <div className="space-y-6">
-                                    {/* 접근 제어 활성화 */}
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <Label className="text-base font-medium">접근 제어 활성화</Label>
-                                        <p className="text-sm text-gray-600">
-                                          접근 제어 규칙을 활성화합니다
-                                        </p>
-                                      </div>
-                                      <Switch
-                                        checked={accessSettings?.isEnabled || false}
-                                        onCheckedChange={(checked) => updateSetting('isEnabled', checked)}
-                                      />
-                                    </div>
-
-                                    <Separator />
-
-                                    {/* 허용된 IP 범위 */}
-                                    <div className="space-y-3">
-                                      <Label className="text-base font-medium">허용된 IP 범위</Label>
-                                      <p className="text-sm text-gray-600">
-                                        특정 IP 주소나 IP 범위에서만 로그인을 허용합니다
-                                      </p>
                                       
-                                      <div className="flex gap-2">
-                                        <Input
-                                          placeholder="예: 192.168.1.* 또는 192.168.1.100"
-                                          value={newIpRange}
-                                          onChange={(e) => setNewIpRange(e.target.value)}
-                                          onKeyPress={(e) => e.key === 'Enter' && addIpRange()}
-                                        />
-                                        <Button onClick={addIpRange} disabled={!newIpRange.trim()}>
-                                          추가
+                                      <div className="text-xs text-gray-500">
+                                        {format(new Date(attempt.createdAt), 'PPpp', { locale: ko })}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <Separator />
+
+                          {/* 접근제어 섹션 */}
+                          <div>
+                            <h3 className="text-lg font-medium mb-4 flex items-center">
+                              <Lock className="h-5 w-5 mr-2" />
+                              접근 제어 설정
+                            </h3>
+                            
+                            {settingsLoading ? (
+                              <div className="text-center py-8">설정을 불러오는 중...</div>
+                            ) : (
+                              <div className="space-y-6">
+                                {/* 접근 제어 활성화 */}
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <Label className="text-base font-medium">접근 제어 활성화</Label>
+                                    <p className="text-sm text-gray-600">
+                                      접근 제어 규칙을 활성화합니다
+                                    </p>
+                                  </div>
+                                  <Switch
+                                    checked={accessSettings?.isEnabled || false}
+                                    onCheckedChange={(checked) => updateSetting('isEnabled', checked)}
+                                  />
+                                </div>
+
+                                <Separator />
+
+                                {/* 허용된 IP 범위 */}
+                                <div className="space-y-3">
+                                  <Label className="text-base font-medium">허용된 IP 범위</Label>
+                                  <p className="text-sm text-gray-600">
+                                    특정 IP 주소나 IP 범위에서만 로그인을 허용합니다
+                                  </p>
+                                  
+                                  <div className="flex gap-2">
+                                    <Input
+                                      placeholder="예: 192.168.1.* 또는 192.168.1.100"
+                                      value={newIpRange}
+                                      onChange={(e) => setNewIpRange(e.target.value)}
+                                      onKeyPress={(e) => e.key === 'Enter' && addIpRange()}
+                                    />
+                                    <Button onClick={addIpRange} disabled={!newIpRange.trim()}>
+                                      추가
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    {accessSettings?.allowedIpRanges?.map((ipRange, index) => (
+                                      <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                        <span className="text-sm">{ipRange}</span>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => removeIpRange(index)}
+                                          className="text-red-600"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
                                         </Button>
                                       </div>
-                                      
-                                      <div className="space-y-2">
-                                        {accessSettings?.allowedIpRanges?.map((ipRange, index) => (
-                                          <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                            <span className="text-sm">{ipRange}</span>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => removeIpRange(index)}
-                                              className="text-red-600"
-                                            >
-                                              <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-
-                                    <Separator />
-
-                                    {/* 허용된 디바이스 타입 */}
-                                    <div className="space-y-3">
-                                      <Label className="text-base font-medium">허용된 디바이스 타입</Label>
-                                      <p className="text-sm text-gray-600">
-                                        특정 디바이스 타입에서만 로그인을 허용합니다
-                                      </p>
-                                      
-                                      <div className="space-y-2">
-                                        {['mobile', 'desktop', 'tablet', 'laptop'].map((deviceType) => (
-                                          <div key={deviceType} className="flex items-center space-x-2">
-                                            <input
-                                              type="checkbox"
-                                              id={deviceType}
-                                              checked={accessSettings?.allowedDeviceTypes?.includes(deviceType) || false}
-                                              onChange={(e) => {
-                                                const currentTypes = accessSettings?.allowedDeviceTypes || [];
-                                                const newTypes = e.target.checked
-                                                  ? [...currentTypes, deviceType]
-                                                  : currentTypes.filter(t => t !== deviceType);
-                                                updateSetting('allowedDeviceTypes', newTypes);
-                                              }}
-                                              className="rounded"
-                                            />
-                                            <label htmlFor={deviceType} className="text-sm">
-                                              {getDeviceTypeLabel(deviceType)}
-                                            </label>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
-
-                                    <Separator />
-
-                                    {/* 최대 동시 세션 수 */}
-                                    <div className="space-y-3">
-                                      <Label className="text-base font-medium">최대 동시 세션 수</Label>
-                                      <p className="text-sm text-gray-600">
-                                        동시에 로그인할 수 있는 세션의 최대 개수
-                                      </p>
-                                      <Input
-                                        type="number"
-                                        min="1"
-                                        max="20"
-                                        value={accessSettings?.maxConcurrentSessions || 3}
-                                        onChange={(e) => updateSetting('maxConcurrentSessions', parseInt(e.target.value))}
-                                        className="w-24"
-                                      />
-                                    </div>
-
-                                    <Separator />
-
-                                    {/* 세션 타임아웃 */}
-                                    <div className="space-y-3">
-                                      <Label className="text-base font-medium">세션 타임아웃 (시간)</Label>
-                                      <p className="text-sm text-gray-600">
-                                        세션이 자동으로 만료되는 시간
-                                      </p>
-                                      <Input
-                                        type="number"
-                                        min="1"
-                                        max="168"
-                                        value={accessSettings?.sessionTimeout || 24}
-                                        onChange={(e) => updateSetting('sessionTimeout', parseInt(e.target.value))}
-                                        className="w-24"
-                                      />
-                                    </div>
+                                    ))}
                                   </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          </TabsContent>
-                        </Tabs>
+                                </div>
+
+                                <Separator />
+
+                                {/* 허용된 디바이스 타입 */}
+                                <div className="space-y-3">
+                                  <Label className="text-base font-medium">허용된 디바이스 타입</Label>
+                                  <p className="text-sm text-gray-600">
+                                    특정 디바이스 타입에서만 로그인을 허용합니다
+                                  </p>
+                                  
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {['mobile', 'desktop', 'tablet', 'laptop'].map((deviceType) => (
+                                      <div key={deviceType} className="flex items-center space-x-2">
+                                        <input
+                                          type="checkbox"
+                                          id={deviceType}
+                                          checked={accessSettings?.allowedDeviceTypes?.includes(deviceType) || false}
+                                          onChange={(e) => {
+                                            const currentTypes = accessSettings?.allowedDeviceTypes || [];
+                                            const newTypes = e.target.checked
+                                              ? [...currentTypes, deviceType]
+                                              : currentTypes.filter(t => t !== deviceType);
+                                            updateSetting('allowedDeviceTypes', newTypes);
+                                          }}
+                                          className="rounded"
+                                        />
+                                        <label htmlFor={deviceType} className="text-sm">
+                                          {getDeviceTypeLabel(deviceType)}
+                                        </label>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* 최대 동시 세션 수 */}
+                                <div className="space-y-3">
+                                  <Label className="text-base font-medium">최대 동시 세션 수</Label>
+                                  <p className="text-sm text-gray-600">
+                                    동시에 로그인할 수 있는 세션의 최대 개수
+                                  </p>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max="20"
+                                    value={accessSettings?.maxConcurrentSessions || 3}
+                                    onChange={(e) => updateSetting('maxConcurrentSessions', parseInt(e.target.value))}
+                                    className="w-24"
+                                  />
+                                </div>
+
+                                <Separator />
+
+                                {/* 세션 타임아웃 */}
+                                <div className="space-y-3">
+                                  <Label className="text-base font-medium">세션 타임아웃 (시간)</Label>
+                                  <p className="text-sm text-gray-600">
+                                    세션이 자동으로 만료되는 시간
+                                  </p>
+                                  <Input
+                                    type="number"
+                                    min="1"
+                                    max="168"
+                                    value={accessSettings?.sessionTimeout || 24}
+                                    onChange={(e) => updateSetting('sessionTimeout', parseInt(e.target.value))}
+                                    className="w-24"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
