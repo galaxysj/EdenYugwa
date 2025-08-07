@@ -2747,17 +2747,17 @@ export default function Admin() {
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  {getOrderTimeProductName(0, '한과1호')}: {formatPrice(smallBoxesCost)}
+                                  {getOrderTimeProductName(0, '한과1호')}: {formatPrice(order.smallBoxQuantity * smallCost)}
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  {getOrderTimeProductName(1, '한과2호')}: {formatPrice(largeBoxesCost)}
+                                  {getOrderTimeProductName(1, '한과2호')}: {formatPrice(order.largeBoxQuantity * largeCost)}
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
                                 <div className="text-gray-600">
-                                  {getOrderTimeProductName(2, '보자기')}: {formatPrice(wrappingCostTotal)}
+                                  {getOrderTimeProductName(2, '보자기')}: {formatPrice(order.wrappingQuantity * wrappingCost)}
                                 </div>
                               )}
                               {/* 동적 상품들 원가 표시 */}
@@ -2789,14 +2789,15 @@ export default function Admin() {
                                 </div>
                               )}
                               <div className="font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-2">
-                                총원가: {formatPrice(totalCost)}
+                                총원가: {formatPrice(order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost)}
                               </div>
                             </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
                             {(() => {
                               // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액 (배송비는 총액에 이미 포함되어 있음)
-                              const actualProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
+                              const actualTotalCost = order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost;
+                              const actualProfit = order.totalAmount - actualTotalCost - discountAmount - unpaidAmount;
                               return (
                                 <div>
                                   <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
@@ -2864,13 +2865,17 @@ export default function Admin() {
                   // Get shipping fee from order
                   const shippingFee = order.shippingFee || 0;
                   
-                  // 주문 시점에 저장된 원가를 우선 사용, 없으면 현재 설정 사용
-                  const smallCost = order.smallBoxCost || smallBoxCostValue || 
-                                   (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
-                  const largeCost = order.largeBoxCost || largeBoxCostValue || 
-                                   (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
-                  const wrappingCost = order.wrappingCost || wrappingCostValue || 
-                                      (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
+                  // 동적 원가 계산 - 주문에 저장된 원가가 0이거나 없으면 현재 설정 사용
+                  const getEffectiveCost = (orderCost: number | null | undefined, settingValue: number | null, productCost?: string) => {
+                    if (orderCost && orderCost > 0) return orderCost; // 주문 시점 원가 우선
+                    if (settingValue && settingValue > 0) return settingValue; // 가격설정의 원가
+                    if (productCost && parseInt(productCost) > 0) return parseInt(productCost); // 콘텐츠관리의 원가
+                    return 0; // 기본값
+                  };
+                  
+                  const smallCost = getEffectiveCost(order.smallBoxCost, smallBoxCostValue, productNames[0]?.cost);
+                  const largeCost = getEffectiveCost(order.largeBoxCost, largeBoxCostValue, productNames[1]?.cost);
+                  const wrappingCost = getEffectiveCost(order.wrappingCost, wrappingCostValue, productNames[2]?.cost);
                   
                   // Calculate actual costs using stored historical data
                   const smallBoxesCost = order.smallBoxQuantity * smallCost;
