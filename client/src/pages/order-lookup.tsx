@@ -168,7 +168,7 @@ export default function OrderLookup() {
 
   // Helper function to get dynamic product price
   const getProductPrice = (index: number) => {
-    if (!settingsData) return prices.small; // 기본값
+    if (!settingsData || !Array.isArray(settingsData)) return prices.small; // 기본값
     
     try {
       const priceKey = `product_${index}Price`;
@@ -746,6 +746,22 @@ export default function OrderLookup() {
                               <div className="text-lg font-bold text-eden-brown">
                                 {isAuthenticated ? `${order.totalAmount.toLocaleString()}원` : maskPrice()}
                               </div>
+                              {/* 미입금/할인 정보 표시 */}
+                              {isAuthenticated && order.paymentStatus === 'pending' && (
+                                <div className="mt-1 text-sm text-red-600">
+                                  미입금
+                                </div>
+                              )}
+                              {isAuthenticated && order.discountAmount > 0 && (
+                                <div className="mt-1 text-sm text-green-600">
+                                  할인: -{order.discountAmount.toLocaleString()}원
+                                </div>
+                              )}
+                              {isAuthenticated && order.actualPaidAmount && order.actualPaidAmount !== order.totalAmount && (
+                                <div className="mt-1 text-sm text-blue-600">
+                                  실제결제: {order.actualPaidAmount.toLocaleString()}원
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
