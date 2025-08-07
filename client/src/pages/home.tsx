@@ -47,10 +47,24 @@ export default function Home() {
 
   // 페이지 로드 시 팝업 표시 여부 확인
   useEffect(() => {
-    if (dashboardContent.popupEnabled && dashboardContent.popupTitle && dashboardContent.popupContent) {
+    const isPopupEnabled = dashboardContent.popupEnabled === 'true' || dashboardContent.popupEnabled === true;
+    
+    console.log('팝업 활성화 체크:', {
+      popupEnabled: dashboardContent.popupEnabled,
+      isEnabled: isPopupEnabled,
+      title: dashboardContent.popupTitle,
+      content: dashboardContent.popupContent
+    });
+    
+    if (isPopupEnabled && dashboardContent.popupTitle && dashboardContent.popupContent) {
       // 세션 스토리지를 사용하여 같은 세션에서는 한 번만 표시
       const popupShownKey = 'popup-shown-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
+      
+      console.log('팝업 세션 키:', popupShownKey);
+      console.log('이전에 표시됨:', sessionStorage.getItem(popupShownKey));
+      
       if (!sessionStorage.getItem(popupShownKey)) {
+        console.log('팝업 표시합니다');
         setIsPopupOpen(true);
         sessionStorage.setItem(popupShownKey, 'true');
       }

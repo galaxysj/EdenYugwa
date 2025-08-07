@@ -2614,13 +2614,17 @@ export default function Admin() {
                       // Get shipping fee from order
                       const shippingFee = order.shippingFee || 0;
                       
-                      // 주문 시점에 저장된 원가를 우선 사용, 없으면 현재 설정 사용
-                      const smallCost = order.smallBoxCost || smallBoxCostValue || 
-                                       (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
-                      const largeCost = order.largeBoxCost || largeBoxCostValue || 
-                                       (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
-                      const wrappingCost = order.wrappingCost || wrappingCostValue || 
-                                          (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
+                      // 동적 원가 계산 - 주문에 저장된 원가가 0이거나 없으면 현재 설정 사용
+                      const getEffectiveCost = (orderCost: number | null | undefined, settingValue: number | null, productCost?: string) => {
+                        if (orderCost && orderCost > 0) return orderCost; // 주문 시점 원가 우선
+                        if (settingValue && settingValue > 0) return settingValue; // 가격설정의 원가
+                        if (productCost && parseInt(productCost) > 0) return parseInt(productCost); // 콘텐츠관리의 원가
+                        return 0; // 기본값
+                      };
+                      
+                      const smallCost = getEffectiveCost(order.smallBoxCost, smallBoxCostValue, productNames[0]?.cost);
+                      const largeCost = getEffectiveCost(order.largeBoxCost, largeBoxCostValue, productNames[1]?.cost);
+                      const wrappingCost = getEffectiveCost(order.wrappingCost, wrappingCostValue, productNames[2]?.cost);
                       
                       // Calculate actual costs using stored historical data
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
