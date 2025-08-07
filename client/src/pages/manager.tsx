@@ -745,8 +745,8 @@ export default function ManagerDashboard() {
                     </div>
                   </div>
                   {/* 데스크탑 테이블 뷰 */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full manager-table">
+                  <div className="hidden md:block manager-table-container">
+                    <table className="w-full manager-table order-history-table completed-orders-table">
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
                           <th className="text-left p-4 font-semibold text-gray-800 w-12">

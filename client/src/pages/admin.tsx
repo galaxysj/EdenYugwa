@@ -3802,8 +3802,8 @@ export default function Admin() {
 
 
         {/* Desktop Table */}
-        <div className="hidden lg:block bg-white rounded-lg border">
-          <table className="w-full admin-table">
+        <div className="hidden lg:block bg-white rounded-lg border admin-table-container">
+          <table className="w-full admin-table order-history-table completed-orders-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
                 <th className="col-checkbox text-center">
