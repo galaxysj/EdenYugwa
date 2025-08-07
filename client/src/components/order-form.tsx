@@ -297,6 +297,7 @@ export default function OrderForm() {
           });
           console.log('=== 동적 상품 수량 초기화 ===');
           console.log('초기화된 수량:', initialQuantities);
+          console.log('Stack trace:', new Error().stack);
           setDynamicQuantities(initialQuantities);
           setIsProductsInitialized(true);
         }
@@ -401,6 +402,15 @@ export default function OrderForm() {
         description: `주문번호 ${order.orderNumber}로 접수되었습니다. 감사합니다!`,
       });
       form.reset();
+      // 동적 상품 수량도 함께 초기화
+      if (productNames && productNames.length > 0) {
+        const resetQuantities: {[key: number]: number} = {};
+        productNames.forEach((_, index) => {
+          resetQuantities[index] = 0;
+        });
+        console.log('주문 완료 후 동적 상품 수량 초기화:', resetQuantities);
+        setDynamicQuantities(resetQuantities);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -727,6 +737,7 @@ export default function OrderForm() {
                                   size="sm"
                                   onClick={() => {
                                     const newQuantity = Math.max(0, (dynamicQuantities[index] || 0) - 1);
+                                    console.log(`감소 버튼 클릭: 인덱스 ${index}, 기존값 ${dynamicQuantities[index] || 0}, 새값 ${newQuantity}`);
                                     setDynamicQuantities(prev => ({...prev, [index]: newQuantity}));
                                   }}
                                   className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
@@ -739,6 +750,7 @@ export default function OrderForm() {
                                   value={dynamicQuantities[index] || 0}
                                   onChange={(e) => {
                                     const newQuantity = parseInt(e.target.value) || 0;
+                                    console.log(`수량 입력 변경: 인덱스 ${index}, 기존값 ${dynamicQuantities[index] || 0}, 새값 ${newQuantity}`);
                                     setDynamicQuantities(prev => ({...prev, [index]: newQuantity}));
                                   }}
                                   className="w-16 h-8 text-center text-sm font-medium border-eden-beige/50"
@@ -749,6 +761,7 @@ export default function OrderForm() {
                                   size="sm"
                                   onClick={() => {
                                     const newQuantity = (dynamicQuantities[index] || 0) + 1;
+                                    console.log(`증가 버튼 클릭: 인덱스 ${index}, 기존값 ${dynamicQuantities[index] || 0}, 새값 ${newQuantity}`);
                                     setDynamicQuantities(prev => ({...prev, [index]: newQuantity}));
                                   }}
                                   className="w-8 h-8 p-0 rounded-full hover:bg-eden-sage/10"
