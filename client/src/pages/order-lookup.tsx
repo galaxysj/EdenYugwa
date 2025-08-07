@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import type { Order } from "@shared/schema";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 const lookupSchema = z.object({
   phoneNumber: z.string().optional(),
@@ -113,6 +114,51 @@ export default function OrderLookup() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Fetch dashboard content for dynamic product names
+  const { data: contentData } = useQuery({
+    queryKey: ['/api/dashboard-content'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Convert array to object for easier access
+  const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
+    if (item.key === 'heroImages' || item.key === 'productNames') {
+      try {
+        acc[item.key] = JSON.parse(item.value || '[]');
+      } catch {
+        acc[item.key] = item.key === 'heroImages' ? [] : [];
+      }
+    } else {
+      acc[item.key] = item.value;
+    }
+    return acc;
+  }, {}) : {};
+
+  // Helper function to get dynamic product name
+  const getProductName = (index: number) => {
+    try {
+      const productNames = Array.isArray(dashboardContent.productNames) 
+        ? dashboardContent.productNames 
+        : JSON.parse(dashboardContent.productNames || '[]');
+      
+      if (productNames[index] && productNames[index].name) {
+        return productNames[index].name;
+      }
+      
+      // 기본값 반환
+      if (index === 0) return '한과1호';
+      if (index === 1) return '한과2호';
+      if (index === 2) return '보자기';
+      return `상품${index + 1}`;
+    } catch (error) {
+      console.error('상품명 파싱 오류:', error);
+      if (index === 0) return '한과1호';
+      if (index === 1) return '한과2호';
+      if (index === 2) return '보자기';
+      return `상품${index + 1}`;
+    }
+  };
 
   const form = useForm<LookupFormData>({
     resolver: zodResolver(lookupSchema),
@@ -512,11 +558,41 @@ export default function OrderLookup() {
                       
                       {/* 주문 요약 정보 */}
                       <div className="mt-2 text-xs text-gray-600">
-                        {order.smallBoxQuantity > 0 && `한과1호 ${order.smallBoxQuantity}개`}
-                        {order.smallBoxQuantity > 0 && order.largeBoxQuantity > 0 && ', '}
-                        {order.largeBoxQuantity > 0 && `한과2호 ${order.largeBoxQuantity}개`}
-                        {(order.smallBoxQuantity > 0 || order.largeBoxQuantity > 0) && order.wrappingQuantity > 0 && ', '}
-                        {order.wrappingQuantity > 0 && `보자기 ${order.wrappingQuantity}개`}
+                        {(() => {
+                          const summary = [];
+                          
+                          // 기본 상품들
+                          if (order.smallBoxQuantity > 0) {
+                            summary.push(`${getProductName(0)} ${order.smallBoxQuantity}개`);
+                          }
+                          if (order.largeBoxQuantity > 0) {
+                            summary.push(`${getProductName(1)} ${order.largeBoxQuantity}개`);
+                          }
+                          if (order.wrappingQuantity > 0) {
+                            summary.push(`${getProductName(2)} ${order.wrappingQuantity}개`);
+                          }
+
+                          // 동적 상품들
+                          if (order.dynamicProductQuantities) {
+                            try {
+                              const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                ? JSON.parse(order.dynamicProductQuantities) 
+                                : order.dynamicProductQuantities;
+
+                              Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                const idx = parseInt(index);
+                                const qty = Number(quantity);
+                                if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+                                  summary.push(`${getProductName(idx)} ${qty}개`);
+                                }
+                              });
+                            } catch (error) {
+                              console.error('동적 상품 수량 파싱 오류:', error);
+                            }
+                          }
+
+                          return summary.join(', ');
+                        })()}
                         {order.scheduledDate && (
                           <span className="ml-2 text-blue-600 font-medium">
                             📅 {formatDate(order.scheduledDate)}
@@ -578,26 +654,68 @@ export default function OrderLookup() {
                         <div className="bg-gray-50 p-4 rounded border text-sm">
                           <div className="flex justify-between items-start">
                             <div className="space-y-2">
-                              {order.smallBoxQuantity > 0 && (
-                                <div className="font-medium">
-                                  한과1호(약 1.1kg) × {order.smallBoxQuantity}개
-                                </div>
-                              )}
-                              {order.largeBoxQuantity > 0 && (
-                                <div className="font-medium">
-                                  한과2호(약 1.3kg) × {order.largeBoxQuantity}개
-                                </div>
-                              )}
-                              {order.wrappingQuantity > 0 && (
-                                <div className="text-gray-600">
-                                  보자기 수량 × {order.wrappingQuantity}개 (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
-                                </div>
-                              )}
-                              {order.shippingFee > 0 && (
-                                <div className="text-gray-600">
-                                  배송비: +{isAuthenticated ? `${order.shippingFee.toLocaleString()}원` : maskPrice()}
-                                </div>
-                              )}
+                              {(() => {
+                                const productDetails = [];
+                                
+                                // 기본 상품들
+                                if (order.smallBoxQuantity > 0) {
+                                  productDetails.push(
+                                    <div key="small" className="font-medium">
+                                      {getProductName(0)} × {order.smallBoxQuantity}개
+                                    </div>
+                                  );
+                                }
+                                if (order.largeBoxQuantity > 0) {
+                                  productDetails.push(
+                                    <div key="large" className="font-medium">
+                                      {getProductName(1)} × {order.largeBoxQuantity}개
+                                    </div>
+                                  );
+                                }
+                                if (order.wrappingQuantity > 0) {
+                                  productDetails.push(
+                                    <div key="wrapping" className="text-gray-600">
+                                      {getProductName(2)} × {order.wrappingQuantity}개 (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
+                                    </div>
+                                  );
+                                }
+
+                                // 동적 상품들
+                                if (order.dynamicProductQuantities) {
+                                  try {
+                                    const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                      ? JSON.parse(order.dynamicProductQuantities) 
+                                      : order.dynamicProductQuantities;
+
+                                    Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                      const idx = parseInt(index);
+                                      const qty = Number(quantity);
+                                      if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+                                        productDetails.push(
+                                          <div key={`dynamic-${idx}`} className="font-medium">
+                                            {getProductName(idx)} × {qty}개
+                                          </div>
+                                        );
+                                      }
+                                    });
+                                  } catch (error) {
+                                    console.error('동적 상품 수량 파싱 오류:', error);
+                                  }
+                                }
+
+                                // 배송비
+                                if (order.shippingFee > 0) {
+                                  productDetails.push(
+                                    <div key="shipping" className="text-gray-600">
+                                      배송비: +{isAuthenticated ? `${order.shippingFee.toLocaleString()}원` : maskPrice()}
+                                    </div>
+                                  );
+                                }
+
+                                return productDetails.length > 0 ? productDetails : (
+                                  <div className="text-gray-500">주문 상품 없음</div>
+                                );
+                              })()}
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-eden-brown">
