@@ -74,90 +74,164 @@
 .eden-sage { color: var(--eden-sage); }
 .eden-beige { color: var(--eden-beige); }
 
-/* Enhanced table styles for better readability - Responsive */
+/* Enhanced table styles for better readability - Dynamic Responsive */
 .admin-table, .manager-table {
-  font-size: 0.625rem; /* text-[10px] for mobile */
+  font-size: clamp(0.625rem, 1.5vw, 0.75rem); /* Dynamic font size */
   table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
   overflow-x: auto;
 }
 
-@media (min-width: 640px) {
+/* Ultra small screens (320px-480px) */
+@media (max-width: 479px) {
   .admin-table, .manager-table {
-    font-size: 0.6875rem; /* text-[11px] for sm screens */
+    font-size: clamp(0.5rem, 2vw, 0.625rem);
   }
 }
 
-@media (min-width: 768px) {
+/* Small mobile (480px-640px) */
+@media (min-width: 480px) and (max-width: 639px) {
   .admin-table, .manager-table {
-    font-size: 0.75rem; /* text-xs for md screens */
+    font-size: clamp(0.625rem, 1.8vw, 0.6875rem);
   }
 }
 
-@media (min-width: 1024px) {
+/* Large mobile (640px-768px) */
+@media (min-width: 640px) and (max-width: 767px) {
   .admin-table, .manager-table {
-    font-size: 0.8125rem; /* text-[13px] for lg screens */
+    font-size: clamp(0.6875rem, 1.6vw, 0.75rem);
   }
 }
 
+/* Tablet (768px-1024px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-table, .manager-table {
+    font-size: clamp(0.75rem, 1.4vw, 0.8125rem);
+  }
+}
+
+/* Desktop (1024px-1280px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-table, .manager-table {
+    font-size: clamp(0.8125rem, 1.2vw, 0.875rem);
+  }
+}
+
+/* Large desktop (1280px+) */
 @media (min-width: 1280px) {
   .admin-table, .manager-table {
-    font-size: 0.875rem; /* text-sm for xl screens */
+    font-size: clamp(0.875rem, 1vw, 1rem);
   }
 }
 
 .admin-table th, .manager-table th {
   font-weight: 600; /* font-semibold */
   color: rgb(31 41 55); /* text-gray-800 */
-  padding: 0.25rem 0.125rem; /* py-1 px-0.5 for mobile */
+  padding: clamp(0.125rem, 0.5vw, 0.25rem) clamp(0.0625rem, 0.3vw, 0.125rem); /* Dynamic padding */
   background-color: rgb(249 250 251); /* bg-gray-50 */
   border-bottom: 2px solid rgb(229 231 235); /* border-b-2 border-gray-200 */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   vertical-align: top;
+  font-size: clamp(0.5rem, 1.3vw, 0.75rem); /* Dynamic header font size */
 }
 
-@media (min-width: 640px) {
+/* Ultra small screens */
+@media (max-width: 479px) {
   .admin-table th, .manager-table th {
-    padding: 0.375rem 0.1875rem; /* py-1.5 px-0.75 for sm screens */
+    padding: clamp(0.125rem, 0.8vw, 0.1875rem) clamp(0.0625rem, 0.4vw, 0.09375rem);
+    font-size: clamp(0.4375rem, 1.8vw, 0.5625rem);
   }
 }
 
-@media (min-width: 768px) {
+/* Small mobile */
+@media (min-width: 480px) and (max-width: 639px) {
   .admin-table th, .manager-table th {
-    padding: 0.5rem 0.25rem; /* py-2 px-1 for md screens */
+    padding: clamp(0.1875rem, 0.7vw, 0.25rem) clamp(0.09375rem, 0.35vw, 0.125rem);
+    font-size: clamp(0.5625rem, 1.6vw, 0.625rem);
   }
 }
 
-@media (min-width: 1024px) {
+/* Large mobile */
+@media (min-width: 640px) and (max-width: 767px) {
   .admin-table th, .manager-table th {
-    padding: 0.625rem 0.3125rem; /* py-2.5 px-1.25 for lg screens */
+    padding: clamp(0.25rem, 0.6vw, 0.3125rem) clamp(0.125rem, 0.3vw, 0.15625rem);
+    font-size: clamp(0.625rem, 1.4vw, 0.6875rem);
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-table th, .manager-table th {
+    padding: clamp(0.3125rem, 0.5vw, 0.4375rem) clamp(0.15625rem, 0.25vw, 0.21875rem);
+    font-size: clamp(0.6875rem, 1.2vw, 0.75rem);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-table th, .manager-table th {
+    padding: clamp(0.4375rem, 0.4vw, 0.5625rem) clamp(0.21875rem, 0.2vw, 0.28125rem);
+    font-size: clamp(0.75rem, 1vw, 0.8125rem);
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1280px) {
+  .admin-table th, .manager-table th {
+    padding: clamp(0.5625rem, 0.3vw, 0.75rem) clamp(0.28125rem, 0.15vw, 0.375rem);
+    font-size: clamp(0.8125rem, 0.8vw, 0.9375rem);
   }
 }
 
 .admin-table td, .manager-table td {
-  padding: 0.25rem 0.125rem; /* py-1 px-0.5 for mobile */
+  padding: clamp(0.125rem, 0.5vw, 0.25rem) clamp(0.0625rem, 0.3vw, 0.125rem); /* Dynamic padding */
   border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
   vertical-align: top;
+  font-size: inherit; /* Inherit from table */
 }
 
-@media (min-width: 640px) {
+/* Ultra small screens */
+@media (max-width: 479px) {
   .admin-table td, .manager-table td {
-    padding: 0.375rem 0.1875rem; /* py-1.5 px-0.75 for sm screens */
+    padding: clamp(0.125rem, 0.8vw, 0.1875rem) clamp(0.0625rem, 0.4vw, 0.09375rem);
   }
 }
 
-@media (min-width: 768px) {
+/* Small mobile */
+@media (min-width: 480px) and (max-width: 639px) {
   .admin-table td, .manager-table td {
-    padding: 0.5rem 0.25rem; /* py-2 px-1 for md screens */
+    padding: clamp(0.1875rem, 0.7vw, 0.25rem) clamp(0.09375rem, 0.35vw, 0.125rem);
   }
 }
 
-@media (min-width: 1024px) {
+/* Large mobile */
+@media (min-width: 640px) and (max-width: 767px) {
   .admin-table td, .manager-table td {
-    padding: 0.625rem 0.3125rem; /* py-2.5 px-1.25 for lg screens */
+    padding: clamp(0.25rem, 0.6vw, 0.3125rem) clamp(0.125rem, 0.3vw, 0.15625rem);
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-table td, .manager-table td {
+    padding: clamp(0.3125rem, 0.5vw, 0.4375rem) clamp(0.15625rem, 0.25vw, 0.21875rem);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-table td, .manager-table td {
+    padding: clamp(0.4375rem, 0.4vw, 0.5625rem) clamp(0.21875rem, 0.2vw, 0.28125rem);
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1280px) {
+  .admin-table td, .manager-table td {
+    padding: clamp(0.5625rem, 0.3vw, 0.75rem) clamp(0.28125rem, 0.15vw, 0.375rem);
   }
 }
 
@@ -437,28 +511,67 @@
   }
 }
 
-/* Admin button responsive styles */
+/* Admin button responsive styles - Dynamic */
 .admin-btn-sm {
-  font-size: 0.625rem;
-  padding: 0.25rem 0.375rem;
+  font-size: clamp(0.5rem, 1.4vw, 0.75rem);
+  padding: clamp(0.1875rem, 0.6vw, 0.375rem) clamp(0.25rem, 0.8vw, 0.5rem);
   height: auto;
-  min-height: 1.75rem;
+  min-height: clamp(1.5rem, 4vw, 2.25rem);
   line-height: 1.2;
+  border-radius: clamp(0.1875rem, 0.4vw, 0.375rem);
 }
 
-@media (min-width: 640px) {
+/* Ultra small screens */
+@media (max-width: 479px) {
   .admin-btn-sm {
-    font-size: 0.75rem;
-    padding: 0.375rem 0.5rem;
-    min-height: 2rem;
+    font-size: clamp(0.4375rem, 2vw, 0.5625rem);
+    padding: clamp(0.125rem, 0.8vw, 0.1875rem) clamp(0.1875rem, 1vw, 0.25rem);
+    min-height: clamp(1.25rem, 5vw, 1.75rem);
   }
 }
 
-@media (min-width: 768px) {
+/* Small mobile */
+@media (min-width: 480px) and (max-width: 639px) {
   .admin-btn-sm {
-    font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
-    min-height: 2.25rem;
+    font-size: clamp(0.5625rem, 1.8vw, 0.625rem);
+    padding: clamp(0.1875rem, 0.7vw, 0.25rem) clamp(0.25rem, 0.9vw, 0.3125rem);
+    min-height: clamp(1.5rem, 4.5vw, 1.875rem);
+  }
+}
+
+/* Large mobile */
+@media (min-width: 640px) and (max-width: 767px) {
+  .admin-btn-sm {
+    font-size: clamp(0.625rem, 1.6vw, 0.6875rem);
+    padding: clamp(0.25rem, 0.6vw, 0.3125rem) clamp(0.3125rem, 0.8vw, 0.375rem);
+    min-height: clamp(1.75rem, 4vw, 2rem);
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-btn-sm {
+    font-size: clamp(0.6875rem, 1.4vw, 0.75rem);
+    padding: clamp(0.3125rem, 0.5vw, 0.4375rem) clamp(0.375rem, 0.7vw, 0.5rem);
+    min-height: clamp(2rem, 3.5vw, 2.25rem);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-btn-sm {
+    font-size: clamp(0.75rem, 1.2vw, 0.8125rem);
+    padding: clamp(0.4375rem, 0.4vw, 0.5625rem) clamp(0.5rem, 0.6vw, 0.625rem);
+    min-height: clamp(2.25rem, 3vw, 2.5rem);
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1280px) {
+  .admin-btn-sm {
+    font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+    padding: clamp(0.5625rem, 0.3vw, 0.75rem) clamp(0.625rem, 0.5vw, 0.875rem);
+    min-height: clamp(2.5rem, 2.5vw, 3rem);
   }
 }
 
@@ -485,11 +598,18 @@
   }
 }
 
-/* Admin statistics grid responsive */
+/* Admin statistics grid responsive - Dynamic */
 .admin-stats-grid {
   display: grid;
-  gap: 0.5rem;
+  gap: clamp(0.25rem, 1vw, 1rem);
   grid-template-columns: repeat(2, 1fr);
+}
+
+/* Dynamic grid columns based on screen size */
+@media (min-width: 360px) {
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 480px) {
@@ -500,32 +620,279 @@
 
 @media (min-width: 640px) {
   .admin-stats-grid {
-    gap: 0.75rem;
+    gap: clamp(0.5rem, 1.2vw, 1.25rem);
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (min-width: 768px) {
   .admin-stats-grid {
-    gap: 1rem;
+    gap: clamp(0.75rem, 1.4vw, 1.5rem);
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .admin-stats-grid {
-    gap: 1.25rem;
+    gap: clamp(1rem, 1.6vw, 1.75rem);
     grid-template-columns: repeat(6, 1fr);
   }
 }
 
 @media (min-width: 1280px) {
   .admin-stats-grid {
-    gap: 1.5rem;
+    gap: clamp(1.25rem, 1.8vw, 2rem);
     grid-template-columns: repeat(8, 1fr);
   }
 }
+
+/* Statistics text responsive */
+.admin-stats-title {
+  font-size: clamp(0.5rem, 1.2vw, 0.875rem);
+  font-weight: 600;
+  margin-bottom: clamp(0.125rem, 0.3vw, 0.25rem);
+}
+
+.admin-stats-value {
+  font-size: clamp(0.625rem, 1.8vw, 1.125rem);
+  font-weight: 700;
+}
+
+/* Ultra small screens */
+@media (max-width: 479px) {
+  .admin-stats-title {
+    font-size: clamp(0.4375rem, 2.2vw, 0.5625rem);
+  }
+  .admin-stats-value {
+    font-size: clamp(0.5625rem, 2.8vw, 0.75rem);
+  }
+}
+
+/* Small mobile */
+@media (min-width: 480px) and (max-width: 639px) {
+  .admin-stats-title {
+    font-size: clamp(0.5625rem, 2vw, 0.625rem);
+  }
+  .admin-stats-value {
+    font-size: clamp(0.6875rem, 2.4vw, 0.8125rem);
+  }
+}
+
+/* Large mobile */
+@media (min-width: 640px) and (max-width: 767px) {
+  .admin-stats-title {
+    font-size: clamp(0.625rem, 1.8vw, 0.6875rem);
+  }
+  .admin-stats-value {
+    font-size: clamp(0.75rem, 2.2vw, 0.875rem);
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-stats-title {
+    font-size: clamp(0.6875rem, 1.6vw, 0.75rem);
+  }
+  .admin-stats-value {
+    font-size: clamp(0.8125rem, 2vw, 0.9375rem);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-stats-title {
+    font-size: clamp(0.75rem, 1.4vw, 0.8125rem);
+  }
+  .admin-stats-value {
+    font-size: clamp(0.875rem, 1.8vw, 1rem);
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1280px) {
+  .admin-stats-title {
+    font-size: clamp(0.8125rem, 1.2vw, 0.9375rem);
+  }
+  .admin-stats-value {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+  }
+}
 .bg-eden-beige { background-color: var(--eden-beige); }
+
+/* Dynamic text sizing for all admin elements */
+.admin-title {
+  font-size: clamp(0.875rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.admin-subtitle {
+  font-size: clamp(0.75rem, 2vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.admin-text {
+  font-size: clamp(0.625rem, 1.6vw, 1rem);
+  line-height: 1.4;
+}
+
+.admin-text-sm {
+  font-size: clamp(0.5rem, 1.4vw, 0.875rem);
+  line-height: 1.4;
+}
+
+.admin-text-xs {
+  font-size: clamp(0.4375rem, 1.2vw, 0.75rem);
+  line-height: 1.3;
+}
+
+/* Dynamic tab trigger sizing */
+.admin-tab-trigger {
+  font-size: clamp(0.5rem, 1.3vw, 0.875rem);
+  padding: clamp(0.1875rem, 0.5vw, 0.375rem) clamp(0.25rem, 0.7vw, 0.5rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ultra small screens adjustments */
+@media (max-width: 479px) {
+  .admin-title {
+    font-size: clamp(0.75rem, 3.5vw, 1rem);
+  }
+  .admin-subtitle {
+    font-size: clamp(0.6875rem, 3vw, 0.875rem);
+  }
+  .admin-text {
+    font-size: clamp(0.5625rem, 2.5vw, 0.75rem);
+  }
+  .admin-text-sm {
+    font-size: clamp(0.4375rem, 2.2vw, 0.625rem);
+  }
+  .admin-text-xs {
+    font-size: clamp(0.375rem, 2vw, 0.5rem);
+  }
+  .admin-tab-trigger {
+    font-size: clamp(0.4375rem, 2.3vw, 0.5625rem);
+    padding: clamp(0.125rem, 0.8vw, 0.1875rem) clamp(0.1875rem, 1vw, 0.25rem);
+  }
+}
+
+/* Small mobile adjustments */
+@media (min-width: 480px) and (max-width: 639px) {
+  .admin-title {
+    font-size: clamp(0.875rem, 3.2vw, 1.125rem);
+  }
+  .admin-subtitle {
+    font-size: clamp(0.75rem, 2.8vw, 1rem);
+  }
+  .admin-text {
+    font-size: clamp(0.625rem, 2.3vw, 0.8125rem);
+  }
+  .admin-text-sm {
+    font-size: clamp(0.5rem, 2vw, 0.6875rem);
+  }
+  .admin-text-xs {
+    font-size: clamp(0.4375rem, 1.8vw, 0.5625rem);
+  }
+  .admin-tab-trigger {
+    font-size: clamp(0.5rem, 2.1vw, 0.625rem);
+    padding: clamp(0.1875rem, 0.7vw, 0.25rem) clamp(0.25rem, 0.9vw, 0.3125rem);
+  }
+}
+
+/* Large mobile adjustments */
+@media (min-width: 640px) and (max-width: 767px) {
+  .admin-title {
+    font-size: clamp(1rem, 2.8vw, 1.25rem);
+  }
+  .admin-subtitle {
+    font-size: clamp(0.875rem, 2.4vw, 1.125rem);
+  }
+  .admin-text {
+    font-size: clamp(0.6875rem, 2vw, 0.875rem);
+  }
+  .admin-text-sm {
+    font-size: clamp(0.5625rem, 1.8vw, 0.75rem);
+  }
+  .admin-text-xs {
+    font-size: clamp(0.5rem, 1.6vw, 0.625rem);
+  }
+  .admin-tab-trigger {
+    font-size: clamp(0.5625rem, 1.9vw, 0.6875rem);
+    padding: clamp(0.25rem, 0.6vw, 0.3125rem) clamp(0.3125rem, 0.8vw, 0.375rem);
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-title {
+    font-size: clamp(1.125rem, 2.4vw, 1.375rem);
+  }
+  .admin-subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+  }
+  .admin-text {
+    font-size: clamp(0.75rem, 1.7vw, 0.9375rem);
+  }
+  .admin-text-sm {
+    font-size: clamp(0.625rem, 1.5vw, 0.8125rem);
+  }
+  .admin-text-xs {
+    font-size: clamp(0.5625rem, 1.3vw, 0.6875rem);
+  }
+  .admin-tab-trigger {
+    font-size: clamp(0.625rem, 1.7vw, 0.75rem);
+    padding: clamp(0.3125rem, 0.5vw, 0.4375rem) clamp(0.375rem, 0.7vw, 0.5rem);
+  }
+}
+
+/* Desktop adjustments */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-title {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+  }
+  .admin-subtitle {
+    font-size: clamp(1.125rem, 1.8vw, 1.375rem);
+  }
+  .admin-text {
+    font-size: clamp(0.8125rem, 1.5vw, 1rem);
+  }
+  .admin-text-sm {
+    font-size: clamp(0.6875rem, 1.3vw, 0.875rem);
+  }
+  .admin-text-xs {
+    font-size: clamp(0.625rem, 1.1vw, 0.75rem);
+  }
+  .admin-tab-trigger {
+    font-size: clamp(0.6875rem, 1.5vw, 0.8125rem);
+    padding: clamp(0.4375rem, 0.4vw, 0.5625rem) clamp(0.5rem, 0.6vw, 0.625rem);
+  }
+}
+
+/* Large desktop adjustments */
+@media (min-width: 1280px) {
+  .admin-title {
+    font-size: clamp(1.375rem, 1.8vw, 1.75rem);
+  }
+  .admin-subtitle {
+    font-size: clamp(1.25rem, 1.6vw, 1.5rem);
+  }
+  .admin-text {
+    font-size: clamp(0.875rem, 1.3vw, 1.125rem);
+  }
+  .admin-text-sm {
+    font-size: clamp(0.75rem, 1.1vw, 1rem);
+  }
+  .admin-text-xs {
+    font-size: clamp(0.6875rem, 0.9vw, 0.875rem);
+  }
+  .admin-tab-trigger {
+    font-size: clamp(0.75rem, 1.3vw, 0.9375rem);
+    padding: clamp(0.5625rem, 0.3vw, 0.75rem) clamp(0.625rem, 0.5vw, 0.875rem);
+  }
+}
 .bg-eden-red { background-color: var(--eden-red); }
 .bg-eden-dark { background-color: var(--eden-dark); }
 
