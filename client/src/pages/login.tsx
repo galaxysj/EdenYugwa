@@ -4,6 +4,8 @@ import { LoginForm } from "@/components/LoginForm";
 import { RegisterForm } from "@/components/RegisterForm";
 import { useAuth } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
@@ -49,6 +51,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-start md:items-center justify-center p-2 md:p-4">
       <div className="w-full max-w-md mt-4 md:mt-0">
+        {/* 뒤로가기 버튼 */}
+        <div className="flex justify-start mb-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/')}
+            className="text-orange-800 hover:text-orange-900 hover:bg-orange-200"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            뒤로가기
+          </Button>
+        </div>
+        
         <div className="text-center mb-4 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-orange-800 mb-2">에덴한과</h1>
           <p className="text-sm md:text-base text-orange-600">로그인 및 회원가입</p>

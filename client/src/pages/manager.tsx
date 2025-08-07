@@ -58,6 +58,7 @@ export default function ManagerDashboard() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   // 상태 관리
   const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
@@ -453,6 +454,17 @@ export default function ManagerDashboard() {
         passwordChangeDialog={<></>}
       />
       <div className="container mx-auto p-4 space-y-6">
+        {/* 뒤로가기 버튼 */}
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setLocation('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            뒤로가기
+          </Button>
+        </div>
         {currentPage === "orders" && (
           <>
             {/* 주문 목록 */}

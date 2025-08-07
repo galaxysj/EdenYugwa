@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Save, Settings, Phone, Building, User, Users, Crown, UserCheck } from "lucide-react";
+import { Save, Settings, Phone, Building, User, Users, Crown, UserCheck, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { AdminSettings, User as UserType } from "@shared/schema";
@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AdminHeader } from "@/components/admin-header";
+import { useLocation } from "wouter";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
@@ -31,6 +32,7 @@ type AdminSettingsFormData = z.infer<typeof adminSettingsSchema>;
 export default function AdminSettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const { data: adminSettings, isLoading } = useQuery<AdminSettings>({
     queryKey: ['/api/admin-settings'],
@@ -192,9 +194,19 @@ export default function AdminSettingsPage() {
     <div className="min-h-screen bg-gray-50">
       <AdminHeader />
       <div className="container mx-auto p-6 max-w-4xl">
-        <div className="flex items-center gap-3 mb-6">
-          <Settings className="h-6 w-6 text-eden-brown" />
-          <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Settings className="h-6 w-6 text-eden-brown" />
+            <h1 className="text-2xl font-bold text-gray-900">관리자 설정</h1>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setLocation('/admin')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            뒤로가기
+          </Button>
         </div>
 
 
