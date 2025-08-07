@@ -609,7 +609,7 @@ function PriceSettingsDialog() {
           가격 설정
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>가격 설정</DialogTitle>
           <DialogDescription>
@@ -626,13 +626,13 @@ function PriceSettingsDialog() {
               <div className="space-y-3">
                 <p className="text-sm text-gray-600">각 상품별로 개별 저장하거나 전체 일괄 저장할 수 있습니다.</p>
                 <div className="overflow-x-auto">
-                  <table className="w-full border border-gray-200 rounded-lg">
+                  <table className="w-full min-w-[600px] border border-gray-200 rounded-lg">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">상품명</th>
-                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">원가 (원)</th>
-                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">판매가 (원)</th>
-                        <th className="px-3 py-3 text-center text-sm font-semibold text-gray-800 border-b">배송비 제외</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">상품명</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">원가 (원)</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">판매가 (원)</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 border-b w-[25%]">배송비 제외</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -640,11 +640,11 @@ function PriceSettingsDialog() {
                         const productKey = product.key || `product_${index}`;
                         return (
                           <tr key={index} className="hover:bg-gray-50 transition-colors duration-150 border-b last:border-b-0">
-                            <td className="px-3 py-3 text-sm font-medium text-gray-900">
-                              {product.name}
+                            <td className="px-4 py-4 text-sm font-medium text-gray-900 w-[25%] align-top">
+                              <div className="break-words">{product.name}</div>
                             </td>
-                            <td className="px-3 py-3">
-                              <div className="flex gap-2">
+                            <td className="px-4 py-4 w-[25%] align-top">
+                              <div className="space-y-2">
                                 <Input
                                   type="number"
                                   placeholder="원가 입력"
@@ -657,26 +657,28 @@ function PriceSettingsDialog() {
                                       excludeFromShipping: prev[productKey]?.excludeFromShipping || false
                                     }
                                   }))}
-                                  className="flex-1 text-sm"
+                                  className="w-full text-sm"
                                 />
-                                <Button
-                                  size="sm"
-                                  onClick={() => saveIndividualPrice(
-                                    productKey, 
-                                    'cost', 
-                                    productPrices[productKey]?.cost || "", 
-                                    product.name
-                                  )}
-                                  disabled={savingPrices[`${productKey}-cost`] || !productPrices[productKey]?.cost}
-                                  variant="ghost"
-                                  className="px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                >
-                                  {savingPrices[`${productKey}-cost`] ? '저장중...' : '저장'}
-                                </Button>
+                                <div className="flex justify-end">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => saveIndividualPrice(
+                                      productKey, 
+                                      'cost', 
+                                      productPrices[productKey]?.cost || "", 
+                                      product.name
+                                    )}
+                                    disabled={savingPrices[`${productKey}-cost`] || !productPrices[productKey]?.cost}
+                                    variant="ghost"
+                                    className="px-3 py-1 text-xs h-7 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                  >
+                                    {savingPrices[`${productKey}-cost`] ? '저장중...' : '저장'}
+                                  </Button>
+                                </div>
                               </div>
                             </td>
-                            <td className="px-3 py-3">
-                              <div className="flex gap-2">
+                            <td className="px-4 py-4 w-[25%] align-top">
+                              <div className="space-y-2">
                                 <Input
                                   type="number"
                                   placeholder="판매가 입력"
@@ -689,26 +691,28 @@ function PriceSettingsDialog() {
                                       excludeFromShipping: prev[productKey]?.excludeFromShipping || false
                                     }
                                   }))}
-                                  className="flex-1 text-sm"
+                                  className="w-full text-sm"
                                 />
-                                <Button
-                                  size="sm"
-                                  onClick={() => saveIndividualPrice(
-                                    productKey, 
-                                    'price', 
-                                    productPrices[productKey]?.price || "", 
-                                    product.name
-                                  )}
-                                  disabled={savingPrices[`${productKey}-price`] || !productPrices[productKey]?.price}
-                                  variant="ghost"
-                                  className="px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                >
-                                  {savingPrices[`${productKey}-price`] ? '저장중...' : '저장'}
-                                </Button>
+                                <div className="flex justify-end">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => saveIndividualPrice(
+                                      productKey, 
+                                      'price', 
+                                      productPrices[productKey]?.price || "", 
+                                      product.name
+                                    )}
+                                    disabled={savingPrices[`${productKey}-price`] || !productPrices[productKey]?.price}
+                                    variant="ghost"
+                                    className="px-3 py-1 text-xs h-7 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                  >
+                                    {savingPrices[`${productKey}-price`] ? '저장중...' : '저장'}
+                                  </Button>
+                                </div>
                               </div>
                             </td>
-                            <td className="px-3 py-3">
-                              <div className="flex items-center justify-center">
+                            <td className="px-4 py-4 w-[25%] align-top">
+                              <div className="flex flex-col items-center space-y-2">
                                 <input
                                   type="checkbox"
                                   checked={productPrices[productKey]?.excludeFromShipping || false}
@@ -730,6 +734,9 @@ function PriceSettingsDialog() {
                                   }}
                                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                 />
+                                <span className="text-xs text-gray-500 text-center leading-tight">
+                                  {productPrices[productKey]?.excludeFromShipping ? "제외됨" : "포함됨"}
+                                </span>
                               </div>
                             </td>
                           </tr>
