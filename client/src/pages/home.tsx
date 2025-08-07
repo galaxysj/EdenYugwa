@@ -1,16 +1,21 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "wouter";
-import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Package, Settings } from "lucide-react";
+import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Package, Settings, X } from "lucide-react";
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const { isAuthenticated, isManagerOrAdmin, isAdmin, isManager, user } = useAuth();
+  
+  // 팝업 상태 관리
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // Fetch dashboard content for dynamic text and product names
   const { data: contentData } = useQuery({
@@ -39,6 +44,18 @@ export default function Home() {
   });
 
   const settings = settingsData;
+
+  // 페이지 로드 시 팝업 표시 여부 확인
+  useEffect(() => {
+    if (dashboardContent.popupEnabled && dashboardContent.popupTitle && dashboardContent.popupContent) {
+      // 세션 스토리지를 사용하여 같은 세션에서는 한 번만 표시
+      const popupShownKey = 'popup-shown-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
+      if (!sessionStorage.getItem(popupShownKey)) {
+        setIsPopupOpen(true);
+        sessionStorage.setItem(popupShownKey, 'true');
+      }
+    }
+  }, [dashboardContent.popupEnabled, dashboardContent.popupTitle, dashboardContent.popupContent]);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -281,6 +298,34 @@ export default function Home() {
 
         </div>
       </section>
+
+      {/* 안내사항 팝업 */}
+      <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
+        <DialogContent className="sm:max-w-md mx-4">
+          <DialogHeader className="pb-4">
+            {dashboardContent.popupTitle && (
+              <DialogTitle className="text-lg font-bold text-eden-brown text-center">
+                {dashboardContent.popupTitle}
+              </DialogTitle>
+            )}
+          </DialogHeader>
+          <div className="space-y-4">
+            {dashboardContent.popupContent && (
+              <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                {dashboardContent.popupContent}
+              </div>
+            )}
+            <div className="flex justify-center pt-4">
+              <Button 
+                onClick={() => setIsPopupOpen(false)}
+                className="bg-eden-sage hover:bg-eden-sage/90 text-white px-6 py-2 rounded-lg"
+              >
+                {dashboardContent.popupButtonText || "확인"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

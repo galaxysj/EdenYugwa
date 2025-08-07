@@ -1118,7 +1118,12 @@ export default function Admin() {
       { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
       { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
     ],
-    excludeWrappingFromShipping: false
+    excludeWrappingFromShipping: false,
+    // 팝업 관련 설정
+    popupEnabled: false,
+    popupTitle: "",
+    popupContent: "",
+    popupButtonText: "확인"
   });
 
   // Handle multiple image upload
@@ -1310,6 +1315,11 @@ export default function Admin() {
           }
         }
         if (item.key === 'excludeWrappingFromShipping') updatedContent.excludeWrappingFromShipping = item.value === 'true';
+        // 팝업 관련 데이터 로딩
+        if (item.key === 'popupEnabled') updatedContent.popupEnabled = item.value === 'true';
+        if (item.key === 'popupTitle') updatedContent.popupTitle = item.value;
+        if (item.key === 'popupContent') updatedContent.popupContent = item.value;
+        if (item.key === 'popupButtonText') updatedContent.popupButtonText = item.value;
       });
       setDashboardContent(updatedContent);
     }
@@ -6662,6 +6672,353 @@ export default function Admin() {
                                             toast({
                                               title: "되돌림",
                                               description: "안내 메시지 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+                          {/* 팝업 관리 */}
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-lg font-semibold text-gray-900">안내사항 팝업 관리</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const popupData = {
+                                        popupEnabled: dashboardContent.popupEnabled ? 'true' : 'false',
+                                        popupTitle: dashboardContent.popupTitle,
+                                        popupContent: dashboardContent.popupContent,
+                                        popupButtonText: dashboardContent.popupButtonText
+                                      };
+                                      
+                                      await Promise.all(Object.entries(popupData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "팝업 설정이 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "팝업 설정 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('팝업 설정을 기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        popupEnabled: false,
+                                        popupTitle: "",
+                                        popupContent: "",
+                                        popupButtonText: "확인"
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ 
+                                          key, 
+                                          value: typeof value === 'boolean' ? (value ? 'true' : 'false') : value 
+                                        });
+                                      });
+                                      toast({
+                                        title: "초기화 완료",
+                                        description: "팝업 설정이 기본값으로 되돌려졌습니다."
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="border rounded-lg overflow-hidden">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">팝업 활성화</td>
+                                    <td className="px-4 py-3">
+                                      <div className="flex items-center gap-3">
+                                        <label className="inline-flex items-center">
+                                          <input
+                                            type="checkbox"
+                                            checked={dashboardContent.popupEnabled}
+                                            onChange={(e) => setDashboardContent({
+                                              ...dashboardContent, 
+                                              popupEnabled: e.target.checked
+                                            })}
+                                            className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                          />
+                                          <span className="ml-2 text-sm text-gray-700">
+                                            {dashboardContent.popupEnabled ? '팝업 표시 중' : '팝업 비활성화'}
+                                          </span>
+                                        </label>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'popupEnabled';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'popupEnabled', 
+                                                value: dashboardContent.popupEnabled ? 'true' : 'false'
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "팝업 활성화 설정 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['popupEnabled']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['popupEnabled'] ? '저장중' : '저장'}
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">팝업 제목</td>
+                                    <td className="px-4 py-3">
+                                      <input
+                                        type="text"
+                                        value={dashboardContent.popupTitle}
+                                        onChange={(e) => setDashboardContent({
+                                          ...dashboardContent, 
+                                          popupTitle: e.target.value
+                                        })}
+                                        placeholder="팝업 제목을 입력하세요"
+                                        className="w-full text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent px-0"
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'popupTitle';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'popupTitle', 
+                                                value: dashboardContent.popupTitle 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "팝업 제목 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['popupTitle']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['popupTitle'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "팝업 제목 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">팝업 내용</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.popupContent}
+                                        onChange={(e) => setDashboardContent({
+                                          ...dashboardContent, 
+                                          popupContent: e.target.value
+                                        })}
+                                        placeholder="팝업에 표시할 내용을 입력하세요&#10;줄바꿈 가능"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={4}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'popupContent';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'popupContent', 
+                                                value: dashboardContent.popupContent 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "팝업 내용 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['popupContent']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['popupContent'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "팝업 내용 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">버튼 텍스트</td>
+                                    <td className="px-4 py-3">
+                                      <input
+                                        type="text"
+                                        value={dashboardContent.popupButtonText}
+                                        onChange={(e) => setDashboardContent({
+                                          ...dashboardContent, 
+                                          popupButtonText: e.target.value
+                                        })}
+                                        placeholder="확인"
+                                        className="w-full text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent px-0"
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'popupButtonText';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'popupButtonText', 
+                                                value: dashboardContent.popupButtonText 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "버튼 텍스트 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['popupButtonText']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['popupButtonText'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "버튼 텍스트 복원 완료",
                                             });
                                           }}
                                           variant="ghost"
