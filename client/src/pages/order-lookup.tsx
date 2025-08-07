@@ -121,6 +121,12 @@ export default function OrderLookup() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch settings for dynamic pricing
+  const { data: settingsData } = useQuery({
+    queryKey: ['/api/settings'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   // Convert array to object for easier access
   const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
     if (item.key === 'heroImages' || item.key === 'productNames') {
@@ -157,6 +163,32 @@ export default function OrderLookup() {
       if (index === 1) return '한과2호';
       if (index === 2) return '보자기';
       return `상품${index + 1}`;
+    }
+  };
+
+  // Helper function to get dynamic product price
+  const getProductPrice = (index: number) => {
+    if (!settingsData) return prices.small; // 기본값
+    
+    try {
+      const priceKey = `product_${index}Price`;
+      const priceSetting = settingsData.find((setting: any) => setting.key === priceKey);
+      
+      if (priceSetting && priceSetting.value) {
+        return parseInt(priceSetting.value);
+      }
+      
+      // 기본값 반환
+      if (index === 0) return prices.small;
+      if (index === 1) return prices.large;
+      if (index === 2) return prices.wrapping;
+      return prices.small;
+    } catch (error) {
+      console.error('상품 가격 파싱 오류:', error);
+      if (index === 0) return prices.small;
+      if (index === 1) return prices.large;
+      if (index === 2) return prices.wrapping;
+      return prices.small;
     }
   };
 
@@ -622,28 +654,43 @@ export default function OrderLookup() {
                                 
                                 // 기본 상품들
                                 if (order.smallBoxQuantity > 0) {
+                                  const unitPrice = getProductPrice(0);
                                   productDetails.push(
-                                    <div key="small" className="font-medium flex items-center">
-                                      <span className="text-gray-400 mr-2">•</span>
-                                      {getProductName(0)} × {order.smallBoxQuantity}개
+                                    <div key="small" className="font-medium flex items-center justify-between">
+                                      <div className="flex items-center">
+                                        <span className="text-gray-400 mr-2">•</span>
+                                        {getProductName(0)} × {order.smallBoxQuantity}개
+                                      </div>
+                                      <span className="text-gray-600 text-sm ml-2">
+                                        {isAuthenticated ? `${unitPrice.toLocaleString()}원 × ${order.smallBoxQuantity} = ${(unitPrice * order.smallBoxQuantity).toLocaleString()}원` : maskPrice()}
+                                      </span>
                                     </div>
                                   );
                                 }
                                 if (order.largeBoxQuantity > 0) {
+                                  const unitPrice = getProductPrice(1);
                                   productDetails.push(
-                                    <div key="large" className="font-medium flex items-center">
-                                      <span className="text-gray-400 mr-2">•</span>
-                                      {getProductName(1)} × {order.largeBoxQuantity}개
+                                    <div key="large" className="font-medium flex items-center justify-between">
+                                      <div className="flex items-center">
+                                        <span className="text-gray-400 mr-2">•</span>
+                                        {getProductName(1)} × {order.largeBoxQuantity}개
+                                      </div>
+                                      <span className="text-gray-600 text-sm ml-2">
+                                        {isAuthenticated ? `${unitPrice.toLocaleString()}원 × ${order.largeBoxQuantity} = ${(unitPrice * order.largeBoxQuantity).toLocaleString()}원` : maskPrice()}
+                                      </span>
                                     </div>
                                   );
                                 }
                                 if (order.wrappingQuantity > 0) {
+                                  const unitPrice = getProductPrice(2);
                                   productDetails.push(
-                                    <div key="wrapping" className="font-medium flex items-center">
-                                      <span className="text-gray-400 mr-2">•</span>
-                                      {getProductName(2)} × {order.wrappingQuantity}개 
-                                      <span className="ml-1 text-green-600">
-                                        (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
+                                    <div key="wrapping" className="font-medium flex items-center justify-between">
+                                      <div className="flex items-center">
+                                        <span className="text-gray-400 mr-2">•</span>
+                                        {getProductName(2)} × {order.wrappingQuantity}개
+                                      </div>
+                                      <span className="text-gray-600 text-sm ml-2">
+                                        {isAuthenticated ? `${unitPrice.toLocaleString()}원 × ${order.wrappingQuantity} = ${(unitPrice * order.wrappingQuantity).toLocaleString()}원` : maskPrice()}
                                       </span>
                                     </div>
                                   );
@@ -660,10 +707,16 @@ export default function OrderLookup() {
                                       const idx = parseInt(index);
                                       const qty = Number(quantity);
                                       if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+                                        const unitPrice = getProductPrice(idx);
                                         productDetails.push(
-                                          <div key={`dynamic-${idx}`} className="font-medium flex items-center">
-                                            <span className="text-gray-400 mr-2">•</span>
-                                            {getProductName(idx)} × {qty}개
+                                          <div key={`dynamic-${idx}`} className="font-medium flex items-center justify-between">
+                                            <div className="flex items-center">
+                                              <span className="text-gray-400 mr-2">•</span>
+                                              {getProductName(idx)} × {qty}개
+                                            </div>
+                                            <span className="text-gray-600 text-sm ml-2">
+                                              {isAuthenticated ? `${unitPrice.toLocaleString()}원 × ${qty} = ${(unitPrice * qty).toLocaleString()}원` : maskPrice()}
+                                            </span>
                                           </div>
                                         );
                                       }
