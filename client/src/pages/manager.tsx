@@ -98,7 +98,7 @@ export default function ManagerDashboard() {
   });
 
   // Fetch dashboard content for dynamic product names
-  const { data: contentData } = useQuery({
+  const { data: contentData, isLoading: isContentLoading, error: contentError } = useQuery({
     queryKey: ['/api/dashboard-content'],
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
@@ -112,9 +112,21 @@ export default function ManagerDashboard() {
   // Parse product names safely
   const getProductNames = () => {
     try {
-      if (!dashboardContent.productNames) return [];
+      console.log('=== 상품명 로드 디버깅 ===');
+      console.log('Content loading:', isContentLoading);
+      console.log('Content error:', contentError);
+      console.log('Raw content data:', contentData);
+      console.log('Dashboard content:', dashboardContent);
+      console.log('Product names raw:', dashboardContent.productNames);
+      
+      if (!dashboardContent.productNames) {
+        console.log('No productNames found in dashboard content');
+        return [];
+      }
       if (typeof dashboardContent.productNames === 'string') {
-        return JSON.parse(dashboardContent.productNames);
+        const parsed = JSON.parse(dashboardContent.productNames);
+        console.log('Parsed product names:', parsed);
+        return parsed;
       }
       return Array.isArray(dashboardContent.productNames) ? dashboardContent.productNames : [];
     } catch (error) {
