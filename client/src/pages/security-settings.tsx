@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,8 @@ import {
   Eye,
   Trash2,
   Settings,
-  History
+  History,
+  ArrowLeft
 } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -79,6 +81,7 @@ interface ApprovalRequest {
 export default function SecuritySettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [newIpRange, setNewIpRange] = useState("");
   const [newCountry, setNewCountry] = useState("");
 
@@ -235,9 +238,19 @@ export default function SecuritySettings() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Shield className="h-6 w-6" />
-        <h1 className="text-2xl font-bold">보안 설정</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Shield className="h-6 w-6" />
+          <h1 className="text-2xl font-bold">보안 설정</h1>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => setLocation('/admin')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          뒤로가기
+        </Button>
       </div>
 
       <Tabs defaultValue="sessions" className="space-y-6">
