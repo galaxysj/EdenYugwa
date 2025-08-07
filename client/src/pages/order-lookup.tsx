@@ -556,57 +556,12 @@ export default function OrderLookup() {
                         </div>
                       </div>
                       
-                      {/* 주문 요약 정보 */}
-                      <div className="mt-2 text-sm text-gray-600 space-y-0.5">
-                        {(() => {
-                          const summary = [];
-                          
-                          // 기본 상품들
-                          if (order.smallBoxQuantity > 0) {
-                            summary.push(
-                              <div key="small">• {getProductName(0)} {order.smallBoxQuantity}개</div>
-                            );
-                          }
-                          if (order.largeBoxQuantity > 0) {
-                            summary.push(
-                              <div key="large">• {getProductName(1)} {order.largeBoxQuantity}개</div>
-                            );
-                          }
-                          if (order.wrappingQuantity > 0) {
-                            summary.push(
-                              <div key="wrapping">• {getProductName(2)} {order.wrappingQuantity}개</div>
-                            );
-                          }
-
-                          // 동적 상품들
-                          if (order.dynamicProductQuantities) {
-                            try {
-                              const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
-                                ? JSON.parse(order.dynamicProductQuantities) 
-                                : order.dynamicProductQuantities;
-
-                              Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
-                                const idx = parseInt(index);
-                                const qty = Number(quantity);
-                                if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
-                                  summary.push(
-                                    <div key={`dynamic-${idx}`}>• {getProductName(idx)} {qty}개</div>
-                                  );
-                                }
-                              });
-                            } catch (error) {
-                              console.error('동적 상품 수량 파싱 오류:', error);
-                            }
-                          }
-
-                          return summary.length > 0 ? summary : <div>주문상품 없음</div>;
-                        })()}
-                        {order.scheduledDate && (
-                          <div className="text-blue-600 font-medium mt-1">
-                            📅 {formatDate(order.scheduledDate)}
-                          </div>
-                        )}
-                      </div>
+                      {/* 주문 요약 정보 - 예약발송일만 표시 */}
+                      {order.scheduledDate && (
+                        <div className="mt-2 text-sm text-blue-600 font-medium">
+                          📅 {formatDate(order.scheduledDate)}
+                        </div>
+                      )}
                     </div>
 
                     {/* 확장된 상세 정보 */}
