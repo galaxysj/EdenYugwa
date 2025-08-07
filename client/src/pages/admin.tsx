@@ -359,12 +359,14 @@ function PriceSettingsDialog() {
   // Price and cost management is handled in the "가격 설정" tab
   
   // Product price states
-  const [productPrices, setProductPrices] = useState<{[key: string]: {cost: string, price: string}}>({});
+  const [productPrices, setProductPrices] = useState<{[key: string]: {cost: string, price: string, excludeFromShipping?: boolean}}>({});
   const [savingPrices, setSavingPrices] = useState<{[key: string]: boolean}>({});
   
   // Shipping settings
   const [shippingFee, setShippingFee] = useState("");
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("");
+  const [freeShippingType, setFreeShippingType] = useState("quantity"); // 'quantity' or 'amount'
+  const [freeShippingMinAmount, setFreeShippingMinAmount] = useState("");
   
   // Load existing settings when dialog opens
   useEffect(() => {
@@ -372,12 +374,17 @@ function PriceSettingsDialog() {
       const shippingFeeSetting = settings.find(s => s.key === "shippingFee");
       const thresholdSetting = settings.find(s => s.key === "freeShippingThreshold");
       
+      const freeShippingTypeSetting = settings.find(s => s.key === "freeShippingType");
+      const freeShippingMinAmountSetting = settings.find(s => s.key === "freeShippingMinAmount");
+      
       setShippingFee(shippingFeeSetting?.value || "");
       setFreeShippingThreshold(thresholdSetting?.value || "");
+      setFreeShippingType(freeShippingTypeSetting?.value || "quantity");
+      setFreeShippingMinAmount(freeShippingMinAmountSetting?.value || "");
       
       // Load product prices, preserving current input but adding new products
       setProductPrices(prevPrices => {
-        const newProductPrices: {[key: string]: {cost: string, price: string}} = { ...prevPrices };
+        const newProductPrices: {[key: string]: {cost: string, price: string, excludeFromShipping?: boolean}} = { ...prevPrices };
         
         localProductNames.forEach((product: any, index: number) => {
           const productKey = product.key || `product_${index}`;
@@ -387,9 +394,12 @@ function PriceSettingsDialog() {
             const costSetting = settings.find(s => s.key === `${productKey}Cost`);
             const priceSetting = settings.find(s => s.key === `${productKey}Price`);
             
+            const excludeSetting = settings.find(s => s.key === `${productKey}ExcludeFromShipping`);
+            
             newProductPrices[productKey] = {
               cost: costSetting?.value || "",
-              price: priceSetting?.value || ""
+              price: priceSetting?.value || "",
+              excludeFromShipping: excludeSetting?.value === 'true'
             };
           }
         });
@@ -537,28 +547,44 @@ function PriceSettingsDialog() {
   };
   
   const handleSave = async () => {
-    if (!shippingFee || !freeShippingThreshold) {
+    if (!shippingFee || (freeShippingType === 'quantity' && !freeShippingThreshold) || (freeShippingType === 'amount' && !freeShippingMinAmount)) {
       toast({
         title: "입력 오류",
-        description: "배송비 설정 정보를 입력해주세요.",
+        description: "배송비 설정 정보를 모두 입력해주세요.",
         variant: "destructive",
       });
       return;
     }
     
     try {
-      // Shipping settings only
-      await updateShippingMutation.mutateAsync({
-        key: "shippingFee",
-        value: shippingFee,
-        description: "배송비"
-      });
+      const savePromises = [
+        updateShippingMutation.mutateAsync({
+          key: "shippingFee",
+          value: shippingFee,
+          description: "배송비"
+        }),
+        updateShippingMutation.mutateAsync({
+          key: "freeShippingType",
+          value: freeShippingType,
+          description: "무료배송 조건 타입"
+        })
+      ];
       
-      await updateShippingMutation.mutateAsync({
-        key: "freeShippingThreshold",
-        value: freeShippingThreshold,
-        description: "무료배송 최소 수량"
-      });
+      if (freeShippingType === 'quantity') {
+        savePromises.push(updateShippingMutation.mutateAsync({
+          key: "freeShippingThreshold",
+          value: freeShippingThreshold,
+          description: "무료배송 최소 수량"
+        }));
+      } else {
+        savePromises.push(updateShippingMutation.mutateAsync({
+          key: "freeShippingMinAmount",
+          value: freeShippingMinAmount,
+          description: "무료배송 최소 금액"
+        }));
+      }
+      
+      await Promise.all(savePromises);
       
       toast({
         title: "저장 완료",
@@ -606,6 +632,7 @@ function PriceSettingsDialog() {
                         <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">상품명</th>
                         <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">원가 (원)</th>
                         <th className="px-3 py-3 text-left text-sm font-semibold text-gray-800 border-b">판매가 (원)</th>
+                        <th className="px-3 py-3 text-center text-sm font-semibold text-gray-800 border-b">배송비 제외</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -626,7 +653,8 @@ function PriceSettingsDialog() {
                                     ...prev,
                                     [productKey]: {
                                       cost: e.target.value,
-                                      price: prev[productKey]?.price || ""
+                                      price: prev[productKey]?.price || "",
+                                      excludeFromShipping: prev[productKey]?.excludeFromShipping || false
                                     }
                                   }))}
                                   className="flex-1 text-sm"
@@ -657,7 +685,8 @@ function PriceSettingsDialog() {
                                     ...prev,
                                     [productKey]: {
                                       cost: prev[productKey]?.cost || "",
-                                      price: e.target.value
+                                      price: e.target.value,
+                                      excludeFromShipping: prev[productKey]?.excludeFromShipping || false
                                     }
                                   }))}
                                   className="flex-1 text-sm"
@@ -676,6 +705,31 @@ function PriceSettingsDialog() {
                                 >
                                   {savingPrices[`${productKey}-price`] ? '저장중...' : '저장'}
                                 </Button>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={productPrices[productKey]?.excludeFromShipping || false}
+                                  onChange={(e) => {
+                                    const newValue = e.target.checked;
+                                    setProductPrices(prev => ({
+                                      ...prev,
+                                      [productKey]: {
+                                        cost: prev[productKey]?.cost || "",
+                                        price: prev[productKey]?.price || "",
+                                        excludeFromShipping: newValue
+                                      }
+                                    }));
+                                    // Save immediately
+                                    updateShippingMutation.mutate({ 
+                                      key: `${productKey}ExcludeFromShipping`, 
+                                      value: newValue.toString() 
+                                    });
+                                  }}
+                                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                />
                               </div>
                             </td>
                           </tr>
@@ -720,34 +774,41 @@ function PriceSettingsDialog() {
                 />
               </div>
               <div>
-                <Label htmlFor="freeShippingThreshold">무료배송 최소 수량</Label>
-                <Input
-                  id="freeShippingThreshold"
-                  type="number"
-                  value={freeShippingThreshold}
-                  onChange={(e) => setFreeShippingThreshold(e.target.value)}
-                  placeholder="개수 입력"
-                />
+                <Label htmlFor="freeShippingType">무료배송 조건</Label>
+                <select
+                  id="freeShippingType"
+                  value={freeShippingType}
+                  onChange={(e) => setFreeShippingType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="quantity">수량 기준</option>
+                  <option value="amount">금액 기준</option>
+                </select>
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="excludeWrappingFromShipping"
-                  checked={dashboardContent.excludeWrappingFromShipping}
-                  onChange={(e) => {
-                    const newValue = e.target.checked;
-                    setDashboardContent(prev => ({...prev, excludeWrappingFromShipping: newValue}));
-                    updateContentMutation.mutate({ key: 'excludeWrappingFromShipping', value: newValue.toString() });
-                  }}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <Label htmlFor="excludeWrappingFromShipping" className="text-sm font-medium">
-                  보자기는 배송비 계산에서 제외
-                </Label>
-              </div>
-              <div className="text-xs text-gray-500 ml-7">
-                체크하면 보자기 수량은 무료배송 최소 수량 계산에 포함되지 않습니다
-              </div>
+              {freeShippingType === 'quantity' ? (
+                <div>
+                  <Label htmlFor="freeShippingThreshold">무료배송 최소 수량</Label>
+                  <Input
+                    id="freeShippingThreshold"
+                    type="number"
+                    value={freeShippingThreshold}
+                    onChange={(e) => setFreeShippingThreshold(e.target.value)}
+                    placeholder="개수 입력"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="freeShippingMinAmount">무료배송 최소 금액</Label>
+                  <Input
+                    id="freeShippingMinAmount"
+                    type="number"
+                    value={freeShippingMinAmount}
+                    onChange={(e) => setFreeShippingMinAmount(e.target.value)}
+                    placeholder="금액 입력 (원)"
+                  />
+                </div>
+              )}
+
             </div>
           </div>
         </div>

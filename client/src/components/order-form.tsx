@@ -117,7 +117,9 @@ export default function OrderForm() {
   const [shippingFee, setShippingFee] = useState(0);
   const [shippingSettings, setShippingSettings] = useState({
     shippingFee: 4000,
-    freeShippingThreshold: 6
+    freeShippingThreshold: 6,
+    freeShippingType: 'quantity' as 'quantity' | 'amount',
+    freeShippingMinAmount: 50000
   });
   const [prices, setPrices] = useState({
     small: 19000, // 한과1호
@@ -174,9 +176,15 @@ export default function OrderForm() {
         const thresholdSetting = await thresholdResponse.json();
         const allSettings = await settingsResponse.json();
 
+        // 무료배송 타입과 최소 금액 설정 로드
+        const freeShippingTypeSetting = allSettings.find((s: any) => s.key === "freeShippingType");
+        const freeShippingMinAmountSetting = allSettings.find((s: any) => s.key === "freeShippingMinAmount");
+
         setShippingSettings({
           shippingFee: parseInt(shippingFeeSetting.value) || 4000,
-          freeShippingThreshold: parseInt(thresholdSetting.value) || 6
+          freeShippingThreshold: parseInt(thresholdSetting.value) || 6,
+          freeShippingType: freeShippingTypeSetting?.value || 'quantity',
+          freeShippingMinAmount: parseInt(freeShippingMinAmountSetting?.value) || 50000
         });
 
         // 기본 가격 설정
@@ -412,8 +420,18 @@ export default function OrderForm() {
     
     const currentTotalQuantity = getTotalQuantity();
     
-    // 배송비 계산: 6개 이상이면 무료, 미만이면 4000원
-    const calculatedShippingFee = currentTotalQuantity >= shippingSettings.freeShippingThreshold ? 0 : (currentTotalQuantity > 0 ? shippingSettings.shippingFee : 0);
+    // 배송비 계산: 수량 기준 또는 금액 기준
+    let calculatedShippingFee = shippingSettings.shippingFee;
+    
+    if (currentTotalQuantity === 0) {
+      calculatedShippingFee = 0; // 상품이 없으면 배송비 없음
+    } else if (shippingSettings.freeShippingType === 'quantity') {
+      // 수량 기준 무료배송
+      calculatedShippingFee = currentTotalQuantity >= shippingSettings.freeShippingThreshold ? 0 : shippingSettings.shippingFee;
+    } else {
+      // 금액 기준 무료배송 (배송비 제외한 상품 총액)
+      calculatedShippingFee = productsTotal >= shippingSettings.freeShippingMinAmount ? 0 : shippingSettings.shippingFee;
+    }
     setShippingFee(calculatedShippingFee);
     
     const total = productsTotal + calculatedShippingFee;
@@ -421,13 +439,21 @@ export default function OrderForm() {
   }, [watchedValues, prices, shippingSettings, productNames]);
 
   const onSubmit = (data: OrderFormData) => {
-    // 배송비 계산을 위한 총 수량 (보자기 제외 설정 반영)
+    // 배송비 계산을 위한 총 수량 (상품별 제외 설정 반영)
     const totalQuantity = getTotalQuantity();
-    const shippingFee = totalQuantity >= shippingSettings.freeShippingThreshold ? 0 : shippingSettings.shippingFee;
+    let calculatedShippingFee = shippingSettings.shippingFee;
+    
+    if (totalQuantity === 0) {
+      calculatedShippingFee = 0;
+    } else if (shippingSettings.freeShippingType === 'quantity') {
+      calculatedShippingFee = totalQuantity >= shippingSettings.freeShippingThreshold ? 0 : shippingSettings.shippingFee;
+    } else {
+      calculatedShippingFee = totalAmount - shippingFee >= shippingSettings.freeShippingMinAmount ? 0 : shippingSettings.shippingFee;
+    }
     
     const orderData = {
       ...data,
-      shippingFee,
+      shippingFee: calculatedShippingFee,
       totalAmount,
       scheduledDate: data.scheduledDate ? data.scheduledDate.toISOString() : null,
       status: data.scheduledDate ? 'scheduled' : 'pending',
@@ -512,28 +538,25 @@ export default function OrderForm() {
     return dynamicQuantities[productIndex] || 0;
   };
   
-  // 전체 수량 계산 (모든 동적 상품 포함)
+  // 전체 수량 계산 (배송비 제외 설정을 반영한 상품들만 포함)
   const getTotalQuantity = () => {
-    // 보자기 제외 설정 확인
-    const excludeWrapping = dashboardContent.excludeWrappingFromShipping === 'true';
-    
     if (!productNames || productNames.length === 0) {
-      // 기본 상품 시스템에서는 보자기(wrappingQuantity) 제외 여부 확인
-      const baseTotal = smallBoxQuantity + largeBoxQuantity;
-      return excludeWrapping ? baseTotal : baseTotal + wrappingQuantity;
+      // 기본 상품 시스템 - 보자기만 제외하던 기존 로직 유지
+      return smallBoxQuantity + largeBoxQuantity + wrappingQuantity;
     }
     
     let total = 0;
     productNames.forEach((product: any, index: number) => {
-      // 보자기 상품 확인 (이름이 '보자기'이거나 dashboardContent.wrappingName과 일치)
-      const isWrappingProduct = product.name === '보자기' || product.name === dashboardContent.wrappingName;
+      const productKey = product.key || `product_${index}`;
       
-      // 보자기 제외 설정이 켜져있고 보자기 상품이면 수량 계산에서 제외
-      if (excludeWrapping && isWrappingProduct) {
-        return;
+      // 개별 상품의 배송비 제외 설정 확인 (settings에서 로드)
+      const excludeFromShippingSetting = settingsData?.find((s: any) => s.key === `${productKey}ExcludeFromShipping`);
+      const isExcludedFromShipping = excludeFromShippingSetting?.value === 'true';
+      
+      // 배송비 제외 설정이 되어있지 않은 상품만 수량에 포함
+      if (!isExcludedFromShipping) {
+        total += getDynamicProductQuantity(index, product.name);
       }
-      
-      total += getDynamicProductQuantity(index, product.name);
     });
     return total;
   };
