@@ -471,11 +471,11 @@ export default function ManagerDashboard() {
             <Tabs defaultValue="전체보기" className="space-y-4">
               <div className="flex items-center justify-between">
                 <TabsList>
-                  <TabsTrigger value="전체보기">전체보기 ({filteredOrders.length})</TabsTrigger>
-                  <TabsTrigger value="발송처리대기">
+                  <TabsTrigger value="전체보기" className="tab-responsive-text">전체보기 ({filteredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="발송처리대기" className="tab-responsive-text">
                     발송처리대기 ({filteredOrders.filter(o => !o.sellerShipped).length})
                   </TabsTrigger>
-                  <TabsTrigger value="매니저발송완료">
+                  <TabsTrigger value="매니저발송완료" className="tab-responsive-text">
                     매니저발송완료 ({filteredOrders.filter(o => o.sellerShipped).length})
                   </TabsTrigger>
                 </TabsList>
