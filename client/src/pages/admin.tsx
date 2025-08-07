@@ -816,7 +816,8 @@ function PriceSettingsDialog() {
                                     // Save immediately
                                     updateShippingMutation.mutate({ 
                                       key: `${productKey}ExcludeFromShipping`, 
-                                      value: newValue.toString() 
+                                      value: newValue.toString(),
+                                      description: ''
                                     });
                                   }}
                                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
@@ -1128,9 +1129,11 @@ export default function Admin() {
     mainTitleColor: "#8B4513",
     mainTitleSize: "text-2xl sm:text-3xl md:text-4xl lg:text-5xl",
     mainTitleAlign: "text-center",
+    mainTitleFont: "font-korean",
     mainDescriptionColor: "#6b7280",
     mainDescriptionSize: "text-sm sm:text-base md:text-lg",
-    mainDescriptionAlign: "text-center"
+    mainDescriptionAlign: "text-center",
+    mainDescriptionFont: "font-korean"
   });
 
   // Handle multiple image upload
@@ -1326,9 +1329,11 @@ export default function Admin() {
         if (item.key === 'mainTitleColor') updatedContent.mainTitleColor = item.value;
         if (item.key === 'mainTitleSize') updatedContent.mainTitleSize = item.value;
         if (item.key === 'mainTitleAlign') updatedContent.mainTitleAlign = item.value;
+        if (item.key === 'mainTitleFont') updatedContent.mainTitleFont = item.value;
         if (item.key === 'mainDescriptionColor') updatedContent.mainDescriptionColor = item.value;
         if (item.key === 'mainDescriptionSize') updatedContent.mainDescriptionSize = item.value;
         if (item.key === 'mainDescriptionAlign') updatedContent.mainDescriptionAlign = item.value;
+        if (item.key === 'mainDescriptionFont') updatedContent.mainDescriptionFont = item.value;
         // 팝업 관련 데이터 로딩
         if (item.key === 'popupEnabled') updatedContent.popupEnabled = item.value === 'true';
         if (item.key === 'popupTitle') updatedContent.popupTitle = item.value;
@@ -4691,7 +4696,7 @@ export default function Admin() {
         costSettingsDialog={<PriceSettingsDialog />}
         passwordChangeDialog={<PasswordChangeDialog />}
       />
-      <div className="container mx-auto p-2 sm:p-4 md:p-6">
+      <div className="container mx-auto px-1 py-2 sm:px-3 sm:py-3 md:px-4 md:py-4 lg:px-6 lg:py-6 xl:px-8 xl:py-8">
 
 
 
@@ -6026,41 +6031,96 @@ export default function Admin() {
                                         
                                         {/* 텍스트 스타일 설정 */}
                                         <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded border">
-                                          <div>
+                                          <div className="relative">
                                             <label className="block text-xs font-medium text-gray-700 mb-1">글자색</label>
-                                            <select
-                                              value={dashboardContent.mainTitleColor || '#000000'}
-                                              onChange={(e) => setDashboardContent({...dashboardContent, mainTitleColor: e.target.value})}
-                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            >
-                                              <option value="#000000">검은색</option>
-                                              <option value="#1f2937">진한 회색</option>
-                                              <option value="#374151">회색</option>
-                                              <option value="#6b7280">연한 회색</option>
-                                              <option value="#dc2626">빨간색</option>
-                                              <option value="#ea580c">주황색</option>
-                                              <option value="#ca8a04">노란색</option>
-                                              <option value="#16a34a">초록색</option>
-                                              <option value="#2563eb">파란색</option>
-                                              <option value="#7c3aed">보라색</option>
-                                              <option value="#be185d">분홍색</option>
-                                            </select>
+                                            <div className="space-y-2">
+                                              <div className="flex gap-2 items-center">
+                                                <div 
+                                                  className="w-8 h-8 border border-gray-300 rounded cursor-pointer shadow-sm"
+                                                  style={{ backgroundColor: dashboardContent.mainTitleColor || '#8B4513' }}
+                                                  title={dashboardContent.mainTitleColor || '#8B4513'}
+                                                />
+                                                <input
+                                                  type="color"
+                                                  value={dashboardContent.mainTitleColor || '#8B4513'}
+                                                  onChange={(e) => setDashboardContent({...dashboardContent, mainTitleColor: e.target.value})}
+                                                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                                                />
+                                              </div>
+                                              <details className="group">
+                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">색상표 보기</summary>
+                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
+                                                  <div className="grid grid-cols-6 gap-1">
+                                                    {[
+                                                      '#000000', '#333333', '#666666', '#999999', '#CCCCCC', '#FFFFFF',
+                                                      '#8B4513', '#D2691E', '#CD853F', '#F4A460', '#DEB887', '#FAEBD7',
+                                                      '#DC2626', '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16',
+                                                      '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9', '#3B82F6',
+                                                      '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E'
+                                                    ].map((color) => (
+                                                      <button
+                                                        key={color}
+                                                        type="button"
+                                                        className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
+                                                          dashboardContent.mainTitleColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
+                                                        }`}
+                                                        style={{ backgroundColor: color }}
+                                                        onClick={() => setDashboardContent({...dashboardContent, mainTitleColor: color})}
+                                                        title={color}
+                                                      />
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </details>
+                                            </div>
                                           </div>
                                           <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1">글자 크기</label>
-                                            <select
-                                              value={dashboardContent.mainTitleSize || 'text-2xl'}
-                                              onChange={(e) => setDashboardContent({...dashboardContent, mainTitleSize: e.target.value})}
-                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            >
-                                              <option value="text-sm">매우 작게</option>
-                                              <option value="text-base">작게</option>
-                                              <option value="text-lg">보통</option>
-                                              <option value="text-xl">크게</option>
-                                              <option value="text-2xl">매우 크게</option>
-                                              <option value="text-3xl">특대</option>
-                                              <option value="text-4xl">초대형</option>
-                                            </select>
+                                            <div className="space-y-2">
+                                              <div className="p-2 border rounded bg-white text-center">
+                                                <div className="font-medium text-sm">
+                                                  {(() => {
+                                                    const sizeMap: Record<string, string> = {
+                                                      'text-lg md:text-xl': '작게',
+                                                      'text-xl md:text-2xl': '보통',
+                                                      'text-2xl md:text-3xl': '크게',
+                                                      'text-3xl md:text-4xl': '매우 크게',
+                                                      'text-4xl md:text-5xl': '특대',
+                                                      'text-5xl md:text-6xl': '초대형'
+                                                    };
+                                                    return sizeMap[dashboardContent.mainTitleSize] || '크게';
+                                                  })()}
+                                                </div>
+                                                <div className="text-xs text-gray-500">{dashboardContent.mainTitleSize}</div>
+                                              </div>
+                                              <details className="group">
+                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">크기 선택</summary>
+                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
+                                                  <div className="grid grid-cols-2 gap-1 text-xs">
+                                                    {[
+                                                      { value: 'text-lg md:text-xl', label: '작게', preview: '16px' },
+                                                      { value: 'text-xl md:text-2xl', label: '보통', preview: '20px' },
+                                                      { value: 'text-2xl md:text-3xl', label: '크게', preview: '24px' },
+                                                      { value: 'text-3xl md:text-4xl', label: '매우 크게', preview: '30px' },
+                                                      { value: 'text-4xl md:text-5xl', label: '특대', preview: '36px' },
+                                                      { value: 'text-5xl md:text-6xl', label: '초대형', preview: '48px' }
+                                                    ].map((size) => (
+                                                      <button
+                                                        key={size.value}
+                                                        type="button"
+                                                        className={`p-2 rounded border text-xs hover:bg-blue-50 transition-colors ${
+                                                          dashboardContent.mainTitleSize === size.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                                                        }`}
+                                                        onClick={() => setDashboardContent({...dashboardContent, mainTitleSize: size.value})}
+                                                      >
+                                                        <div className="font-medium">{size.label}</div>
+                                                        <div className="text-gray-500">{size.preview}</div>
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </details>
+                                            </div>
                                           </div>
                                           <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
@@ -6073,6 +6133,50 @@ export default function Admin() {
                                               <option value="text-center">중앙</option>
                                               <option value="text-right">오른쪽</option>
                                             </select>
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">글꼴</label>
+                                            <div className="space-y-2">
+                                              <div className="p-2 border rounded bg-white text-center">
+                                                <div className="font-medium text-sm">
+                                                  {(() => {
+                                                    const fontMap: Record<string, string> = {
+                                                      'font-korean': '기본체',
+                                                      'font-serif': '명조체',
+                                                      'font-sans': '고딕체',
+                                                      'font-mono': '고정폭'
+                                                    };
+                                                    return fontMap[dashboardContent.mainTitleFont] || '기본체';
+                                                  })()}
+                                                </div>
+                                                <div className="text-xs text-gray-500">{dashboardContent.mainTitleFont}</div>
+                                              </div>
+                                              <details className="group">
+                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">글꼴 선택</summary>
+                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
+                                                  <div className="space-y-1">
+                                                    {[
+                                                      { value: 'font-korean', label: '기본체', preview: '나눔고딕' },
+                                                      { value: 'font-serif', label: '명조체', preview: 'serif' },
+                                                      { value: 'font-sans', label: '고딕체', preview: 'sans-serif' },
+                                                      { value: 'font-mono', label: '고정폭', preview: 'monospace' }
+                                                    ].map((font) => (
+                                                      <button
+                                                        key={font.value}
+                                                        type="button"
+                                                        className={`w-full p-2 rounded border text-xs hover:bg-blue-50 transition-colors text-left ${
+                                                          dashboardContent.mainTitleFont === font.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                                                        }`}
+                                                        onClick={() => setDashboardContent({...dashboardContent, mainTitleFont: font.value})}
+                                                      >
+                                                        <div className="font-medium">{font.label}</div>
+                                                        <div className="text-gray-500 text-xs">{font.preview}</div>
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </details>
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
@@ -6091,9 +6195,10 @@ export default function Admin() {
                                               // 메인 타이틀과 스타일 정보 모두 저장
                                               await Promise.all([
                                                 updateContentMutation.mutateAsync({ key: 'mainTitle', value: dashboardContent.mainTitle }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleColor', value: dashboardContent.mainTitleColor || '#000000' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleSize', value: dashboardContent.mainTitleSize || 'text-2xl' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleAlign', value: dashboardContent.mainTitleAlign || 'text-center' })
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleColor', value: dashboardContent.mainTitleColor || '#8B4513' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleSize', value: dashboardContent.mainTitleSize || 'text-2xl md:text-3xl' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleAlign', value: dashboardContent.mainTitleAlign || 'text-center' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleFont', value: dashboardContent.mainTitleFont || 'font-korean' })
                                               ]);
                                               toast({
                                                 title: "저장됨",
@@ -6149,39 +6254,92 @@ export default function Admin() {
                                         
                                         {/* 텍스트 스타일 설정 */}
                                         <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded border">
-                                          <div>
+                                          <div className="relative">
                                             <label className="block text-xs font-medium text-gray-700 mb-1">글자색</label>
-                                            <select
-                                              value={dashboardContent.mainDescriptionColor || '#6b7280'}
-                                              onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionColor: e.target.value})}
-                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            >
-                                              <option value="#000000">검은색</option>
-                                              <option value="#1f2937">진한 회색</option>
-                                              <option value="#374151">회색</option>
-                                              <option value="#6b7280">연한 회색</option>
-                                              <option value="#dc2626">빨간색</option>
-                                              <option value="#ea580c">주황색</option>
-                                              <option value="#ca8a04">노란색</option>
-                                              <option value="#16a34a">초록색</option>
-                                              <option value="#2563eb">파란색</option>
-                                              <option value="#7c3aed">보라색</option>
-                                              <option value="#be185d">분홍색</option>
-                                            </select>
+                                            <div className="space-y-2">
+                                              <div className="flex gap-2 items-center">
+                                                <div 
+                                                  className="w-8 h-8 border border-gray-300 rounded cursor-pointer shadow-sm"
+                                                  style={{ backgroundColor: dashboardContent.mainDescriptionColor || '#6b7280' }}
+                                                  title={dashboardContent.mainDescriptionColor || '#6b7280'}
+                                                />
+                                                <input
+                                                  type="color"
+                                                  value={dashboardContent.mainDescriptionColor || '#6b7280'}
+                                                  onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionColor: e.target.value})}
+                                                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                                                />
+                                              </div>
+                                              <details className="group">
+                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">색상표 보기</summary>
+                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
+                                                  <div className="grid grid-cols-6 gap-1">
+                                                    {[
+                                                      '#000000', '#333333', '#666666', '#999999', '#CCCCCC', '#FFFFFF',
+                                                      '#8B4513', '#D2691E', '#CD853F', '#F4A460', '#DEB887', '#FAEBD7',
+                                                      '#DC2626', '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16',
+                                                      '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9', '#3B82F6',
+                                                      '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E'
+                                                    ].map((color) => (
+                                                      <button
+                                                        key={color}
+                                                        type="button"
+                                                        className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
+                                                          dashboardContent.mainDescriptionColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
+                                                        }`}
+                                                        style={{ backgroundColor: color }}
+                                                        onClick={() => setDashboardContent({...dashboardContent, mainDescriptionColor: color})}
+                                                        title={color}
+                                                      />
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </details>
+                                            </div>
                                           </div>
                                           <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1">글자 크기</label>
-                                            <select
-                                              value={dashboardContent.mainDescriptionSize || 'text-base'}
-                                              onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionSize: e.target.value})}
-                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            >
-                                              <option value="text-sm">작게</option>
-                                              <option value="text-base">보통</option>
-                                              <option value="text-lg">크게</option>
-                                              <option value="text-xl">매우 크게</option>
-                                              <option value="text-2xl">특대</option>
-                                            </select>
+                                            <div className="space-y-2">
+                                              <div className="p-2 border rounded bg-white text-center">
+                                                <div className="font-medium text-sm">
+                                                  {(() => {
+                                                    const sizeMap: Record<string, string> = {
+                                                      'text-sm md:text-base': '작게',
+                                                      'text-base md:text-lg': '보통',
+                                                      'text-lg md:text-xl': '크게',
+                                                      'text-xl md:text-2xl': '매우 크게'
+                                                    };
+                                                    return sizeMap[dashboardContent.mainDescriptionSize] || '보통';
+                                                  })()}
+                                                </div>
+                                                <div className="text-xs text-gray-500">{dashboardContent.mainDescriptionSize}</div>
+                                              </div>
+                                              <details className="group">
+                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">크기 선택</summary>
+                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
+                                                  <div className="grid grid-cols-2 gap-1 text-xs">
+                                                    {[
+                                                      { value: 'text-sm md:text-base', label: '작게', preview: '14px' },
+                                                      { value: 'text-base md:text-lg', label: '보통', preview: '16px' },
+                                                      { value: 'text-lg md:text-xl', label: '크게', preview: '18px' },
+                                                      { value: 'text-xl md:text-2xl', label: '매우 크게', preview: '20px' }
+                                                    ].map((size) => (
+                                                      <button
+                                                        key={size.value}
+                                                        type="button"
+                                                        className={`p-2 rounded border text-xs hover:bg-blue-50 transition-colors ${
+                                                          dashboardContent.mainDescriptionSize === size.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                                                        }`}
+                                                        onClick={() => setDashboardContent({...dashboardContent, mainDescriptionSize: size.value})}
+                                                      >
+                                                        <div className="font-medium">{size.label}</div>
+                                                        <div className="text-gray-500">{size.preview}</div>
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </details>
+                                            </div>
                                           </div>
                                           <div>
                                             <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
@@ -6194,6 +6352,50 @@ export default function Admin() {
                                               <option value="text-center">중앙</option>
                                               <option value="text-right">오른쪽</option>
                                             </select>
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">글꼴</label>
+                                            <div className="space-y-2">
+                                              <div className="p-2 border rounded bg-white text-center">
+                                                <div className="font-medium text-sm">
+                                                  {(() => {
+                                                    const fontMap: Record<string, string> = {
+                                                      'font-korean': '기본체',
+                                                      'font-serif': '명조체',
+                                                      'font-sans': '고딕체',
+                                                      'font-mono': '고정폭'
+                                                    };
+                                                    return fontMap[dashboardContent.mainDescriptionFont] || '기본체';
+                                                  })()}
+                                                </div>
+                                                <div className="text-xs text-gray-500">{dashboardContent.mainDescriptionFont}</div>
+                                              </div>
+                                              <details className="group">
+                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">글꼴 선택</summary>
+                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
+                                                  <div className="space-y-1">
+                                                    {[
+                                                      { value: 'font-korean', label: '기본체', preview: '나눔고딕' },
+                                                      { value: 'font-serif', label: '명조체', preview: 'serif' },
+                                                      { value: 'font-sans', label: '고딕체', preview: 'sans-serif' },
+                                                      { value: 'font-mono', label: '고정폭', preview: 'monospace' }
+                                                    ].map((font) => (
+                                                      <button
+                                                        key={font.value}
+                                                        type="button"
+                                                        className={`w-full p-2 rounded border text-xs hover:bg-blue-50 transition-colors text-left ${
+                                                          dashboardContent.mainDescriptionFont === font.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                                                        }`}
+                                                        onClick={() => setDashboardContent({...dashboardContent, mainDescriptionFont: font.value})}
+                                                      >
+                                                        <div className="font-medium">{font.label}</div>
+                                                        <div className="text-gray-500 text-xs">{font.preview}</div>
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                </div>
+                                              </details>
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
@@ -6213,8 +6415,9 @@ export default function Admin() {
                                               await Promise.all([
                                                 updateContentMutation.mutateAsync({ key: 'mainDescription', value: dashboardContent.mainDescription }),
                                                 updateContentMutation.mutateAsync({ key: 'mainDescriptionColor', value: dashboardContent.mainDescriptionColor || '#6b7280' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionSize', value: dashboardContent.mainDescriptionSize || 'text-base' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionAlign', value: dashboardContent.mainDescriptionAlign || 'text-center' })
+                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionSize', value: dashboardContent.mainDescriptionSize || 'text-base md:text-lg' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionAlign', value: dashboardContent.mainDescriptionAlign || 'text-center' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionFont', value: dashboardContent.mainDescriptionFont || 'font-korean' })
                                               ]);
                                               toast({
                                                 title: "저장됨",

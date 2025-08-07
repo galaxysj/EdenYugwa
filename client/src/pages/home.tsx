@@ -222,10 +222,12 @@ export default function Home() {
 
           <div className="text-center mb-6 md:mb-12">
             <h2 
-              className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto whitespace-pre-line ${
+              className={`font-bold mb-4 md:mb-6 leading-tight max-w-4xl mx-auto whitespace-pre-line ${
                 dashboardContent.mainTitleSize || 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'
               } ${
                 dashboardContent.mainTitleAlign || 'text-center'
+              } ${
+                dashboardContent.mainTitleFont || 'font-korean'
               }`}
               style={{ 
                 color: dashboardContent.mainTitleColor || '#8B4513' 
@@ -234,10 +236,12 @@ export default function Home() {
               {dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}
             </h2>
             <p 
-              className={`text-sm sm:text-base md:text-lg mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line ${
+              className={`mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line ${
                 dashboardContent.mainDescriptionSize || 'text-sm sm:text-base md:text-lg'
               } ${
                 dashboardContent.mainDescriptionAlign || 'text-center'
+              } ${
+                dashboardContent.mainDescriptionFont || 'font-korean'
               }`}
               style={{
                 color: dashboardContent.mainDescriptionColor || '#6b7280'
