@@ -30,6 +30,7 @@ export const api = {
         status: data.status,
         paymentStatus: data.paymentStatus,
         shippingFee: data.shippingFee,
+        dynamicProductQuantities: data.dynamicProductQuantities, // 동적 상품 수량 포함
       };
       
       console.log('실제 전송 데이터:', requestData);
