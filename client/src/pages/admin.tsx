@@ -220,10 +220,10 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleSubmit} className="flex-1">
+            <Button onClick={handleSubmit} className="flex-1 btn-dynamic-sm">
               확인
             </Button>
-            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
+            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1 btn-dynamic-sm">
               취소
             </Button>
           </div>
@@ -2598,18 +2598,18 @@ export default function Admin() {
             <CardContent>
               {/* 데스크탑 테이블 뷰 */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full admin-table">
                   <thead>
                     <tr className="border-b-2 border-gray-300 bg-gray-50">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문번호</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">고객명</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문일</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문내역</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">매출정보</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">입금정보</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">할인/미입금</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">원가분석</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">순수익</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">주문번호</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">고객명</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">주문일</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">주문내역</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">매출정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">입금정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">할인/미입금</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">원가분석</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">순수익</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -3548,21 +3548,21 @@ export default function Admin() {
           <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="col-order-number text-left">주문번호</th>
-                <th className="col-scheduled-date text-left">예약발송</th>
-                <th className="col-customer-name text-left">주문자</th>
-                <th className="col-customer-name text-left">예금자</th>
-                <th className="col-order-details text-left">주문내역</th>
-                <th className="col-phone text-left">연락처</th>
-                <th className="col-address text-left">배송주소</th>
-                <th className="col-address text-left">메모</th>
-                <th className="col-amount text-center text-blue-700">매출</th>
-                <th className="col-amount text-center text-green-700">실입금</th>
-                <th className="col-amount text-center text-red-700">할인/미입금</th>
-                <th className="col-status text-center">입금상태</th>
-                <th className="col-status text-center">주문상태</th>
-                <th className="col-status text-center">판매자발송</th>
-                <th className="col-actions text-center">관리</th>
+                <th className="col-order-number text-left admin-text-xs">주문번호</th>
+                <th className="col-scheduled-date text-left admin-text-xs">예약발송</th>
+                <th className="col-customer-name text-left admin-text-xs">주문자</th>
+                <th className="col-customer-name text-left admin-text-xs">예금자</th>
+                <th className="col-order-details text-left admin-text-xs">주문내역</th>
+                <th className="col-phone text-left admin-text-xs">연락처</th>
+                <th className="col-address text-left admin-text-xs">배송주소</th>
+                <th className="col-address text-left admin-text-xs">메모</th>
+                <th className="col-amount text-center text-blue-700 admin-text-xs">매출</th>
+                <th className="col-amount text-center text-green-700 admin-text-xs">실입금</th>
+                <th className="col-amount text-center text-red-700 admin-text-xs">할인/미입금</th>
+                <th className="col-status text-center admin-text-xs">입금상태</th>
+                <th className="col-status text-center admin-text-xs">주문상태</th>
+                <th className="col-status text-center admin-text-xs">판매자발송</th>
+                <th className="col-actions text-center admin-text-xs">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -3577,12 +3577,12 @@ export default function Admin() {
                     <td className="col-order-number">
                       <div className="flex items-center gap-2">
                         <StatusIcon className="h-4 w-4 text-gray-500" />
-                        <span className="font-bold text-gray-900">#{order.orderNumber}</span>
-                        <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="font-bold text-gray-900 admin-text-xs">#{order.orderNumber}</span>
+                        <span className="text-gray-500 admin-text-xs">{new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     </td>
                     <td className="col-scheduled-date">
-                      <div className="text-xs">
+                      <div className="admin-text-xs">
                         {order.scheduledDate ? (
                           <div className="text-blue-600 font-medium">
                             {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
@@ -3593,21 +3593,21 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-customer-name">
-                      <div className="text-sm font-medium">{order.customerName}</div>
+                      <div className="font-medium admin-text-xs">{order.customerName}</div>
                     </td>
                     <td className="col-customer-name">
-                      <div className="text-sm">{order.depositorName || order.customerName}</div>
+                      <div className="admin-text-xs">{order.depositorName || order.customerName}</div>
                     </td>
                     <td className="col-order-details">
-                      <div className="text-xs text-gray-700 max-w-xs">
+                      <div className="text-gray-700 max-w-xs admin-text-xs">
                         {renderOrderDetails(order)}
                       </div>
                     </td>
                     <td className="col-phone">
-                      <div className="text-xs">{order.customerPhone}</div>
+                      <div className="admin-text-xs">{order.customerPhone}</div>
                     </td>
                     <td className="col-address">
-                      <div className="text-xs max-w-xs">
+                      <div className="max-w-xs admin-text-xs">
                         <div className={checkRemoteArea(order.address1) ? 'text-black' : 'text-gray-700'}>
                           [{order.zipCode}] {order.address1}
                           {checkRemoteArea(order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
@@ -5794,20 +5794,20 @@ export default function Admin() {
                             
                             {/* Dynamic Product List with Pricing - Table Format */}
                             <div className="border rounded-lg overflow-hidden bg-white">
-                              <table className="w-full">
+                              <table className="w-full admin-table">
                                 <thead className="bg-gray-50">
                                   <tr>
-                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 w-16">#</th>
-                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">상품명</th>
-                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">크기/규격</th>
-                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">중량</th>
-                                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 w-36">작업</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-16 admin-text-xs">#</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">상품명</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">크기/규격</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">중량</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-36 admin-text-xs">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {(dashboardContent.productNames || []).map((product: any, index: number) => (
                                     <tr key={index} className="border-b border-gray-100">
-                                      <td className="px-4 py-3 text-sm text-gray-700 font-medium">
+                                      <td className="px-4 py-3 text-gray-700 font-medium admin-text-xs">
                                         {index + 1}
                                       </td>
                                       <td className="px-4 py-3">
@@ -5819,7 +5819,7 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="상품명"
-                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
                                         />
                                       </td>
                                       <td className="px-4 py-3">
@@ -5831,7 +5831,7 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="(가로×세로×높이)"
-                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
                                         />
                                       </td>
                                       <td className="px-4 py-3">
@@ -5843,7 +5843,7 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="중량"
-                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
                                         />
                                       </td>
                                       <td className="px-4 py-3 text-center">
@@ -6008,24 +6008,24 @@ export default function Admin() {
                             </div>
                             
                             <div className="border rounded-lg overflow-hidden">
-                              <table className="w-full text-sm">
+                              <table className="w-full admin-table">
                                 <thead>
                                   <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32 admin-text-xs">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32 admin-text-xs">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">메인 제목</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600 admin-text-xs">메인 제목</td>
                                     <td className="px-4 py-3">
                                       <div className="space-y-3">
                                         <Textarea
                                           value={dashboardContent.mainTitle}
                                           onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
                                           placeholder="메인 제목 (줄바꿈 가능)"
-                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
                                           rows={2}
                                         />
                                         
@@ -6241,14 +6241,14 @@ export default function Admin() {
                                   </tr>
                                   
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">메인 설명</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600 admin-text-xs">메인 설명</td>
                                     <td className="px-4 py-3">
                                       <div className="space-y-3">
                                         <Textarea
                                           value={dashboardContent.mainDescription}
                                           onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
                                           placeholder="메인 설명 (줄바꿈 가능)"
-                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
                                           rows={3}
                                         />
                                         
@@ -6687,23 +6687,23 @@ export default function Admin() {
                             </div>
                             
                             <div className="border rounded-lg overflow-hidden">
-                              <table className="w-full text-sm">
+                              <table className="w-full admin-table">
                                 <thead>
                                   <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32 admin-text-xs">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32 admin-text-xs">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">배송 제목</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600 admin-text-xs">배송 제목</td>
                                     <td className="px-4 py-3">
                                       <Textarea
                                         value={dashboardContent.shippingTitle || ''}
                                         onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
                                         placeholder="에덴한과 배송 (줄바꿈 가능)"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
                                         rows={2}
                                       />
                                     </td>
