@@ -557,19 +557,25 @@ export default function OrderLookup() {
                       </div>
                       
                       {/* 주문 요약 정보 */}
-                      <div className="mt-2 text-xs text-gray-600">
+                      <div className="mt-2 text-xs text-gray-600 space-y-0.5">
                         {(() => {
                           const summary = [];
                           
                           // 기본 상품들
                           if (order.smallBoxQuantity > 0) {
-                            summary.push(`${getProductName(0)} ${order.smallBoxQuantity}개`);
+                            summary.push(
+                              <div key="small">• {getProductName(0)} {order.smallBoxQuantity}개</div>
+                            );
                           }
                           if (order.largeBoxQuantity > 0) {
-                            summary.push(`${getProductName(1)} ${order.largeBoxQuantity}개`);
+                            summary.push(
+                              <div key="large">• {getProductName(1)} {order.largeBoxQuantity}개</div>
+                            );
                           }
                           if (order.wrappingQuantity > 0) {
-                            summary.push(`${getProductName(2)} ${order.wrappingQuantity}개`);
+                            summary.push(
+                              <div key="wrapping">• {getProductName(2)} {order.wrappingQuantity}개</div>
+                            );
                           }
 
                           // 동적 상품들
@@ -583,7 +589,9 @@ export default function OrderLookup() {
                                 const idx = parseInt(index);
                                 const qty = Number(quantity);
                                 if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
-                                  summary.push(`${getProductName(idx)} ${qty}개`);
+                                  summary.push(
+                                    <div key={`dynamic-${idx}`}>• {getProductName(idx)} {qty}개</div>
+                                  );
                                 }
                               });
                             } catch (error) {
@@ -591,12 +599,12 @@ export default function OrderLookup() {
                             }
                           }
 
-                          return summary.join(', ');
+                          return summary.length > 0 ? summary : <div>주문상품 없음</div>;
                         })()}
                         {order.scheduledDate && (
-                          <span className="ml-2 text-blue-600 font-medium">
+                          <div className="text-blue-600 font-medium mt-1">
                             📅 {formatDate(order.scheduledDate)}
-                          </span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -653,29 +661,35 @@ export default function OrderLookup() {
                         </h3>
                         <div className="bg-gray-50 p-4 rounded border text-sm">
                           <div className="flex justify-between items-start">
-                            <div className="space-y-2">
+                            <div className="space-y-1.5">
                               {(() => {
                                 const productDetails = [];
                                 
                                 // 기본 상품들
                                 if (order.smallBoxQuantity > 0) {
                                   productDetails.push(
-                                    <div key="small" className="font-medium">
+                                    <div key="small" className="font-medium flex items-center">
+                                      <span className="text-gray-400 mr-2">•</span>
                                       {getProductName(0)} × {order.smallBoxQuantity}개
                                     </div>
                                   );
                                 }
                                 if (order.largeBoxQuantity > 0) {
                                   productDetails.push(
-                                    <div key="large" className="font-medium">
+                                    <div key="large" className="font-medium flex items-center">
+                                      <span className="text-gray-400 mr-2">•</span>
                                       {getProductName(1)} × {order.largeBoxQuantity}개
                                     </div>
                                   );
                                 }
                                 if (order.wrappingQuantity > 0) {
                                   productDetails.push(
-                                    <div key="wrapping" className="text-gray-600">
-                                      {getProductName(2)} × {order.wrappingQuantity}개 (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
+                                    <div key="wrapping" className="text-gray-600 flex items-center">
+                                      <span className="text-gray-400 mr-2">•</span>
+                                      {getProductName(2)} × {order.wrappingQuantity}개 
+                                      <span className="ml-1 text-green-600">
+                                        (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
+                                      </span>
                                     </div>
                                   );
                                 }
@@ -692,7 +706,8 @@ export default function OrderLookup() {
                                       const qty = Number(quantity);
                                       if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
                                         productDetails.push(
-                                          <div key={`dynamic-${idx}`} className="font-medium">
+                                          <div key={`dynamic-${idx}`} className="font-medium flex items-center">
+                                            <span className="text-gray-400 mr-2">•</span>
                                             {getProductName(idx)} × {qty}개
                                           </div>
                                         );
@@ -703,19 +718,21 @@ export default function OrderLookup() {
                                   }
                                 }
 
-                                // 배송비
-                                if (order.shippingFee > 0) {
-                                  productDetails.push(
-                                    <div key="shipping" className="text-gray-600">
-                                      배송비: +{isAuthenticated ? `${order.shippingFee.toLocaleString()}원` : maskPrice()}
-                                    </div>
-                                  );
-                                }
-
+                                // 배송비를 별도 섹션으로 분리
                                 return productDetails.length > 0 ? productDetails : (
                                   <div className="text-gray-500">주문 상품 없음</div>
                                 );
                               })()}
+                              
+                              {/* 배송비를 별도로 표시 */}
+                              {order.shippingFee > 0 && (
+                                <div className="pt-2 mt-2 border-t border-gray-200">
+                                  <div className="text-gray-600 flex items-center">
+                                    <span className="text-gray-400 mr-2">📦</span>
+                                    배송비: {isAuthenticated ? `+${order.shippingFee.toLocaleString()}원` : maskPrice()}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-eden-brown">
