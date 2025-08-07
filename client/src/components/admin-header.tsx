@@ -110,7 +110,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
         {/* 모바일 드롭다운 메뉴 */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-3 space-y-2">
-            {location === '/admin' && setActiveTab && (
+            {(location === '/admin' || location === '/admin-settings') && setActiveTab && (
               <>
                 <Button 
                   onClick={() => {
@@ -273,7 +273,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
             {/* 메인 메뉴 */}
             <div className="flex items-center space-x-1">
               {/* 관리자 페이지 메뉴 */}
-              {location === '/admin' && setActiveTab && (
+              {(location === '/admin' || location === '/admin-settings') && setActiveTab && (
                 <>
                   <Button 
                     onClick={() => setActiveTab('revenue')}

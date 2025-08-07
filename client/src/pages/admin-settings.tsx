@@ -192,7 +192,20 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminHeader />
+      <AdminHeader 
+        handleExcelDownload={() => {}}
+        setActiveTab={(tab) => {
+          if (tab === 'settings') {
+            // 이미 설정 페이지에 있음
+            return;
+          }
+          // 다른 탭 클릭시 관리자 페이지로 이동
+          setLocation('/admin');
+        }}
+        activeTab="설정"
+        costSettingsDialog={<div />}
+        passwordChangeDialog={<div />}
+      />
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
