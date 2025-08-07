@@ -128,18 +128,6 @@ export default function Home() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
               <button 
-                onClick={() => scrollToSection('home')}
-                className="text-eden-dark hover:text-eden-brown transition-colors"
-              >
-                홈
-              </button>
-              <button 
-                onClick={() => scrollToSection('about')}
-                className="text-eden-dark hover:text-eden-brown transition-colors"
-              >
-                소개
-              </button>
-              <button 
                 onClick={() => scrollToSection('order')}
                 className="text-eden-dark hover:text-eden-brown transition-colors"
               >
