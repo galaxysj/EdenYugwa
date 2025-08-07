@@ -3225,6 +3225,325 @@ export default function Admin() {
   );
 
   // Render orders function
+  // 주문내역 전용 테이블 렌더링 함수 - 동적 상품 정보 표시
+  const renderOrderHistoryTable = (ordersList: Order[]) => {
+    if (ordersList.length === 0) {
+      return (
+        <div className="text-center py-8 text-gray-500">
+          주문내역이 없습니다.
+        </div>
+      );
+    }
+
+    // 동적 상품 이름 가져오기
+    const getProductName = (index: number) => {
+      try {
+        const productNames = Array.isArray(dashboardContent.productNames) 
+          ? dashboardContent.productNames 
+          : JSON.parse(dashboardContent.productNames || '[]');
+        
+        if (productNames[index] && productNames[index].name) {
+          return productNames[index].name;
+        }
+        
+        // 기본값 반환
+        if (index === 0) return '한과1호';
+        if (index === 1) return '한과2호';
+        if (index === 2) return '보자기';
+        return `상품${index + 1}`;
+      } catch (error) {
+        console.error('상품명 파싱 오류:', error);
+        if (index === 0) return '한과1호';
+        if (index === 1) return '한과2호';
+        if (index === 2) return '보자기';
+        return `상품${index + 1}`;
+      }
+    };
+
+    // 주문내역 표시 함수
+    const renderOrderDetails = (order: Order) => {
+      const details = [];
+      
+      // 기본 상품들
+      if (order.smallBoxQuantity > 0) {
+        details.push(`${getProductName(0)}×${order.smallBoxQuantity}개`);
+      }
+      if (order.largeBoxQuantity > 0) {
+        details.push(`${getProductName(1)}×${order.largeBoxQuantity}개`);
+      }
+      if (order.wrappingQuantity > 0) {
+        details.push(`${getProductName(2)}×${order.wrappingQuantity}개`);
+      }
+
+      // 동적 상품들
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+
+          Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+            const idx = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+              details.push(`${getProductName(idx)}×${qty}개`);
+            }
+          });
+        } catch (error) {
+          console.error('동적 상품 수량 파싱 오류:', error);
+        }
+      }
+
+      return details.length > 0 ? details.join(', ') : '주문상품 없음';
+    };
+
+    return (
+      <>
+        {/* Desktop Table */}
+        <div className="hidden lg:block bg-white rounded-lg border">
+          <table className="w-full admin-table">
+            <thead className="bg-gray-50">
+              <tr className="border-b border-gray-200">
+                <th className="col-order-number text-left">주문번호</th>
+                <th className="col-scheduled-date text-left">예약발송</th>
+                <th className="col-customer-name text-left">주문자</th>
+                <th className="col-customer-name text-left">예금자</th>
+                <th className="col-order-details text-left">주문내역</th>
+                <th className="col-phone text-left">연락처</th>
+                <th className="col-address text-left">배송주소</th>
+                <th className="col-address text-left">메모</th>
+                <th className="col-amount text-center text-blue-700">매출</th>
+                <th className="col-amount text-center text-green-700">실입금</th>
+                <th className="col-amount text-center text-red-700">할인/미입금</th>
+                <th className="col-status text-center">입금상태</th>
+                <th className="col-status text-center">주문상태</th>
+                <th className="col-status text-center">판매자발송</th>
+                <th className="col-actions text-center">관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ordersList.map((order: Order) => {
+                const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+                return (
+                  <tr key={order.id} className={`border-b border-gray-100 ${
+                    order.paymentStatus === 'pending' ? 'bg-red-100 hover:bg-red-100' : 
+                    order.status === 'seller_shipped' ? 'bg-blue-50 hover:bg-blue-100' : 
+                    'hover:bg-gray-50'
+                  }`}>
+                    <td className="col-order-number">
+                      <div className="flex items-center gap-2">
+                        <StatusIcon className="h-4 w-4 text-gray-500" />
+                        <span className="font-bold text-gray-900">#{order.orderNumber}</span>
+                        <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    </td>
+                    <td className="col-scheduled-date">
+                      <div className="text-xs">
+                        {order.scheduledDate ? (
+                          <div className="text-blue-600 font-medium">
+                            {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">없음</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="col-customer-name">
+                      <div className="text-sm font-medium">{order.customerName}</div>
+                    </td>
+                    <td className="col-customer-name">
+                      <div className="text-sm">{order.depositorName || order.customerName}</div>
+                    </td>
+                    <td className="col-order-details">
+                      <div className="text-xs text-gray-700 max-w-xs">
+                        {renderOrderDetails(order)}
+                      </div>
+                    </td>
+                    <td className="col-phone">
+                      <div className="text-xs">{order.customerPhone}</div>
+                    </td>
+                    <td className="col-address">
+                      <div className="text-xs max-w-xs">
+                        <div className={checkRemoteArea(order.address1) ? 'text-black' : 'text-gray-700'}>
+                          [{order.zipCode}] {order.address1}
+                          {checkRemoteArea(order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
+                        </div>
+                        {order.address2 && <div className="text-gray-600">{order.address2}</div>}
+                      </div>
+                    </td>
+                    <td className="col-address">
+                      <div className="text-xs text-gray-600 max-w-xs truncate" title={order.specialRequests || ''}>
+                        {order.specialRequests || '-'}
+                      </div>
+                    </td>
+                    <td className="col-amount text-center">
+                      <div className="text-sm font-bold text-blue-700">{formatPrice(order.totalAmount)}</div>
+                    </td>
+                    <td className="col-amount text-center">
+                      <div className="text-sm font-bold text-green-700">
+                        {formatPrice(order.actualPaidAmount || order.totalAmount)}
+                      </div>
+                    </td>
+                    <td className="col-amount text-center">
+                      <div className="text-sm font-bold text-red-700">
+                        {(() => {
+                          const discountAmount = order.discountAmount || 0;
+                          const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
+                          const unpaidAmount = order.totalAmount - actualPaidAmount - discountAmount;
+                          return unpaidAmount > 0 ? formatPrice(unpaidAmount) : (discountAmount > 0 ? formatPrice(discountAmount) : '0원');
+                        })()}
+                      </div>
+                    </td>
+                    <td className="col-status text-center">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                        order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                        order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                         order.paymentStatus === 'confirmed' ? '입금완료' :
+                         order.paymentStatus === 'partial' ? '부분결제' :
+                         order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                      </span>
+                    </td>
+                    <td className="col-status text-center">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {statusLabels[order.status as keyof typeof statusLabels]}
+                      </span>
+                    </td>
+                    <td className="col-status text-center">
+                      <div className="text-xs">
+                        {order.sellerShipped ? (
+                          <div className="text-green-600 font-medium">
+                            완료
+                            {order.sellerShippedDate && (
+                              <div className="text-blue-600">
+                                {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-gray-400">미처리</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="col-actions text-center">
+                      <div className="flex flex-col gap-1 items-center">
+                        <SmsDialog order={order}>
+                          <Button size="sm" variant="outline" className="h-6 text-xs px-2">
+                            SMS
+                          </Button>
+                        </SmsDialog>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile List */}
+        <div className="lg:hidden space-y-1">
+          {ordersList.map((order: Order) => {
+            const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+            const discountAmount = order.discountAmount || 0;
+            const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
+            const unpaidAmount = order.totalAmount - actualPaidAmount - discountAmount;
+            const isExpanded = expandedOrders.has(order.id);
+            
+            return (
+              <div key={order.id} className={`border border-gray-200 rounded-lg bg-white ${
+                order.paymentStatus === 'pending' ? 'border-red-200 bg-red-50' : 
+                order.status === 'seller_shipped' ? 'border-blue-200 bg-blue-50' : 
+                ''
+              }`}>
+                {/* 간결한 리스트 뷰 */}
+                <div 
+                  className="p-3 cursor-pointer hover:bg-gray-50"
+                  onClick={() => toggleOrderExpansion(order.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-900 text-xs">#{order.orderNumber}</span>
+                      <span className="text-gray-700 text-xs">{order.customerName}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                        order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                        order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
+                         order.paymentStatus === 'confirmed' ? '입금완료' :
+                         order.paymentStatus === 'partial' ? '부분결제' :
+                         order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-blue-600 text-xs">{formatPrice(order.totalAmount)}</span>
+                      <span className="text-xs text-gray-400">
+                        {isExpanded ? '▲' : '▼'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 확장형 상세 뷰 */}
+                {isExpanded && (
+                  <div className="px-3 pb-3 border-t border-gray-100">
+                    {/* 주문내역 */}
+                    <div className="mb-2 pt-2">
+                      <div className="text-xs text-gray-700 space-y-0.5 mb-2">
+                        {renderOrderDetails(order).split(', ').map((detail, index) => (
+                          <div key={index}>{detail}</div>
+                        ))}
+                      </div>
+                      <div className="flex justify-end">
+                        <span className={`px-2 py-0.5 rounded text-xs ${
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                          order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {statusLabels[order.status as keyof typeof statusLabels]}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* 연락처 및 주소 */}
+                    <div className="space-y-1 text-xs text-gray-600 mb-2">
+                      <div>📞 {order.customerPhone}</div>
+                      <div className={checkRemoteArea(order.address1) ? 'text-black' : ''}>
+                        📍 [{order.zipCode}] {order.address1} {order.address2}
+                        {checkRemoteArea(order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
+                      </div>
+                      {order.specialRequests && <div>📝 {order.specialRequests}</div>}
+                    </div>
+
+                    {/* 버튼 */}
+                    <div className="flex justify-end">
+                      <SmsDialog order={order}>
+                        <Button size="sm" variant="outline" className="h-7 text-xs px-3">
+                          SMS 발송
+                        </Button>
+                      </SmsDialog>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
+
   const renderOrdersList = (ordersList: Order[]) => {
     if (ordersList.length === 0) {
       return (
@@ -4062,8 +4381,12 @@ export default function Admin() {
                     <TabsTrigger value="seller_shipped" className="text-sm px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
                     <TabsTrigger value="scheduled" className="text-sm px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-3 mb-2">
+                  <TabsList className="grid w-full grid-cols-4 mb-2">
                     <TabsTrigger value="delivered" className="text-sm px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="order_history" className="text-green-600 text-xs px-1">
+                      <Package className="h-3 w-3 mr-1" />
+                      주문내역
+                    </TabsTrigger>
                     <TabsTrigger value="refunded" className="text-red-600 text-sm px-1">
                       환불내역 ({refundedOrders.length})
                     </TabsTrigger>
@@ -4090,12 +4413,13 @@ export default function Admin() {
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
                 <div className="hidden md:block">
-                  <TabsList className="grid w-full grid-cols-10">
+                  <TabsList className="grid w-full grid-cols-11">
                     <TabsTrigger value="all" className="text-sm">전체 ({allOrders.length})</TabsTrigger>
                     <TabsTrigger value="pending" className="text-sm">주문접수 ({pendingOrders.length})</TabsTrigger>
                     <TabsTrigger value="seller_shipped" className="text-sm">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
                     <TabsTrigger value="scheduled" className="text-sm">발송주문 ({scheduledOrders.length})</TabsTrigger>
                     <TabsTrigger value="delivered" className="text-sm">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="order_history" className="text-green-600 text-sm">주문내역</TabsTrigger>
                     <TabsTrigger value="refunded" className="text-red-600 text-sm">환불내역 ({refundedOrders.length})</TabsTrigger>
                     <TabsTrigger value="revenue" className="text-purple-600 text-sm">매출관리</TabsTrigger>
                     <TabsTrigger value="customers" className="text-blue-600 text-sm">고객관리</TabsTrigger>
@@ -4401,6 +4725,25 @@ export default function Admin() {
                     </div>
                   )}
                   {renderOrdersList(deliveredOrders)}
+                </TabsContent>
+
+                <TabsContent value="order_history" className="mt-6">
+                  {renderOrderFilters()}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="text-sm text-gray-600">
+                      총 {allOrders.length}개 주문내역
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => exportToExcel(allOrders, "주문내역목록")}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      엑셀 다운로드
+                    </Button>
+                  </div>
+                  {renderOrderHistoryTable(allOrders)}
                 </TabsContent>
 
                 <TabsContent value="refunded" className="mt-6">
