@@ -2279,7 +2279,7 @@ export default function Admin() {
         <Card className="bg-white border-eden-red/20">
           <CardContent className="p-4 md:p-6">
             <div className="text-center mb-4 md:mb-6">
-              <h3 className="text-base md:text-xl font-bold text-eden-red mb-2">
+              <h3 className="admin-text-sm font-bold text-eden-red mb-2">
                 💰 매출 총합계 ({dateFilter === 'all' ? '전체' : 
                   dateFilter === 'today' ? '오늘' :
                   dateFilter === 'week' ? '7일' :
@@ -2307,40 +2307,40 @@ export default function Admin() {
                     return (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 md:gap-4 text-center">
                         <div>
-                          <div className="font-semibold text-gray-700 mb-1 text-xs md:text-sm">주문건수</div>
-                          <div className="text-sm md:text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
+                          <div className="font-semibold text-gray-700 mb-1 admin-text-xxs">주문건수</div>
+                          <div className="admin-text-xs font-bold text-gray-800">{filteredTotals.count}건</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">한과1호</div>
-                          <div className="text-sm md:text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
+                          <div className="font-semibold text-amber-700 mb-1 admin-text-xxs">한과1호</div>
+                          <div className="admin-text-xs font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">한과2호</div>
-                          <div className="text-sm md:text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
+                          <div className="font-semibold text-orange-700 mb-1 admin-text-xxs">한과2호</div>
+                          <div className="admin-text-xs font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">보자기</div>
-                          <div className="text-sm md:text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
+                          <div className="font-semibold text-eden-brown mb-1 admin-text-xxs">보자기</div>
+                          <div className="admin-text-xs font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
-                          <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                          <div className="font-semibold text-blue-700 mb-1 admin-text-xxs">택배건수</div>
+                          <div className="admin-text-xs font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
-                          <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                          <div className="font-semibold text-red-700 mb-1 admin-text-xxs">환불건수</div>
+                          <div className="admin-text-xs font-bold text-red-600">{refundedOrders.length}건</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
-                          <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                          <div className="font-semibold text-green-700 mb-1 admin-text-xxs">실제입금</div>
+                          <div className="admin-text-xs font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
-                          <div className="text-sm md:text-lg font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
+                          <div className="font-semibold text-red-700 mb-1 admin-text-xxs">총원가</div>
+                          <div className="admin-text-xs font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
-                          <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          <div className="font-semibold text-purple-700 mb-1 admin-text-xxs">순수익</div>
+                          <div className={`admin-text-xs font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                             {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                           </div>
                         </div>
@@ -2586,12 +2586,12 @@ export default function Admin() {
           <Card className="border-gray-200">
             <CardHeader className="bg-gray-50">
               <CardTitle className="flex items-center justify-between">
-                <span className="admin-text text-gray-800">📊 매출 상세내역</span>
-                <span className="admin-text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded">
+                <span className="admin-text-sm text-gray-800">📊 매출 상세내역</span>
+                <span className="admin-text-xxs font-normal text-gray-600 bg-white px-2 py-1 rounded">
                   {orders.length}건
                 </span>
               </CardTitle>
-              <p className="admin-text-xs text-gray-700 mt-1">
+              <p className="admin-text-xxs text-gray-700 mt-1">
                 매출 분석을 위한 주문별 상세 정보 (모바일에서 리스트형으로 최적화)
               </p>
             </CardHeader>

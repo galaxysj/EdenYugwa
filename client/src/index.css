@@ -824,6 +824,12 @@ p, .text, div, span, .paragraph {
   line-height: clamp(1.2, 1.3vw + 1.1, 1.6) !important;
 }
 
+/* 메뉴 텍스트 전용 더 작은 크기 */
+.admin-menu-text {
+  font-size: clamp(0.5rem, 1.2vw, 0.75rem) !important;
+  line-height: clamp(0.75rem, 1.6vw, 1rem) !important;
+}
+
 /* 작은 텍스트 */
 .text-sm, .small, small, .caption {
   font-size: clamp(0.25rem, 1.8vw + 0.08rem, 0.875rem) !important;
