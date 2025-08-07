@@ -2050,7 +2050,10 @@ export default function Admin() {
       acc.totalDiscounts += order.discountAmount || 0;
       acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
         ? (order.totalAmount - order.actualPaidAmount) : 0;
-      acc.netProfit += order.netProfit || 0;
+      
+      // Calculate net profit dynamically including shipping costs
+      const orderRevenue = order.actualPaidAmount || order.totalAmount;
+      const orderDiscounts = order.discountAmount || 0;
       
       // Use historical pricing and cost data stored in the order for accurate calculations
       // If no historical cost, use current dynamic costs
@@ -2077,7 +2080,13 @@ export default function Admin() {
       const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
       const wrappingPrice = order.wrappingPrice || currentWrappingPrice;
       
-      acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
+      // Calculate total order cost including shipping
+      const totalOrderCost = smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
+      acc.totalCost += totalOrderCost;
+      
+      // Calculate net profit for this order
+      acc.netProfit += orderRevenue - totalOrderCost - orderDiscounts;
+      
       acc.smallBoxAmount += order.smallBoxQuantity * smallBoxPrice;
       acc.largeBoxAmount += order.largeBoxQuantity * largeBoxPrice;
       acc.wrappingAmount += order.wrappingQuantity * wrappingPrice;
@@ -2789,14 +2798,14 @@ export default function Admin() {
                                 </div>
                               )}
                               <div className="font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-2">
-                                총원가: {formatPrice(order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost)}
+                                총원가: {formatPrice(order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost + shippingFee)}
                               </div>
                             </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
                             {(() => {
-                              // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액 (배송비는 총액에 이미 포함되어 있음)
-                              const actualTotalCost = order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost;
+                              // 순수익 = 총매출 - 원가(배송비 포함) - 할인금액 - 미입금금액
+                              const actualTotalCost = order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost + shippingFee;
                               const actualProfit = order.totalAmount - actualTotalCost - discountAmount - unpaidAmount;
                               return (
                                 <div>
@@ -2903,14 +2912,14 @@ export default function Admin() {
                     }
                   }
                   
-                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost;
+                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost + shippingFee;
                   
                   // Calculate discount and unpaid amounts
                   const discountAmount = order.discountAmount || 0;
                   const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
                     ? (order.totalAmount - order.actualPaidAmount) : 0;
                   
-                  // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액 (배송비는 총액에 이미 포함되어 있음)
+                  // 순수익 = 총매출 - 원가(배송비 포함) - 할인금액 - 미입금금액
                   const actualProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
                   
                   return (
