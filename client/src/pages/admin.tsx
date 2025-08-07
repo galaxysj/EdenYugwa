@@ -1702,7 +1702,12 @@ export default function Admin() {
       const largeBoxesCost = order.largeBoxQuantity * largeCost;
       const wrappingCost = order.wrappingQuantity * wrappingCostValue;
       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
-      const netProfit = (order.actualPaidAmount || order.totalAmount) - totalCost;
+      // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액
+      const discountAmount = order.discountAmount || 0;
+      const actualPaid = order.actualPaidAmount || order.totalAmount;
+      const unpaidAmount = (actualPaid < order.totalAmount && !discountAmount) 
+        ? (order.totalAmount - actualPaid) : 0;
+      const netProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
       
       return {
         '주문번호': order.orderNumber,
@@ -2776,8 +2781,8 @@ export default function Admin() {
                           </td>
                           <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
                             {(() => {
-                              // 실제수익 = 주문가격 - 원가 - 배송비 - 할인/미입금
-                              const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
+                              // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액 (배송비는 총액에 이미 포함되어 있음)
+                              const actualProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
                               return (
                                 <div>
                                   <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
@@ -2886,8 +2891,8 @@ export default function Admin() {
                   const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
                     ? (order.totalAmount - order.actualPaidAmount) : 0;
                   
-                  // Calculate profit
-                  const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
+                  // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액 (배송비는 총액에 이미 포함되어 있음)
+                  const actualProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
                   
                   return (
                     <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
