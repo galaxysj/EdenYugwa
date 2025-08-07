@@ -639,7 +639,7 @@ export default function OrderLookup() {
                                 }
                                 if (order.wrappingQuantity > 0) {
                                   productDetails.push(
-                                    <div key="wrapping" className="text-gray-600 flex items-center">
+                                    <div key="wrapping" className="font-medium flex items-center">
                                       <span className="text-gray-400 mr-2">•</span>
                                       {getProductName(2)} × {order.wrappingQuantity}개 
                                       <span className="ml-1 text-green-600">
