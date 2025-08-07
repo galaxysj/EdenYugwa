@@ -2375,10 +2375,10 @@ export default function Admin() {
                         
                         return (
                           <div key={index}>
-                            <div className={`font-semibold text-${colorClass}-700 mb-1 text-xs md:text-sm`}>
+                            <div className={`font-semibold text-${colorClass}-700 mb-1 admin-text-xs`}>
                               {product.name}
                             </div>
-                            <div className={`text-sm md:text-lg font-bold text-${colorClass}-600`}>
+                            <div className={`admin-text-sm font-bold text-${colorClass}-600`}>
                               {quantity}개
                             </div>
                           </div>
@@ -2386,30 +2386,30 @@ export default function Admin() {
                       })}
                       
                       <div>
-                        <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
-                        <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                        <div className="font-semibold text-blue-700 mb-1 admin-text-xs">택배건수</div>
+                        <div className="admin-text-sm font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
-                        <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
+                        <div className="font-semibold text-red-700 mb-1 admin-text-xs">환불건수</div>
+                        <div className="admin-text-sm font-bold text-red-600">{refundedOrders.length}건</div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
-                        <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                        <div className="font-semibold text-green-700 mb-1 admin-text-xs">실제입금</div>
+                        <div className="admin-text-sm font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
-                        <div className="text-sm md:text-lg font-bold text-red-600">
+                        <div className="font-semibold text-red-700 mb-1 admin-text-xs">총원가</div>
+                        <div className="admin-text-sm font-bold text-red-600">
                           {formatPrice(filteredTotals.totalCost)}
                         </div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
-                        <div className={`text-sm md:text-lg font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                        <div className="font-semibold text-purple-700 mb-1 admin-text-xs">순수익</div>
+                        <div className={`admin-text-sm font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                           {formatPrice(filteredTotals.netProfit)}
                         </div>
                       </div>
@@ -2469,16 +2469,16 @@ export default function Admin() {
               {/* 핵심 수치 3개 */}
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                  <div className="text-green-600 text-xs font-medium mb-1">실제입금</div>
-                  <div className="text-green-700 text-sm font-bold">{formatPrice(filteredTotals.actualRevenue)}</div>
+                  <div className="text-green-600 admin-text-xs font-medium mb-1">실제입금</div>
+                  <div className="text-green-700 admin-text-sm font-bold">{formatPrice(filteredTotals.actualRevenue)}</div>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-                  <div className="text-red-600 text-xs font-medium mb-1">총원가</div>
-                  <div className="text-red-700 text-sm font-bold">{formatPrice(filteredTotals.totalCost)}</div>
+                  <div className="text-red-600 admin-text-xs font-medium mb-1">총원가</div>
+                  <div className="text-red-700 admin-text-sm font-bold">{formatPrice(filteredTotals.totalCost)}</div>
                 </div>
                 <div className={`border rounded-lg p-3 text-center ${filteredTotals.netProfit >= 0 ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}`}>
-                  <div className={`text-xs font-medium mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
-                  <div className={`text-sm font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
+                  <div className={`admin-text-xs font-medium mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
+                  <div className={`admin-text-sm font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
                     {formatPrice(filteredTotals.netProfit)}
                   </div>
                 </div>
@@ -2487,8 +2487,8 @@ export default function Admin() {
               {/* 상세 정보 리스트 */}
               <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-gray-600">주문건수</span>
-                  <span className="text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
+                  <span className="admin-text-xs text-gray-600">주문건수</span>
+                  <span className="admin-text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
                 </div>
                 
                 {(() => {
@@ -2507,16 +2507,16 @@ export default function Admin() {
                       return (
                         <>
                           <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                            <span className="text-xs text-amber-600">한과1호</span>
-                            <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
+                            <span className="admin-text-xs text-amber-600">한과1호</span>
+                            <span className="admin-text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                           </div>
                           <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                            <span className="text-xs text-orange-600">한과2호</span>
-                            <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
+                            <span className="admin-text-xs text-orange-600">한과2호</span>
+                            <span className="admin-text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                           </div>
                           <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                            <span className="text-xs text-eden-brown">보자기</span>
-                            <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
+                            <span className="admin-text-xs text-eden-brown">보자기</span>
+                            <span className="admin-text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                           </div>
                         </>
                       );
@@ -2537,10 +2537,10 @@ export default function Admin() {
                       
                       return (
                         <div key={index} className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className={`text-xs text-${colorClass}-600`}>
+                          <span className={`admin-text-xs text-${colorClass}-600`}>
                             {product.name}
                           </span>
-                          <span className={`text-sm font-bold text-${colorClass}-700`}>
+                          <span className={`admin-text-sm font-bold text-${colorClass}-700`}>
                             {quantity}개
                           </span>
                         </div>
@@ -2552,16 +2552,16 @@ export default function Admin() {
                     return (
                       <>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="text-xs text-amber-600">한과1호</span>
-                          <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
+                          <span className="admin-text-xs text-amber-600">한과1호</span>
+                          <span className="admin-text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                         </div>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="text-xs text-orange-600">한과2호</span>
-                          <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
+                          <span className="admin-text-xs text-orange-600">한과2호</span>
+                          <span className="admin-text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                         </div>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="text-xs text-eden-brown">보자기</span>
-                          <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
+                          <span className="admin-text-xs text-eden-brown">보자기</span>
+                          <span className="admin-text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                         </div>
                       </>
                     );
@@ -2569,12 +2569,12 @@ export default function Admin() {
                 })()}
                 
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="text-xs text-gray-600">택배건수</span>
-                  <span className="text-sm font-bold text-gray-700">{filteredTotals.shippingOrders}건</span>
+                  <span className="admin-text-xs text-gray-600">택배건수</span>
+                  <span className="admin-text-sm font-bold text-gray-700">{filteredTotals.shippingOrders}건</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-xs text-gray-600">환불건수</span>
-                  <span className="text-sm font-bold text-gray-700">{refundedOrders.length}건</span>
+                  <span className="admin-text-xs text-gray-600">환불건수</span>
+                  <span className="admin-text-sm font-bold text-gray-700">{refundedOrders.length}건</span>
                 </div>
               </div>
             </div>
@@ -2586,12 +2586,12 @@ export default function Admin() {
           <Card className="border-gray-200">
             <CardHeader className="bg-gray-50">
               <CardTitle className="flex items-center justify-between">
-                <span className="text-base md:text-lg text-gray-800">📊 매출 상세내역</span>
-                <span className="text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded">
+                <span className="admin-text text-gray-800">📊 매출 상세내역</span>
+                <span className="admin-text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded">
                   {orders.length}건
                 </span>
               </CardTitle>
-              <p className="text-xs md:text-sm text-gray-700 mt-1">
+              <p className="admin-text-xs text-gray-700 mt-1">
                 매출 분석을 위한 주문별 상세 정보 (모바일에서 리스트형으로 최적화)
               </p>
             </CardHeader>

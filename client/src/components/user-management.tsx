@@ -92,11 +92,11 @@ export function UserManagement() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return <Badge variant="destructive" className="gap-1">{getRoleIcon(role)} 관리자</Badge>;
+        return <Badge variant="destructive" className="gap-1 admin-text-xs">{getRoleIcon(role)} 관리자</Badge>;
       case 'manager':
-        return <Badge variant="default" className="gap-1">{getRoleIcon(role)} 매니저</Badge>;
+        return <Badge variant="default" className="gap-1 admin-text-xs">{getRoleIcon(role)} 매니저</Badge>;
       default:
-        return <Badge variant="secondary" className="gap-1">{getRoleIcon(role)} 일반사용자</Badge>;
+        return <Badge variant="secondary" className="gap-1 admin-text-xs">{getRoleIcon(role)} 일반사용자</Badge>;
     }
   };
 
@@ -156,12 +156,12 @@ export function UserManagement() {
                     <td className="p-3">{getRoleBadge(user.role)}</td>
                     <td className="p-3">
                       {user.isActive ? (
-                        <Badge variant="outline" className="gap-1">
+                        <Badge variant="outline" className="gap-1 admin-text-xs">
                           <CheckCircle className="h-3 w-3" />
                           활성
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1">
+                        <Badge variant="secondary" className="gap-1 admin-text-xs">
                           <AlertTriangle className="h-3 w-3" />
                           비활성
                         </Badge>
@@ -178,6 +178,7 @@ export function UserManagement() {
                               variant="outline"
                               onClick={() => handleRoleChange(user, 'manager')}
                               disabled={updateRoleMutation.isPending}
+                              className="admin-text-xs"
                             >
                               매니저 승격
                             </Button>
@@ -187,6 +188,7 @@ export function UserManagement() {
                               variant="outline"
                               onClick={() => handleRoleChange(user, 'user')}
                               disabled={updateRoleMutation.isPending}
+                              className="admin-text-xs"
                             >
                               일반사용자로 변경
                             </Button>
@@ -223,12 +225,12 @@ export function UserManagement() {
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       {user.isActive ? (
-                        <Badge variant="outline" className="gap-1 text-xs px-1 py-0">
+                        <Badge variant="outline" className="gap-1 admin-text-xs px-1 py-0">
                           <CheckCircle className="h-2 w-2" />
                           활성
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1 text-xs px-1 py-0">
+                        <Badge variant="secondary" className="gap-1 admin-text-xs px-1 py-0">
                           <AlertTriangle className="h-2 w-2" />
                           비활성
                         </Badge>
