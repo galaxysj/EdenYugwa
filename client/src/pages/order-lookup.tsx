@@ -557,7 +557,7 @@ export default function OrderLookup() {
                       </div>
                       
                       {/* 주문 요약 정보 */}
-                      <div className="mt-2 text-xs text-gray-600 space-y-0.5">
+                      <div className="mt-2 text-sm text-gray-600 space-y-0.5">
                         {(() => {
                           const summary = [];
                           
@@ -659,7 +659,7 @@ export default function OrderLookup() {
                           <Package className="mr-2 h-4 w-4" />
                           주문 상품
                         </h3>
-                        <div className="bg-gray-50 p-4 rounded border text-sm">
+                        <div className="bg-gray-50 p-4 rounded border text-base">
                           <div className="flex justify-between items-start">
                             <div className="space-y-1.5">
                               {(() => {
