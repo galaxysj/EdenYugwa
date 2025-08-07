@@ -279,6 +279,13 @@ export default function OrderForm() {
         
         setProductNames(updatedProductNames);
         
+        // 동적 상품 수량 초기화 - 모든 상품을 0으로 설정
+        const initialQuantities: {[key: number]: number} = {};
+        updatedProductNames.forEach((_, index) => {
+          initialQuantities[index] = 0;
+        });
+        setDynamicQuantities(initialQuantities);
+        
         // 기존 가격 업데이트 로직
         const wrappingProduct = updatedProductNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
         const updatedPrices = {
@@ -293,10 +300,26 @@ export default function OrderForm() {
       } catch (error) {
         console.error('상품 가격 로드 실패:', error);
         // Fallback to basic product names without price updates
-        setProductNames(parseProductNames());
+        const basicProductNames = parseProductNames();
+        setProductNames(basicProductNames);
+        
+        // 동적 상품 수량 초기화
+        const initialQuantities: {[key: number]: number} = {};
+        basicProductNames.forEach((_, index) => {
+          initialQuantities[index] = 0;
+        });
+        setDynamicQuantities(initialQuantities);
       }
     } else if (dashboardContent) {
-      setProductNames(parseProductNames());
+      const basicProductNames = parseProductNames();
+      setProductNames(basicProductNames);
+      
+      // 동적 상품 수량 초기화
+      const initialQuantities: {[key: number]: number} = {};
+      basicProductNames.forEach((_, index) => {
+        initialQuantities[index] = 0;
+      });
+      setDynamicQuantities(initialQuantities);
     }
   }, [dashboardContent?.productNames, settingsData]);
 
