@@ -629,10 +629,10 @@ function PriceSettingsDialog() {
                   <table className="w-full min-w-[600px] border border-gray-200 rounded-lg">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">상품명</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">원가 (원)</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">판매가 (원)</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 border-b w-[25%]">배송비 제외</th>
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-gray-800 border-b w-[30%]">상품명</th>
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">원가 (원)</th>
+                        <th className="px-2 py-2 text-left text-sm font-semibold text-gray-800 border-b w-[25%]">판매가 (원)</th>
+                        <th className="px-2 py-2 text-center text-sm font-semibold text-gray-800 border-b w-[20%]">배송비 제외</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -640,14 +640,14 @@ function PriceSettingsDialog() {
                         const productKey = product.key || `product_${index}`;
                         return (
                           <tr key={index} className="hover:bg-gray-50 transition-colors duration-150 border-b last:border-b-0">
-                            <td className="px-4 py-4 text-sm font-medium text-gray-900 w-[25%] align-top">
+                            <td className="px-2 py-2 text-sm font-medium text-gray-900 w-[30%] align-top">
                               <div className="break-words">{product.name}</div>
                             </td>
-                            <td className="px-4 py-4 w-[25%] align-top">
-                              <div className="space-y-2">
+                            <td className="px-2 py-2 w-[25%] align-top">
+                              <div className="flex gap-1">
                                 <Input
                                   type="number"
-                                  placeholder="원가 입력"
+                                  placeholder="원가"
                                   value={productPrices[productKey]?.cost || ""}
                                   onChange={(e) => setProductPrices(prev => ({
                                     ...prev,
@@ -657,31 +657,29 @@ function PriceSettingsDialog() {
                                       excludeFromShipping: prev[productKey]?.excludeFromShipping || false
                                     }
                                   }))}
-                                  className="w-full text-sm"
+                                  className="flex-1 text-sm h-7"
                                 />
-                                <div className="flex justify-end">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => saveIndividualPrice(
-                                      productKey, 
-                                      'cost', 
-                                      productPrices[productKey]?.cost || "", 
-                                      product.name
-                                    )}
-                                    disabled={savingPrices[`${productKey}-cost`] || !productPrices[productKey]?.cost}
-                                    variant="ghost"
-                                    className="px-3 py-1 text-xs h-7 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                  >
-                                    {savingPrices[`${productKey}-cost`] ? '저장중...' : '저장'}
-                                  </Button>
-                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => saveIndividualPrice(
+                                    productKey, 
+                                    'cost', 
+                                    productPrices[productKey]?.cost || "", 
+                                    product.name
+                                  )}
+                                  disabled={savingPrices[`${productKey}-cost`] || !productPrices[productKey]?.cost}
+                                  variant="ghost"
+                                  className="px-2 py-0 text-xs h-7 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  {savingPrices[`${productKey}-cost`] ? '저장중' : '저장'}
+                                </Button>
                               </div>
                             </td>
-                            <td className="px-4 py-4 w-[25%] align-top">
-                              <div className="space-y-2">
+                            <td className="px-2 py-2 w-[25%] align-top">
+                              <div className="flex gap-1">
                                 <Input
                                   type="number"
-                                  placeholder="판매가 입력"
+                                  placeholder="판매가"
                                   value={productPrices[productKey]?.price || ""}
                                   onChange={(e) => setProductPrices(prev => ({
                                     ...prev,
@@ -691,28 +689,26 @@ function PriceSettingsDialog() {
                                       excludeFromShipping: prev[productKey]?.excludeFromShipping || false
                                     }
                                   }))}
-                                  className="w-full text-sm"
+                                  className="flex-1 text-sm h-7"
                                 />
-                                <div className="flex justify-end">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => saveIndividualPrice(
-                                      productKey, 
-                                      'price', 
-                                      productPrices[productKey]?.price || "", 
-                                      product.name
-                                    )}
-                                    disabled={savingPrices[`${productKey}-price`] || !productPrices[productKey]?.price}
-                                    variant="ghost"
-                                    className="px-3 py-1 text-xs h-7 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                  >
-                                    {savingPrices[`${productKey}-price`] ? '저장중...' : '저장'}
-                                  </Button>
-                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => saveIndividualPrice(
+                                    productKey, 
+                                    'price', 
+                                    productPrices[productKey]?.price || "", 
+                                    product.name
+                                  )}
+                                  disabled={savingPrices[`${productKey}-price`] || !productPrices[productKey]?.price}
+                                  variant="ghost"
+                                  className="px-2 py-0 text-xs h-7 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  {savingPrices[`${productKey}-price`] ? '저장중' : '저장'}
+                                </Button>
                               </div>
                             </td>
-                            <td className="px-4 py-4 w-[25%] align-top">
-                              <div className="flex flex-col items-center space-y-2">
+                            <td className="px-2 py-2 w-[20%] align-top">
+                              <div className="flex flex-col items-center gap-1">
                                 <input
                                   type="checkbox"
                                   checked={productPrices[productKey]?.excludeFromShipping || false}
@@ -734,8 +730,8 @@ function PriceSettingsDialog() {
                                   }}
                                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                                 />
-                                <span className="text-xs text-gray-500 text-center leading-tight">
-                                  {productPrices[productKey]?.excludeFromShipping ? "제외됨" : "포함됨"}
+                                <span className="text-xs text-gray-500">
+                                  {productPrices[productKey]?.excludeFromShipping ? "제외" : "포함"}
                                 </span>
                               </div>
                             </td>
