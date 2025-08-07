@@ -1123,7 +1123,14 @@ export default function Admin() {
     popupEnabled: false,
     popupTitle: "",
     popupContent: "",
-    popupButtonText: "확인"
+    popupButtonText: "확인",
+    // 텍스트 스타일 설정
+    mainTitleColor: "#8B4513",
+    mainTitleSize: "text-2xl sm:text-3xl md:text-4xl lg:text-5xl",
+    mainTitleAlign: "text-center",
+    mainDescriptionColor: "#6b7280",
+    mainDescriptionSize: "text-sm sm:text-base md:text-lg",
+    mainDescriptionAlign: "text-center"
   });
 
   // Handle multiple image upload
@@ -1315,6 +1322,13 @@ export default function Admin() {
           }
         }
         if (item.key === 'excludeWrappingFromShipping') updatedContent.excludeWrappingFromShipping = item.value === 'true';
+        // 텍스트 스타일 설정 로딩
+        if (item.key === 'mainTitleColor') updatedContent.mainTitleColor = item.value;
+        if (item.key === 'mainTitleSize') updatedContent.mainTitleSize = item.value;
+        if (item.key === 'mainTitleAlign') updatedContent.mainTitleAlign = item.value;
+        if (item.key === 'mainDescriptionColor') updatedContent.mainDescriptionColor = item.value;
+        if (item.key === 'mainDescriptionSize') updatedContent.mainDescriptionSize = item.value;
+        if (item.key === 'mainDescriptionAlign') updatedContent.mainDescriptionAlign = item.value;
         // 팝업 관련 데이터 로딩
         if (item.key === 'popupEnabled') updatedContent.popupEnabled = item.value === 'true';
         if (item.key === 'popupTitle') updatedContent.popupTitle = item.value;
@@ -6001,13 +6015,67 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">메인 제목</td>
                                     <td className="px-4 py-3">
-                                      <Textarea
-                                        value={dashboardContent.mainTitle}
-                                        onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
-                                        placeholder="메인 제목 (줄바꿈 가능)"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
-                                        rows={2}
-                                      />
+                                      <div className="space-y-3">
+                                        <Textarea
+                                          value={dashboardContent.mainTitle}
+                                          onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
+                                          placeholder="메인 제목 (줄바꿈 가능)"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          rows={2}
+                                        />
+                                        
+                                        {/* 텍스트 스타일 설정 */}
+                                        <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded border">
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자색</label>
+                                            <select
+                                              value={dashboardContent.mainTitleColor || '#000000'}
+                                              onChange={(e) => setDashboardContent({...dashboardContent, mainTitleColor: e.target.value})}
+                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                              <option value="#000000">검은색</option>
+                                              <option value="#1f2937">진한 회색</option>
+                                              <option value="#374151">회색</option>
+                                              <option value="#6b7280">연한 회색</option>
+                                              <option value="#dc2626">빨간색</option>
+                                              <option value="#ea580c">주황색</option>
+                                              <option value="#ca8a04">노란색</option>
+                                              <option value="#16a34a">초록색</option>
+                                              <option value="#2563eb">파란색</option>
+                                              <option value="#7c3aed">보라색</option>
+                                              <option value="#be185d">분홍색</option>
+                                            </select>
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자 크기</label>
+                                            <select
+                                              value={dashboardContent.mainTitleSize || 'text-2xl'}
+                                              onChange={(e) => setDashboardContent({...dashboardContent, mainTitleSize: e.target.value})}
+                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                              <option value="text-sm">매우 작게</option>
+                                              <option value="text-base">작게</option>
+                                              <option value="text-lg">보통</option>
+                                              <option value="text-xl">크게</option>
+                                              <option value="text-2xl">매우 크게</option>
+                                              <option value="text-3xl">특대</option>
+                                              <option value="text-4xl">초대형</option>
+                                            </select>
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
+                                            <select
+                                              value={dashboardContent.mainTitleAlign || 'text-center'}
+                                              onChange={(e) => setDashboardContent({...dashboardContent, mainTitleAlign: e.target.value})}
+                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                              <option value="text-left">왼쪽</option>
+                                              <option value="text-center">중앙</option>
+                                              <option value="text-right">오른쪽</option>
+                                            </select>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                       <div className="flex gap-2 justify-center">
@@ -6020,13 +6088,16 @@ export default function Admin() {
                                             setSavingButtons(prev => ({...prev, [buttonKey]: true}));
                                             
                                             try {
-                                              await updateContentMutation.mutateAsync({ 
-                                                key: 'mainTitle', 
-                                                value: dashboardContent.mainTitle 
-                                              });
+                                              // 메인 타이틀과 스타일 정보 모두 저장
+                                              await Promise.all([
+                                                updateContentMutation.mutateAsync({ key: 'mainTitle', value: dashboardContent.mainTitle }),
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleColor', value: dashboardContent.mainTitleColor || '#000000' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleSize', value: dashboardContent.mainTitleSize || 'text-2xl' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainTitleAlign', value: dashboardContent.mainTitleAlign || 'text-center' })
+                                              ]);
                                               toast({
                                                 title: "저장됨",
-                                                description: "제목 저장 완료",
+                                                description: "제목과 스타일 저장 완료",
                                               });
                                             } catch (error) {
                                               toast({
@@ -6067,13 +6138,65 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">메인 설명</td>
                                     <td className="px-4 py-3">
-                                      <Textarea
-                                        value={dashboardContent.mainDescription}
-                                        onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
-                                        placeholder="메인 설명 (줄바꿈 가능)"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
-                                        rows={3}
-                                      />
+                                      <div className="space-y-3">
+                                        <Textarea
+                                          value={dashboardContent.mainDescription}
+                                          onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
+                                          placeholder="메인 설명 (줄바꿈 가능)"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          rows={3}
+                                        />
+                                        
+                                        {/* 텍스트 스타일 설정 */}
+                                        <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded border">
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자색</label>
+                                            <select
+                                              value={dashboardContent.mainDescriptionColor || '#6b7280'}
+                                              onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionColor: e.target.value})}
+                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                              <option value="#000000">검은색</option>
+                                              <option value="#1f2937">진한 회색</option>
+                                              <option value="#374151">회색</option>
+                                              <option value="#6b7280">연한 회색</option>
+                                              <option value="#dc2626">빨간색</option>
+                                              <option value="#ea580c">주황색</option>
+                                              <option value="#ca8a04">노란색</option>
+                                              <option value="#16a34a">초록색</option>
+                                              <option value="#2563eb">파란색</option>
+                                              <option value="#7c3aed">보라색</option>
+                                              <option value="#be185d">분홍색</option>
+                                            </select>
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자 크기</label>
+                                            <select
+                                              value={dashboardContent.mainDescriptionSize || 'text-base'}
+                                              onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionSize: e.target.value})}
+                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                              <option value="text-sm">작게</option>
+                                              <option value="text-base">보통</option>
+                                              <option value="text-lg">크게</option>
+                                              <option value="text-xl">매우 크게</option>
+                                              <option value="text-2xl">특대</option>
+                                            </select>
+                                          </div>
+                                          <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
+                                            <select
+                                              value={dashboardContent.mainDescriptionAlign || 'text-center'}
+                                              onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionAlign: e.target.value})}
+                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            >
+                                              <option value="text-left">왼쪽</option>
+                                              <option value="text-center">중앙</option>
+                                              <option value="text-right">오른쪽</option>
+                                            </select>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                       <div className="flex gap-2 justify-center">
@@ -6086,13 +6209,16 @@ export default function Admin() {
                                             setSavingButtons(prev => ({...prev, [buttonKey]: true}));
                                             
                                             try {
-                                              await updateContentMutation.mutateAsync({ 
-                                                key: 'mainDescription', 
-                                                value: dashboardContent.mainDescription 
-                                              });
+                                              // 메인 설명과 스타일 정보 모두 저장
+                                              await Promise.all([
+                                                updateContentMutation.mutateAsync({ key: 'mainDescription', value: dashboardContent.mainDescription }),
+                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionColor', value: dashboardContent.mainDescriptionColor || '#6b7280' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionSize', value: dashboardContent.mainDescriptionSize || 'text-base' }),
+                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionAlign', value: dashboardContent.mainDescriptionAlign || 'text-center' })
+                                              ]);
                                               toast({
                                                 title: "저장됨",
-                                                description: "설명 저장 완료",
+                                                description: "설명과 스타일 저장 완료",
                                               });
                                             } catch (error) {
                                               toast({

@@ -221,10 +221,28 @@ export default function Home() {
 
 
           <div className="text-center mb-6 md:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto whitespace-pre-line">
+            <h2 
+              className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto whitespace-pre-line ${
+                dashboardContent.mainTitleSize || 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'
+              } ${
+                dashboardContent.mainTitleAlign || 'text-center'
+              }`}
+              style={{ 
+                color: dashboardContent.mainTitleColor || '#8B4513' 
+              }}
+            >
               {dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line">
+            <p 
+              className={`text-sm sm:text-base md:text-lg mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line ${
+                dashboardContent.mainDescriptionSize || 'text-sm sm:text-base md:text-lg'
+              } ${
+                dashboardContent.mainDescriptionAlign || 'text-center'
+              }`}
+              style={{
+                color: dashboardContent.mainDescriptionColor || '#6b7280'
+              }}
+            >
               {dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^"}
             </p>
           </div>
