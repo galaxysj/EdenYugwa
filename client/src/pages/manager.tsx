@@ -142,14 +142,19 @@ export default function ManagerDashboard() {
         ? JSON.parse(order.dynamicProductQuantities) 
         : order.dynamicProductQuantities;
       
+      console.log('=== 동적 상품 디버깅 ===');
       console.log('Dynamic product data:', dynamicQty);
-      console.log('Product names:', productNames);
+      console.log('Dashboard content:', dashboardContent);
+      console.log('Product names parsed:', productNames);
+      console.log('Product names length:', productNames?.length);
       
       return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
         const productIndex = parseInt(index);
         const qty = Number(quantity);
         const productName = getProductName(productIndex, `상품${productIndex + 1}`);
-        console.log(`Product ${productIndex}: ${productName} x ${qty}`);
+        console.log(`Product index ${productIndex}: ${productName} x ${qty}`);
+        console.log(`Available product at index ${productIndex}:`, productNames?.[productIndex]);
+        
         return qty > 0 ? (
           <div key={productIndex}>
             {productName}×{qty}개
