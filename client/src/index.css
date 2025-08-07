@@ -187,16 +187,24 @@
 }
 
 .admin-table td, .manager-table td {
-  padding: clamp(0.125rem, 0.5vw, 0.25rem) clamp(0.0625rem, 0.3vw, 0.125rem); /* Dynamic padding */
+  padding: clamp(0.0625rem, 0.3vw, 0.1875rem) clamp(0.03125rem, 0.2vw, 0.09375rem); /* 더 작은 패딩 */
   border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
   vertical-align: top;
   font-size: inherit; /* Inherit from table */
 }
 
-/* Ultra small screens */
+/* Ultra small screens - 극한 밀도 최적화 */
 @media (max-width: 479px) {
   .admin-table td, .manager-table td {
-    padding: clamp(0.125rem, 0.8vw, 0.1875rem) clamp(0.0625rem, 0.4vw, 0.09375rem);
+    padding: clamp(0.015625rem, 0.2vw, 0.046875rem) clamp(0.0078125rem, 0.1vw, 0.0234375rem);
+    line-height: 0.95;
+    font-size: clamp(0.18rem, 0.8vw, 0.35rem) !important;
+  }
+  
+  .admin-table th, .manager-table th {
+    padding: clamp(0.0234375rem, 0.3vw, 0.0703125rem) clamp(0.01171875rem, 0.15vw, 0.03515625rem);
+    line-height: 0.95;
+    font-size: clamp(0.2rem, 0.9vw, 0.4rem) !important;
   }
 }
 
@@ -241,13 +249,15 @@
   word-wrap: break-word;
 }
 
-/* 모든 테이블 셀에 텍스트 겹침 방지 */
+/* 모든 테이블 셀에 텍스트 겹침 방지 및 밀도 최적화 */
 .admin-table th, .admin-table td,
 .manager-table th, .manager-table td {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   max-width: 0;
+  line-height: 1.1;
+  word-spacing: -0.1em;
 }
 
 /* 특정 컬럼은 줄바꿈 허용 */
@@ -281,57 +291,57 @@
 /* 특정 컬럼 너비 설정 - 반응형 조정 */
 /* Mobile first (320px+) */
 .admin-table .col-checkbox, .manager-table .col-checkbox {
-  width: 4%;
-  min-width: 30px;
+  width: 3%;
+  min-width: 20px;
 }
 
 .admin-table .col-order-number, .manager-table .col-order-number {
-  width: 10%;
-  min-width: 60px;
+  width: 8%;
+  min-width: 50px;
 }
 
 .admin-table .col-scheduled-date, .manager-table .col-scheduled-date {
-  width: 10%;
-  min-width: 70px;
+  width: 7%;
+  min-width: 45px;
   white-space: nowrap;
   overflow: visible;
 }
 
 .admin-table .col-customer-name, .manager-table .col-customer-name {
-  width: 6%;
-  min-width: 40px;
+  width: 5%;
+  min-width: 35px;
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
-  width: 15%;
-  min-width: 100px;
+  width: 12%;
+  min-width: 80px;
   white-space: normal;
   word-wrap: break-word;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {
-  width: 8%;
-  min-width: 60px;
+  width: 7%;
+  min-width: 50px;
 }
 
 .admin-table .col-address, .manager-table .col-address {
-  width: 18%;
-  min-width: 140px;
+  width: 15%;
+  min-width: 100px;
 }
 
 .admin-table .col-amount, .manager-table .col-amount {
-  width: 8%;
-  min-width: 60px;
+  width: 6%;
+  min-width: 45px;
 }
 
 .admin-table .col-status, .manager-table .col-status {
-  width: 10%;
-  min-width: 80px;
+  width: 8%;
+  min-width: 55px;
 }
 
 .admin-table .col-actions, .manager-table .col-actions {
-  width: 8%;
-  min-width: 60px;
+  width: 6%;
+  min-width: 45px;
 }
 
 /* Small screens (640px+) */
@@ -742,14 +752,15 @@
 }
 
 .admin-text-sm {
-  font-size: clamp(0.5rem, 1.4vw, 0.875rem);
-  line-height: 1.4;
+  font-size: clamp(0.3rem, 1vw, 0.875rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .admin-text-xs {
-  font-size: clamp(0.3rem, 1.2vw, 0.75rem);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-size: clamp(0.25rem, 0.8vw, 0.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
 /* Dynamic tab trigger sizing */
@@ -761,30 +772,60 @@
   text-overflow: ellipsis;
 }
 
-/* Ultra small screens adjustments */
+/* Ultra small screens adjustments - 한눈에 보기 최적화 */
 @media (max-width: 479px) {
   .admin-title {
-    font-size: clamp(0.75rem, 3.5vw, 1rem);
+    font-size: clamp(0.6rem, 2.8vw, 0.85rem);
   }
   .admin-subtitle {
-    font-size: clamp(0.6875rem, 3vw, 0.875rem);
+    font-size: clamp(0.55rem, 2.2vw, 0.75rem);
   }
   .admin-text {
-    font-size: clamp(0.5625rem, 2.5vw, 0.75rem);
+    font-size: clamp(0.45rem, 1.8vw, 0.65rem);
   }
   .admin-text-sm {
-    font-size: clamp(0.3rem, 2vw, 0.55rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-size: clamp(0.2rem, 1.2vw, 0.4rem);
+    line-height: 1.0;
+    letter-spacing: -0.04em;
   }
   .admin-text-xs {
-    font-size: clamp(0.25rem, 1.8vw, 0.45rem);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    font-size: clamp(0.18rem, 1vw, 0.3rem);
+    line-height: 1.0;
+    letter-spacing: -0.05em;
   }
   .admin-tab-trigger {
-    font-size: clamp(0.4375rem, 2.3vw, 0.5625rem);
-    padding: clamp(0.125rem, 0.8vw, 0.1875rem) clamp(0.1875rem, 1vw, 0.25rem);
+    font-size: clamp(0.35rem, 1.8vw, 0.45rem);
+    padding: clamp(0.0625rem, 0.4vw, 0.125rem) clamp(0.125rem, 0.6vw, 0.1875rem);
+  }
+  
+  /* 극소형 화면 전용 컬럼 너비 */
+  .admin-table .col-checkbox, .manager-table .col-checkbox {
+    width: 2.5%;
+    min-width: 18px;
+  }
+  .admin-table .col-order-number, .manager-table .col-order-number {
+    width: 7%;
+    min-width: 40px;
+  }
+  .admin-table .col-customer-name, .manager-table .col-customer-name {
+    width: 4%;
+    min-width: 28px;
+  }
+  .admin-table .col-phone, .manager-table .col-phone {
+    width: 6%;
+    min-width: 38px;
+  }
+  .admin-table .col-amount, .manager-table .col-amount {
+    width: 5%;
+    min-width: 35px;
+  }
+  .admin-table .col-status, .manager-table .col-status {
+    width: 7%;
+    min-width: 42px;
+  }
+  .admin-table .col-actions, .manager-table .col-actions {
+    width: 5%;
+    min-width: 35px;
   }
 }
 
