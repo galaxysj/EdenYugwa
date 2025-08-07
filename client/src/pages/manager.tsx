@@ -1861,12 +1861,12 @@ export default function ManagerDashboard() {
                           </div>
 
                           {/* 중간: 주문내역 */}
-                          <div className="mb-2">
+                          <div className="mb-2 order-details-cell">
                             <div className="text-xs text-gray-700 space-y-0.5 mb-2">
-                              {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
-                              {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
+                              {order.smallBoxQuantity > 0 && <div className="order-details-item">{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
+                              {order.largeBoxQuantity > 0 && <div className="order-details-item">{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
                               {renderDynamicProducts(order)}
-                              {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
+                              {order.wrappingQuantity > 0 && <div className="order-details-item">{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
                               <span className={`px-2 py-0.5 rounded ${

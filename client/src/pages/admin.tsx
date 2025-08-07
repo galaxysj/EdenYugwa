@@ -3914,7 +3914,7 @@ export default function Admin() {
                         )}
                       </div>
                     </td>
-                    <td className="col-order-details">
+                    <td className="col-order-details order-details-cell">
                       <div className="text-xs space-y-0.5">
                         {(() => {
                           // 동적 상품 이름 가져오기

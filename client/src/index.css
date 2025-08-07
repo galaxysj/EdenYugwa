@@ -933,24 +933,140 @@ p, .text, div, span, .paragraph {
   text-overflow: ellipsis;
 }
 
-/* 관리자 패널 탭 버튼 반응형 */
+/* 관리자 패널 탭 버튼 반응형 - 더 강력한 최적화 */
 .admin-tab-trigger {
-  font-size: clamp(0.5rem, 1.5vw + 0.4rem, 0.875rem) !important;
-  line-height: 1.1;
+  font-size: clamp(0.35rem, 1.2vw + 0.3rem, 0.875rem) !important;
+  line-height: 1.0 !important;
   word-break: keep-all;
-  padding-left: clamp(0.25rem, 1vw, 0.5rem) !important;
-  padding-right: clamp(0.25rem, 1vw, 0.5rem) !important;
+  padding-left: clamp(0.125rem, 0.5vw, 0.375rem) !important;
+  padding-right: clamp(0.125rem, 0.5vw, 0.375rem) !important;
+  padding-top: clamp(0.125rem, 0.3vw, 0.25rem) !important;
+  padding-bottom: clamp(0.125rem, 0.3vw, 0.25rem) !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
-/* 더 작은 화면을 위한 추가 최적화 */
+/* 작은 화면을 위한 추가 최적화 */
+@media (max-width: 480px) {
+  .admin-tab-trigger {
+    font-size: clamp(0.25rem, 1vw + 0.2rem, 0.45rem) !important;
+    padding: 0.125rem 0.0625rem !important;
+    letter-spacing: -0.025em;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-tab-trigger {
+    font-size: clamp(0.2rem, 0.8vw + 0.15rem, 0.35rem) !important;
+    padding: 0.1rem 0.05rem !important;
+    letter-spacing: -0.05em;
+  }
+}
+
 @media (max-width: 320px) {
   .admin-tab-trigger {
-    font-size: 0.4rem !important;
-    padding-left: 0.1rem !important;
-    padding-right: 0.1rem !important;
+    font-size: 0.3rem !important;
+    padding: 0.075rem 0.025rem !important;
+    letter-spacing: -0.075em;
+  }
+}
+
+/* 테이블 셀 최소 너비 및 텍스트 처리 개선 */
+.admin-table td, .manager-table td {
+  min-width: 80px;
+  word-break: break-word;
+  white-space: normal;
+  padding: 0.5rem 0.25rem;
+  vertical-align: top;
+}
+
+.admin-table th, .manager-table th {
+  min-width: 80px;
+  word-break: keep-all;
+  white-space: nowrap;
+  padding: 0.75rem 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* 주문 상세 정보 컬럼 */
+.admin-table .col-order-details, .manager-table .col-order-details {
+  min-width: 200px;
+  max-width: 300px;
+}
+
+/* 가격 관련 컬럼 */
+.admin-table .col-price, .manager-table .col-price {
+  min-width: 100px;
+  text-align: right;
+  font-family: monospace;
+}
+
+/* 상태 컬럼 */
+.admin-table .col-status, .manager-table .col-status {
+  min-width: 90px;
+  text-align: center;
+}
+
+/* 주문번호 컬럼 */
+.admin-table .col-order-number, .manager-table .col-order-number {
+  min-width: 120px;
+  font-weight: 600;
+}
+
+/* 주문 상세 내역을 위한 특별한 포맷팅 */
+.order-details-cell {
+  white-space: pre-line;
+  word-break: break-word;
+  line-height: 1.4;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.order-details-item {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.875rem;
+}
+
+.price-info {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+/* 작은 화면에서 테이블 최적화 */
+@media (max-width: 1024px) {
+  .admin-table td, .manager-table td {
+    min-width: 60px;
+    padding: 0.375rem 0.125rem;
+    font-size: 0.75rem;
+  }
+  
+  .admin-table th, .manager-table th {
+    min-width: 60px;
+    padding: 0.5rem 0.125rem;
+    font-size: 0.625rem;
+  }
+  
+  .admin-table .col-order-details, .manager-table .col-order-details {
+    min-width: 150px;
+    max-width: 200px;
+  }
+  
+  .order-details-cell {
+    min-width: 150px;
+    max-width: 180px;
+  }
+  
+  .order-details-item {
+    font-size: 0.75rem;
+  }
+  
+  .price-info {
+    font-size: 0.7rem;
   }
 }
 
