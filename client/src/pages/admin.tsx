@@ -2601,15 +2601,15 @@ export default function Admin() {
                 <table className="w-full admin-table">
                   <thead>
                     <tr className="border-b-2 border-gray-300 bg-gray-50">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">주문번호</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">고객명</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">주문일</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-sm">주문내역</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">매출정보</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">입금정보</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">할인/미입금</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">원가분석</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-sm">순수익</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">주문번호</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">고객명</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">주문일</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">주문내역</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">매출정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">입금정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">할인/미입금</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">원가분석</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">순수익</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2691,20 +2691,20 @@ export default function Admin() {
                         <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
                           <td className="py-4 px-4 font-semibold text-gray-900 admin-text-xxs">#{order.orderNumber}</td>
                           <td className="py-4 px-4 font-medium text-gray-900 admin-text-xxs">{order.customerName}</td>
-                          <td className="py-4 px-4 text-sm text-gray-700">
+                          <td className="py-4 px-4 admin-text-xs text-gray-700">
                             <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                            <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div className="admin-text-xxs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                           </td>
-                          <td className="py-4 px-4 text-sm">
+                          <td className="py-4 px-4 admin-text-xs">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800">{getOrderTimeProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800 admin-text-xxs">{getOrderTimeProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800">{getOrderTimeProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800 admin-text-xxs">{getOrderTimeProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="font-medium text-gray-800">{getOrderTimeProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
+                                <div className="font-medium text-gray-800 admin-text-xxs">{getOrderTimeProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                               )}
                               {/* 실제 주문에 저장된 동적 상품 수량 표시 */}
                               {order.dynamicProductQuantities && (() => {
@@ -2717,7 +2717,7 @@ export default function Admin() {
                                     const qty = Number(quantity);
                                     const productName = getOrderTimeProductName(productIndex, `상품${productIndex + 1}`);
                                     return qty > 0 ? (
-                                      <div key={productIndex} className="font-medium text-gray-800">
+                                      <div key={productIndex} className="font-medium text-gray-800 admin-text-xxs">
                                         {productName}×{qty}개
                                       </div>
                                     ) : null;
@@ -2729,29 +2729,29 @@ export default function Admin() {
                               })()}
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm font-medium bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right admin-text-xs font-medium bg-gray-50 border-l-2 border-gray-300">
                             <div className="text-gray-700 font-semibold">
                               {formatPrice(order.totalAmount)}
                             </div>
-                            <div className="text-xs text-gray-600 mt-1">
+                            <div className="admin-text-xxs text-gray-600 mt-1">
                               주문금액
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm font-medium bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right admin-text-xs font-medium bg-gray-50 border-l-2 border-gray-300">
                             <div className="text-gray-700 font-semibold">
                               {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
                             </div>
-                            <div className="text-xs text-gray-600 mt-1">
+                            <div className="admin-text-xxs text-gray-600 mt-1">
                               실제입금액
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right admin-text-xs bg-gray-50 border-l-2 border-gray-300">
                             {discountAmount > 0 ? (
                               <div>
                                 <div className="text-gray-700 font-semibold">
                                   {formatPrice(discountAmount)}
                                 </div>
-                                <div className="text-xs text-gray-600 mt-1">
+                                <div className="admin-text-xxs text-gray-600 mt-1">
                                   할인금액
                                 </div>
                               </div>
@@ -2760,31 +2760,31 @@ export default function Admin() {
                                 <div className="text-gray-700 font-semibold">
                                   {formatPrice(unpaidAmount)}
                                 </div>
-                                <div className="text-xs text-gray-600 mt-1">
+                                <div className="admin-text-xxs text-gray-600 mt-1">
                                   미입금액
                                 </div>
                               </div>
                             ) : (
                               <div>
                                 <div className="text-gray-500 font-semibold">-</div>
-                                <div className="text-xs text-gray-400 mt-1">완납</div>
+                                <div className="admin-text-xxs text-gray-400 mt-1">완납</div>
                               </div>
                             )}
                           </td>
-                          <td className="py-2 px-3 text-right text-xs bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right admin-text-xxs bg-gray-50 border-l-2 border-gray-300">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="text-gray-600">
+                                <div className="text-gray-600 admin-text-xxs">
                                   {getOrderTimeProductName(0, '한과1호')}: {formatPrice(order.smallBoxQuantity * smallCost)}
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="text-gray-600">
+                                <div className="text-gray-600 admin-text-xxs">
                                   {getOrderTimeProductName(1, '한과2호')}: {formatPrice(order.largeBoxQuantity * largeCost)}
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="text-gray-600">
+                                <div className="text-gray-600 admin-text-xxs">
                                   {getOrderTimeProductName(2, '보자기')}: {formatPrice(order.wrappingQuantity * wrappingCost)}
                                 </div>
                               )}
@@ -2802,7 +2802,7 @@ export default function Admin() {
                                                       (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
                                     const itemCost = qty * productCost;
                                     return qty > 0 ? (
-                                      <div key={productIndex} className="text-gray-600">
+                                      <div key={productIndex} className="text-gray-600 admin-text-xxs">
                                         {getOrderTimeProductName(productIndex, `상품${productIndex + 1}`)}: {formatPrice(itemCost)}
                                       </div>
                                     ) : null;
@@ -2812,26 +2812,26 @@ export default function Admin() {
                                 }
                               })()}
                               {shippingFee > 0 && (
-                                <div className="text-gray-600">
+                                <div className="text-gray-600 admin-text-xxs">
                                   배송비: {formatPrice(shippingFee)}
                                 </div>
                               )}
-                              <div className="font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-2">
+                              <div className="font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-2 admin-text-xxs">
                                 총원가: {formatPrice(order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost + shippingFee)}
                               </div>
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right admin-text-xs bg-gray-50 border-l-2 border-gray-300">
                             {(() => {
                               // 순수익 = 총매출 - 원가(배송비 포함) - 할인금액 - 미입금금액
                               const actualTotalCost = order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost + shippingFee;
                               const actualProfit = order.totalAmount - actualTotalCost - discountAmount - unpaidAmount;
                               return (
                                 <div>
-                                  <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
+                                  <div className={`font-bold admin-text-xs ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
                                     {formatPrice(actualProfit)}
                                   </div>
-                                  <div className="text-xs text-gray-600 mt-1">
+                                  <div className="admin-text-xxs text-gray-600 mt-1">
                                     순수익
                                   </div>
                                 </div>

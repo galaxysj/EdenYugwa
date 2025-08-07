@@ -152,7 +152,7 @@ export function UserManagement() {
                   <tr key={user.id} className="border-b hover:bg-gray-50">
                     <td className="p-3 admin-text-xxs">{user.username}</td>
                     <td className="p-3 admin-text-xxs">{user.name}</td>
-                    <td className="p-3 admin-text-sm">{user.phoneNumber}</td>
+                    <td className="p-3 admin-text-xxs">{user.phoneNumber}</td>
                     <td className="p-3">{getRoleBadge(user.role)}</td>
                     <td className="p-3">
                       {user.isActive ? (
@@ -178,7 +178,7 @@ export function UserManagement() {
                               variant="outline"
                               onClick={() => handleRoleChange(user, 'manager')}
                               disabled={updateRoleMutation.isPending}
-                              className="admin-text-xs"
+                              className="admin-text-xxs px-2 py-1 h-6"
                             >
                               매니저 승격
                             </Button>
@@ -188,7 +188,7 @@ export function UserManagement() {
                               variant="outline"
                               onClick={() => handleRoleChange(user, 'user')}
                               disabled={updateRoleMutation.isPending}
-                              className="admin-text-xs"
+                              className="admin-text-xxs px-2 py-1 h-6"
                             >
                               일반사용자로 변경
                             </Button>
@@ -218,7 +218,7 @@ export function UserManagement() {
                     </div>
                     <div className="flex items-center gap-3 admin-text-xs text-gray-500">
                       <span className="admin-text-xxs">@{user.username}</span>
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-1 admin-text-xxs">
                         <Phone className="h-3 w-3" />
                         {user.phoneNumber}
                       </span>
@@ -250,7 +250,7 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'manager')}
                           disabled={updateRoleMutation.isPending}
-                          className="admin-text-xs px-2 py-1 h-auto"
+                          className="admin-text-xxs px-2 py-1 h-6"
                         >
                           승격
                         </Button>
@@ -260,7 +260,7 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'user')}
                           disabled={updateRoleMutation.isPending}
-                          className="admin-text-xs px-2 py-1 h-auto"
+                          className="admin-text-xxs px-2 py-1 h-6"
                         >
                           일반
                         </Button>
