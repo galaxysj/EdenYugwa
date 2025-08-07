@@ -2689,8 +2689,8 @@ export default function Admin() {
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="py-4 px-4 font-semibold text-gray-900 text-sm">#{order.orderNumber}</td>
-                          <td className="py-4 px-4 font-medium text-gray-900 text-sm">{order.customerName}</td>
+                          <td className="py-4 px-4 font-semibold text-gray-900 admin-text-xxs">#{order.orderNumber}</td>
+                          <td className="py-4 px-4 font-medium text-gray-900 admin-text-xxs">{order.customerName}</td>
                           <td className="py-4 px-4 text-sm text-gray-700">
                             <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                             <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
@@ -2848,10 +2848,10 @@ export default function Admin() {
               {/* 모바일 요약 뷰 */}
               <div className="md:hidden">
                 <div className="mb-3 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-bold text-gray-800 mb-1">
+                  <p className="admin-text-sm font-bold text-gray-800 mb-1">
                     📊 매출 요약 ({orders.length}건)
                   </p>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-2 gap-3 admin-text-xs">
                     <div className="bg-white p-2 rounded border">
                       <div className="text-gray-600">총 주문금액</div>
                       <div className="font-bold text-gray-700">{formatPrice(filteredTotals.totalAmount)}</div>
@@ -2946,8 +2946,8 @@ export default function Admin() {
                         {/* 주문 헤더 */}
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-600 text-sm">#{order.orderNumber}</span>
-                            <span className="text-sm">{order.customerName}</span>
+                            <span className="font-bold text-gray-600 admin-text-xxs">#{order.orderNumber}</span>
+                            <span className="admin-text-xxs">{order.customerName}</span>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded font-medium ${
                             order.paymentStatus === 'confirmed' 
@@ -2959,7 +2959,7 @@ export default function Admin() {
                         </div>
                         
                         {/* 주문 정보 */}
-                        <div className="text-xs text-gray-600 mb-2">
+                        <div className="admin-text-xxs text-gray-600 mb-2">
                           {new Date(order.createdAt).toLocaleDateString('ko-KR')} • 
                           {order.smallBoxQuantity > 0 && ` ${dashboardContent.productNames?.[0]?.name || '한과1호'}×${order.smallBoxQuantity}`}
                           {order.largeBoxQuantity > 0 && ` ${dashboardContent.productNames?.[1]?.name || '한과2호'}×${order.largeBoxQuantity}`}
@@ -2983,7 +2983,7 @@ export default function Admin() {
                         </div>
                         
                         {/* 수익 요약 */}
-                        <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="grid grid-cols-3 gap-2 admin-text-xxs">
                           <div className="text-center">
                             <div className="text-gray-500">주문금액</div>
                             <div className="font-bold">{formatPrice(order.totalAmount)}</div>

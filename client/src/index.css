@@ -1244,6 +1244,21 @@ td, .table-cell, [role="cell"] {
   line-height: clamp(1.0, 1vw + 0.9, 1.2);
 }
 
+.admin-text-xxs {
+  font-size: clamp(0.15rem, 1.2vw + 0.05rem, 0.55rem);
+  line-height: clamp(0.9, 0.9vw + 0.8, 1.1);
+}
+
+.admin-text-xs {
+  font-size: clamp(0.18rem, 1.5vw + 0.06rem, 0.65rem);
+  line-height: clamp(0.95, 1vw + 0.85, 1.15);
+}
+
+.admin-text-sm {
+  font-size: clamp(0.2rem, 1.8vw + 0.08rem, 0.75rem);
+  line-height: clamp(1.0, 1vw + 0.9, 1.2);
+}
+
 .admin-text-sm {
   font-size: clamp(0.15rem, 1.4vw + 0.06rem, 0.625rem);
   line-height: clamp(0.95, 0.8vw + 0.85, 1.1);

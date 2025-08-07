@@ -150,8 +150,8 @@ export function UserManagement() {
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 admin-text-sm">{user.username}</td>
-                    <td className="p-3 admin-text-sm">{user.name}</td>
+                    <td className="p-3 admin-text-xxs">{user.username}</td>
+                    <td className="p-3 admin-text-xxs">{user.name}</td>
                     <td className="p-3 admin-text-sm">{user.phoneNumber}</td>
                     <td className="p-3">{getRoleBadge(user.role)}</td>
                     <td className="p-3">
@@ -213,11 +213,11 @@ export function UserManagement() {
                   {/* 왼쪽: 사용자 정보 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium admin-text-sm truncate">{user.name}</h3>
+                      <h3 className="font-medium admin-text-xxs truncate">{user.name}</h3>
                       {getRoleBadge(user.role)}
                     </div>
                     <div className="flex items-center gap-3 admin-text-xs text-gray-500">
-                      <span>@{user.username}</span>
+                      <span className="admin-text-xxs">@{user.username}</span>
                       <span className="flex items-center gap-1">
                         <Phone className="h-3 w-3" />
                         {user.phoneNumber}
