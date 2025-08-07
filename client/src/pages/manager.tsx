@@ -968,6 +968,27 @@ export default function ManagerDashboard() {
                                     {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
                                     {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
                                     {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
+                                    {/* 동적 상품 표시 */}
+                                    {order.dynamicProductQuantities && (() => {
+                                      try {
+                                        const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                                          ? JSON.parse(order.dynamicProductQuantities) 
+                                          : order.dynamicProductQuantities;
+                                        return Object.entries(dynamicQty).map(([index, quantity]) => {
+                                          const productIndex = parseInt(index);
+                                          const qty = Number(quantity);
+                                          const productName = getProductName(productIndex, `상품${productIndex + 1}`);
+                                          return qty > 0 ? (
+                                            <div key={productIndex}>
+                                              {productName}×{qty}개
+                                            </div>
+                                          ) : null;
+                                        });
+                                      } catch (error) {
+                                        console.error('Dynamic product quantities parse error:', error);
+                                        return null;
+                                      }
+                                    })()}
                                   </div>
                                   
                                   {/* 입금상태와 주문상태 - 관리자와 동일한 표시 */}
