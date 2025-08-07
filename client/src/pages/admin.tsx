@@ -2366,8 +2366,8 @@ export default function Admin() {
                       
                       <div>
                         <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
-                        <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                          {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
+                        <div className={`text-sm md:text-lg font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          {formatPrice(filteredTotals.netProfit)}
                         </div>
                       </div>
                     </div>
@@ -2411,8 +2411,8 @@ export default function Admin() {
                       </div>
                       <div>
                         <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
-                        <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                          {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
+                        <div className={`text-sm md:text-lg font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          {formatPrice(filteredTotals.netProfit)}
                         </div>
                       </div>
                     </div>
@@ -2433,10 +2433,10 @@ export default function Admin() {
                   <div className="text-red-600 text-xs font-medium mb-1">총원가</div>
                   <div className="text-red-700 text-sm font-bold">{formatPrice(filteredTotals.totalCost)}</div>
                 </div>
-                <div className={`border rounded-lg p-3 text-center ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}`}>
-                  <div className={`text-xs font-medium mb-1 ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
-                  <div className={`text-sm font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
-                    {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
+                <div className={`border rounded-lg p-3 text-center ${filteredTotals.netProfit >= 0 ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}`}>
+                  <div className={`text-xs font-medium mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
+                  <div className={`text-sm font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
+                    {formatPrice(filteredTotals.netProfit)}
                   </div>
                 </div>
               </div>
