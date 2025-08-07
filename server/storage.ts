@@ -242,20 +242,54 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(orders.createdAt)); // 기본적으로 생성일 역순으로 정렬
     
     // Get global cost settings
-    const smallBoxCostSetting = await this.getSetting("smallBoxCost");
-    const largeBoxCostSetting = await this.getSetting("largeBoxCost");
+    const smallBoxCostSetting = await this.getSetting("product_0Cost");
+    const largeBoxCostSetting = await this.getSetting("product_1Cost");
+    const wrappingCostSetting = await this.getSetting("product_2Cost");
     
     const globalSmallBoxCost = smallBoxCostSetting ? parseInt(smallBoxCostSetting.value) : 0;
     const globalLargeBoxCost = largeBoxCostSetting ? parseInt(largeBoxCostSetting.value) : 0;
+    const globalWrappingCost = wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000;
+    
+    // Get all product cost settings at once for better performance
+    const allProductCosts: { [key: string]: number } = {};
+    for (let i = 0; i <= 10; i++) { // 상품 인덱스 0-10까지 가져오기
+      const costSetting = await this.getSetting(`product_${i}Cost`);
+      allProductCosts[`product_${i}Cost`] = costSetting ? parseInt(costSetting.value) : 0;
+    }
     
     // Apply global costs and calculate profits for orders that don't have custom costs
     const ordersWithCalculations = allOrders.map(order => {
       const smallBoxCost = order.smallBoxCost || globalSmallBoxCost;
       const largeBoxCost = order.largeBoxCost || globalLargeBoxCost;
       
-      // Calculate total cost (including wrapping cost)
-      const wrappingCost = order.wrappingQuantity * 2000; // 보자기 개당 2,000원
-      const totalCost = (smallBoxCost * order.smallBoxQuantity) + (largeBoxCost * order.largeBoxQuantity) + wrappingCost;
+      // Calculate basic product costs
+      const basicCost = (smallBoxCost * order.smallBoxQuantity) + (largeBoxCost * order.largeBoxQuantity);
+      
+      // Calculate wrapping cost from settings
+      const wrappingCost = order.wrappingQuantity * globalWrappingCost;
+      
+      // Calculate dynamic product costs
+      let dynamicCost = 0;
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+            
+          for (const [index, quantity] of Object.entries(dynamicQuantities)) {
+            const idx = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+              const unitCost = allProductCosts[`product_${idx}Cost`] || 0;
+              dynamicCost += unitCost * qty;
+            }
+          }
+        } catch (error) {
+          console.error('동적 상품 원가 계산 오류:', error);
+        }
+      }
+      
+      const totalCost = basicCost + wrappingCost + dynamicCost;
       
       // Calculate shipping fee
       const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
