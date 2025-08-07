@@ -49,27 +49,22 @@ export default function Home() {
   useEffect(() => {
     const isPopupEnabled = dashboardContent.popupEnabled === 'true' || dashboardContent.popupEnabled === true;
     
-    console.log('팝업 활성화 체크:', {
-      popupEnabled: dashboardContent.popupEnabled,
-      isEnabled: isPopupEnabled,
-      title: dashboardContent.popupTitle,
-      content: dashboardContent.popupContent
-    });
-    
     if (isPopupEnabled && dashboardContent.popupTitle && dashboardContent.popupContent) {
-      // 세션 스토리지를 사용하여 같은 세션에서는 한 번만 표시
-      const popupShownKey = 'popup-shown-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
+      // 로컬 스토리지를 사용하여 "더 이상 보지 않기" 설정 확인
+      const dontShowKey = 'popup-dont-show-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
       
-      console.log('팝업 세션 키:', popupShownKey);
-      console.log('이전에 표시됨:', sessionStorage.getItem(popupShownKey));
-      
-      if (!sessionStorage.getItem(popupShownKey)) {
-        console.log('팝업 표시합니다');
+      if (!localStorage.getItem(dontShowKey)) {
         setIsPopupOpen(true);
-        sessionStorage.setItem(popupShownKey, 'true');
       }
     }
   }, [dashboardContent.popupEnabled, dashboardContent.popupTitle, dashboardContent.popupContent]);
+
+  // 더 이상 보지 않기 처리
+  const handleDontShowAgain = () => {
+    const dontShowKey = 'popup-dont-show-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
+    localStorage.setItem(dontShowKey, 'true');
+    setIsPopupOpen(false);
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -329,12 +324,19 @@ export default function Home() {
                 {dashboardContent.popupContent}
               </div>
             )}
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-center gap-3 pt-4">
               <Button 
                 onClick={() => setIsPopupOpen(false)}
                 className="bg-eden-sage hover:bg-eden-sage/90 text-white px-6 py-2 rounded-lg"
               >
                 {dashboardContent.popupButtonText || "확인"}
+              </Button>
+              <Button 
+                onClick={handleDontShowAgain}
+                variant="outline"
+                className="border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg"
+              >
+                더 이상 보지 않기
               </Button>
             </div>
           </div>
