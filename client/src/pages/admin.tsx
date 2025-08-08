@@ -1136,14 +1136,6 @@ export default function Admin() {
     mainDescriptionFont: "font-korean"
   });
 
-  // 주문 시점의 실제 상품명을 사용하기 위한 전역 함수
-  const getOrderTimeProductName = (index: number, fallback: string) => {
-    if (dashboardContent.productNames && dashboardContent.productNames[index]) {
-      return dashboardContent.productNames[index].name;
-    }
-    return fallback;
-  };
-
   // Handle multiple image upload
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -2624,7 +2616,13 @@ export default function Admin() {
                     {orders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
-                      // 전역 함수 사용으로 중복 제거
+                      // 주문 시점의 실제 상품명을 사용하기 위한 함수 (현재 콘텐츠관리의 상품명 참조)
+                      const getOrderTimeProductName = (index: number, fallback: string) => {
+                        if (dashboardContent.productNames && dashboardContent.productNames[index]) {
+                          return dashboardContent.productNames[index].name;
+                        }
+                        return fallback;
+                      };
 
                       // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                       const productNames = dashboardContent.productNames || [];
@@ -2847,26 +2845,36 @@ export default function Admin() {
                 </table>
               </div>
 
-              {/* 모바일 리스트 뷰 */}
+              {/* 모바일 요약 뷰 */}
               <div className="md:hidden">
                 <div className="mb-3 p-3 bg-gray-50 rounded-lg">
-                  <p className="admin-text-sm font-bold text-gray-800">
+                  <p className="admin-text-sm font-bold text-gray-800 mb-1">
                     📊 매출 요약 ({orders.length}건)
                   </p>
-                  <div className="grid grid-cols-2 gap-3 admin-text-xs mt-2">
-                    <div>총 주문금액: <span className="font-bold">{formatPrice(filteredTotals.totalAmount)}</span></div>
-                    <div>실제 수익: <span className="font-bold">{formatPrice(filteredTotals.actualRevenue)}</span></div>
-                    <div>총 원가: <span className="font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</span></div>
-                    <div>순수익: <span className="font-bold text-green-600">{formatPrice(filteredTotals.netProfit)}</span></div>
+                  <div className="grid grid-cols-2 gap-3 admin-text-xs">
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">총 주문금액</div>
+                      <div className="font-bold text-gray-700">{formatPrice(filteredTotals.totalAmount)}</div>
+                    </div>
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">실제 수익</div>
+                      <div className="font-bold text-gray-700">{formatPrice(filteredTotals.actualRevenue)}</div>
+                    </div>
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">총 원가</div>
+                      <div className="font-bold text-gray-600">{formatPrice(filteredTotals.totalCost)}</div>
+                    </div>
+                    <div className="bg-white p-2 rounded border">
+                      <div className="text-gray-600">순수익</div>
+                      <div className="font-bold text-gray-700">{formatPrice(filteredTotals.netProfit)}</div>
+                    </div>
                   </div>
                 </div>
                 
-                <div className="space-y-1">
+                <div className="space-y-2">
                 {orders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
-                  // 전역 함수 사용으로 중복 제거
-                  
                   // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                   const productNames = dashboardContent.productNames || [];
                   
@@ -2934,17 +2942,28 @@ export default function Admin() {
                   const actualProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
                   
                   return (
-                    <div key={order.id} className="flex items-center justify-between p-3 bg-white border-b border-gray-100">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-gray-700 admin-text-xs">#{order.orderNumber}</span>
-                          <span className="text-gray-600 admin-text-xs">{order.customerName}</span>
-                          <span className="text-gray-500 admin-text-xxs">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</span>
+                    <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                        {/* 주문 헤더 */}
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-gray-600 admin-text-xxs">#{order.orderNumber}</span>
+                            <span className="admin-text-xxs">{order.customerName}</span>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded font-medium ${
+                            order.paymentStatus === 'confirmed' 
+                              ? 'bg-gray-100 text-gray-700' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {order.paymentStatus === 'confirmed' ? '입금완료' : '입금대기'}
+                          </span>
                         </div>
-                        <div className="text-gray-500 admin-text-xxs">
-                          {order.smallBoxQuantity > 0 && `${getOrderTimeProductName(0, '한과1호')}×${order.smallBoxQuantity} `}
-                          {order.largeBoxQuantity > 0 && `${getOrderTimeProductName(1, '한과2호')}×${order.largeBoxQuantity} `}
-                          {order.wrappingQuantity > 0 && `${getOrderTimeProductName(2, '보자기')}×${order.wrappingQuantity} `}
+                        
+                        {/* 주문 정보 */}
+                        <div className="admin-text-xxs text-gray-600 mb-2">
+                          {new Date(order.createdAt).toLocaleDateString('ko-KR')} • 
+                          {order.smallBoxQuantity > 0 && ` ${dashboardContent.productNames?.[0]?.name || '한과1호'}×${order.smallBoxQuantity}`}
+                          {order.largeBoxQuantity > 0 && ` ${dashboardContent.productNames?.[1]?.name || '한과2호'}×${order.largeBoxQuantity}`}
+                          {order.wrappingQuantity > 0 && ` ${dashboardContent.productNames?.[2]?.name || '보자기'}×${order.wrappingQuantity}`}
                           {/* 동적 상품 표시 */}
                           {order.dynamicProductQuantities && (() => {
                             try {
@@ -2954,31 +2973,32 @@ export default function Admin() {
                               return Object.entries(dynamicQty).map(([index, quantity]) => {
                                 const productIndex = parseInt(index);
                                 const qty = Number(quantity);
-                                const productName = getOrderTimeProductName(productIndex, `상품${productIndex + 1}`);
-                                return qty > 0 ? `${productName}×${qty} ` : '';
+                                const productName = dashboardContent.productNames?.[productIndex]?.name || `상품${productIndex + 1}`;
+                                return qty > 0 ? ` ${productName}×${qty}` : '';
                               }).join('');
                             } catch (error) {
                               return '';
                             }
                           })()}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 text-right">
-                        <div>
-                          <div className="text-gray-600 admin-text-xxs">주문</div>
-                          <div className="font-bold admin-text-xs">{formatPrice(order.totalAmount)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600 admin-text-xxs">원가</div>
-                          <div className="font-bold text-red-600 admin-text-xs">{formatPrice(totalCost)}</div>
-                        </div>
-                        <div>
-                          <div className="text-gray-600 admin-text-xxs">수익</div>
-                          <div className={`font-bold admin-text-xs ${actualProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatPrice(actualProfit)}
+                        
+                        {/* 수익 요약 */}
+                        <div className="grid grid-cols-3 gap-2 admin-text-xxs">
+                          <div className="text-center">
+                            <div className="text-gray-500">주문금액</div>
+                            <div className="font-bold">{formatPrice(order.totalAmount)}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-500">원가</div>
+                            <div className="font-bold text-red-600">{formatPrice(totalCost)}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-gray-500">순수익</div>
+                            <div className={`font-bold ${actualProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatPrice(actualProfit)}
+                            </div>
                           </div>
                         </div>
-                      </div>
                     </div>
                   );
                 })}
