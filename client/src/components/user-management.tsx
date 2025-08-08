@@ -132,8 +132,8 @@ export function UserManagement() {
             총 {users.length}명의 회원이 등록되어 있습니다.
           </div>
           
-          {/* 테이블 뷰 - 모든 화면 크기에서 사용 */}
-          <div className="overflow-x-auto">
+          {/* 데스크탑 테이블 뷰 */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
@@ -205,7 +205,74 @@ export function UserManagement() {
             </table>
           </div>
 
-
+          {/* 모바일 리스트 뷰 */}
+          <div className="md:hidden space-y-2">
+            {users.map((user) => (
+              <div key={user.id} className="bg-white border border-gray-200 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  {/* 왼쪽: 사용자 정보 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium admin-text-xxs truncate whitespace-nowrap overflow-hidden">{user.name}</h3>
+                      {getRoleBadge(user.role)}
+                    </div>
+                    <div className="flex items-center gap-3 admin-text-xs text-gray-500">
+                      <span className="admin-text-xxs whitespace-nowrap overflow-hidden">@{user.username}</span>
+                      <span className="flex items-center gap-1 admin-text-xxs whitespace-nowrap overflow-hidden">
+                        <Phone className="h-3 w-3" />
+                        {user.phoneNumber}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      {user.isActive ? (
+                        <Badge variant="outline" className="gap-1 admin-text-xs px-1 py-0">
+                          <CheckCircle className="h-2 w-2" />
+                          활성
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="gap-1 admin-text-xs px-1 py-0">
+                          <AlertTriangle className="h-2 w-2" />
+                          비활성
+                        </Badge>
+                      )}
+                      <span className="admin-text-xs text-gray-400">
+                        가입: {formatDate(user.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* 오른쪽: 작업 버튼 */}
+                  <div className="flex-shrink-0 ml-2">
+                    {user.role !== 'admin' ? (
+                      user.role === 'user' ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRoleChange(user, 'manager')}
+                          disabled={updateRoleMutation.isPending}
+                          className="admin-text-xxs px-1 py-0.5 h-5"
+                        >
+                          승격
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRoleChange(user, 'user')}
+                          disabled={updateRoleMutation.isPending}
+                          className="admin-text-xxs px-1 py-0.5 h-5"
+                        >
+                          일반
+                        </Button>
+                      )
+                    ) : (
+                      <span className="admin-text-xs text-gray-400">최고관리자</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
           {users.length === 0 && (
             <div className="text-center py-8 admin-text text-gray-500">
