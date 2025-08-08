@@ -16,7 +16,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <div className="bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-3 md:px-4 sm:px-6">
         {/* 모바일 헤더 */}
         <div className="flex md:hidden justify-between items-center py-3">
@@ -109,7 +109,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
 
         {/* 모바일 드롭다운 메뉴 */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 py-3 space-y-2 bg-white">
+          <div className="md:hidden border-t border-gray-100 py-3 space-y-2">
             {(location === '/admin' || location === '/admin-settings') && setActiveTab && (
               <>
                 <Button 

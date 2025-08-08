@@ -469,7 +469,7 @@ export default function ManagerDashboard() {
           <>
             {/* 주문 목록 */}
             <Tabs defaultValue="전체보기" className="space-y-4">
-              <div className="flex items-center justify-between sticky top-16 z-40 bg-white border-b border-gray-200 pb-2 mb-4">
+              <div className="flex items-center justify-between">
                 <TabsList>
                   <TabsTrigger value="전체보기" className="tab-responsive-text">전체보기 ({filteredOrders.length})</TabsTrigger>
                   <TabsTrigger value="발송처리대기" className="tab-responsive-text">
