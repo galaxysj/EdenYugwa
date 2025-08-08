@@ -525,7 +525,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">주문일:</label>
                       <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
-                        <SelectTrigger className="h-8 w-32 text-xs">
+                        <SelectTrigger className="h-8 w-32 admin-text-xxs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -543,14 +543,14 @@ export default function ManagerDashboard() {
                             type="date"
                             value={orderStartDate}
                             onChange={(e) => setOrderStartDate(e.target.value)}
-                            className="h-8 w-32 text-xs"
+                            className="h-8 w-32 admin-text-xxs"
                             placeholder="시작일"
                           />
                           <Input
                             type="date"
                             value={orderEndDate}
                             onChange={(e) => setOrderEndDate(e.target.value)}
-                            className="h-8 w-32 text-xs"
+                            className="h-8 w-32 admin-text-xxs"
                             placeholder="종료일"
                           />
                         </div>
@@ -564,7 +564,7 @@ export default function ManagerDashboard() {
                         placeholder="고객명 검색"
                         value={customerNameFilter}
                         onChange={(e) => setCustomerNameFilter(e.target.value)}
-                        className="h-8 w-32 text-xs"
+                        className="h-8 w-32 admin-text-xxs"
                       />
                     </div>
 
@@ -572,7 +572,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">결제상태:</label>
                       <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                        <SelectTrigger className="h-8 w-28 text-xs">
+                        <SelectTrigger className="h-8 w-28 admin-text-xxs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -589,7 +589,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">주문상태:</label>
                       <Select value={orderStatusFilter} onValueChange={setOrderStatusFilter}>
-                        <SelectTrigger className="h-8 w-28 text-xs">
+                        <SelectTrigger className="h-8 w-28 admin-text-xxs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -605,7 +605,7 @@ export default function ManagerDashboard() {
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium whitespace-nowrap">판매자발송:</label>
                       <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
-                        <SelectTrigger className="h-8 w-28 text-xs">
+                        <SelectTrigger className="h-8 w-28 admin-text-xxs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -622,9 +622,9 @@ export default function ManagerDashboard() {
                     {/* 첫 번째 줄: 주문일, 고객명 */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-xs font-medium text-gray-700">주문일</label>
+                        <label className="admin-text-xxs font-medium text-gray-700">주문일</label>
                         <Select value={orderDateFilter} onValueChange={setOrderDateFilter}>
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-8 admin-text-xxs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -636,12 +636,12 @@ export default function ManagerDashboard() {
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-medium text-gray-700">고객명</label>
+                        <label className="admin-text-xxs font-medium text-gray-700">고객명</label>
                         <Input
                           placeholder="검색"
                           value={customerNameFilter}
                           onChange={(e) => setCustomerNameFilter(e.target.value)}
-                          className="h-8 text-xs"
+                          className="h-8 admin-text-xxs"
                         />
                       </div>
                     </div>
@@ -649,9 +649,9 @@ export default function ManagerDashboard() {
                     {/* 두 번째 줄: 결제상태, 주문상태 */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <label className="text-xs font-medium text-gray-700">결제상태</label>
+                        <label className="admin-text-xxs font-medium text-gray-700">결제상태</label>
                         <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-8 admin-text-xxs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -663,9 +663,9 @@ export default function ManagerDashboard() {
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-xs font-medium text-gray-700">판매자발송</label>
+                        <label className="admin-text-xxs font-medium text-gray-700">판매자발송</label>
                         <Select value={sellerShippedFilter} onValueChange={setSellerShippedFilter}>
-                          <SelectTrigger className="h-8 text-xs">
+                          <SelectTrigger className="h-8 admin-text-xxs">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -724,7 +724,7 @@ export default function ManagerDashboard() {
                               });
                             });
                           }}
-                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 admin-text-xxs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
                           disabled={updateSellerShippedMutation.isPending}
                         >
                           <Truck className="h-3 w-3 md:h-4 md:w-4" />
@@ -735,7 +735,7 @@ export default function ManagerDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => exportToExcel(filteredOrders, "전체주문목록")}
-                          className="flex items-center gap-1 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                          className="flex items-center gap-1 admin-text-xxs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
                         >
                           <Download className="h-3 w-3 md:h-4 md:w-4" />
                           <span className="hidden md:inline">엑셀 다운로드</span>
@@ -797,14 +797,14 @@ export default function ManagerDashboard() {
                               />
                             </td>
                             <td className="py-4 px-4">
-                              <div className="font-semibold text-gray-900 text-xs">#{order.orderNumber}</div>
-                              <div className="text-sm text-gray-600">
+                              <div className="font-semibold text-gray-900 admin-text-xxs">#{order.orderNumber}</div>
+                              <div className="admin-admin-text-xxs text-gray-600">
                                 <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                                <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                <div className="admin-admin-text-xxs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                               </div>
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200 mt-1"
+                                  className="text-red-600 font-bold admin-admin-text-xxs cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200 mt-1"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -814,23 +814,23 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2">
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                  className="admin-text-xxs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
                                 </div>
                               ) : (
-                                <span className="text-xs text-gray-400">-</span>
+                                <span className="admin-text-xxs text-gray-400">-</span>
                               )}
                             </td>
                             <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                              <div className="font-medium text-gray-900 admin-text-xxs">{order.customerName}</div>
                               {order.recipientName && order.recipientName !== order.customerName && (
-                                <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                                <div className="admin-text-xxs text-blue-600">받는분: {order.recipientName}</div>
                               )}
                             </td>
                             <td className="py-2 px-2 min-w-[80px]">
-                              <div className="text-xs space-y-0.5">
+                              <div className="admin-text-xxs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
                                   <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
@@ -844,23 +844,23 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2">
-                              <div className="text-xs text-gray-900">{order.customerPhone}</div>
+                              <div className="admin-text-xxs text-gray-900">{order.customerPhone}</div>
                             </td>
                             <td className="py-2 px-2 max-w-xs">
                               <div>
                                 <div 
-                                  className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
+                                  className="admin-text-xxs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
                                   title="클릭하여 전체 주소 보기"
                                 >
                                   {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
                                 </div>
                                 {checkRemoteArea(order.address1) && (
-                                  <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                  <div className="admin-text-xxs text-red-600 font-bold mt-1">배송비추가</div>
                                 )}
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <div className="text-xs">
+                              <div className="admin-text-xxs">
                                 {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
                                   <span className="text-yellow-600 font-medium">부분결제</span>
                                 ) : order.paymentStatus === 'confirmed' ? (
@@ -880,7 +880,7 @@ export default function ManagerDashboard() {
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                 disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-28 h-6 text-xs">
+                                <SelectTrigger className="w-28 h-6 admin-text-xxs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -904,7 +904,7 @@ export default function ManagerDashboard() {
                                 {order.sellerShipped ? (
                                   <div className="text-center">
                                     <div 
-                                      className="text-green-600 font-medium text-xs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                                      className="text-green-600 font-medium admin-text-xxs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
                                       onClick={() => updateSellerShippedMutation.mutate({ 
                                         id: order.id, 
                                         sellerShipped: false 
@@ -913,7 +913,7 @@ export default function ManagerDashboard() {
                                     >
                                       매니저발송완료
                                     </div>
-                                    <div className="text-gray-500 mt-1 text-xs">
+                                    <div className="text-gray-500 mt-1 admin-text-xxs">
                                       {order.sellerShippedDate ? 
                                         new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) :
                                         new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
@@ -928,7 +928,7 @@ export default function ManagerDashboard() {
                                       id: order.id, 
                                       sellerShipped: true 
                                     })}
-                                    className="text-xs px-2 py-1 h-7"
+                                    className="admin-text-xxs px-2 py-1 h-7"
                                   >
                                     발송처리
                                   </Button>
@@ -994,9 +994,9 @@ export default function ManagerDashboard() {
                                       }}
                                       className="rounded w-4 h-4"
                                     />
-                                    <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
-                                    <span className="text-black text-xs">{order.customerName}</span>
-                                    <span className={`px-2 py-0.5 rounded text-xs ${
+                                    <span className="font-bold text-black admin-text-xxs">#{order.orderNumber}</span>
+                                    <span className="text-black admin-text-xxs">{order.customerName}</span>
+                                    <span className={`px-2 py-0.5 rounded admin-text-xxs ${
                                       order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                                       order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
                                       order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
@@ -1009,8 +1009,8 @@ export default function ManagerDashboard() {
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <span className="font-bold text-blue-600 text-xs">{(order.totalAmount || 0).toLocaleString()}원</span>
-                                    <span className="text-xs text-gray-400">
+                                    <span className="font-bold text-blue-600 admin-text-xxs">{(order.totalAmount || 0).toLocaleString()}원</span>
+                                    <span className="admin-text-xxs text-gray-400">
                                       ▼
                                     </span>
                                   </div>
@@ -1039,7 +1039,7 @@ export default function ManagerDashboard() {
                                 </div>
                                 {/* 주문내역 */}
                                 <div className="mb-2 pt-2">
-                                  <div className="text-xs text-gray-700 mb-2 space-y-0.5">
+                                  <div className="admin-text-xxs text-gray-700 mb-2 space-y-0.5">
                                     {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
                                     {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
                                     {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
@@ -1048,7 +1048,7 @@ export default function ManagerDashboard() {
                                   
                                   {/* 입금상태와 주문상태 - 관리자와 동일한 표시 */}
                                   <div className="flex items-center gap-2 mb-2">
-                                    <span className={`px-2 py-0.5 rounded text-xs ${
+                                    <span className={`px-2 py-0.5 rounded admin-text-xxs ${
                                       order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                                       order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
                                       order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
@@ -1059,7 +1059,7 @@ export default function ManagerDashboard() {
                                        order.paymentStatus === 'partial' ? '부분결제' :
                                        order.paymentStatus === 'refunded' ? '환불' : '미입금'}
                                     </span>
-                                    <span className={`px-2 py-0.5 rounded text-xs ${
+                                    <span className={`px-2 py-0.5 rounded admin-text-xxs ${
                                       order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
                                       order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                                       order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
@@ -1073,7 +1073,7 @@ export default function ManagerDashboard() {
                                 </div>
 
                                 {/* 발송 상태 및 일자 표시 - 주문 상태에 따라 동적 변경 */}
-                                <div className="flex items-center gap-1 mb-2 text-xs">
+                                <div className="flex items-center gap-1 mb-2 admin-text-xxs">
                                   {order.status === 'scheduled' && order.scheduledDate && (
                                     <>
                                       <span className="text-gray-600">발송:</span>
@@ -1101,7 +1101,7 @@ export default function ManagerDashboard() {
                                 </div>
 
                                 {/* 연락처, 주소 */}
-                                <div className="text-xs text-gray-700 mb-2">
+                                <div className="admin-text-xxs text-gray-700 mb-2">
                                   <div>연락처: {order.customerPhone}</div>
                                   <div className="flex items-center justify-between">
                                     <span>배송지: {order.address1}</span>
@@ -1119,7 +1119,7 @@ export default function ManagerDashboard() {
                                       onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                       disabled={updateOrderStatusMutation.isPending}
                                     >
-                                      <SelectTrigger className="h-7 text-xs px-2 w-24">
+                                      <SelectTrigger className="h-7 admin-text-xxs px-2 w-24">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -1132,7 +1132,7 @@ export default function ManagerDashboard() {
                                     {order.sellerShipped ? (
                                       <div className="text-center">
                                         <div 
-                                          className="text-black text-xs cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border border-gray-300"
+                                          className="text-black admin-text-xxs cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border border-gray-300"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             updateSellerShippedMutation.mutate({ 
@@ -1156,14 +1156,14 @@ export default function ManagerDashboard() {
                                             sellerShipped: true 
                                           });
                                         }}
-                                        className="text-xs px-2 py-1 h-7"
+                                        className="admin-text-xxs px-2 py-1 h-7"
                                       >
                                         발송처리
                                       </Button>
                                     )}
                                     
                                     <SmsDialog order={order}>
-                                      <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
+                                      <Button size="sm" variant="outline" className="flex items-center gap-1 admin-text-xxs px-2 py-1 h-7">
                                         <MessageSquare className="h-3 w-3" />
                                         SMS
                                       </Button>
@@ -1222,7 +1222,7 @@ export default function ManagerDashboard() {
                               });
                             });
                           }}
-                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 admin-text-xxs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
                           disabled={updateSellerShippedMutation.isPending}
                         >
                           <Truck className="h-3 w-3 md:h-4 md:w-4" />
@@ -1233,7 +1233,7 @@ export default function ManagerDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => exportToExcel(filteredOrders.filter(o => !o.sellerShipped), "발송처리대기목록")}
-                          className="flex items-center gap-1 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                          className="flex items-center gap-1 admin-text-xxs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
                         >
                           <Download className="h-3 w-3 md:h-4 md:w-4" />
                           <span className="hidden md:inline">엑셀 다운로드</span>
@@ -1296,8 +1296,8 @@ export default function ManagerDashboard() {
                               />
                             </td>
                             <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
-                              <div className="text-xs text-gray-500">
+                              <div className="font-medium text-gray-900 admin-text-xxs">#{order.orderNumber}</div>
+                              <div className="admin-text-xxs text-gray-500">
                                 <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                                 {order.paymentStatus !== 'confirmed' && (
                                   <div className="text-red-600 font-bold">미입금</div>
@@ -1305,7 +1305,7 @@ export default function ManagerDashboard() {
                               </div>
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                                  className="text-red-600 font-bold admin-text-xxs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -1315,23 +1315,23 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2">
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                  className="admin-text-xxs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
                                 </div>
                               ) : (
-                                <span className="text-xs text-gray-400">-</span>
+                                <span className="admin-text-xxs text-gray-400">-</span>
                               )}
                             </td>
                             <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                              <div className="font-medium text-gray-900 admin-text-xxs">{order.customerName}</div>
                               {order.recipientName && order.recipientName !== order.customerName && (
-                                <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                                <div className="admin-text-xxs text-blue-600">받는분: {order.recipientName}</div>
                               )}
                             </td>
                             <td className="py-2 px-2 min-w-[80px]">
-                              <div className="text-xs space-y-0.5">
+                              <div className="admin-text-xxs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
                                   <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
@@ -1345,23 +1345,23 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2">
-                              <div className="text-xs text-gray-900">{order.customerPhone}</div>
+                              <div className="admin-text-xxs text-gray-900">{order.customerPhone}</div>
                             </td>
                             <td className="py-2 px-2 max-w-xs">
                               <div>
                                 <div 
-                                  className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
+                                  className="admin-text-xxs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
                                   title="클릭하여 전체 주소 보기"
                                 >
                                   {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
                                 </div>
                                 {checkRemoteArea(order.address1) && (
-                                  <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                  <div className="admin-text-xxs text-red-600 font-bold mt-1">배송비추가</div>
                                 )}
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <div className="text-xs">
+                              <div className="admin-text-xxs">
                                 {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
                                   <span className="text-yellow-600 font-medium">부분결제</span>
                                 ) : order.paymentStatus === 'confirmed' ? (
@@ -1381,7 +1381,7 @@ export default function ManagerDashboard() {
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                 disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-28 h-6 text-xs">
+                                <SelectTrigger className="w-28 h-6 admin-text-xxs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1405,7 +1405,7 @@ export default function ManagerDashboard() {
                                 {order.sellerShipped ? (
                                   <div className="text-center">
                                     <div 
-                                      className="text-green-600 font-medium text-xs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                                      className="text-green-600 font-medium admin-text-xxs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
                                       onClick={() => updateSellerShippedMutation.mutate({ 
                                         id: order.id, 
                                         sellerShipped: false 
@@ -1414,7 +1414,7 @@ export default function ManagerDashboard() {
                                     >
                                       매니저발송완료
                                     </div>
-                                    <div className="text-gray-500 mt-1 text-xs">
+                                    <div className="text-gray-500 mt-1 admin-text-xxs">
                                       {order.sellerShippedDate ? 
                                         new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) :
                                         new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
@@ -1429,7 +1429,7 @@ export default function ManagerDashboard() {
                                       id: order.id, 
                                       sellerShipped: true 
                                     })}
-                                    className="text-xs px-2 py-1 h-7"
+                                    className="admin-text-xxs px-2 py-1 h-7"
                                   >
                                     발송처리
                                   </Button>
@@ -1486,23 +1486,23 @@ export default function ManagerDashboard() {
                                 }}
                                 className="rounded w-4 h-4"
                               />
-                              <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
-                              <span className="text-black text-xs">{order.customerName}</span>
+                              <span className="font-bold text-black admin-text-xxs">#{order.orderNumber}</span>
+                              <span className="text-black admin-text-xxs">{order.customerName}</span>
                             </div>
-                            <span className="text-xs text-gray-600">
+                            <span className="admin-text-xxs text-gray-600">
                               {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                             </span>
                           </div>
 
                           {/* 중간: 주문내역 */}
                           <div className="mb-2">
-                            <div className="text-xs text-gray-700 space-y-0.5 mb-2">
+                            <div className="admin-text-xxs text-gray-700 space-y-0.5 mb-2">
                               {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
                               {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
                               {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                               {renderDynamicProducts(order)}
                             </div>
-                            <div className="flex items-center gap-2 text-xs">
+                            <div className="flex items-center gap-2 admin-text-xxs">
                               <span className={`px-2 py-0.5 rounded ${
                                 order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                                 order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
@@ -1527,7 +1527,7 @@ export default function ManagerDashboard() {
 
                           {/* 예약발송일 */}
                           {order.scheduledDate && (
-                            <div className="flex items-center gap-1 mb-2 text-xs">
+                            <div className="flex items-center gap-1 mb-2 admin-text-xxs">
                               <span className="text-gray-600">예약발송일:</span>
                               <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
                                 {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -1536,7 +1536,7 @@ export default function ManagerDashboard() {
                           )}
 
                           {/* 하단: 연락처, 주소 */}
-                          <div className="text-xs text-gray-700 mb-2">
+                          <div className="admin-text-xxs text-gray-700 mb-2">
                             <div>연락처: {order.customerPhone}</div>
                             <div className="flex items-center justify-between">
                               <span>배송지: {order.address1.length > 20 ? `${order.address1.substring(0, 20)}...` : order.address1}</span>
@@ -1553,7 +1553,7 @@ export default function ManagerDashboard() {
                               onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                               disabled={updateOrderStatusMutation.isPending}
                             >
-                              <SelectTrigger className="h-7 text-xs px-2 w-24">
+                              <SelectTrigger className="h-7 admin-text-xxs px-2 w-24">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -1570,13 +1570,13 @@ export default function ManagerDashboard() {
                                   id: order.id, 
                                   sellerShipped: true 
                                 })}
-                                className="text-xs px-1.5 py-0.5 h-6"
+                                className="admin-text-xxs px-1.5 py-0.5 h-6"
                               >
                                 발송처리
                               </Button>
                               
                               <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-1.5 py-0.5 h-6">
+                                <Button size="sm" variant="outline" className="flex items-center gap-1 admin-text-xxs px-1.5 py-0.5 h-6">
                                   <MessageSquare className="h-3 w-3" />
                                   SMS
                                 </Button>
@@ -1600,7 +1600,7 @@ export default function ManagerDashboard() {
                         size="sm"
                         variant="outline"
                         onClick={() => exportToExcel(filteredOrders.filter(o => o.sellerShipped), "매니저발송완료목록")}
-                        className="flex items-center gap-1 text-xs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
+                        className="flex items-center gap-1 admin-text-xxs md:text-sm px-2 md:px-4 py-1 md:py-2 h-7 md:h-9"
                       >
                         <Download className="h-3 w-3 md:h-4 md:w-4" />
                         <span className="hidden md:inline">엑셀 다운로드</span>
@@ -1662,8 +1662,8 @@ export default function ManagerDashboard() {
                               />
                             </td>
                             <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">#{order.orderNumber}</div>
-                              <div className="text-xs text-gray-500">
+                              <div className="font-medium text-gray-900 admin-text-xxs">#{order.orderNumber}</div>
+                              <div className="admin-text-xxs text-gray-500">
                                 <div>{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
                                 {order.paymentStatus !== 'confirmed' && (
                                   <div className="text-red-600 font-bold">미입금</div>
@@ -1671,7 +1671,7 @@ export default function ManagerDashboard() {
                               </div>
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-red-600 font-bold text-xs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                                  className="text-red-600 font-bold admin-text-xxs cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -1681,23 +1681,23 @@ export default function ManagerDashboard() {
                             <td className="py-2 px-2">
                               {order.scheduledDate ? (
                                 <div 
-                                  className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                  className="admin-text-xxs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
                                   title="클릭하여 예약발송일 수정"
                                 >
                                   {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
                                 </div>
                               ) : (
-                                <span className="text-xs text-gray-400">-</span>
+                                <span className="admin-text-xxs text-gray-400">-</span>
                               )}
                             </td>
                             <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
+                              <div className="font-medium text-gray-900 admin-text-xxs">{order.customerName}</div>
                               {order.recipientName && order.recipientName !== order.customerName && (
-                                <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
+                                <div className="admin-text-xxs text-blue-600">받는분: {order.recipientName}</div>
                               )}
                             </td>
                             <td className="py-2 px-2 min-w-[80px]">
-                              <div className="text-xs space-y-0.5">
+                              <div className="admin-text-xxs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
                                   <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
@@ -1711,23 +1711,23 @@ export default function ManagerDashboard() {
                               </div>
                             </td>
                             <td className="py-2 px-2">
-                              <div className="text-xs text-gray-900">{order.customerPhone}</div>
+                              <div className="admin-text-xxs text-gray-900">{order.customerPhone}</div>
                             </td>
                             <td className="py-2 px-2 max-w-xs">
                               <div>
                                 <div 
-                                  className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
+                                  className="admin-text-xxs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
                                   title="클릭하여 전체 주소 보기"
                                 >
                                   {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
                                 </div>
                                 {checkRemoteArea(order.address1) && (
-                                  <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                  <div className="admin-text-xxs text-red-600 font-bold mt-1">배송비추가</div>
                                 )}
                               </div>
                             </td>
                             <td className="py-2 px-2 text-center">
-                              <div className="text-xs">
+                              <div className="admin-text-xxs">
                                 {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
                                   <span className="text-yellow-600 font-medium">부분결제</span>
                                 ) : order.paymentStatus === 'confirmed' ? (
@@ -1747,7 +1747,7 @@ export default function ManagerDashboard() {
                                 onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                                 disabled={updateOrderStatusMutation.isPending}
                               >
-                                <SelectTrigger className="w-28 h-6 text-xs">
+                                <SelectTrigger className="w-28 h-6 admin-text-xxs">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -1771,7 +1771,7 @@ export default function ManagerDashboard() {
                                 {order.sellerShipped ? (
                                   <div className="text-center">
                                     <div 
-                                      className="text-green-600 font-medium text-xs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                                      className="text-green-600 font-medium admin-text-xxs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
                                       onClick={() => updateSellerShippedMutation.mutate({ 
                                         id: order.id, 
                                         sellerShipped: false 
@@ -1780,7 +1780,7 @@ export default function ManagerDashboard() {
                                     >
                                       매니저발송완료
                                     </div>
-                                    <div className="text-gray-500 mt-1 text-xs">
+                                    <div className="text-gray-500 mt-1 admin-text-xxs">
                                       {order.sellerShippedDate ? 
                                         new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) :
                                         new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
@@ -1795,7 +1795,7 @@ export default function ManagerDashboard() {
                                       id: order.id, 
                                       sellerShipped: true 
                                     })}
-                                    className="text-xs px-2 py-1 h-7"
+                                    className="admin-text-xxs px-2 py-1 h-7"
                                   >
                                     발송처리
                                   </Button>
@@ -1852,23 +1852,23 @@ export default function ManagerDashboard() {
                                 }}
                                 className="rounded w-4 h-4"
                               />
-                              <span className="font-bold text-black text-xs">#{order.orderNumber}</span>
-                              <span className="text-black text-xs">{order.customerName}</span>
+                              <span className="font-bold text-black admin-text-xxs">#{order.orderNumber}</span>
+                              <span className="text-black admin-text-xxs">{order.customerName}</span>
                             </div>
-                            <span className="text-xs text-gray-600">
+                            <span className="admin-text-xxs text-gray-600">
                               {new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
                             </span>
                           </div>
 
                           {/* 중간: 주문내역 */}
                           <div className="mb-2 order-details-cell">
-                            <div className="text-xs text-gray-700 space-y-0.5 mb-2">
+                            <div className="admin-text-xxs text-gray-700 space-y-0.5 mb-2">
                               {order.smallBoxQuantity > 0 && <div className="order-details-item">{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
                               {order.largeBoxQuantity > 0 && <div className="order-details-item">{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
                               {renderDynamicProducts(order)}
                               {order.wrappingQuantity > 0 && <div className="order-details-item">{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                             </div>
-                            <div className="flex items-center gap-2 text-xs">
+                            <div className="flex items-center gap-2 admin-text-xxs">
                               <span className={`px-2 py-0.5 rounded ${
                                 order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                                 order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
@@ -1888,7 +1888,7 @@ export default function ManagerDashboard() {
 
                           {/* 예약발송일 */}
                           {order.scheduledDate && (
-                            <div className="flex items-center gap-1 mb-2 text-xs">
+                            <div className="flex items-center gap-1 mb-2 admin-text-xxs">
                               <span className="text-gray-600">예약발송일:</span>
                               <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
                                 {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
@@ -1897,7 +1897,7 @@ export default function ManagerDashboard() {
                           )}
 
                           {/* 하단: 연락처, 주소 */}
-                          <div className="text-xs text-gray-700 mb-2">
+                          <div className="admin-text-xxs text-gray-700 mb-2">
                             <div>연락처: {order.customerPhone}</div>
                             <div className="flex items-center justify-between">
                               <span>배송지: {order.address1.length > 20 ? `${order.address1.substring(0, 20)}...` : order.address1}</span>
@@ -1919,7 +1919,7 @@ export default function ManagerDashboard() {
                               onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
                               disabled={updateOrderStatusMutation.isPending}
                             >
-                              <SelectTrigger className="h-7 text-xs px-2 w-24">
+                              <SelectTrigger className="h-7 admin-text-xxs px-2 w-24">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -1930,7 +1930,7 @@ export default function ManagerDashboard() {
                             
                             <div className="flex items-center gap-1">
                               <div 
-                                className="text-black text-xs cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border border-gray-300"
+                                className="text-black admin-text-xxs cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border border-gray-300"
                                 onClick={() => updateSellerShippedMutation.mutate({ 
                                   id: order.id, 
                                   sellerShipped: false 
@@ -1941,7 +1941,7 @@ export default function ManagerDashboard() {
                               </div>
                               
                               <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
+                                <Button size="sm" variant="outline" className="flex items-center gap-1 admin-text-xxs px-2 py-1 h-7">
                                   <MessageSquare className="h-3 w-3" />
                                   SMS
                                 </Button>

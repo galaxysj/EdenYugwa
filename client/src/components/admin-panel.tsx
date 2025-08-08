@@ -161,25 +161,25 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                 <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-gray-600">{stats.total}</div>
-                    <div className="text-sm text-gray-600">총 주문</div>
+                    <div className="admin-text-xs text-gray-600">총 주문</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-gray-600">{stats.delivered}</div>
-                    <div className="text-sm text-gray-600">배송 완료</div>
+                    <div className="admin-text-xs text-gray-600">배송 완료</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-gray-600">{stats.shipping}</div>
-                    <div className="text-sm text-gray-600">배송 중</div>
+                    <div className="admin-text-xs text-gray-600">배송 중</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-gray-50">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-gray-600">{stats.pending}</div>
-                    <div className="text-sm text-gray-600">대기 중</div>
+                    <div className="admin-text-xs text-gray-600">대기 중</div>
                   </CardContent>
                 </Card>
               </div>
@@ -199,12 +199,12 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       <table className="w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">고객정보</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">금액</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
+                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">고객정보</th>
+                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">상품</th>
+                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">금액</th>
+                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -212,25 +212,25 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                             return (
                               <tr key={order.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap admin-text-xs font-medium text-gray-900">
                                   #{order.orderNumber}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
-                                  <div className="text-sm text-gray-500">{order.customerPhone}</div>
-                                  <div className="text-sm text-gray-500 truncate max-w-xs">
+                                  <div className="admin-text-xs font-medium text-gray-900">{order.customerName}</div>
+                                  <div className="admin-text-xs text-gray-500">{order.customerPhone}</div>
+                                  <div className="admin-text-xs text-gray-500 truncate max-w-xs">
                                     {order.address1} {order.address2}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="text-sm text-gray-900">
+                                  <div className="admin-text-xs text-gray-900">
                                     {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                                   </div>
-                                  <div className="text-sm text-gray-500">
+                                  <div className="admin-text-xs text-gray-500">
                                     {order.hasWrapping === 'yes' ? '보자기 포장' : '보자기 없음'}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap admin-text-xs text-gray-900">
                                   {formatPrice(order.totalAmount)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -250,7 +250,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     </SelectContent>
                                   </Select>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                <td className="px-6 py-4 whitespace-nowrap admin-text-xs font-medium space-x-2">
                                   <Button
                                     size="sm"
                                     onClick={() => handleSendSMS(order)}
@@ -281,32 +281,32 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                         <div className="space-y-4">
                                           <div>
                                             <h4 className="font-semibold text-gray-900">고객 정보</h4>
-                                            <p className="text-sm text-gray-600">이름: {selectedOrder.customerName}</p>
-                                            <p className="text-sm text-gray-600">전화번호: {selectedOrder.customerPhone}</p>
+                                            <p className="admin-text-xs text-gray-600">이름: {selectedOrder.customerName}</p>
+                                            <p className="admin-text-xs text-gray-600">전화번호: {selectedOrder.customerPhone}</p>
                                           </div>
                                           <div>
                                             <h4 className="font-semibold text-gray-900">배송 주소</h4>
-                                            <p className="text-sm text-gray-600">
+                                            <p className="admin-text-xs text-gray-600">
                                               {selectedOrder.zipCode && `${selectedOrder.zipCode} `}
                                               {selectedOrder.address1} {selectedOrder.address2}
                                             </p>
                                           </div>
                                           <div>
                                             <h4 className="font-semibold text-gray-900">주문 내용</h4>
-                                            <p className="text-sm text-gray-600">
+                                            <p className="admin-text-xs text-gray-600">
                                               {selectedOrder.boxSize === 'small' ? '소박스' : '대박스'} × {selectedOrder.quantity}
                                             </p>
-                                            <p className="text-sm text-gray-600">
+                                            <p className="admin-text-xs text-gray-600">
                                               보자기: {selectedOrder.hasWrapping === 'yes' ? '있음' : '없음'}
                                             </p>
-                                            <p className="text-sm font-semibold text-gray-900">
+                                            <p className="admin-text-xs font-semibold text-gray-900">
                                               총 금액: {formatPrice(selectedOrder.totalAmount)}
                                             </p>
                                           </div>
                                           {selectedOrder.specialRequests && (
                                             <div>
                                               <h4 className="font-semibold text-gray-900">요청사항</h4>
-                                              <p className="text-sm text-gray-600">{selectedOrder.specialRequests}</p>
+                                              <p className="admin-text-xs text-gray-600">{selectedOrder.specialRequests}</p>
                                             </div>
                                           )}
                                         </div>
