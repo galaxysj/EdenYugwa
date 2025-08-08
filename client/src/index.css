@@ -3,43 +3,34 @@
 @tailwind utilities;
 
 :root {
-  /* 전역 반응형 기준 폰트 크기 */
-  font-size: clamp(12px, 2.5vw, 16px);
-  
-  --background: hsl(0, 0%, 100%);
+  --background: hsl(45, 29%, 97%);
   --foreground: hsl(0, 0%, 0%);
-  --muted: hsl(0, 0%, 96%);
+  --muted: hsl(43, 13%, 93%);
   --muted-foreground: hsl(0, 0%, 35%);
   --popover: hsl(0, 0%, 100%);
   --popover-foreground: hsl(0, 0%, 0%);
   --card: hsl(0, 0%, 100%);
   --card-foreground: hsl(0, 0%, 0%);
-  --border: hsl(0, 0%, 90%);
-  --input: hsl(0, 0%, 95%);
+  --border: hsl(43, 15%, 85%);
+  --input: hsl(43, 15%, 85%);
   --primary: hsl(25, 65%, 35%);
   --primary-foreground: hsl(0, 0%, 98%);
-  --secondary: hsl(0, 0%, 96%);
+  --secondary: hsl(43, 13%, 93%);
   --secondary-foreground: hsl(0, 0%, 20%);
   --accent: hsl(120, 25%, 55%);
   --accent-foreground: hsl(0, 0%, 0%);
   --destructive: hsl(0, 75%, 55%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(25, 45%, 15%);
-  --radius: clamp(0.25rem, 0.8vw, 0.75rem);
+  --radius: 0.5rem;
   
   /* Eden Hangwa specific colors */
   --eden-brown: hsl(25, 65%, 35%);
-  --eden-cream: hsl(0, 0%, 100%);
+  --eden-cream: hsl(45, 29%, 97%);
   --eden-sage: hsl(120, 25%, 55%);
-  --eden-beige: hsl(0, 0%, 98%);
+  --eden-beige: hsl(43, 13%, 93%);
   --eden-red: hsl(0, 75%, 55%);
   --eden-dark: hsl(25, 45%, 15%);
-  
-  /* 완전 반응형 변수 */
-  --base-font-size: clamp(0.75rem, 2.5vw, 1rem);
-  --base-padding: clamp(0.25rem, 1.5vw, 0.75rem);
-  --base-margin: clamp(0.125rem, 1vw, 0.5rem);
-  --base-border-radius: clamp(0.125rem, 0.6vw, 0.5rem);
 }
 
 .dark {
@@ -71,10 +62,9 @@
   }
 
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased bg-background;
     font-family: 'Noto Sans KR', 'Inter', sans-serif;
     color: #000000;
-    background-color: #ffffff !important;
   }
 }
 
@@ -139,7 +129,7 @@
   font-weight: 600; /* font-semibold */
   color: rgb(31 41 55); /* text-gray-800 */
   padding: clamp(0.125rem, 0.5vw, 0.25rem) clamp(0.0625rem, 0.3vw, 0.125rem); /* Dynamic padding */
-  background-color: rgb(255 255 255); /* bg-white */
+  background-color: rgb(249 250 251); /* bg-gray-50 */
   border-bottom: 2px solid rgb(229 231 235); /* border-b-2 border-gray-200 */
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -297,7 +287,7 @@
 }
 
 .admin-table tbody tr:hover, .manager-table tbody tr:hover {
-  background-color: rgb(248 250 252); /* hover:bg-blue-50 */
+  background-color: rgb(249 250 251); /* hover:bg-gray-50 */
 }
 
 .admin-table .font-medium, .manager-table .font-medium {
@@ -1143,18 +1133,16 @@ td, .table-cell, [role="cell"] {
   border: 1px solid #e5e7eb !important;
   border-radius: clamp(0.125rem, 0.8vw + 0.05rem, 0.5rem) !important;
   overflow: hidden !important;
-  background-color: #ffffff !important;
 }
 
 .admin-table th, .manager-table th, .order-history-table th, .completed-orders-table th {
   font-size: clamp(0.1rem, 1.2vw + 0.04rem, 0.65rem) !important;
   padding: clamp(0.0625rem, 0.8vw + 0.03rem, 0.5rem) clamp(0.0313rem, 0.4vw + 0.015rem, 0.25rem) !important;
-  background-color: #ffffff !important;
+  background-color: #f9fafb !important;
   font-weight: 600 !important;
   text-align: center !important;
   line-height: clamp(0.8, 0.9vw + 0.7, 1.1) !important;
   letter-spacing: clamp(-0.04em, -0.3vw + 0.015em, -0.01em) !important;
-  border-bottom: 1px solid #e5e7eb !important;
 }
 
 .admin-table td, .manager-table td, .order-history-table td, .completed-orders-table td {
@@ -1491,7 +1479,7 @@ td, .table-cell, [role="cell"] {
     position: sticky !important;
     top: 0 !important;
     z-index: 10 !important;
-    background-color: #ffffff !important;
+    background-color: #f9fafb !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   }
 }
@@ -1863,312 +1851,9 @@ td, .table-cell, [role="cell"] {
 
 /* Gradient backgrounds */
 .gradient-hero {
-  background: linear-gradient(135deg, #ffffff, #f8fafc);
+  background: linear-gradient(135deg, var(--eden-cream), var(--eden-beige));
 }
 
 .gradient-card {
-  background: linear-gradient(to right, #ffffff, #ffffff);
-}
-
-/* ===== 완전 반응형 전역 UI 시스템 ===== */
-
-/* HTML과 BODY 기본 반응형 설정 */
-html {
-  font-size: clamp(10px, 2.2vw, 16px) !important;
-  line-height: 1.2;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body {
-  font-size: 1rem !important;
-  line-height: clamp(1.1, 0.5vw + 1.05, 1.4) !important;
-  letter-spacing: clamp(-0.02em, -0.1vw + 0.005em, 0em) !important;
-}
-
-/* 전역 텍스트 줄바꿈 방지 시스템 */
-* {
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  hyphens: none;
-  text-overflow: ellipsis;
-}
-
-/* 특별히 줄바꿈을 허용하는 요소들 */
-.allow-wrap, .text-wrap, p, .description, .content {
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  overflow-wrap: break-word !important;
-}
-
-/* 절대 줄바꿈 금지 요소들 */
-.no-wrap, .nowrap, button, .btn, input, select, .tab-trigger, .nav-item, 
-.menu-item, .badge, .status, .amount, .price, .date, .number {
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  word-break: keep-all !important;
-  hyphens: none !important;
-}
-
-/* ===== 완전 반응형 헤더 시스템 ===== */
-header, .header, nav, .nav, .navbar, .menu-bar, .top-bar {
-  font-size: clamp(0.3rem, 2.8vw + 0.1rem, 1.1rem) !important;
-  padding: clamp(0.125rem, 1.2vw + 0.05rem, 0.875rem) !important;
-  height: clamp(2rem, 8vw + 0.5rem, 4rem) !important;
-  line-height: clamp(1.0, 0.8vw + 0.9, 1.3) !important;
-  letter-spacing: clamp(-0.02em, -0.15vw + 0.008em, 0em) !important;
-}
-
-/* 헤더 내부 요소들 */
-header *, .header *, nav *, .nav *, .navbar *, .menu-bar *, .top-bar * {
-  font-size: inherit !important;
-  line-height: inherit !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* 헤더 버튼들 */
-header button, .header button, nav button, .nav button, .navbar button, 
-.menu-bar button, .top-bar button {
-  font-size: clamp(0.25rem, 2.2vw + 0.08rem, 0.95rem) !important;
-  padding: clamp(0.0625rem, 0.8vw + 0.025rem, 0.5rem) clamp(0.125rem, 1.2vw + 0.05rem, 0.75rem) !important;
-  height: clamp(1.5rem, 5vw + 0.3rem, 2.5rem) !important;
-  border-radius: clamp(0.125rem, 0.6vw + 0.05rem, 0.375rem) !important;
-}
-
-/* ===== 완전 반응형 메뉴 및 네비게이션 ===== */
-.menu-item, .nav-item, .navigation-item, [role="menuitem"], [role="tab"], .tab-item {
-  font-size: clamp(0.2rem, 2vw + 0.08rem, 0.9rem) !important;
-  padding: clamp(0.0625rem, 0.8vw + 0.03rem, 0.5rem) clamp(0.125rem, 1.5vw + 0.06rem, 0.875rem) !important;
-  line-height: clamp(0.9, 0.8vw + 0.8, 1.2) !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  letter-spacing: clamp(-0.03em, -0.3vw + 0.012em, 0em) !important;
-  border-radius: clamp(0.125rem, 0.5vw + 0.05rem, 0.375rem) !important;
-}
-
-/* 드롭다운 메뉴 */
-.dropdown-menu, .menu-list, .submenu {
-  font-size: clamp(0.18rem, 1.8vw + 0.07rem, 0.8rem) !important;
-  padding: clamp(0.125rem, 1vw + 0.05rem, 0.625rem) !important;
-  border-radius: clamp(0.125rem, 0.6vw + 0.05rem, 0.5rem) !important;
-  min-width: clamp(80px, 15vw + 40px, 200px) !important;
-  max-width: clamp(150px, 25vw + 80px, 300px) !important;
-}
-
-/* ===== 완전 반응형 카드 시스템 ===== */
-.card, .panel, .container, .box, .widget {
-  padding: clamp(0.25rem, 2vw + 0.1rem, 1.5rem) !important;
-  border-radius: clamp(0.125rem, 0.8vw + 0.05rem, 0.75rem) !important;
-  margin: clamp(0.125rem, 1vw + 0.05rem, 0.75rem) !important;
-}
-
-.card-header, .panel-header, .box-header {
-  font-size: clamp(0.3rem, 2.5vw + 0.1rem, 1.1rem) !important;
-  padding: clamp(0.1875rem, 1.5vw + 0.08rem, 1rem) !important;
-  line-height: clamp(1.0, 1vw + 0.9, 1.3) !important;
-  font-weight: 600 !important;
-}
-
-.card-content, .panel-content, .box-content {
-  font-size: clamp(0.25rem, 2vw + 0.08rem, 0.9rem) !important;
-  padding: clamp(0.1875rem, 1.5vw + 0.08rem, 1rem) !important;
-  line-height: clamp(1.1, 1.2vw + 1, 1.4) !important;
-}
-
-/* ===== 완전 반응형 폼 시스템 ===== */
-.form-group, .form-field, .field-group {
-  margin-bottom: clamp(0.25rem, 1.5vw + 0.1rem, 1rem) !important;
-}
-
-.form-label, .field-label, label {
-  font-size: clamp(0.25rem, 2.2vw + 0.08rem, 0.9rem) !important;
-  margin-bottom: clamp(0.125rem, 0.8vw + 0.05rem, 0.5rem) !important;
-  line-height: clamp(1.0, 1vw + 0.9, 1.3) !important;
-  font-weight: 500 !important;
-}
-
-.form-control, .input-field, input, textarea, select {
-  font-size: clamp(0.25rem, 2vw + 0.08rem, 1rem) !important;
-  padding: clamp(0.1875rem, 1.2vw + 0.06rem, 0.875rem) clamp(0.25rem, 1.8vw + 0.1rem, 1rem) !important;
-  border-radius: clamp(0.125rem, 0.6vw + 0.05rem, 0.5rem) !important;
-  height: clamp(2rem, 6vw + 0.5rem, 3rem) !important;
-  line-height: clamp(1.1, 1vw + 1, 1.4) !important;
-}
-
-textarea {
-  height: clamp(4rem, 12vw + 1rem, 8rem) !important;
-  min-height: clamp(2.5rem, 8vw + 0.5rem, 4rem) !important;
-}
-
-/* ===== 완전 반응형 배지 및 상태 ===== */
-.badge, .status, .tag, .chip, .label {
-  font-size: clamp(0.15rem, 1.5vw + 0.05rem, 0.7rem) !important;
-  padding: clamp(0.0625rem, 0.6vw + 0.025rem, 0.375rem) clamp(0.125rem, 1vw + 0.05rem, 0.625rem) !important;
-  border-radius: clamp(0.0625rem, 0.4vw + 0.025rem, 0.25rem) !important;
-  line-height: clamp(0.8, 0.6vw + 0.7, 1.1) !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  letter-spacing: clamp(-0.02em, -0.2vw + 0.008em, 0em) !important;
-  font-weight: 500 !important;
-}
-
-/* ===== 완전 반응형 아이콘 시스템 ===== */
-.icon, svg, [class*="icon-"], .lucide {
-  width: clamp(0.75rem, 3vw + 0.2rem, 1.5rem) !important;
-  height: clamp(0.75rem, 3vw + 0.2rem, 1.5rem) !important;
-}
-
-.icon-sm, .small-icon {
-  width: clamp(0.5rem, 2vw + 0.15rem, 1rem) !important;
-  height: clamp(0.5rem, 2vw + 0.15rem, 1rem) !important;
-}
-
-.icon-lg, .large-icon {
-  width: clamp(1rem, 4vw + 0.3rem, 2rem) !important;
-  height: clamp(1rem, 4vw + 0.3rem, 2rem) !important;
-}
-
-/* ===== 완전 반응형 스페이싱 시스템 ===== */
-.m-1 { margin: clamp(0.0625rem, 0.5vw + 0.025rem, 0.25rem) !important; }
-.m-2 { margin: clamp(0.125rem, 0.8vw + 0.05rem, 0.5rem) !important; }
-.m-3 { margin: clamp(0.1875rem, 1.2vw + 0.08rem, 0.75rem) !important; }
-.m-4 { margin: clamp(0.25rem, 1.6vw + 0.1rem, 1rem) !important; }
-.m-5 { margin: clamp(0.3125rem, 2vw + 0.125rem, 1.25rem) !important; }
-
-.p-1 { padding: clamp(0.0625rem, 0.5vw + 0.025rem, 0.25rem) !important; }
-.p-2 { padding: clamp(0.125rem, 0.8vw + 0.05rem, 0.5rem) !important; }
-.p-3 { padding: clamp(0.1875rem, 1.2vw + 0.08rem, 0.75rem) !important; }
-.p-4 { padding: clamp(0.25rem, 1.6vw + 0.1rem, 1rem) !important; }
-.p-5 { padding: clamp(0.3125rem, 2vw + 0.125rem, 1.25rem) !important; }
-
-/* ===== 완전 반응형 gap 시스템 ===== */
-.gap-1 { gap: clamp(0.0625rem, 0.5vw + 0.025rem, 0.25rem) !important; }
-.gap-2 { gap: clamp(0.125rem, 0.8vw + 0.05rem, 0.5rem) !important; }
-.gap-3 { gap: clamp(0.1875rem, 1.2vw + 0.08rem, 0.75rem) !important; }
-.gap-4 { gap: clamp(0.25rem, 1.6vw + 0.1rem, 1rem) !important; }
-.gap-5 { gap: clamp(0.3125rem, 2vw + 0.125rem, 1.25rem) !important; }
-
-/* ===== 완전 반응형 그리드 시스템 ===== */
-.grid {
-  gap: clamp(0.25rem, 1.5vw + 0.1rem, 1rem) !important;
-}
-
-.grid-cols-1 { grid-template-columns: 1fr !important; }
-.grid-cols-2 { grid-template-columns: repeat(2, 1fr) !important; }
-.grid-cols-3 { grid-template-columns: repeat(3, 1fr) !important; }
-.grid-cols-4 { grid-template-columns: repeat(4, 1fr) !important; }
-
-@media (max-width: 640px) {
-  .grid-cols-2 { grid-template-columns: 1fr !important; }
-  .grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
-  .grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
-}
-
-@media (max-width: 480px) {
-  .grid-cols-3 { grid-template-columns: 1fr !important; }
-  .grid-cols-4 { grid-template-columns: 1fr !important; }
-}
-
-/* ===== 완전 반응형 플렉스 시스템 ===== */
-.flex {
-  gap: clamp(0.125rem, 1vw + 0.05rem, 0.75rem) !important;
-}
-
-.flex-wrap {
-  flex-wrap: wrap !important;
-}
-
-.flex-nowrap {
-  flex-wrap: nowrap !important;
-}
-
-/* ===== 완전 반응형 border-radius 시스템 ===== */
-.rounded { border-radius: clamp(0.125rem, 0.6vw + 0.05rem, 0.5rem) !important; }
-.rounded-sm { border-radius: clamp(0.0625rem, 0.4vw + 0.025rem, 0.25rem) !important; }
-.rounded-md { border-radius: clamp(0.1875rem, 0.7vw + 0.08rem, 0.625rem) !important; }
-.rounded-lg { border-radius: clamp(0.25rem, 1vw + 0.1rem, 0.875rem) !important; }
-.rounded-xl { border-radius: clamp(0.375rem, 1.5vw + 0.15rem, 1.25rem) !important; }
-
-/* ===== 완전 반응형 그림자 시스템 ===== */
-.shadow-sm { box-shadow: 0 clamp(0.0625rem, 0.2vw, 0.125rem) clamp(0.125rem, 0.4vw, 0.25rem) 0 rgba(0, 0, 0, 0.05) !important; }
-.shadow { box-shadow: 0 clamp(0.0625rem, 0.3vw, 0.125rem) clamp(0.1875rem, 0.6vw, 0.375rem) 0 rgba(0, 0, 0, 0.1), 0 clamp(0.0625rem, 0.2vw, 0.125rem) clamp(0.125rem, 0.4vw, 0.25rem) 0 rgba(0, 0, 0, 0.06) !important; }
-.shadow-md { box-shadow: 0 clamp(0.125rem, 0.4vw, 0.25rem) clamp(0.375rem, 1vw, 0.75rem) -clamp(0.125rem, 0.3vw, 0.25rem) rgba(0, 0, 0, 0.1), 0 clamp(0.125rem, 0.3vw, 0.25rem) clamp(0.25rem, 0.6vw, 0.5rem) -clamp(0.0625rem, 0.2vw, 0.125rem) rgba(0, 0, 0, 0.06) !important; }
-
-/* ===== 모바일 우선 완전 반응형 최적화 ===== */
-@media (max-width: 1024px) {
-  /* 모든 글자 크기 추가 축소 */
-  * {
-    font-size: calc(var(--base-font-size) * 0.9) !important;
-  }
-  
-  /* 패딩과 마진 축소 */
-  .card, .panel, .container, .box, .widget {
-    padding: clamp(0.125rem, 1.2vw + 0.05rem, 0.75rem) !important;
-    margin: clamp(0.0625rem, 0.8vw + 0.025rem, 0.5rem) !important;
-  }
-  
-  /* 버튼 최적화 */
-  button, .btn, input[type="submit"], input[type="button"] {
-    font-size: clamp(0.18rem, 1.8vw + 0.06rem, 0.75rem) !important;
-    padding: clamp(0.0625rem, 0.8vw + 0.025rem, 0.5rem) clamp(0.125rem, 1.2vw + 0.05rem, 0.75rem) !important;
-    min-height: clamp(1.25rem, 5vw + 0.3rem, 2rem) !important;
-  }
-}
-
-@media (max-width: 768px) {
-  /* 태블릿 최적화 */
-  * {
-    font-size: calc(var(--base-font-size) * 0.8) !important;
-  }
-  
-  .card, .panel, .container, .box, .widget {
-    padding: clamp(0.1rem, 1vw + 0.04rem, 0.6rem) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  /* 모바일 최적화 */
-  * {
-    font-size: calc(var(--base-font-size) * 0.7) !important;
-  }
-  
-  .card, .panel, .container, .box, .widget {
-    padding: clamp(0.08rem, 0.8vw + 0.03rem, 0.5rem) !important;
-  }
-}
-
-@media (max-width: 480px) {
-  /* 소형 모바일 최적화 */
-  * {
-    font-size: calc(var(--base-font-size) * 0.6) !important;
-  }
-  
-  .card, .panel, .container, .box, .widget {
-    padding: clamp(0.06rem, 0.6vw + 0.025rem, 0.4rem) !important;
-  }
-}
-
-/* ===== 스크롤바 반응형 최적화 ===== */
-::-webkit-scrollbar {
-  width: clamp(4px, 1vw, 12px) !important;
-  height: clamp(4px, 1vw, 12px) !important;
-}
-
-::-webkit-scrollbar-track {
-  background: #ffffff;
-  border-radius: clamp(2px, 0.5vw, 6px);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--eden-brown);
-  border-radius: clamp(2px, 0.5vw, 6px);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--eden-dark);
+  background: linear-gradient(to right, var(--eden-beige), var(--eden-cream));
 }
