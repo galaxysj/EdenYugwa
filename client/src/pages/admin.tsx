@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +17,7 @@ import { CustomerManagement } from "@/components/customer-management";
 import { UserManagement } from "@/components/user-management";
 
 import PasswordChangeDialog from "@/components/PasswordChangeDialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,8 +27,13 @@ import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { AdminHeader } from "@/components/admin-header";
-import type { Order, Setting, DashboardContent } from "@shared/schema";
+import type { Order, Setting, DashboardContent, User } from "@shared/schema";
 import * as XLSX from 'xlsx';
+
+// 가격 포맷팅 함수
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('ko-KR').format(price) + '원';
+};
 
 // Security-related interfaces
 interface UserSession {
@@ -1081,7 +1086,7 @@ function PaymentConfirmDialog({
 export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("all");
   const [showCustomerManagement, setShowCustomerManagement] = useState(false);
@@ -3070,11 +3075,13 @@ export default function Admin() {
             </TabsList>
 
             <TabsContent value="orders">
-              <OrderManagement />
+              {/* Order Management will be implemented */}
+              <div className="text-center py-8 text-gray-500">주문 관리 기능</div>
             </TabsContent>
 
             <TabsContent value="revenue">
-              <RevenueManagement />
+              {/* Revenue Management will be implemented */}
+              <div className="text-center py-8 text-gray-500">매출 관리 기능</div>
             </TabsContent>
 
             <TabsContent value="content">
@@ -3098,7 +3105,8 @@ export default function Admin() {
             </TabsContent>
 
             <TabsContent value="settings">
-              <UserManagement />
+              {/* User Management will be implemented */}
+              <div className="text-center py-8 text-gray-500">시스템 설정 기능</div>
             </TabsContent>
           </Tabs>
         </div>
