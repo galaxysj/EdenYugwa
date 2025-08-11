@@ -92,11 +92,11 @@ export function UserManagement() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return <Badge variant="destructive" className="gap-1 admin-text-xs">{getRoleIcon(role)} 관리자</Badge>;
+        return <Badge variant="destructive" className="gap-1">{getRoleIcon(role)} 관리자</Badge>;
       case 'manager':
-        return <Badge variant="default" className="gap-1 admin-text-xs">{getRoleIcon(role)} 매니저</Badge>;
+        return <Badge variant="default" className="gap-1">{getRoleIcon(role)} 매니저</Badge>;
       default:
-        return <Badge variant="secondary" className="gap-1 admin-text-xs">{getRoleIcon(role)} 일반사용자</Badge>;
+        return <Badge variant="secondary" className="gap-1">{getRoleIcon(role)} 일반사용자</Badge>;
     }
   };
 
@@ -111,7 +111,7 @@ export function UserManagement() {
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 admin-text">사용자 목록을 불러오는 중...</span>
+            <span className="ml-2">사용자 목록을 불러오는 중...</span>
           </div>
         </CardContent>
       </Card>
@@ -122,13 +122,13 @@ export function UserManagement() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 admin-subtitle">
+          <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             회원 관리
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="admin-text-sm text-gray-600 mb-4">
+          <div className="text-sm text-gray-600 mb-4">
             총 {users.length}명의 회원이 등록되어 있습니다.
           </div>
           
@@ -137,38 +137,38 @@ export function UserManagement() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-3 font-medium admin-text-sm">사용자명</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">이름</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">전화번호</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">권한</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">상태</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">가입일</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">최근 로그인</th>
-                  <th className="text-left p-3 font-medium admin-text-sm">작업</th>
+                  <th className="text-left p-3 font-medium">사용자명</th>
+                  <th className="text-left p-3 font-medium">이름</th>
+                  <th className="text-left p-3 font-medium">전화번호</th>
+                  <th className="text-left p-3 font-medium">권한</th>
+                  <th className="text-left p-3 font-medium">상태</th>
+                  <th className="text-left p-3 font-medium">가입일</th>
+                  <th className="text-left p-3 font-medium">최근 로그인</th>
+                  <th className="text-left p-3 font-medium">작업</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
                   <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3 admin-text-xxs">{user.username}</td>
-                    <td className="p-3 admin-text-xxs">{user.name}</td>
-                    <td className="p-3 admin-text-xxs">{user.phoneNumber}</td>
+                    <td className="p-3">{user.username}</td>
+                    <td className="p-3">{user.name}</td>
+                    <td className="p-3">{user.phoneNumber}</td>
                     <td className="p-3">{getRoleBadge(user.role)}</td>
                     <td className="p-3">
                       {user.isActive ? (
-                        <Badge variant="outline" className="gap-1 admin-text-xs">
+                        <Badge variant="outline" className="gap-1">
                           <CheckCircle className="h-3 w-3" />
                           활성
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1 admin-text-xs">
+                        <Badge variant="secondary" className="gap-1">
                           <AlertTriangle className="h-3 w-3" />
                           비활성
                         </Badge>
                       )}
                     </td>
-                    <td className="p-3 admin-text-xs">{formatDate(user.createdAt)}</td>
-                    <td className="p-3 admin-text-xs">{formatDate(user.lastLoginAt)}</td>
+                    <td className="p-3 text-sm">{formatDate(user.createdAt)}</td>
+                    <td className="p-3 text-sm">{formatDate(user.lastLoginAt)}</td>
                     <td className="p-3">
                       {user.role !== 'admin' && (
                         <div className="flex gap-2">
@@ -178,7 +178,6 @@ export function UserManagement() {
                               variant="outline"
                               onClick={() => handleRoleChange(user, 'manager')}
                               disabled={updateRoleMutation.isPending}
-                              className="admin-text-xxs px-2 py-1 h-6"
                             >
                               매니저 승격
                             </Button>
@@ -188,7 +187,6 @@ export function UserManagement() {
                               variant="outline"
                               onClick={() => handleRoleChange(user, 'user')}
                               disabled={updateRoleMutation.isPending}
-                              className="admin-text-xxs px-2 py-1 h-6"
                             >
                               일반사용자로 변경
                             </Button>
@@ -196,7 +194,7 @@ export function UserManagement() {
                         </div>
                       )}
                       {user.role === 'admin' && (
-                        <span className="admin-text-sm text-gray-400">최고 관리자</span>
+                        <span className="text-sm text-gray-400">최고 관리자</span>
                       )}
                     </td>
                   </tr>
@@ -213,29 +211,29 @@ export function UserManagement() {
                   {/* 왼쪽: 사용자 정보 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium admin-text-xxs truncate whitespace-nowrap overflow-hidden">{user.name}</h3>
+                      <h3 className="font-medium text-sm truncate">{user.name}</h3>
                       {getRoleBadge(user.role)}
                     </div>
-                    <div className="flex items-center gap-3 admin-text-xs text-gray-500">
-                      <span className="admin-text-xxs whitespace-nowrap overflow-hidden">@{user.username}</span>
-                      <span className="flex items-center gap-1 admin-text-xxs whitespace-nowrap overflow-hidden">
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <span>@{user.username}</span>
+                      <span className="flex items-center gap-1">
                         <Phone className="h-3 w-3" />
                         {user.phoneNumber}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       {user.isActive ? (
-                        <Badge variant="outline" className="gap-1 admin-text-xs px-1 py-0">
+                        <Badge variant="outline" className="gap-1 text-xs px-1 py-0">
                           <CheckCircle className="h-2 w-2" />
                           활성
                         </Badge>
                       ) : (
-                        <Badge variant="secondary" className="gap-1 admin-text-xs px-1 py-0">
+                        <Badge variant="secondary" className="gap-1 text-xs px-1 py-0">
                           <AlertTriangle className="h-2 w-2" />
                           비활성
                         </Badge>
                       )}
-                      <span className="admin-text-xs text-gray-400">
+                      <span className="text-xs text-gray-400">
                         가입: {formatDate(user.createdAt)}
                       </span>
                     </div>
@@ -250,7 +248,7 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'manager')}
                           disabled={updateRoleMutation.isPending}
-                          className="admin-text-xxs px-1 py-0.5 h-5"
+                          className="text-xs px-2 py-1 h-auto"
                         >
                           승격
                         </Button>
@@ -260,13 +258,13 @@ export function UserManagement() {
                           variant="outline"
                           onClick={() => handleRoleChange(user, 'user')}
                           disabled={updateRoleMutation.isPending}
-                          className="admin-text-xxs px-1 py-0.5 h-5"
+                          className="text-xs px-2 py-1 h-auto"
                         >
                           일반
                         </Button>
                       )
                     ) : (
-                      <span className="admin-text-xs text-gray-400">최고관리자</span>
+                      <span className="text-xs text-gray-400">최고관리자</span>
                     )}
                   </div>
                 </div>
@@ -275,7 +273,7 @@ export function UserManagement() {
           </div>
 
           {users.length === 0 && (
-            <div className="text-center py-8 admin-text text-gray-500">
+            <div className="text-center py-8 text-gray-500">
               등록된 사용자가 없습니다.
             </div>
           )}
@@ -286,8 +284,8 @@ export function UserManagement() {
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="admin-subtitle">권한 변경 확인</DialogTitle>
-            <DialogDescription className="admin-text">
+            <DialogTitle>권한 변경 확인</DialogTitle>
+            <DialogDescription>
               {selectedUser && (
                 <>
                   <strong>{selectedUser.name}</strong>님의 권한을{' '}
@@ -295,11 +293,11 @@ export function UserManagement() {
                   <br />
                   <br />
                   {targetRole === 'manager' ? (
-                    <span className="text-blue-600 admin-text-sm">
+                    <span className="text-blue-600">
                       매니저 권한이 부여되면 매니저 페이지에 접근할 수 있습니다.
                     </span>
                   ) : (
-                    <span className="text-orange-600 admin-text-sm">
+                    <span className="text-orange-600">
                       일반 사용자로 변경되면 매니저 페이지에 접근할 수 없습니다.
                     </span>
                   )}

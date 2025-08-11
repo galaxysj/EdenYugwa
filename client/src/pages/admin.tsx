@@ -220,10 +220,10 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleSubmit} className="flex-1 btn-dynamic-sm">
+            <Button onClick={handleSubmit} className="flex-1">
               확인
             </Button>
-            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1 btn-dynamic-sm">
+            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
               취소
             </Button>
           </div>
@@ -816,8 +816,7 @@ function PriceSettingsDialog() {
                                     // Save immediately
                                     updateShippingMutation.mutate({ 
                                       key: `${productKey}ExcludeFromShipping`, 
-                                      value: newValue.toString(),
-                                      description: ''
+                                      value: newValue.toString() 
                                     });
                                   }}
                                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
@@ -1119,21 +1118,7 @@ export default function Admin() {
       { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
       { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
     ],
-    excludeWrappingFromShipping: false,
-    // 팝업 관련 설정
-    popupEnabled: false,
-    popupTitle: "",
-    popupContent: "",
-    popupButtonText: "확인",
-    // 텍스트 스타일 설정
-    mainTitleColor: "#8B4513",
-    mainTitleSize: "text-2xl sm:text-3xl md:text-4xl lg:text-5xl",
-    mainTitleAlign: "text-center",
-    mainTitleFont: "font-korean",
-    mainDescriptionColor: "#6b7280",
-    mainDescriptionSize: "text-sm sm:text-base md:text-lg",
-    mainDescriptionAlign: "text-center",
-    mainDescriptionFont: "font-korean"
+    excludeWrappingFromShipping: false
   });
 
   // Handle multiple image upload
@@ -1325,20 +1310,6 @@ export default function Admin() {
           }
         }
         if (item.key === 'excludeWrappingFromShipping') updatedContent.excludeWrappingFromShipping = item.value === 'true';
-        // 텍스트 스타일 설정 로딩
-        if (item.key === 'mainTitleColor') updatedContent.mainTitleColor = item.value;
-        if (item.key === 'mainTitleSize') updatedContent.mainTitleSize = item.value;
-        if (item.key === 'mainTitleAlign') updatedContent.mainTitleAlign = item.value;
-        if (item.key === 'mainTitleFont') updatedContent.mainTitleFont = item.value;
-        if (item.key === 'mainDescriptionColor') updatedContent.mainDescriptionColor = item.value;
-        if (item.key === 'mainDescriptionSize') updatedContent.mainDescriptionSize = item.value;
-        if (item.key === 'mainDescriptionAlign') updatedContent.mainDescriptionAlign = item.value;
-        if (item.key === 'mainDescriptionFont') updatedContent.mainDescriptionFont = item.value;
-        // 팝업 관련 데이터 로딩
-        if (item.key === 'popupEnabled') updatedContent.popupEnabled = item.value === 'true';
-        if (item.key === 'popupTitle') updatedContent.popupTitle = item.value;
-        if (item.key === 'popupContent') updatedContent.popupContent = item.value;
-        if (item.key === 'popupButtonText') updatedContent.popupButtonText = item.value;
       });
       setDashboardContent(updatedContent);
     }
@@ -1731,12 +1702,7 @@ export default function Admin() {
       const largeBoxesCost = order.largeBoxQuantity * largeCost;
       const wrappingCost = order.wrappingQuantity * wrappingCostValue;
       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
-      // 순수익 = 총매출 - 원가 - 할인금액 - 미입금금액
-      const discountAmount = order.discountAmount || 0;
-      const actualPaid = order.actualPaidAmount || order.totalAmount;
-      const unpaidAmount = (actualPaid < order.totalAmount && !discountAmount) 
-        ? (order.totalAmount - actualPaid) : 0;
-      const netProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
+      const netProfit = (order.actualPaidAmount || order.totalAmount) - totalCost;
       
       return {
         '주문번호': order.orderNumber,
@@ -2069,10 +2035,7 @@ export default function Admin() {
       acc.totalDiscounts += order.discountAmount || 0;
       acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
         ? (order.totalAmount - order.actualPaidAmount) : 0;
-      
-      // Calculate net profit dynamically including shipping costs
-      const orderRevenue = order.actualPaidAmount || order.totalAmount;
-      const orderDiscounts = order.discountAmount || 0;
+      acc.netProfit += order.netProfit || 0;
       
       // Use historical pricing and cost data stored in the order for accurate calculations
       // If no historical cost, use current dynamic costs
@@ -2099,13 +2062,7 @@ export default function Admin() {
       const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
       const wrappingPrice = order.wrappingPrice || currentWrappingPrice;
       
-      // Calculate total order cost including shipping
-      const totalOrderCost = smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
-      acc.totalCost += totalOrderCost;
-      
-      // Calculate net profit for this order
-      acc.netProfit += orderRevenue - totalOrderCost - orderDiscounts;
-      
+      acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
       acc.smallBoxAmount += order.smallBoxQuantity * smallBoxPrice;
       acc.largeBoxAmount += order.largeBoxQuantity * largeBoxPrice;
       acc.wrappingAmount += order.wrappingQuantity * wrappingPrice;
@@ -2279,7 +2236,7 @@ export default function Admin() {
         <Card className="bg-white border-eden-red/20">
           <CardContent className="p-4 md:p-6">
             <div className="text-center mb-4 md:mb-6">
-              <h3 className="admin-text-sm font-bold text-eden-red mb-2">
+              <h3 className="text-base md:text-xl font-bold text-eden-red mb-2">
                 💰 매출 총합계 ({dateFilter === 'all' ? '전체' : 
                   dateFilter === 'today' ? '오늘' :
                   dateFilter === 'week' ? '7일' :
@@ -2307,40 +2264,40 @@ export default function Admin() {
                     return (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 md:gap-4 text-center">
                         <div>
-                          <div className="font-semibold text-gray-700 mb-1 admin-text-xxs">주문건수</div>
-                          <div className="admin-text-xs font-bold text-gray-800">{filteredTotals.count}건</div>
+                          <div className="font-semibold text-gray-700 mb-1 text-xs md:text-sm">주문건수</div>
+                          <div className="text-sm md:text-lg font-bold text-gray-800">{filteredTotals.count}건</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-amber-700 mb-1 admin-text-xxs">한과1호</div>
-                          <div className="admin-text-xs font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
+                          <div className="font-semibold text-amber-700 mb-1 text-xs md:text-sm">한과1호</div>
+                          <div className="text-sm md:text-lg font-bold text-amber-600">{filteredTotals.smallBoxQuantity}개</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-orange-700 mb-1 admin-text-xxs">한과2호</div>
-                          <div className="admin-text-xs font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
+                          <div className="font-semibold text-orange-700 mb-1 text-xs md:text-sm">한과2호</div>
+                          <div className="text-sm md:text-lg font-bold text-orange-600">{filteredTotals.largeBoxQuantity}개</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-eden-brown mb-1 admin-text-xxs">보자기</div>
-                          <div className="admin-text-xs font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
+                          <div className="font-semibold text-eden-brown mb-1 text-xs md:text-sm">보자기</div>
+                          <div className="text-sm md:text-lg font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-blue-700 mb-1 admin-text-xxs">택배건수</div>
-                          <div className="admin-text-xs font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                          <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
+                          <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-red-700 mb-1 admin-text-xxs">환불건수</div>
-                          <div className="admin-text-xs font-bold text-red-600">{refundedOrders.length}건</div>
+                          <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
+                          <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-green-700 mb-1 admin-text-xxs">실제입금</div>
-                          <div className="admin-text-xs font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                          <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
+                          <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-red-700 mb-1 admin-text-xxs">총원가</div>
-                          <div className="admin-text-xs font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
+                          <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
+                          <div className="text-sm md:text-lg font-bold text-red-600">{formatPrice(filteredTotals.totalCost)}</div>
                         </div>
                         <div>
-                          <div className="font-semibold text-purple-700 mb-1 admin-text-xxs">순수익</div>
-                          <div className={`admin-text-xs font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
+                          <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
                             {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                           </div>
                         </div>
@@ -2375,10 +2332,10 @@ export default function Admin() {
                         
                         return (
                           <div key={index}>
-                            <div className={`font-semibold text-${colorClass}-700 mb-1 admin-text-xs`}>
+                            <div className={`font-semibold text-${colorClass}-700 mb-1 text-xs md:text-sm`}>
                               {product.name}
                             </div>
-                            <div className={`admin-text-sm font-bold text-${colorClass}-600`}>
+                            <div className={`text-sm md:text-lg font-bold text-${colorClass}-600`}>
                               {quantity}개
                             </div>
                           </div>
@@ -2386,31 +2343,31 @@ export default function Admin() {
                       })}
                       
                       <div>
-                        <div className="font-semibold text-blue-700 mb-1 admin-text-xs">택배건수</div>
-                        <div className="admin-text-sm font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
+                        <div className="font-semibold text-blue-700 mb-1 text-xs md:text-sm">택배건수</div>
+                        <div className="text-sm md:text-lg font-bold text-blue-600">{filteredTotals.shippingOrders}건</div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-red-700 mb-1 admin-text-xs">환불건수</div>
-                        <div className="admin-text-sm font-bold text-red-600">{refundedOrders.length}건</div>
+                        <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">환불건수</div>
+                        <div className="text-sm md:text-lg font-bold text-red-600">{refundedOrders.length}건</div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-green-700 mb-1 admin-text-xs">실제입금</div>
-                        <div className="admin-text-sm font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
+                        <div className="font-semibold text-green-700 mb-1 text-xs md:text-sm">실제입금</div>
+                        <div className="text-sm md:text-lg font-bold text-green-600">{formatPrice(filteredTotals.actualRevenue)}</div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-red-700 mb-1 admin-text-xs">총원가</div>
-                        <div className="admin-text-sm font-bold text-red-600">
+                        <div className="font-semibold text-red-700 mb-1 text-xs md:text-sm">총원가</div>
+                        <div className="text-sm md:text-lg font-bold text-red-600">
                           {formatPrice(filteredTotals.totalCost)}
                         </div>
                       </div>
                       
                       <div>
-                        <div className="font-semibold text-purple-700 mb-1 admin-text-xs">순수익</div>
-                        <div className={`admin-text-sm font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                          {formatPrice(filteredTotals.netProfit)}
+                        <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
+                        <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                         </div>
                       </div>
                     </div>
@@ -2454,8 +2411,8 @@ export default function Admin() {
                       </div>
                       <div>
                         <div className="font-semibold text-purple-700 mb-1 text-xs md:text-sm">순수익</div>
-                        <div className={`text-sm md:text-lg font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
-                          {formatPrice(filteredTotals.netProfit)}
+                        <div className={`text-sm md:text-lg font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>
+                          {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                         </div>
                       </div>
                     </div>
@@ -2469,17 +2426,17 @@ export default function Admin() {
               {/* 핵심 수치 3개 */}
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                  <div className="text-green-600 admin-text-xs font-medium mb-1">실제입금</div>
-                  <div className="text-green-700 admin-text-sm font-bold">{formatPrice(filteredTotals.actualRevenue)}</div>
+                  <div className="text-green-600 text-xs font-medium mb-1">실제입금</div>
+                  <div className="text-green-700 text-sm font-bold">{formatPrice(filteredTotals.actualRevenue)}</div>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-                  <div className="text-red-600 admin-text-xs font-medium mb-1">총원가</div>
-                  <div className="text-red-700 admin-text-sm font-bold">{formatPrice(filteredTotals.totalCost)}</div>
+                  <div className="text-red-600 text-xs font-medium mb-1">총원가</div>
+                  <div className="text-red-700 text-sm font-bold">{formatPrice(filteredTotals.totalCost)}</div>
                 </div>
-                <div className={`border rounded-lg p-3 text-center ${filteredTotals.netProfit >= 0 ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}`}>
-                  <div className={`admin-text-xs font-medium mb-1 ${filteredTotals.netProfit >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
-                  <div className={`admin-text-sm font-bold ${filteredTotals.netProfit >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
-                    {formatPrice(filteredTotals.netProfit)}
+                <div className={`border rounded-lg p-3 text-center ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'bg-purple-50 border-purple-200' : 'bg-red-50 border-red-200'}`}>
+                  <div className={`text-xs font-medium mb-1 ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-600' : 'text-red-600'}`}>순수익</div>
+                  <div className={`text-sm font-bold ${(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts) >= 0 ? 'text-purple-700' : 'text-red-700'}`}>
+                    {formatPrice(filteredTotals.totalAmount - filteredTotals.totalCost - filteredTotals.totalDiscounts)}
                   </div>
                 </div>
               </div>
@@ -2487,8 +2444,8 @@ export default function Admin() {
               {/* 상세 정보 리스트 */}
               <div className="bg-gray-50 rounded-lg p-3 space-y-2">
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="admin-text-xs text-gray-600">주문건수</span>
-                  <span className="admin-text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
+                  <span className="text-xs text-gray-600">주문건수</span>
+                  <span className="text-sm font-bold text-gray-800">{filteredTotals.count}건</span>
                 </div>
                 
                 {(() => {
@@ -2507,16 +2464,16 @@ export default function Admin() {
                       return (
                         <>
                           <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                            <span className="admin-text-xs text-amber-600">한과1호</span>
-                            <span className="admin-text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
+                            <span className="text-xs text-amber-600">한과1호</span>
+                            <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                           </div>
                           <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                            <span className="admin-text-xs text-orange-600">한과2호</span>
-                            <span className="admin-text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
+                            <span className="text-xs text-orange-600">한과2호</span>
+                            <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                           </div>
                           <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                            <span className="admin-text-xs text-eden-brown">보자기</span>
-                            <span className="admin-text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
+                            <span className="text-xs text-eden-brown">보자기</span>
+                            <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                           </div>
                         </>
                       );
@@ -2537,10 +2494,10 @@ export default function Admin() {
                       
                       return (
                         <div key={index} className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className={`admin-text-xs text-${colorClass}-600`}>
+                          <span className={`text-xs text-${colorClass}-600`}>
                             {product.name}
                           </span>
-                          <span className={`admin-text-sm font-bold text-${colorClass}-700`}>
+                          <span className={`text-sm font-bold text-${colorClass}-700`}>
                             {quantity}개
                           </span>
                         </div>
@@ -2552,16 +2509,16 @@ export default function Admin() {
                     return (
                       <>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="admin-text-xs text-amber-600">한과1호</span>
-                          <span className="admin-text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
+                          <span className="text-xs text-amber-600">한과1호</span>
+                          <span className="text-sm font-bold text-amber-700">{filteredTotals.smallBoxQuantity}개</span>
                         </div>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="admin-text-xs text-orange-600">한과2호</span>
-                          <span className="admin-text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
+                          <span className="text-xs text-orange-600">한과2호</span>
+                          <span className="text-sm font-bold text-orange-700">{filteredTotals.largeBoxQuantity}개</span>
                         </div>
                         <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                          <span className="admin-text-xs text-eden-brown">보자기</span>
-                          <span className="admin-text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
+                          <span className="text-xs text-eden-brown">보자기</span>
+                          <span className="text-sm font-bold text-eden-brown">{filteredTotals.wrappingQuantity}개</span>
                         </div>
                       </>
                     );
@@ -2569,12 +2526,12 @@ export default function Admin() {
                 })()}
                 
                 <div className="flex justify-between items-center py-1 border-b border-gray-200">
-                  <span className="admin-text-xs text-gray-600">택배건수</span>
-                  <span className="admin-text-sm font-bold text-gray-700">{filteredTotals.shippingOrders}건</span>
+                  <span className="text-xs text-gray-600">택배건수</span>
+                  <span className="text-sm font-bold text-gray-700">{filteredTotals.shippingOrders}건</span>
                 </div>
                 <div className="flex justify-between items-center py-1">
-                  <span className="admin-text-xs text-gray-600">환불건수</span>
-                  <span className="admin-text-sm font-bold text-gray-700">{refundedOrders.length}건</span>
+                  <span className="text-xs text-gray-600">환불건수</span>
+                  <span className="text-sm font-bold text-gray-700">{refundedOrders.length}건</span>
                 </div>
               </div>
             </div>
@@ -2586,30 +2543,30 @@ export default function Admin() {
           <Card className="border-gray-200">
             <CardHeader className="bg-gray-50">
               <CardTitle className="flex items-center justify-between">
-                <span className="admin-text-sm text-gray-800">📊 매출 상세내역</span>
-                <span className="admin-text-xxs font-normal text-gray-600 bg-white px-2 py-1 rounded">
+                <span className="text-base md:text-lg text-gray-800">📊 매출 상세내역</span>
+                <span className="text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded">
                   {orders.length}건
                 </span>
               </CardTitle>
-              <p className="admin-text-xxs text-gray-700 mt-1">
+              <p className="text-xs md:text-sm text-gray-700 mt-1">
                 매출 분석을 위한 주문별 상세 정보 (모바일에서 리스트형으로 최적화)
               </p>
             </CardHeader>
             <CardContent>
               {/* 데스크탑 테이블 뷰 */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full admin-table">
+                <table className="w-full">
                   <thead>
                     <tr className="border-b-2 border-gray-300 bg-gray-50">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">주문번호</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">고객명</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">주문일</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700 admin-text-xxs">주문내역</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">매출정보</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">입금정보</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">할인/미입금</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">원가분석</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 admin-text-xxs">순수익</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문번호</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">고객명</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문일</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700 text-sm">주문내역</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">매출정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">입금정보</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">할인/미입금</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">원가분석</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700 bg-gray-50 text-sm">순수익</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2642,17 +2599,13 @@ export default function Admin() {
                       // Get shipping fee from order
                       const shippingFee = order.shippingFee || 0;
                       
-                      // 동적 원가 계산 - 주문에 저장된 원가가 0이거나 없으면 현재 설정 사용
-                      const getEffectiveCost = (orderCost: number | null | undefined, settingValue: number | null, productCost?: string) => {
-                        if (orderCost && orderCost > 0) return orderCost; // 주문 시점 원가 우선
-                        if (settingValue && settingValue > 0) return settingValue; // 가격설정의 원가
-                        if (productCost && parseInt(productCost) > 0) return parseInt(productCost); // 콘텐츠관리의 원가
-                        return 0; // 기본값
-                      };
-                      
-                      const smallCost = getEffectiveCost(order.smallBoxCost, smallBoxCostValue, productNames[0]?.cost);
-                      const largeCost = getEffectiveCost(order.largeBoxCost, largeBoxCostValue, productNames[1]?.cost);
-                      const wrappingCost = getEffectiveCost(order.wrappingCost, wrappingCostValue, productNames[2]?.cost);
+                      // 주문 시점에 저장된 원가를 우선 사용, 없으면 현재 설정 사용
+                      const smallCost = order.smallBoxCost || smallBoxCostValue || 
+                                       (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
+                      const largeCost = order.largeBoxCost || largeBoxCostValue || 
+                                       (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
+                      const wrappingCost = order.wrappingCost || wrappingCostValue || 
+                                          (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
                       
                       // Calculate actual costs using stored historical data
                       const smallBoxesCost = order.smallBoxQuantity * smallCost;
@@ -2689,22 +2642,22 @@ export default function Admin() {
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
-                          <td className="py-4 px-4 font-semibold text-gray-900 admin-text-xxs">#{order.orderNumber}</td>
-                          <td className="py-4 px-4 font-medium text-gray-900 admin-text-xxs">{order.customerName}</td>
-                          <td className="py-4 px-4 admin-text-xs text-gray-700">
+                          <td className="py-4 px-4 font-semibold text-gray-900 text-sm">#{order.orderNumber}</td>
+                          <td className="py-4 px-4 font-medium text-gray-900 text-sm">{order.customerName}</td>
+                          <td className="py-4 px-4 text-sm text-gray-700">
                             <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                            <div className="admin-text-xxs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                           </td>
-                          <td className="py-4 px-4 admin-text-xs">
+                          <td className="py-4 px-4 text-sm">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800 admin-text-xxs">{getOrderTimeProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getOrderTimeProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="font-medium text-gray-800 admin-text-xxs">{getOrderTimeProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getOrderTimeProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="font-medium text-gray-800 admin-text-xxs">{getOrderTimeProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
+                                <div className="font-medium text-gray-800">{getOrderTimeProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                               )}
                               {/* 실제 주문에 저장된 동적 상품 수량 표시 */}
                               {order.dynamicProductQuantities && (() => {
@@ -2717,7 +2670,7 @@ export default function Admin() {
                                     const qty = Number(quantity);
                                     const productName = getOrderTimeProductName(productIndex, `상품${productIndex + 1}`);
                                     return qty > 0 ? (
-                                      <div key={productIndex} className="font-medium text-gray-800 admin-text-xxs">
+                                      <div key={productIndex} className="font-medium text-gray-800">
                                         {productName}×{qty}개
                                       </div>
                                     ) : null;
@@ -2729,29 +2682,29 @@ export default function Admin() {
                               })()}
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right admin-text-xs font-medium bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right text-sm font-medium bg-gray-50 border-l-2 border-gray-300">
                             <div className="text-gray-700 font-semibold">
                               {formatPrice(order.totalAmount)}
                             </div>
-                            <div className="admin-text-xxs text-gray-600 mt-1">
+                            <div className="text-xs text-gray-600 mt-1">
                               주문금액
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right admin-text-xs font-medium bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right text-sm font-medium bg-gray-50 border-l-2 border-gray-300">
                             <div className="text-gray-700 font-semibold">
                               {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
                             </div>
-                            <div className="admin-text-xxs text-gray-600 mt-1">
+                            <div className="text-xs text-gray-600 mt-1">
                               실제입금액
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right admin-text-xs bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
                             {discountAmount > 0 ? (
                               <div>
                                 <div className="text-gray-700 font-semibold">
                                   {formatPrice(discountAmount)}
                                 </div>
-                                <div className="admin-text-xxs text-gray-600 mt-1">
+                                <div className="text-xs text-gray-600 mt-1">
                                   할인금액
                                 </div>
                               </div>
@@ -2760,32 +2713,32 @@ export default function Admin() {
                                 <div className="text-gray-700 font-semibold">
                                   {formatPrice(unpaidAmount)}
                                 </div>
-                                <div className="admin-text-xxs text-gray-600 mt-1">
+                                <div className="text-xs text-gray-600 mt-1">
                                   미입금액
                                 </div>
                               </div>
                             ) : (
                               <div>
                                 <div className="text-gray-500 font-semibold">-</div>
-                                <div className="admin-text-xxs text-gray-400 mt-1">완납</div>
+                                <div className="text-xs text-gray-400 mt-1">완납</div>
                               </div>
                             )}
                           </td>
-                          <td className="py-2 px-3 text-right admin-text-xxs bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right text-xs bg-gray-50 border-l-2 border-gray-300">
                             <div className="space-y-1">
                               {order.smallBoxQuantity > 0 && (
-                                <div className="text-gray-600 admin-text-xxs">
-                                  {getOrderTimeProductName(0, '한과1호')}: {formatPrice(order.smallBoxQuantity * smallCost)}
+                                <div className="text-gray-600">
+                                  {getOrderTimeProductName(0, '한과1호')}: {formatPrice(smallBoxesCost)}
                                 </div>
                               )}
                               {order.largeBoxQuantity > 0 && (
-                                <div className="text-gray-600 admin-text-xxs">
-                                  {getOrderTimeProductName(1, '한과2호')}: {formatPrice(order.largeBoxQuantity * largeCost)}
+                                <div className="text-gray-600">
+                                  {getOrderTimeProductName(1, '한과2호')}: {formatPrice(largeBoxesCost)}
                                 </div>
                               )}
                               {order.wrappingQuantity > 0 && (
-                                <div className="text-gray-600 admin-text-xxs">
-                                  {getOrderTimeProductName(2, '보자기')}: {formatPrice(order.wrappingQuantity * wrappingCost)}
+                                <div className="text-gray-600">
+                                  {getOrderTimeProductName(2, '보자기')}: {formatPrice(wrappingCostTotal)}
                                 </div>
                               )}
                               {/* 동적 상품들 원가 표시 */}
@@ -2802,7 +2755,7 @@ export default function Admin() {
                                                       (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
                                     const itemCost = qty * productCost;
                                     return qty > 0 ? (
-                                      <div key={productIndex} className="text-gray-600 admin-text-xxs">
+                                      <div key={productIndex} className="text-gray-600">
                                         {getOrderTimeProductName(productIndex, `상품${productIndex + 1}`)}: {formatPrice(itemCost)}
                                       </div>
                                     ) : null;
@@ -2812,26 +2765,25 @@ export default function Admin() {
                                 }
                               })()}
                               {shippingFee > 0 && (
-                                <div className="text-gray-600 admin-text-xxs">
+                                <div className="text-gray-600">
                                   배송비: {formatPrice(shippingFee)}
                                 </div>
                               )}
-                              <div className="font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-2 admin-text-xxs">
-                                총원가: {formatPrice(order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost + shippingFee)}
+                              <div className="font-semibold text-gray-700 border-t border-gray-300 pt-1 mt-2">
+                                총원가: {formatPrice(totalCost)}
                               </div>
                             </div>
                           </td>
-                          <td className="py-2 px-3 text-right admin-text-xs bg-gray-50 border-l-2 border-gray-300">
+                          <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
                             {(() => {
-                              // 순수익 = 총매출 - 원가(배송비 포함) - 할인금액 - 미입금금액
-                              const actualTotalCost = order.smallBoxQuantity * smallCost + order.largeBoxQuantity * largeCost + order.wrappingQuantity * wrappingCost + dynamicProductsCost + shippingFee;
-                              const actualProfit = order.totalAmount - actualTotalCost - discountAmount - unpaidAmount;
+                              // 실제수익 = 주문가격 - 원가 - 배송비 - 할인/미입금
+                              const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                               return (
                                 <div>
-                                  <div className={`font-bold admin-text-xs ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
+                                  <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
                                     {formatPrice(actualProfit)}
                                   </div>
-                                  <div className="admin-text-xxs text-gray-600 mt-1">
+                                  <div className="text-xs text-gray-600 mt-1">
                                     순수익
                                   </div>
                                 </div>
@@ -2848,10 +2800,10 @@ export default function Admin() {
               {/* 모바일 요약 뷰 */}
               <div className="md:hidden">
                 <div className="mb-3 p-3 bg-gray-50 rounded-lg">
-                  <p className="admin-text-sm font-bold text-gray-800 mb-1">
+                  <p className="text-sm font-bold text-gray-800 mb-1">
                     📊 매출 요약 ({orders.length}건)
                   </p>
-                  <div className="grid grid-cols-2 gap-3 admin-text-xs">
+                  <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-white p-2 rounded border">
                       <div className="text-gray-600">총 주문금액</div>
                       <div className="font-bold text-gray-700">{formatPrice(filteredTotals.totalAmount)}</div>
@@ -2893,17 +2845,13 @@ export default function Admin() {
                   // Get shipping fee from order
                   const shippingFee = order.shippingFee || 0;
                   
-                  // 동적 원가 계산 - 주문에 저장된 원가가 0이거나 없으면 현재 설정 사용
-                  const getEffectiveCost = (orderCost: number | null | undefined, settingValue: number | null, productCost?: string) => {
-                    if (orderCost && orderCost > 0) return orderCost; // 주문 시점 원가 우선
-                    if (settingValue && settingValue > 0) return settingValue; // 가격설정의 원가
-                    if (productCost && parseInt(productCost) > 0) return parseInt(productCost); // 콘텐츠관리의 원가
-                    return 0; // 기본값
-                  };
-                  
-                  const smallCost = getEffectiveCost(order.smallBoxCost, smallBoxCostValue, productNames[0]?.cost);
-                  const largeCost = getEffectiveCost(order.largeBoxCost, largeBoxCostValue, productNames[1]?.cost);
-                  const wrappingCost = getEffectiveCost(order.wrappingCost, wrappingCostValue, productNames[2]?.cost);
+                  // 주문 시점에 저장된 원가를 우선 사용, 없으면 현재 설정 사용
+                  const smallCost = order.smallBoxCost || smallBoxCostValue || 
+                                   (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
+                  const largeCost = order.largeBoxCost || largeBoxCostValue || 
+                                   (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
+                  const wrappingCost = order.wrappingCost || wrappingCostValue || 
+                                      (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
                   
                   // Calculate actual costs using stored historical data
                   const smallBoxesCost = order.smallBoxQuantity * smallCost;
@@ -2931,23 +2879,23 @@ export default function Admin() {
                     }
                   }
                   
-                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost + shippingFee;
+                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost;
                   
                   // Calculate discount and unpaid amounts
                   const discountAmount = order.discountAmount || 0;
                   const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
                     ? (order.totalAmount - order.actualPaidAmount) : 0;
                   
-                  // 순수익 = 총매출 - 원가(배송비 포함) - 할인금액 - 미입금금액
-                  const actualProfit = order.totalAmount - totalCost - discountAmount - unpaidAmount;
+                  // Calculate profit
+                  const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
                   
                   return (
                     <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
                         {/* 주문 헤더 */}
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-gray-600 admin-text-xxs">#{order.orderNumber}</span>
-                            <span className="admin-text-xxs">{order.customerName}</span>
+                            <span className="font-bold text-gray-600 text-sm">#{order.orderNumber}</span>
+                            <span className="text-sm">{order.customerName}</span>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded font-medium ${
                             order.paymentStatus === 'confirmed' 
@@ -2959,7 +2907,7 @@ export default function Admin() {
                         </div>
                         
                         {/* 주문 정보 */}
-                        <div className="admin-text-xxs text-gray-600 mb-2">
+                        <div className="text-xs text-gray-600 mb-2">
                           {new Date(order.createdAt).toLocaleDateString('ko-KR')} • 
                           {order.smallBoxQuantity > 0 && ` ${dashboardContent.productNames?.[0]?.name || '한과1호'}×${order.smallBoxQuantity}`}
                           {order.largeBoxQuantity > 0 && ` ${dashboardContent.productNames?.[1]?.name || '한과2호'}×${order.largeBoxQuantity}`}
@@ -2983,7 +2931,7 @@ export default function Admin() {
                         </div>
                         
                         {/* 수익 요약 */}
-                        <div className="grid grid-cols-3 gap-2 admin-text-xxs">
+                        <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
                             <div className="text-gray-500">주문금액</div>
                             <div className="font-bold">{formatPrice(order.totalAmount)}</div>
@@ -3274,13 +3222,13 @@ export default function Admin() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
         {/* Date Filter - Simplified */}
         <div>
-          <label className="block admin-text-xxs font-medium text-gray-700 mb-1">기간</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">기간</label>
           <div className="flex gap-1">
             <Button
               size="sm"
               variant={orderDateFilter === 'all' ? 'default' : 'outline'}
               onClick={() => setOrderDateFilter('all')}
-              className="flex-1 h-8 admin-text-xxs"
+              className="flex-1 h-8 text-xs"
             >
               전체
             </Button>
@@ -3288,7 +3236,7 @@ export default function Admin() {
               size="sm"
               variant={orderDateFilter === 'today' ? 'default' : 'outline'}
               onClick={() => setOrderDateFilter('today')}
-              className="flex-1 h-8 admin-text-xxs"
+              className="flex-1 h-8 text-xs"
             >
               오늘
             </Button>
@@ -3296,7 +3244,7 @@ export default function Admin() {
               size="sm"
               variant={orderDateFilter === 'week' ? 'default' : 'outline'}
               onClick={() => setOrderDateFilter('week')}
-              className="flex-1 h-8 admin-text-xxs"
+              className="flex-1 h-8 text-xs"
             >
               7일
             </Button>
@@ -3307,13 +3255,13 @@ export default function Admin() {
                 type="date"
                 value={orderStartDate}
                 onChange={(e) => setOrderStartDate(e.target.value)}
-                className="flex-1 px-2 py-1 border rounded admin-text-xxs"
+                className="flex-1 px-2 py-1 border rounded text-xs"
               />
               <input
                 type="date"
                 value={orderEndDate}
                 onChange={(e) => setOrderEndDate(e.target.value)}
-                className="flex-1 px-2 py-1 border rounded admin-text-xxs"
+                className="flex-1 px-2 py-1 border rounded text-xs"
               />
             </div>
           )}
@@ -3321,23 +3269,23 @@ export default function Admin() {
 
         {/* Customer Name Filter */}
         <div>
-          <label className="block admin-text-xxs font-medium text-gray-700 mb-1">고객명</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">고객명</label>
           <input
             type="text"
             placeholder="고객명 검색"
             value={customerNameFilter}
             onChange={(e) => setCustomerNameFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md admin-text-xxs h-8"
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           />
         </div>
 
         {/* Payment Status */}
         <div>
-          <label className="block admin-text-xxs font-medium text-gray-700 mb-1">입금상태</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">입금상태</label>
           <select
             value={paymentStatusFilter}
             onChange={(e) => setPaymentStatusFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md admin-text-xxs h-8"
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
             <option value="all">전체</option>
             <option value="pending">입금대기</option>
@@ -3349,7 +3297,7 @@ export default function Admin() {
 
         {/* Order Status */}
         <div>
-          <label className="block admin-text-xxs font-medium text-gray-700 mb-1">주문상태</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">주문상태</label>
           <select
             value={orderStatusFilter}
             onChange={(e) => {
@@ -3361,7 +3309,7 @@ export default function Admin() {
                 setActiveTab('seller_shipped');
               }
             }}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md admin-text-xxs h-8"
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
             <option value="all">전체</option>
             <option value="scheduled">발송주문</option>
@@ -3371,11 +3319,11 @@ export default function Admin() {
 
         {/* Seller Shipped Status */}
         <div>
-          <label className="block admin-text-xxs font-medium text-gray-700 mb-1">판매자발송</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">판매자발송</label>
           <select
             value={sellerShippedFilter}
             onChange={(e) => setSellerShippedFilter(e.target.value)}
-            className="w-full px-3 py-1.5 border border-gray-300 rounded-md admin-text-xxs h-8"
+            className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm h-8"
           >
             <option value="all">전체</option>
             <option value="shipped">발송완료</option>
@@ -3548,21 +3496,21 @@ export default function Admin() {
           <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="col-order-number text-left admin-text-xs">주문번호</th>
-                <th className="col-scheduled-date text-left admin-text-xs">예약발송</th>
-                <th className="col-customer-name text-left admin-text-xs">주문자</th>
-                <th className="col-customer-name text-left admin-text-xs">예금자</th>
-                <th className="col-order-details text-left admin-text-xs">주문내역</th>
-                <th className="col-phone text-left admin-text-xs">연락처</th>
-                <th className="col-address text-left admin-text-xs">배송주소</th>
-                <th className="col-address text-left admin-text-xs">메모</th>
-                <th className="col-amount text-center text-blue-700 admin-text-xs">매출</th>
-                <th className="col-amount text-center text-green-700 admin-text-xs">실입금</th>
-                <th className="col-amount text-center text-red-700 admin-text-xs">할인/미입금</th>
-                <th className="col-status text-center admin-text-xs">입금상태</th>
-                <th className="col-status text-center admin-text-xs">주문상태</th>
-                <th className="col-status text-center admin-text-xs">판매자발송</th>
-                <th className="col-actions text-center admin-text-xs">관리</th>
+                <th className="col-order-number text-left">주문번호</th>
+                <th className="col-scheduled-date text-left">예약발송</th>
+                <th className="col-customer-name text-left">주문자</th>
+                <th className="col-customer-name text-left">예금자</th>
+                <th className="col-order-details text-left">주문내역</th>
+                <th className="col-phone text-left">연락처</th>
+                <th className="col-address text-left">배송주소</th>
+                <th className="col-address text-left">메모</th>
+                <th className="col-amount text-center text-blue-700">매출</th>
+                <th className="col-amount text-center text-green-700">실입금</th>
+                <th className="col-amount text-center text-red-700">할인/미입금</th>
+                <th className="col-status text-center">입금상태</th>
+                <th className="col-status text-center">주문상태</th>
+                <th className="col-status text-center">판매자발송</th>
+                <th className="col-actions text-center">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -3577,12 +3525,12 @@ export default function Admin() {
                     <td className="col-order-number">
                       <div className="flex items-center gap-2">
                         <StatusIcon className="h-4 w-4 text-gray-500" />
-                        <span className="font-bold text-gray-900 admin-text-xs">#{order.orderNumber}</span>
-                        <span className="text-gray-500 admin-text-xs">{new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="font-bold text-gray-900">#{order.orderNumber}</span>
+                        <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                     </td>
                     <td className="col-scheduled-date">
-                      <div className="admin-text-xs">
+                      <div className="text-xs">
                         {order.scheduledDate ? (
                           <div className="text-blue-600 font-medium">
                             {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
@@ -3593,21 +3541,21 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-customer-name">
-                      <div className="font-medium admin-text-xs">{order.customerName}</div>
+                      <div className="text-sm font-medium">{order.customerName}</div>
                     </td>
                     <td className="col-customer-name">
-                      <div className="admin-text-xs">{order.depositorName || order.customerName}</div>
+                      <div className="text-sm">{order.depositorName || order.customerName}</div>
                     </td>
                     <td className="col-order-details">
-                      <div className="text-gray-700 max-w-xs admin-text-xs">
+                      <div className="text-xs text-gray-700 max-w-xs">
                         {renderOrderDetails(order)}
                       </div>
                     </td>
                     <td className="col-phone">
-                      <div className="admin-text-xs">{order.customerPhone}</div>
+                      <div className="text-xs">{order.customerPhone}</div>
                     </td>
                     <td className="col-address">
-                      <div className="max-w-xs admin-text-xs">
+                      <div className="text-xs max-w-xs">
                         <div className={checkRemoteArea(order.address1) ? 'text-black' : 'text-gray-700'}>
                           [{order.zipCode}] {order.address1}
                           {checkRemoteArea(order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
@@ -3715,9 +3663,9 @@ export default function Admin() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-900 admin-text-xxs">#{order.orderNumber}</span>
-                      <span className="text-gray-700 admin-text-xxs">{order.customerName}</span>
-                      <span className={`px-2 py-0.5 rounded admin-text-xxs ${
+                      <span className="font-bold text-gray-900 text-xs">#{order.orderNumber}</span>
+                      <span className="text-gray-700 text-xs">{order.customerName}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
                         order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                         order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
                         order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
@@ -3730,8 +3678,8 @@ export default function Admin() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-blue-600 admin-text-xxs">{formatPrice(order.totalAmount)}</span>
-                      <span className="admin-text-xxs text-gray-400">
+                      <span className="font-bold text-blue-600 text-xs">{formatPrice(order.totalAmount)}</span>
+                      <span className="text-xs text-gray-400">
                         {isExpanded ? '▲' : '▼'}
                       </span>
                     </div>
@@ -3743,13 +3691,13 @@ export default function Admin() {
                   <div className="px-3 pb-3 border-t border-gray-100">
                     {/* 주문내역 */}
                     <div className="mb-2 pt-2">
-                      <div className="admin-text-xxs text-gray-700 space-y-0.5 mb-2">
+                      <div className="text-xs text-gray-700 space-y-0.5 mb-2">
                         {renderOrderDetails(order).split(', ').map((detail, index) => (
                           <div key={index}>{detail}</div>
                         ))}
                       </div>
                       <div className="flex justify-end">
-                        <span className={`px-2 py-0.5 rounded admin-text-xxs ${
+                        <span className={`px-2 py-0.5 rounded text-xs ${
                           order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
                           order.status === 'delivered' ? 'bg-green-100 text-green-700' :
@@ -3761,7 +3709,7 @@ export default function Admin() {
                     </div>
                     
                     {/* 연락처 및 주소 */}
-                    <div className="space-y-1 admin-text-xxs text-gray-600 mb-2">
+                    <div className="space-y-1 text-xs text-gray-600 mb-2">
                       <div>📞 {order.customerPhone}</div>
                       <div className={checkRemoteArea(order.address1) ? 'text-black' : ''}>
                         📍 [{order.zipCode}] {order.address1} {order.address2}
@@ -3773,7 +3721,7 @@ export default function Admin() {
                     {/* 버튼 */}
                     <div className="flex justify-end">
                       <SmsDialog order={order}>
-                        <Button size="sm" variant="outline" className="h-7 admin-text-xxs px-3">
+                        <Button size="sm" variant="outline" className="h-7 text-xs px-3">
                           SMS 발송
                         </Button>
                       </SmsDialog>
@@ -3802,8 +3750,8 @@ export default function Admin() {
 
 
         {/* Desktop Table */}
-        <div className="hidden lg:block bg-white rounded-lg border admin-table-container">
-          <table className="w-full admin-table order-history-table completed-orders-table">
+        <div className="hidden lg:block bg-white rounded-lg border">
+          <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
                 <th className="col-checkbox text-center">
@@ -3822,21 +3770,21 @@ export default function Admin() {
                   />
                 </th>
 
-                <th className="col-order-number text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
-                <th className="col-scheduled-date text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">예약발송</th>
-                <th className="col-customer-name text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">주문자</th>
-                <th className="col-customer-name text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">예금자</th>
-                <th className="col-order-details text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">주문내역</th>
-                <th className="col-phone text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">연락처</th>
-                <th className="col-address text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">배송주소</th>
-                <th className="col-address text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">메모</th>
-                <th className="col-amount text-center text-blue-700 admin-text-xxs font-medium uppercase tracking-wider">매출</th>
-                <th className="col-amount text-center text-green-700 admin-text-xxs font-medium uppercase tracking-wider">실입금</th>
-                <th className="col-amount text-center text-red-700 admin-text-xxs font-medium uppercase tracking-wider">할인/미입금</th>
-                <th className="col-status text-center admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">입금상태</th>
-                <th className="col-status text-center admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">주문상태</th>
-                <th className="col-status text-center admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">판매자발송</th>
-                <th className="col-actions text-center admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                <th className="col-order-number text-left">주문번호</th>
+                <th className="col-scheduled-date text-left">예약발송</th>
+                <th className="col-customer-name text-left">주문자</th>
+                <th className="col-customer-name text-left">예금자</th>
+                <th className="col-order-details text-left">주문내역</th>
+                <th className="col-phone text-left">연락처</th>
+                <th className="col-address text-left">배송주소</th>
+                <th className="col-address text-left">메모</th>
+                <th className="col-amount text-center text-blue-700">매출</th>
+                <th className="col-amount text-center text-green-700">실입금</th>
+                <th className="col-amount text-center text-red-700">할인/미입금</th>
+                <th className="col-status text-center">입금상태</th>
+                <th className="col-status text-center">주문상태</th>
+                <th className="col-status text-center">판매자발송</th>
+                <th className="col-actions text-center">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -3859,15 +3807,15 @@ export default function Admin() {
                     </td>
 
                     <td className="col-order-number">
-                      <div className="font-semibold text-gray-900 no-wrap admin-text-xxs">#{order.orderNumber}</div>
-                      <div className="admin-text-xxs text-gray-500 no-wrap">
+                      <div className="font-semibold text-gray-900 no-wrap">#{order.orderNumber}</div>
+                      <div className="text-xs text-gray-500 no-wrap">
                         {new Date(order.createdAt).toLocaleDateString('ko-KR', { 
                           year: '2-digit', 
                           month: '2-digit', 
                           day: '2-digit' 
                         })}
                       </div>
-                      <div className="admin-text-xxs text-gray-400 no-wrap">
+                      <div className="text-xs text-gray-400 no-wrap">
                         {new Date(order.createdAt).toLocaleTimeString('ko-KR', { 
                           hour: '2-digit', 
                           minute: '2-digit',
@@ -3878,7 +3826,7 @@ export default function Admin() {
                     <td className="col-scheduled-date">
                       {order.scheduledDate ? (
                         <div 
-                          className="admin-text-xxs text-red-600 font-bold cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
+                          className="text-xs text-red-600 font-bold cursor-pointer hover:bg-red-50 px-1 py-1 rounded border border-transparent hover:border-red-200"
                           onClick={() => {
                             const scheduledDatePicker = document.querySelector(`[data-order-id="${order.id}"] .scheduled-date-trigger`);
                             if (scheduledDatePicker) {
@@ -3895,18 +3843,18 @@ export default function Admin() {
                           })}
                         </div>
                       ) : (
-                        <div className="admin-text-xxs text-gray-400" style={{ whiteSpace: 'nowrap' }}>-</div>
+                        <div className="text-xs text-gray-400" style={{ whiteSpace: 'nowrap' }}>-</div>
                       )}
                     </td>
 
                     <td className="col-customer-name">
-                      <div className="font-medium admin-text-xxs no-wrap">
+                      <div className="font-medium text-xs no-wrap">
                         {order.recipientName && order.recipientName !== order.customerName ? 
                           order.recipientName : order.customerName}
                       </div>
                     </td>
                     <td className="col-customer-name">
-                      <div className="admin-text-xxs no-wrap">
+                      <div className="text-xs no-wrap">
                         {order.isDifferentDepositor && order.depositorName ? (
                           <span className="text-red-600">{order.depositorName}</span>
                         ) : (
@@ -3914,8 +3862,8 @@ export default function Admin() {
                         )}
                       </div>
                     </td>
-                    <td className="col-order-details order-details-cell">
-                      <div className="admin-text-xxs space-y-0.5">
+                    <td className="col-order-details">
+                      <div className="text-xs space-y-0.5">
                         {(() => {
                           // 동적 상품 이름 가져오기
                           const getProductName = (index: number) => {
@@ -3979,20 +3927,20 @@ export default function Admin() {
                       </div>
                     </td>
                     <td className="col-phone">
-                      <div className="admin-text-xxs no-wrap">{order.customerPhone}</div>
+                      <div className="text-xs no-wrap">{order.customerPhone}</div>
                     </td>
                     <td className="col-address">
                       <Dialog>
                         <DialogTrigger asChild>
                           <div>
                             <div 
-                              className="admin-text-xxs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 no-wrap"
+                              className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 no-wrap"
                               title="클릭하여 전체 주소 보기"
                             >
                               {order.address1.length > 12 ? `${order.address1.substring(0, 12)}...` : order.address1}
                             </div>
                             {checkRemoteArea(order.address1) && (
-                              <div className="admin-text-xxs text-red-600 font-bold">배송비추가</div>
+                              <div className="text-xs text-red-600 font-bold">배송비추가</div>
                             )}
                           </div>
                         </DialogTrigger>
@@ -4020,13 +3968,13 @@ export default function Admin() {
                       </Dialog>
                     </td>
                     <td className="col-address">
-                      <div className="admin-text-xxs text-gray-600 no-wrap">{order.specialRequests ? 
+                      <div className="text-xs text-gray-600 no-wrap">{order.specialRequests ? 
                         (order.specialRequests.length > 8 ? `${order.specialRequests.substring(0, 8)}...` : order.specialRequests) 
                         : '-'}</div>
                     </td>
                     {/* 매출 */}
                     <td className="col-amount text-center">
-                      <div className="admin-text-xxs font-medium text-blue-700 no-wrap">
+                      <div className="text-xs font-medium text-blue-700 no-wrap">
                         {formatPrice(order.totalAmount)}
                       </div>
                     </td>
@@ -4034,7 +3982,7 @@ export default function Admin() {
                     <td className="col-amount text-center">
                       {order.paymentStatus === 'confirmed' || order.paymentStatus === 'partial' ? (
                         <div
-                          className="admin-text-xxs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 no-wrap"
+                          className="text-xs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 no-wrap"
                           onClick={() => {
                             const currentAmount = order.actualPaidAmount || order.totalAmount;
                             const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
@@ -4047,12 +3995,12 @@ export default function Admin() {
                           {formatPrice(order.actualPaidAmount || order.totalAmount)}
                         </div>
                       ) : (
-                        <div className="admin-text-xxs text-gray-400">-</div>
+                        <div className="text-xs text-gray-400">-</div>
                       )}
                     </td>
                     {/* 할인/미입금 */}
                     <td className="col-amount text-center">
-                      <div className="admin-text-xxs no-wrap">
+                      <div className="text-xs no-wrap">
                         {order.discountAmount && order.discountAmount > 0 ? (
                           <span className="text-blue-600 font-medium">
                             -{formatPrice(Math.abs(order.discountAmount))}
@@ -4081,14 +4029,14 @@ export default function Admin() {
                         }}
                         disabled={updatePaymentMutation.isPending}
                       >
-                        <SelectTrigger className="w-24 h-6 admin-text-xxs">
+                        <SelectTrigger className="w-24 h-6 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending" className="admin-text-xxs">입금대기</SelectItem>
-                          <SelectItem value="confirmed" className="admin-text-xxs">입금완료</SelectItem>
-                          <SelectItem value="partial" className="admin-text-xxs">부분결제</SelectItem>
-                          <SelectItem value="refunded" className="admin-text-xxs">환불</SelectItem>
+                          <SelectItem value="pending">입금대기</SelectItem>
+                          <SelectItem value="confirmed">입금완료</SelectItem>
+                          <SelectItem value="partial">부분결제</SelectItem>
+                          <SelectItem value="refunded">환불</SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
@@ -4103,21 +4051,21 @@ export default function Admin() {
                         }}
                         disabled={updateStatusMutation.isPending}
                       >
-                        <SelectTrigger className="w-24 h-6 admin-text-xxs">
+                        <SelectTrigger className="w-24 h-6 text-xs">
                           <SelectValue>
                             {statusLabels[order.status as keyof typeof statusLabels]}
                           </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending" className="admin-text-xxs">주문접수</SelectItem>
-                          <SelectItem value="seller_shipped" className="admin-text-xxs">발송대기</SelectItem>
-                          <SelectItem value="scheduled" className="admin-text-xxs">발송주문</SelectItem>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="seller_shipped">발송대기</SelectItem>
+                          <SelectItem value="scheduled">발송주문</SelectItem>
                           {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
                         </SelectContent>
                       </Select>
                     </td>
                     <td className="col-status text-center">
-                      <div className="admin-text-xxs no-wrap">
+                      <div className="text-xs no-wrap">
                         {order.sellerShipped ? (
                           <div className="text-green-600 font-medium">
                             완료
@@ -4144,7 +4092,7 @@ export default function Admin() {
                     <td className="col-actions text-center">
                       <div className="flex flex-col gap-1 items-center">
                         <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="h-6 admin-text-xxs px-2">
+                          <Button size="sm" variant="outline" className="h-6 text-xs px-2">
                             SMS
                           </Button>
                         </SmsDialog>
@@ -4158,7 +4106,7 @@ export default function Admin() {
                           variant="destructive"
                           onClick={() => handleDeleteOrder(order.id)}
                           disabled={deleteOrderMutation.isPending}
-                          className="h-6 admin-text-xxs px-2"
+                          className="h-6 text-xs px-2"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -4202,9 +4150,9 @@ export default function Admin() {
                         className="rounded border-gray-300 w-4 h-4"
                         title="삭제용 선택"
                       />
-                      <span className="font-bold text-gray-900 admin-text-xxs">#{order.orderNumber}</span>
-                      <span className="text-gray-700 admin-text-xxs">{order.customerName}</span>
-                      <span className={`px-2 py-0.5 rounded admin-text-xxs ${
+                      <span className="font-bold text-gray-900 text-xs">#{order.orderNumber}</span>
+                      <span className="text-gray-700 text-xs">{order.customerName}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
                         order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                         order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
                         order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
@@ -4217,8 +4165,8 @@ export default function Admin() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-blue-600 admin-text-xxs">{formatPrice(order.totalAmount)}</span>
-                      <span className="admin-text-xxs text-gray-400">
+                      <span className="font-bold text-blue-600 text-xs">{formatPrice(order.totalAmount)}</span>
+                      <span className="text-xs text-gray-400">
                         {isExpanded ? '▲' : '▼'}
                       </span>
                     </div>
@@ -4230,7 +4178,7 @@ export default function Admin() {
                   <div className="px-3 pb-3 border-t border-gray-100">
                     {/* 주문내역 */}
                     <div className="mb-2 pt-2">
-                      <div className="admin-text-xxs text-gray-700 space-y-0.5 mb-2">
+                      <div className="text-xs text-gray-700 space-y-0.5 mb-2">
                         {(() => {
                           // 동적 상품 이름 가져오기
                           const getProductName = (index: number) => {
@@ -4293,7 +4241,7 @@ export default function Admin() {
                         })()}
                       </div>
                       <div className="flex justify-end">
-                        <span className={`px-2 py-0.5 rounded admin-text-xxs ${
+                        <span className={`px-2 py-0.5 rounded text-xs ${
                           order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
                           order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                           order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
@@ -4307,7 +4255,7 @@ export default function Admin() {
                     </div>
 
                     {/* 연락처, 주소 */}
-                    <div className="admin-text-xxs text-gray-700 mb-2">
+                    <div className="text-xs text-gray-700 mb-2">
                       <div>연락처: {order.customerPhone}</div>
                       <div>배송지: {order.address1} {order.address2}</div>
                       {order.depositorName && order.depositorName !== order.customerName && (
@@ -4318,7 +4266,7 @@ export default function Admin() {
 
 
                     {/* 특별 정보 */}
-                    <div className="flex flex-wrap items-center gap-2 admin-text-xxs mb-2">
+                    <div className="flex flex-wrap items-center gap-2 text-xs mb-2">
                       {order.scheduledDate && (
                         <span className="bg-orange-100 px-1 py-0.5 rounded text-orange-700">
                           예약: {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
@@ -4338,7 +4286,7 @@ export default function Admin() {
                     </div>
 
                     {/* 상태 변경 및 액션 버튼 */}
-                    <div className="grid grid-cols-2 gap-2 admin-text-xxs">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
                       <Select
                         value={
                           order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
@@ -4348,14 +4296,14 @@ export default function Admin() {
                         onValueChange={(newPaymentStatus) => handlePaymentStatusChange(order.id, newPaymentStatus)}
                         disabled={updatePaymentMutation.isPending}
                       >
-                        <SelectTrigger className="w-full admin-text-xxs h-7">
+                        <SelectTrigger className="w-full text-xs h-7">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending" className="admin-text-xxs">입금대기</SelectItem>
-                          <SelectItem value="confirmed" className="admin-text-xxs">입금완료</SelectItem>
-                          <SelectItem value="partial" className="admin-text-xxs">부분결제</SelectItem>
-                          <SelectItem value="refunded" className="admin-text-xxs">환불</SelectItem>
+                          <SelectItem value="pending">입금대기</SelectItem>
+                          <SelectItem value="confirmed">입금완료</SelectItem>
+                          <SelectItem value="partial">부분결제</SelectItem>
+                          <SelectItem value="refunded">환불</SelectItem>
                         </SelectContent>
                       </Select>
                       
@@ -4364,13 +4312,13 @@ export default function Admin() {
                         onValueChange={(newStatus) => updateStatusMutation.mutate({ id: order.id, status: newStatus })}
                         disabled={updateStatusMutation.isPending}
                       >
-                        <SelectTrigger className="w-full admin-text-xxs h-7">
+                        <SelectTrigger className="w-full text-xs h-7">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending" className="admin-text-xxs">주문접수</SelectItem>
-                          <SelectItem value="scheduled" className="admin-text-xxs">발송주문</SelectItem>
-                          <SelectItem value="seller_shipped" className="admin-text-xxs">발송대기</SelectItem>
+                          <SelectItem value="pending">주문접수</SelectItem>
+                          <SelectItem value="scheduled">발송주문</SelectItem>
+                          <SelectItem value="seller_shipped">발송대기</SelectItem>
                           {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
                         </SelectContent>
                       </Select>
@@ -4379,7 +4327,7 @@ export default function Admin() {
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2">
                         <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="admin-text-xxs h-7 px-2">
+                          <Button size="sm" variant="outline" className="text-xs h-7 px-2">
                             SMS
                           </Button>
                         </SmsDialog>
@@ -4394,7 +4342,7 @@ export default function Admin() {
                           disabled={order.sellerShipped || false}
                           title={order.sellerShipped ? "이미 발송됨" : "발송용 선택"}
                         />
-                        <span className="admin-text-xxs text-gray-500">발송선택</span>
+                        <span className="text-xs text-gray-500">발송선택</span>
                       </div>
                       
                       <Button
@@ -4405,7 +4353,7 @@ export default function Admin() {
                           handleDeleteOrder(order.id);
                         }}
                         disabled={deleteOrderMutation.isPending}
-                        className="admin-text-xxs h-7 px-2"
+                        className="text-xs h-7 px-2"
                       >
                         삭제
                       </Button>
@@ -4696,7 +4644,7 @@ export default function Admin() {
         costSettingsDialog={<PriceSettingsDialog />}
         passwordChangeDialog={<PasswordChangeDialog />}
       />
-      <div className="container mx-auto px-1 py-2 sm:px-3 sm:py-3 md:px-4 md:py-4 lg:px-6 lg:py-6 xl:px-8 xl:py-8">
+      <div className="container mx-auto p-2 sm:p-4 md:p-6">
 
 
 
@@ -4728,39 +4676,39 @@ export default function Admin() {
                 {/* 모바일에서는 3줄로 나누어 표시 - 설정 탭 추가 */}
                 <div className="block md:hidden">
                   <TabsList className="grid w-full grid-cols-4 mb-2">
-                    <TabsTrigger value="all" className="admin-tab-trigger px-1">전체 ({allOrders.length})</TabsTrigger>
-                    <TabsTrigger value="pending" className="admin-tab-trigger px-1">주문접수 ({pendingOrders.length})</TabsTrigger>
-                    <TabsTrigger value="seller_shipped" className="admin-tab-trigger px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
-                    <TabsTrigger value="scheduled" className="admin-tab-trigger px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                    <TabsTrigger value="all" className="text-sm px-1">전체 ({allOrders.length})</TabsTrigger>
+                    <TabsTrigger value="pending" className="text-sm px-1">주문접수 ({pendingOrders.length})</TabsTrigger>
+                    <TabsTrigger value="seller_shipped" className="text-sm px-1">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="text-sm px-1">발송주문 ({scheduledOrders.length})</TabsTrigger>
                   </TabsList>
                   <TabsList className="grid w-full grid-cols-4 mb-2">
-                    <TabsTrigger value="delivered" className="admin-tab-trigger px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
-                    <TabsTrigger value="order_history" className="text-green-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="delivered" className="text-sm px-1">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="order_history" className="text-green-600 text-xs px-1">
                       <Package className="h-3 w-3 mr-1" />
                       주문내역
                     </TabsTrigger>
-                    <TabsTrigger value="refunded" className="text-red-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="refunded" className="text-red-600 text-sm px-1">
                       환불내역 ({refundedOrders.length})
                     </TabsTrigger>
-                    <TabsTrigger value="revenue" className="text-purple-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="revenue" className="text-purple-600 text-sm px-1">
                       <DollarSign className="h-3 w-3 mr-1" />
                       매출관리
                     </TabsTrigger>
                   </TabsList>
                   <TabsList className="grid w-full grid-cols-4 mb-2">
-                    <TabsTrigger value="customers" className="text-blue-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
                       <Users className="h-3 w-3 mr-1" />
                       고객관리
                     </TabsTrigger>
-                    <TabsTrigger value="members" className="text-green-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="members" className="text-green-600 text-xs px-1">
                       <Key className="h-3 w-3 mr-1" />
                       회원관리
                     </TabsTrigger>
-                    <TabsTrigger value="security" className="text-red-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="security" className="text-red-600 text-xs px-1">
                       <Shield className="h-3 w-3 mr-1" />
                       보안관리
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="text-orange-600 admin-tab-trigger px-1">
+                    <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
                       <Cog className="h-3 w-3 mr-1" />
                       콘텐츠 및 상품관리
                     </TabsTrigger>
@@ -4770,18 +4718,18 @@ export default function Admin() {
                 {/* 데스크톱에서는 한 줄로 표시 */}
                 <div className="hidden md:block">
                   <TabsList className="grid w-full grid-cols-12">
-                    <TabsTrigger value="all" className="admin-tab-trigger">전체 ({allOrders.length})</TabsTrigger>
-                    <TabsTrigger value="pending" className="admin-tab-trigger">주문접수 ({pendingOrders.length})</TabsTrigger>
-                    <TabsTrigger value="seller_shipped" className="admin-tab-trigger">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
-                    <TabsTrigger value="scheduled" className="admin-tab-trigger">발송주문 ({scheduledOrders.length})</TabsTrigger>
-                    <TabsTrigger value="delivered" className="admin-tab-trigger">발송완료 ({deliveredOrders.length})</TabsTrigger>
-                    <TabsTrigger value="order_history" className="text-green-600 admin-tab-trigger">주문내역</TabsTrigger>
-                    <TabsTrigger value="refunded" className="text-red-600 admin-tab-trigger">환불내역 ({refundedOrders.length})</TabsTrigger>
-                    <TabsTrigger value="revenue" className="text-purple-600 admin-tab-trigger">매출관리</TabsTrigger>
-                    <TabsTrigger value="customers" className="text-blue-600 admin-tab-trigger">고객관리</TabsTrigger>
-                    <TabsTrigger value="members" className="text-green-600 admin-tab-trigger">회원관리</TabsTrigger>
-                    <TabsTrigger value="security" className="text-red-600 admin-tab-trigger">보안관리</TabsTrigger>
-                    <TabsTrigger value="settings" className="text-orange-600 admin-tab-trigger">콘텐츠 및 상품관리</TabsTrigger>
+                    <TabsTrigger value="all" className="text-sm">전체 ({allOrders.length})</TabsTrigger>
+                    <TabsTrigger value="pending" className="text-sm">주문접수 ({pendingOrders.length})</TabsTrigger>
+                    <TabsTrigger value="seller_shipped" className="text-sm">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="scheduled" className="text-sm">발송주문 ({scheduledOrders.length})</TabsTrigger>
+                    <TabsTrigger value="delivered" className="text-sm">발송완료 ({deliveredOrders.length})</TabsTrigger>
+                    <TabsTrigger value="order_history" className="text-green-600 text-sm">주문내역</TabsTrigger>
+                    <TabsTrigger value="refunded" className="text-red-600 text-sm">환불내역 ({refundedOrders.length})</TabsTrigger>
+                    <TabsTrigger value="revenue" className="text-purple-600 text-sm">매출관리</TabsTrigger>
+                    <TabsTrigger value="customers" className="text-blue-600 text-sm">고객관리</TabsTrigger>
+                    <TabsTrigger value="members" className="text-green-600 text-sm">회원관리</TabsTrigger>
+                    <TabsTrigger value="security" className="text-red-600 text-sm">보안관리</TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-sm">콘텐츠 및 상품관리</TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -5794,20 +5742,20 @@ export default function Admin() {
                             
                             {/* Dynamic Product List with Pricing - Table Format */}
                             <div className="border rounded-lg overflow-hidden bg-white">
-                              <table className="w-full admin-table">
+                              <table className="w-full">
                                 <thead className="bg-gray-50">
                                   <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-16 admin-text-xs">#</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">상품명</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">크기/규격</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">중량</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-36 admin-text-xs">작업</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 w-16">#</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">상품명</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">크기/규격</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">중량</th>
+                                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 w-36">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {(dashboardContent.productNames || []).map((product: any, index: number) => (
                                     <tr key={index} className="border-b border-gray-100">
-                                      <td className="px-4 py-3 text-gray-700 font-medium admin-text-xs">
+                                      <td className="px-4 py-3 text-sm text-gray-700 font-medium">
                                         {index + 1}
                                       </td>
                                       <td className="px-4 py-3">
@@ -5819,7 +5767,7 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="상품명"
-                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         />
                                       </td>
                                       <td className="px-4 py-3">
@@ -5831,7 +5779,7 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="(가로×세로×높이)"
-                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         />
                                       </td>
                                       <td className="px-4 py-3">
@@ -5843,7 +5791,7 @@ export default function Admin() {
                                             setDashboardContent({...dashboardContent, productNames: newProductNames});
                                           }}
                                           placeholder="중량"
-                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         />
                                       </td>
                                       <td className="px-4 py-3 text-center">
@@ -6008,178 +5956,25 @@ export default function Admin() {
                             </div>
                             
                             <div className="border rounded-lg overflow-hidden">
-                              <table className="w-full admin-table">
+                              <table className="w-full text-sm">
                                 <thead>
                                   <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32 admin-text-xs">항목</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32 admin-text-xs">작업</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600 admin-text-xs">메인 제목</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600">메인 제목</td>
                                     <td className="px-4 py-3">
-                                      <div className="space-y-3">
-                                        <Textarea
-                                          value={dashboardContent.mainTitle}
-                                          onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
-                                          placeholder="메인 제목 (줄바꿈 가능)"
-                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
-                                          rows={2}
-                                        />
-                                        
-                                        {/* 텍스트 스타일 설정 */}
-                                        <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded border">
-                                          <div className="relative">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자색</label>
-                                            <div className="space-y-2">
-                                              <div className="flex gap-2 items-center">
-                                                <div 
-                                                  className="w-8 h-8 border border-gray-300 rounded cursor-pointer shadow-sm"
-                                                  style={{ backgroundColor: dashboardContent.mainTitleColor || '#8B4513' }}
-                                                  title={dashboardContent.mainTitleColor || '#8B4513'}
-                                                />
-                                                <input
-                                                  type="color"
-                                                  value={dashboardContent.mainTitleColor || '#8B4513'}
-                                                  onChange={(e) => setDashboardContent({...dashboardContent, mainTitleColor: e.target.value})}
-                                                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
-                                                />
-                                              </div>
-                                              <details className="group">
-                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">색상표 보기</summary>
-                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
-                                                  <div className="grid grid-cols-6 gap-1">
-                                                    {[
-                                                      '#000000', '#333333', '#666666', '#999999', '#CCCCCC', '#FFFFFF',
-                                                      '#8B4513', '#D2691E', '#CD853F', '#F4A460', '#DEB887', '#FAEBD7',
-                                                      '#DC2626', '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16',
-                                                      '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9', '#3B82F6',
-                                                      '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E'
-                                                    ].map((color) => (
-                                                      <button
-                                                        key={color}
-                                                        type="button"
-                                                        className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
-                                                          dashboardContent.mainTitleColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
-                                                        }`}
-                                                        style={{ backgroundColor: color }}
-                                                        onClick={() => setDashboardContent({...dashboardContent, mainTitleColor: color})}
-                                                        title={color}
-                                                      />
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </details>
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자 크기</label>
-                                            <div className="space-y-2">
-                                              <div className="p-2 border rounded bg-white text-center">
-                                                <div className="font-medium text-sm">
-                                                  {(() => {
-                                                    const sizeMap: Record<string, string> = {
-                                                      'text-lg md:text-xl': '작게',
-                                                      'text-xl md:text-2xl': '보통',
-                                                      'text-2xl md:text-3xl': '크게',
-                                                      'text-3xl md:text-4xl': '매우 크게',
-                                                      'text-4xl md:text-5xl': '특대',
-                                                      'text-5xl md:text-6xl': '초대형'
-                                                    };
-                                                    return sizeMap[dashboardContent.mainTitleSize] || '크게';
-                                                  })()}
-                                                </div>
-                                                <div className="text-xs text-gray-500">{dashboardContent.mainTitleSize}</div>
-                                              </div>
-                                              <details className="group">
-                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">크기 선택</summary>
-                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
-                                                  <div className="grid grid-cols-2 gap-1 text-xs">
-                                                    {[
-                                                      { value: 'text-lg md:text-xl', label: '작게', preview: '16px' },
-                                                      { value: 'text-xl md:text-2xl', label: '보통', preview: '20px' },
-                                                      { value: 'text-2xl md:text-3xl', label: '크게', preview: '24px' },
-                                                      { value: 'text-3xl md:text-4xl', label: '매우 크게', preview: '30px' },
-                                                      { value: 'text-4xl md:text-5xl', label: '특대', preview: '36px' },
-                                                      { value: 'text-5xl md:text-6xl', label: '초대형', preview: '48px' }
-                                                    ].map((size) => (
-                                                      <button
-                                                        key={size.value}
-                                                        type="button"
-                                                        className={`p-2 rounded border text-xs hover:bg-blue-50 transition-colors ${
-                                                          dashboardContent.mainTitleSize === size.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                                                        }`}
-                                                        onClick={() => setDashboardContent({...dashboardContent, mainTitleSize: size.value})}
-                                                      >
-                                                        <div className="font-medium">{size.label}</div>
-                                                        <div className="text-gray-500">{size.preview}</div>
-                                                      </button>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </details>
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
-                                            <select
-                                              value={dashboardContent.mainTitleAlign || 'text-center'}
-                                              onChange={(e) => setDashboardContent({...dashboardContent, mainTitleAlign: e.target.value})}
-                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            >
-                                              <option value="text-left">왼쪽</option>
-                                              <option value="text-center">중앙</option>
-                                              <option value="text-right">오른쪽</option>
-                                            </select>
-                                          </div>
-                                          <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">글꼴</label>
-                                            <div className="space-y-2">
-                                              <div className="p-2 border rounded bg-white text-center">
-                                                <div className="font-medium text-sm">
-                                                  {(() => {
-                                                    const fontMap: Record<string, string> = {
-                                                      'font-korean': '기본체',
-                                                      'font-serif': '명조체',
-                                                      'font-sans': '고딕체',
-                                                      'font-mono': '고정폭'
-                                                    };
-                                                    return fontMap[dashboardContent.mainTitleFont] || '기본체';
-                                                  })()}
-                                                </div>
-                                                <div className="text-xs text-gray-500">{dashboardContent.mainTitleFont}</div>
-                                              </div>
-                                              <details className="group">
-                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">글꼴 선택</summary>
-                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
-                                                  <div className="space-y-1">
-                                                    {[
-                                                      { value: 'font-korean', label: '기본체', preview: '나눔고딕' },
-                                                      { value: 'font-serif', label: '명조체', preview: 'serif' },
-                                                      { value: 'font-sans', label: '고딕체', preview: 'sans-serif' },
-                                                      { value: 'font-mono', label: '고정폭', preview: 'monospace' }
-                                                    ].map((font) => (
-                                                      <button
-                                                        key={font.value}
-                                                        type="button"
-                                                        className={`w-full p-2 rounded border text-xs hover:bg-blue-50 transition-colors text-left ${
-                                                          dashboardContent.mainTitleFont === font.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                                                        }`}
-                                                        onClick={() => setDashboardContent({...dashboardContent, mainTitleFont: font.value})}
-                                                      >
-                                                        <div className="font-medium">{font.label}</div>
-                                                        <div className="text-gray-500 text-xs">{font.preview}</div>
-                                                      </button>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </details>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
+                                      <Textarea
+                                        value={dashboardContent.mainTitle}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
+                                        placeholder="메인 제목 (줄바꿈 가능)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
+                                      />
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                       <div className="flex gap-2 justify-center">
@@ -6192,17 +5987,13 @@ export default function Admin() {
                                             setSavingButtons(prev => ({...prev, [buttonKey]: true}));
                                             
                                             try {
-                                              // 메인 타이틀과 스타일 정보 모두 저장
-                                              await Promise.all([
-                                                updateContentMutation.mutateAsync({ key: 'mainTitle', value: dashboardContent.mainTitle }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleColor', value: dashboardContent.mainTitleColor || '#8B4513' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleSize', value: dashboardContent.mainTitleSize || 'text-2xl md:text-3xl' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleAlign', value: dashboardContent.mainTitleAlign || 'text-center' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainTitleFont', value: dashboardContent.mainTitleFont || 'font-korean' })
-                                              ]);
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'mainTitle', 
+                                                value: dashboardContent.mainTitle 
+                                              });
                                               toast({
                                                 title: "저장됨",
-                                                description: "제목과 스타일 저장 완료",
+                                                description: "제목 저장 완료",
                                               });
                                             } catch (error) {
                                               toast({
@@ -6241,164 +6032,15 @@ export default function Admin() {
                                   </tr>
                                   
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600 admin-text-xs">메인 설명</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600">메인 설명</td>
                                     <td className="px-4 py-3">
-                                      <div className="space-y-3">
-                                        <Textarea
-                                          value={dashboardContent.mainDescription}
-                                          onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
-                                          placeholder="메인 설명 (줄바꿈 가능)"
-                                          className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
-                                          rows={3}
-                                        />
-                                        
-                                        {/* 텍스트 스타일 설정 */}
-                                        <div className="grid grid-cols-3 gap-3 p-3 bg-gray-50 rounded border">
-                                          <div className="relative">
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자색</label>
-                                            <div className="space-y-2">
-                                              <div className="flex gap-2 items-center">
-                                                <div 
-                                                  className="w-8 h-8 border border-gray-300 rounded cursor-pointer shadow-sm"
-                                                  style={{ backgroundColor: dashboardContent.mainDescriptionColor || '#6b7280' }}
-                                                  title={dashboardContent.mainDescriptionColor || '#6b7280'}
-                                                />
-                                                <input
-                                                  type="color"
-                                                  value={dashboardContent.mainDescriptionColor || '#6b7280'}
-                                                  onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionColor: e.target.value})}
-                                                  className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
-                                                />
-                                              </div>
-                                              <details className="group">
-                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">색상표 보기</summary>
-                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
-                                                  <div className="grid grid-cols-6 gap-1">
-                                                    {[
-                                                      '#000000', '#333333', '#666666', '#999999', '#CCCCCC', '#FFFFFF',
-                                                      '#8B4513', '#D2691E', '#CD853F', '#F4A460', '#DEB887', '#FAEBD7',
-                                                      '#DC2626', '#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16',
-                                                      '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9', '#3B82F6',
-                                                      '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E'
-                                                    ].map((color) => (
-                                                      <button
-                                                        key={color}
-                                                        type="button"
-                                                        className={`w-6 h-6 rounded border hover:scale-110 transition-transform ${
-                                                          dashboardContent.mainDescriptionColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
-                                                        }`}
-                                                        style={{ backgroundColor: color }}
-                                                        onClick={() => setDashboardContent({...dashboardContent, mainDescriptionColor: color})}
-                                                        title={color}
-                                                      />
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </details>
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">글자 크기</label>
-                                            <div className="space-y-2">
-                                              <div className="p-2 border rounded bg-white text-center">
-                                                <div className="font-medium text-sm">
-                                                  {(() => {
-                                                    const sizeMap: Record<string, string> = {
-                                                      'text-sm md:text-base': '작게',
-                                                      'text-base md:text-lg': '보통',
-                                                      'text-lg md:text-xl': '크게',
-                                                      'text-xl md:text-2xl': '매우 크게'
-                                                    };
-                                                    return sizeMap[dashboardContent.mainDescriptionSize] || '보통';
-                                                  })()}
-                                                </div>
-                                                <div className="text-xs text-gray-500">{dashboardContent.mainDescriptionSize}</div>
-                                              </div>
-                                              <details className="group">
-                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">크기 선택</summary>
-                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
-                                                  <div className="grid grid-cols-2 gap-1 text-xs">
-                                                    {[
-                                                      { value: 'text-sm md:text-base', label: '작게', preview: '14px' },
-                                                      { value: 'text-base md:text-lg', label: '보통', preview: '16px' },
-                                                      { value: 'text-lg md:text-xl', label: '크게', preview: '18px' },
-                                                      { value: 'text-xl md:text-2xl', label: '매우 크게', preview: '20px' }
-                                                    ].map((size) => (
-                                                      <button
-                                                        key={size.value}
-                                                        type="button"
-                                                        className={`p-2 rounded border text-xs hover:bg-blue-50 transition-colors ${
-                                                          dashboardContent.mainDescriptionSize === size.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                                                        }`}
-                                                        onClick={() => setDashboardContent({...dashboardContent, mainDescriptionSize: size.value})}
-                                                      >
-                                                        <div className="font-medium">{size.label}</div>
-                                                        <div className="text-gray-500">{size.preview}</div>
-                                                      </button>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </details>
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">정렬</label>
-                                            <select
-                                              value={dashboardContent.mainDescriptionAlign || 'text-center'}
-                                              onChange={(e) => setDashboardContent({...dashboardContent, mainDescriptionAlign: e.target.value})}
-                                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                            >
-                                              <option value="text-left">왼쪽</option>
-                                              <option value="text-center">중앙</option>
-                                              <option value="text-right">오른쪽</option>
-                                            </select>
-                                          </div>
-                                          <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">글꼴</label>
-                                            <div className="space-y-2">
-                                              <div className="p-2 border rounded bg-white text-center">
-                                                <div className="font-medium text-sm">
-                                                  {(() => {
-                                                    const fontMap: Record<string, string> = {
-                                                      'font-korean': '기본체',
-                                                      'font-serif': '명조체',
-                                                      'font-sans': '고딕체',
-                                                      'font-mono': '고정폭'
-                                                    };
-                                                    return fontMap[dashboardContent.mainDescriptionFont] || '기본체';
-                                                  })()}
-                                                </div>
-                                                <div className="text-xs text-gray-500">{dashboardContent.mainDescriptionFont}</div>
-                                              </div>
-                                              <details className="group">
-                                                <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800">글꼴 선택</summary>
-                                                <div className="mt-2 p-2 border rounded bg-white shadow-sm">
-                                                  <div className="space-y-1">
-                                                    {[
-                                                      { value: 'font-korean', label: '기본체', preview: '나눔고딕' },
-                                                      { value: 'font-serif', label: '명조체', preview: 'serif' },
-                                                      { value: 'font-sans', label: '고딕체', preview: 'sans-serif' },
-                                                      { value: 'font-mono', label: '고정폭', preview: 'monospace' }
-                                                    ].map((font) => (
-                                                      <button
-                                                        key={font.value}
-                                                        type="button"
-                                                        className={`w-full p-2 rounded border text-xs hover:bg-blue-50 transition-colors text-left ${
-                                                          dashboardContent.mainDescriptionFont === font.value ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                                                        }`}
-                                                        onClick={() => setDashboardContent({...dashboardContent, mainDescriptionFont: font.value})}
-                                                      >
-                                                        <div className="font-medium">{font.label}</div>
-                                                        <div className="text-gray-500 text-xs">{font.preview}</div>
-                                                      </button>
-                                                    ))}
-                                                  </div>
-                                                </div>
-                                              </details>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
+                                      <Textarea
+                                        value={dashboardContent.mainDescription}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
+                                        placeholder="메인 설명 (줄바꿈 가능)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={3}
+                                      />
                                     </td>
                                     <td className="px-4 py-3 text-center">
                                       <div className="flex gap-2 justify-center">
@@ -6411,17 +6053,13 @@ export default function Admin() {
                                             setSavingButtons(prev => ({...prev, [buttonKey]: true}));
                                             
                                             try {
-                                              // 메인 설명과 스타일 정보 모두 저장
-                                              await Promise.all([
-                                                updateContentMutation.mutateAsync({ key: 'mainDescription', value: dashboardContent.mainDescription }),
-                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionColor', value: dashboardContent.mainDescriptionColor || '#6b7280' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionSize', value: dashboardContent.mainDescriptionSize || 'text-base md:text-lg' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionAlign', value: dashboardContent.mainDescriptionAlign || 'text-center' }),
-                                                updateContentMutation.mutateAsync({ key: 'mainDescriptionFont', value: dashboardContent.mainDescriptionFont || 'font-korean' })
-                                              ]);
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'mainDescription', 
+                                                value: dashboardContent.mainDescription 
+                                              });
                                               toast({
                                                 title: "저장됨",
-                                                description: "설명과 스타일 저장 완료",
+                                                description: "설명 저장 완료",
                                               });
                                             } catch (error) {
                                               toast({
@@ -6687,23 +6325,23 @@ export default function Admin() {
                             </div>
                             
                             <div className="border rounded-lg overflow-hidden">
-                              <table className="w-full admin-table">
+                              <table className="w-full text-sm">
                                 <thead>
                                   <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32 admin-text-xs">항목</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 admin-text-xs">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32 admin-text-xs">작업</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600 admin-text-xs">배송 제목</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600">배송 제목</td>
                                     <td className="px-4 py-3">
                                       <Textarea
                                         value={dashboardContent.shippingTitle || ''}
                                         onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
                                         placeholder="에덴한과 배송 (줄바꿈 가능)"
-                                        className="border-0 focus:ring-1 focus:ring-blue-500 bg-transparent admin-text-xs"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
                                         rows={2}
                                       />
                                     </td>
@@ -7019,353 +6657,6 @@ export default function Admin() {
                                             toast({
                                               title: "되돌림",
                                               description: "안내 메시지 복원 완료",
-                                            });
-                                          }}
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Undo className="h-3 w-3 mr-1" />
-                                          되돌리기
-                                        </Button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-
-                          {/* 팝업 관리 */}
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                              <h3 className="text-lg font-semibold text-gray-900">안내사항 팝업 관리</h3>
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={async () => {
-                                    try {
-                                      const popupData = {
-                                        popupEnabled: dashboardContent.popupEnabled ? 'true' : 'false',
-                                        popupTitle: dashboardContent.popupTitle,
-                                        popupContent: dashboardContent.popupContent,
-                                        popupButtonText: dashboardContent.popupButtonText
-                                      };
-                                      
-                                      await Promise.all(Object.entries(popupData).map(([key, value]) =>
-                                        updateContentMutation.mutateAsync({ key, value })
-                                      ));
-                                      
-                                      toast({
-                                        title: "저장 완료",
-                                        description: "팝업 설정이 모두 저장되었습니다.",
-                                      });
-                                    } catch (error) {
-                                      toast({
-                                        title: "저장 실패",
-                                        description: "팝업 설정 저장 중 오류가 발생했습니다.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                >
-                                  <Save className="h-4 w-4 mr-1" />
-                                  전체저장
-                                </Button>
-                                <Button
-                                  onClick={() => {
-                                    if (confirm('팝업 설정을 기본값으로 되돌리시겠습니까?')) {
-                                      const defaults = {
-                                        popupEnabled: false,
-                                        popupTitle: "",
-                                        popupContent: "",
-                                        popupButtonText: "확인"
-                                      };
-                                      setDashboardContent({...dashboardContent, ...defaults});
-                                      Object.entries(defaults).forEach(([key, value]) => {
-                                        updateContentMutation.mutate({ 
-                                          key, 
-                                          value: typeof value === 'boolean' ? (value ? 'true' : 'false') : value 
-                                        });
-                                      });
-                                      toast({
-                                        title: "초기화 완료",
-                                        description: "팝업 설정이 기본값으로 되돌려졌습니다."
-                                      });
-                                    }
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                >
-                                  <RotateCcw className="h-4 w-4 mr-1" />
-                                  전체초기화
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="border rounded-lg overflow-hidden">
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                  <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">팝업 활성화</td>
-                                    <td className="px-4 py-3">
-                                      <div className="flex items-center gap-3">
-                                        <label className="inline-flex items-center">
-                                          <input
-                                            type="checkbox"
-                                            checked={dashboardContent.popupEnabled}
-                                            onChange={(e) => setDashboardContent({
-                                              ...dashboardContent, 
-                                              popupEnabled: e.target.checked
-                                            })}
-                                            className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                                          />
-                                          <span className="ml-2 text-sm text-gray-700">
-                                            {dashboardContent.popupEnabled ? '팝업 표시 중' : '팝업 비활성화'}
-                                          </span>
-                                        </label>
-                                      </div>
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <div className="flex gap-2 justify-center">
-                                        <Button
-                                          size="sm"
-                                          onClick={async () => {
-                                            const buttonKey = 'popupEnabled';
-                                            if (savingButtons[buttonKey]) return;
-                                            
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                            
-                                            try {
-                                              await updateContentMutation.mutateAsync({ 
-                                                key: 'popupEnabled', 
-                                                value: dashboardContent.popupEnabled ? 'true' : 'false'
-                                              });
-                                              toast({
-                                                title: "저장됨",
-                                                description: "팝업 활성화 설정 저장 완료",
-                                              });
-                                            } catch (error) {
-                                              toast({
-                                                title: "저장 실패",
-                                                description: "저장 중 오류가 발생했습니다.",
-                                                variant: "destructive"
-                                              });
-                                            } finally {
-                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                            }
-                                          }}
-                                          disabled={savingButtons['popupEnabled']}
-                                          variant="ghost"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Save className="h-3 w-3 mr-1" />
-                                          {savingButtons['popupEnabled'] ? '저장중' : '저장'}
-                                        </Button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">팝업 제목</td>
-                                    <td className="px-4 py-3">
-                                      <input
-                                        type="text"
-                                        value={dashboardContent.popupTitle}
-                                        onChange={(e) => setDashboardContent({
-                                          ...dashboardContent, 
-                                          popupTitle: e.target.value
-                                        })}
-                                        placeholder="팝업 제목을 입력하세요"
-                                        className="w-full text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent px-0"
-                                      />
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <div className="flex gap-2 justify-center">
-                                        <Button
-                                          size="sm"
-                                          onClick={async () => {
-                                            const buttonKey = 'popupTitle';
-                                            if (savingButtons[buttonKey]) return;
-                                            
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                            
-                                            try {
-                                              await updateContentMutation.mutateAsync({ 
-                                                key: 'popupTitle', 
-                                                value: dashboardContent.popupTitle 
-                                              });
-                                              toast({
-                                                title: "저장됨",
-                                                description: "팝업 제목 저장 완료",
-                                              });
-                                            } catch (error) {
-                                              toast({
-                                                title: "저장 실패",
-                                                description: "저장 중 오류가 발생했습니다.",
-                                                variant: "destructive"
-                                              });
-                                            } finally {
-                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                            }
-                                          }}
-                                          disabled={savingButtons['popupTitle']}
-                                          variant="ghost"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Save className="h-3 w-3 mr-1" />
-                                          {savingButtons['popupTitle'] ? '저장중' : '저장'}
-                                        </Button>
-                                        <Button
-                                          onClick={() => {
-                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                            toast({
-                                              title: "되돌림",
-                                              description: "팝업 제목 복원 완료",
-                                            });
-                                          }}
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Undo className="h-3 w-3 mr-1" />
-                                          되돌리기
-                                        </Button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">팝업 내용</td>
-                                    <td className="px-4 py-3">
-                                      <Textarea
-                                        value={dashboardContent.popupContent}
-                                        onChange={(e) => setDashboardContent({
-                                          ...dashboardContent, 
-                                          popupContent: e.target.value
-                                        })}
-                                        placeholder="팝업에 표시할 내용을 입력하세요&#10;줄바꿈 가능"
-                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
-                                        rows={4}
-                                      />
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <div className="flex gap-2 justify-center">
-                                        <Button
-                                          size="sm"
-                                          onClick={async () => {
-                                            const buttonKey = 'popupContent';
-                                            if (savingButtons[buttonKey]) return;
-                                            
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                            
-                                            try {
-                                              await updateContentMutation.mutateAsync({ 
-                                                key: 'popupContent', 
-                                                value: dashboardContent.popupContent 
-                                              });
-                                              toast({
-                                                title: "저장됨",
-                                                description: "팝업 내용 저장 완료",
-                                              });
-                                            } catch (error) {
-                                              toast({
-                                                title: "저장 실패",
-                                                description: "저장 중 오류가 발생했습니다.",
-                                                variant: "destructive"
-                                              });
-                                            } finally {
-                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                            }
-                                          }}
-                                          disabled={savingButtons['popupContent']}
-                                          variant="ghost"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Save className="h-3 w-3 mr-1" />
-                                          {savingButtons['popupContent'] ? '저장중' : '저장'}
-                                        </Button>
-                                        <Button
-                                          onClick={() => {
-                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                            toast({
-                                              title: "되돌림",
-                                              description: "팝업 내용 복원 완료",
-                                            });
-                                          }}
-                                          variant="ghost"
-                                          size="sm"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Undo className="h-3 w-3 mr-1" />
-                                          되돌리기
-                                        </Button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">버튼 텍스트</td>
-                                    <td className="px-4 py-3">
-                                      <input
-                                        type="text"
-                                        value={dashboardContent.popupButtonText}
-                                        onChange={(e) => setDashboardContent({
-                                          ...dashboardContent, 
-                                          popupButtonText: e.target.value
-                                        })}
-                                        placeholder="확인"
-                                        className="w-full text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent px-0"
-                                      />
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
-                                      <div className="flex gap-2 justify-center">
-                                        <Button
-                                          size="sm"
-                                          onClick={async () => {
-                                            const buttonKey = 'popupButtonText';
-                                            if (savingButtons[buttonKey]) return;
-                                            
-                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
-                                            
-                                            try {
-                                              await updateContentMutation.mutateAsync({ 
-                                                key: 'popupButtonText', 
-                                                value: dashboardContent.popupButtonText 
-                                              });
-                                              toast({
-                                                title: "저장됨",
-                                                description: "버튼 텍스트 저장 완료",
-                                              });
-                                            } catch (error) {
-                                              toast({
-                                                title: "저장 실패",
-                                                description: "저장 중 오류가 발생했습니다.",
-                                                variant: "destructive"
-                                              });
-                                            } finally {
-                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
-                                            }
-                                          }}
-                                          disabled={savingButtons['popupButtonText']}
-                                          variant="ghost"
-                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
-                                        >
-                                          <Save className="h-3 w-3 mr-1" />
-                                          {savingButtons['popupButtonText'] ? '저장중' : '저장'}
-                                        </Button>
-                                        <Button
-                                          onClick={() => {
-                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-                                            toast({
-                                              title: "되돌림",
-                                              description: "버튼 텍스트 복원 완료",
                                             });
                                           }}
                                           variant="ghost"

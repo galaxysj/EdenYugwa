@@ -1,21 +1,16 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Link } from "wouter";
-import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Package, Settings, X } from "lucide-react";
+import { Leaf, Heart, BicepsFlexed, Sprout, Church, Phone, Mail, MapPin, Facebook, Instagram, Youtube, ShoppingCart, Info, Package, Settings } from "lucide-react";
 import OrderForm from "@/components/order-form";
 import edenHangwaImage from "@assets/image_1753160591635.png";
 import edenHangwaImage2 from "@assets/image_1753160530604.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
 
 export default function Home() {
   const { isAuthenticated, isManagerOrAdmin, isAdmin, isManager, user } = useAuth();
-  
-  // 팝업 상태 관리
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // Fetch dashboard content for dynamic text and product names
   const { data: contentData } = useQuery({
@@ -44,27 +39,6 @@ export default function Home() {
   });
 
   const settings = settingsData;
-
-  // 페이지 로드 시 팝업 표시 여부 확인
-  useEffect(() => {
-    const isPopupEnabled = dashboardContent.popupEnabled === 'true' || dashboardContent.popupEnabled === true;
-    
-    if (isPopupEnabled && dashboardContent.popupTitle && dashboardContent.popupContent) {
-      // 로컬 스토리지를 사용하여 "더 이상 보지 않기" 설정 확인
-      const dontShowKey = 'popup-dont-show-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
-      
-      if (!localStorage.getItem(dontShowKey)) {
-        setIsPopupOpen(true);
-      }
-    }
-  }, [dashboardContent.popupEnabled, dashboardContent.popupTitle, dashboardContent.popupContent]);
-
-  // 더 이상 보지 않기 처리
-  const handleDontShowAgain = () => {
-    const dontShowKey = 'popup-dont-show-' + (dashboardContent.popupTitle + dashboardContent.popupContent).slice(0, 50);
-    localStorage.setItem(dontShowKey, 'true');
-    setIsPopupOpen(false);
-  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -154,6 +128,18 @@ export default function Home() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
               <button 
+                onClick={() => scrollToSection('home')}
+                className="text-eden-dark hover:text-eden-brown transition-colors"
+              >
+                홈
+              </button>
+              <button 
+                onClick={() => scrollToSection('about')}
+                className="text-eden-dark hover:text-eden-brown transition-colors"
+              >
+                소개
+              </button>
+              <button 
                 onClick={() => scrollToSection('order')}
                 className="text-eden-dark hover:text-eden-brown transition-colors"
               >
@@ -221,32 +207,10 @@ export default function Home() {
 
 
           <div className="text-center mb-6 md:mb-12">
-            <h2 
-              className={`font-bold mb-4 md:mb-6 leading-tight max-w-4xl mx-auto whitespace-pre-line ${
-                dashboardContent.mainTitleSize || 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'
-              } ${
-                dashboardContent.mainTitleAlign || 'text-center'
-              } ${
-                dashboardContent.mainTitleFont || 'font-korean'
-              }`}
-              style={{ 
-                color: dashboardContent.mainTitleColor || '#8B4513' 
-              }}
-            >
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-eden-brown mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto whitespace-pre-line">
               {dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}
             </h2>
-            <p 
-              className={`mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line ${
-                dashboardContent.mainDescriptionSize || 'text-sm sm:text-base md:text-lg'
-              } ${
-                dashboardContent.mainDescriptionAlign || 'text-center'
-              } ${
-                dashboardContent.mainDescriptionFont || 'font-korean'
-              }`}
-              style={{
-                color: dashboardContent.mainDescriptionColor || '#6b7280'
-              }}
-            >
+            <p className="text-sm sm:text-base md:text-lg text-eden-dark mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line">
               {dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^"}
             </p>
           </div>
@@ -329,41 +293,6 @@ export default function Home() {
 
         </div>
       </section>
-
-      {/* 안내사항 팝업 */}
-      <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
-        <DialogContent className="sm:max-w-md mx-4">
-          <DialogHeader className="pb-4">
-            {dashboardContent.popupTitle && (
-              <DialogTitle className="text-lg font-bold text-eden-brown text-center">
-                {dashboardContent.popupTitle}
-              </DialogTitle>
-            )}
-          </DialogHeader>
-          <div className="space-y-4">
-            {dashboardContent.popupContent && (
-              <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                {dashboardContent.popupContent}
-              </div>
-            )}
-            <div className="flex justify-center gap-3 pt-4">
-              <Button 
-                onClick={() => setIsPopupOpen(false)}
-                className="bg-eden-sage hover:bg-eden-sage/90 text-white px-6 py-2 rounded-lg"
-              >
-                {dashboardContent.popupButtonText || "확인"}
-              </Button>
-              <Button 
-                onClick={handleDontShowAgain}
-                variant="outline"
-                className="border-gray-300 text-gray-600 hover:bg-gray-50 px-4 py-2 rounded-lg"
-              >
-                더 이상 보지 않기
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

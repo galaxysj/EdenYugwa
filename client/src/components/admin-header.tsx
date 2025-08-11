@@ -26,7 +26,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <h1 className="admin-text-xs font-semibold text-gray-900 truncate">
+            <h1 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate">
               관리자 패널
             </h1>
           </div>
@@ -66,20 +66,20 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
         <div className="hidden md:flex justify-between items-center py-4 border-b border-gray-100">
           <div className="flex items-center space-x-4">
             <Link href="/">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 admin-text-xs">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 홈으로
               </Button>
             </Link>
             <div className="h-6 w-px bg-gray-200"></div>
-            <h1 className="admin-text font-semibold text-gray-900 flex items-center">
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center">
               <Settings className="h-5 w-5 mr-2 text-gray-600" />
               관리자 패널
             </h1>
           </div>
           <div className="flex items-center space-x-2">
             <Link href="/security-settings">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 admin-text-xs">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2">
                 <Shield className="h-4 w-4 mr-2" />
                 보안 설정
               </Button>
@@ -99,7 +99,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 }
               }}
               variant="outline"
-              className="text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50 admin-text-xs"
+              className="text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-50"
             >
               <LogOut className="h-4 w-4 mr-2" />
               로그아웃
@@ -110,7 +110,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
         {/* 모바일 드롭다운 메뉴 */}
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-100 py-3 space-y-2">
-            {(location === '/admin' || location === '/admin-settings') && setActiveTab && (
+            {location === '/admin' && setActiveTab && (
               <>
                 <Button 
                   onClick={() => {
@@ -119,7 +119,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'revenue' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -135,7 +135,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'orders' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -151,7 +151,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'customers' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -167,7 +167,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'members' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -184,7 +184,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'settings' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -200,7 +200,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'content' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -216,7 +216,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   }}
                   variant="ghost" 
                   size="sm"
-                  className={`w-full justify-start admin-text-xs ${
+                  className={`w-full justify-start text-sm ${
                     activeTab === 'trash' 
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -234,7 +234,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="ghost" 
                 size="sm"
-                className="w-full justify-start admin-text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                className="w-full justify-start text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               >
                 <Shield className="h-4 w-4 mr-2" />
                 보안 설정
@@ -254,7 +254,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 }}
                 variant="ghost" 
                 size="sm"
-                className="w-full justify-start admin-text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                className="w-full justify-start text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               >
                 <Download className="h-4 w-4 mr-2" />
                 엑셀 다운로드
@@ -268,50 +268,50 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
         )}
 
         {/* 데스크톱 네비게이션 메뉴 */}
-        <div className="hidden sm:block py-3">
+        <div className="hidden md:block py-3">
           <div className="flex items-center justify-between">
             {/* 메인 메뉴 */}
             <div className="flex items-center space-x-1">
               {/* 관리자 페이지 메뉴 */}
-              {(location === '/admin' || location === '/admin-settings') && setActiveTab && (
+              {location === '/admin' && setActiveTab && (
                 <>
                   <Button 
                     onClick={() => setActiveTab('revenue')}
                     variant="ghost" 
                     size="sm"
-                    className={`px-2 lg:px-4 py-1 lg:py-2 rounded-md font-medium transition-colors admin-menu-text ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'revenue' 
                         ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    <DollarSign className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                    <DollarSign className="h-4 w-4 mr-2" />
                     매출관리
                   </Button>
                   <Button 
                     onClick={() => setActiveTab('customers')}
                     variant="ghost" 
                     size="sm"
-                    className={`px-2 lg:px-4 py-1 lg:py-2 rounded-md font-medium transition-colors admin-text-xs ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'customers'
                         ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    <Users className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                    <Users className="h-4 w-4 mr-2" />
                     고객관리
                   </Button>
                   <Button 
                     onClick={() => setActiveTab('members')}
                     variant="ghost" 
                     size="sm"
-                    className={`px-2 lg:px-4 py-1 lg:py-2 rounded-md font-medium transition-colors admin-menu-text ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'members'
                         ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    <Users className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                    <Users className="h-4 w-4 mr-2" />
                     회원관리
                   </Button>
 
@@ -325,26 +325,26 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     onClick={() => setActiveTab('orders')}
                     variant="ghost" 
                     size="sm"
-                    className={`px-2 lg:px-4 py-1 lg:py-2 rounded-md font-medium transition-colors admin-menu-text ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'orders'
                         ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    <Package className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                    <Package className="h-4 w-4 mr-2" />
                     주문관리
                   </Button>
                   <Button 
                     onClick={() => setActiveTab('customers')}
                     variant="ghost" 
                     size="sm"
-                    className={`px-2 lg:px-4 py-1 lg:py-2 rounded-md font-medium transition-colors admin-menu-text ${
+                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
                       activeTab === 'customers'
                         ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    <Users className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                    <Users className="h-4 w-4 mr-2" />
                     고객관리
                   </Button>
                 </>
@@ -355,9 +355,9 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="bg-gray-100 text-gray-900 border border-gray-300 px-2 lg:px-4 py-1 lg:py-2 rounded-md font-medium admin-menu-text"
+                  className="bg-gray-100 text-gray-900 border border-gray-300 px-4 py-2 rounded-md font-medium"
                 >
-                  <Cog className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                  <Cog className="h-4 w-4 mr-2" />
                   설정
                 </Button>
               )}
@@ -371,9 +371,9 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-2 lg:px-3 py-1 lg:py-2 admin-menu-text"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
                     >
-                      <Cog className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      <Cog className="h-4 w-4 mr-2" />
                       설정
                     </Button>
                   </Link>
@@ -382,9 +382,9 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                       onClick={() => setActiveTab('content')}
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-2 lg:px-3 py-1 lg:py-2 admin-menu-text"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
                     >
-                      <Edit className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      <Edit className="h-4 w-4 mr-2" />
                       콘텐츠
                     </Button>
                   )}
@@ -393,9 +393,9 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                       onClick={() => setActiveTab('trash')}
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-2 lg:px-3 py-1 lg:py-2 admin-menu-text"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
                     >
-                      <Trash2 className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      <Trash2 className="h-4 w-4 mr-2" />
                       휴지통
                     </Button>
                   )}
@@ -406,9 +406,9 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                       onClick={handleExcelDownload}
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-2 lg:px-3 py-1 lg:py-2 admin-menu-text"
+                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
                     >
-                      <Download className="h-3 w-3 lg:h-4 lg:w-4 mr-1 lg:mr-2" />
+                      <Download className="h-4 w-4 mr-2" />
                       엑셀
                     </Button>
                   )}
@@ -422,7 +422,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`h-6 lg:h-7 px-2 lg:px-3 admin-menu-text font-medium transition-all ${
+                    className={`h-7 px-3 text-xs font-medium transition-all ${
                       location === '/admin' 
                         ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
                         : 'text-gray-600 hover:text-gray-900'
@@ -435,7 +435,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`h-6 lg:h-7 px-2 lg:px-3 admin-menu-text font-medium transition-all ${
+                    className={`h-7 px-3 text-xs font-medium transition-all ${
                       location === '/manager' 
                         ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
                         : 'text-gray-600 hover:text-gray-900'

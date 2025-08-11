@@ -199,12 +199,12 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                       <table className="w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
-                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">고객정보</th>
-                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">상품</th>
-                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">금액</th>
-                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">상태</th>
-                            <th className="px-6 py-3 text-left admin-text-xxs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">고객정보</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">금액</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상태</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -212,25 +212,25 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                             const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
                             return (
                               <tr key={order.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap admin-text-xxs font-medium text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                   #{order.orderNumber}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="admin-text-xxs font-medium text-gray-900">{order.customerName}</div>
-                                  <div className="admin-text-xxs text-gray-500">{order.customerPhone}</div>
-                                  <div className="admin-text-xxs text-gray-500 truncate max-w-xs">
+                                  <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
+                                  <div className="text-sm text-gray-500">{order.customerPhone}</div>
+                                  <div className="text-sm text-gray-500 truncate max-w-xs">
                                     {order.address1} {order.address2}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="admin-text-xxs text-gray-900">
+                                  <div className="text-sm text-gray-900">
                                     {order.boxSize === 'small' ? '소박스' : '대박스'} × {order.quantity}
                                   </div>
-                                  <div className="admin-text-xxs text-gray-500">
+                                  <div className="text-sm text-gray-500">
                                     {order.hasWrapping === 'yes' ? '보자기 포장' : '보자기 없음'}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap admin-text-xxs text-gray-900">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {formatPrice(order.totalAmount)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -250,7 +250,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                     </SelectContent>
                                   </Select>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap admin-text-xxs font-medium space-x-2">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                                   <Button
                                     size="sm"
                                     onClick={() => handleSendSMS(order)}

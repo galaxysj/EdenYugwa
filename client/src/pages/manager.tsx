@@ -58,7 +58,6 @@ export default function ManagerDashboard() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [, setLocation] = useLocation();
 
   // 상태 관리
   const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
@@ -454,28 +453,17 @@ export default function ManagerDashboard() {
         passwordChangeDialog={<></>}
       />
       <div className="container mx-auto p-4 space-y-6">
-        {/* 뒤로가기 버튼 */}
-        <div className="flex justify-end mb-4">
-          <Button 
-            variant="outline" 
-            onClick={() => setLocation('/')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            뒤로가기
-          </Button>
-        </div>
         {currentPage === "orders" && (
           <>
             {/* 주문 목록 */}
             <Tabs defaultValue="전체보기" className="space-y-4">
               <div className="flex items-center justify-between">
                 <TabsList>
-                  <TabsTrigger value="전체보기" className="tab-responsive-text">전체보기 ({filteredOrders.length})</TabsTrigger>
-                  <TabsTrigger value="발송처리대기" className="tab-responsive-text">
+                  <TabsTrigger value="전체보기">전체보기 ({filteredOrders.length})</TabsTrigger>
+                  <TabsTrigger value="발송처리대기">
                     발송처리대기 ({filteredOrders.filter(o => !o.sellerShipped).length})
                   </TabsTrigger>
-                  <TabsTrigger value="매니저발송완료" className="tab-responsive-text">
+                  <TabsTrigger value="매니저발송완료">
                     매니저발송완료 ({filteredOrders.filter(o => o.sellerShipped).length})
                   </TabsTrigger>
                 </TabsList>
@@ -745,8 +733,8 @@ export default function ManagerDashboard() {
                     </div>
                   </div>
                   {/* 데스크탑 테이블 뷰 */}
-                  <div className="hidden md:block manager-table-container">
-                    <table className="w-full manager-table order-history-table completed-orders-table">
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full manager-table">
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
                           <th className="text-left p-4 font-semibold text-gray-800 w-12">
@@ -1861,12 +1849,12 @@ export default function ManagerDashboard() {
                           </div>
 
                           {/* 중간: 주문내역 */}
-                          <div className="mb-2 order-details-cell">
+                          <div className="mb-2">
                             <div className="text-xs text-gray-700 space-y-0.5 mb-2">
-                              {order.smallBoxQuantity > 0 && <div className="order-details-item">{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
-                              {order.largeBoxQuantity > 0 && <div className="order-details-item">{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
+                              {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
+                              {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
                               {renderDynamicProducts(order)}
-                              {order.wrappingQuantity > 0 && <div className="order-details-item">{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
+                              {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
                             </div>
                             <div className="flex items-center gap-2 text-xs">
                               <span className={`px-2 py-0.5 rounded ${

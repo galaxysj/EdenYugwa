@@ -15,8 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import { type InsertOrder } from "@shared/schema";
-import { Loader2, Package, MapPin, User, Phone, Calendar, Gift, Lock, ArrowLeft } from "lucide-react";
-import { useLocation } from "wouter";
+import { Loader2, Package, MapPin, User, Phone, Calendar, Gift, Lock } from "lucide-react";
 
 // 전화번호 자동 포맷팅 함수
 const formatPhoneNumber = (value: string) => {
@@ -62,7 +61,6 @@ type PublicOrderForm = z.infer<typeof publicOrderSchema>;
 
 export default function PublicOrder() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -261,18 +259,6 @@ export default function PublicOrder() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-eden-cream via-white to-eden-cream/30 py-8">
       <div className="max-w-2xl mx-auto p-6">
-        {/* 뒤로가기 버튼 */}
-        <div className="flex justify-start mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => setLocation('/')}
-            className="text-eden-brown hover:text-eden-dark hover:bg-eden-cream/50"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            뒤로가기
-          </Button>
-        </div>
-        
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-korean font-bold text-eden-brown mb-2">
