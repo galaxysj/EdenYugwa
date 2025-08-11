@@ -816,7 +816,7 @@ export default function ManagerDashboard() {
                           <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문번호</th>
                           <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[90px]">예약발송일</th>
                           <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[90px]">주문자</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">주문내역</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">주문내역</th>
                           <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">연락처</th>
                           <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">배송지</th>
                           <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">입금상태</th>
@@ -1052,17 +1052,36 @@ export default function ManagerDashboard() {
                               <div className="text-sm"><strong>연락처:</strong> {order.customerPhone}</div>
                               <div className="text-sm">
                                 <strong>주문내역:</strong>
-                                <div className="mt-1">
+                                <div className="mt-1 space-y-1">
                                   {order.smallBoxQuantity > 0 && (
-                                    <div>• {getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
+                                    <div className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                      {getProductName(0, '한과1호')} × {order.smallBoxQuantity}개
+                                    </div>
                                   )}
                                   {order.largeBoxQuantity > 0 && (
-                                    <div>• {getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
+                                    <div className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                      {getProductName(1, '한과2호')} × {order.largeBoxQuantity}개
+                                    </div>
                                   )}
                                   {order.wrappingQuantity > 0 && (
-                                    <div>• {getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
+                                    <div className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                      {getProductName(2, '보자기')} × {order.wrappingQuantity}개
+                                    </div>
                                   )}
-                                  {renderDynamicProducts(order)}
+                                  {/* 동적 상품들도 개별 줄로 표시 */}
+                                  {order.dynamicQuantities && typeof order.dynamicQuantities === 'object' && 
+                                    Object.entries(order.dynamicQuantities).map(([index, quantity]) => {
+                                      const productIndex = parseInt(index);
+                                      if (quantity > 0 && productNames && productNames[productIndex]) {
+                                        return (
+                                          <div key={index} className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                            {productNames[productIndex].name} × {quantity}개
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    })
+                                  }
                                 </div>
                               </div>
                               <div className="text-sm"><strong>금액:</strong> {(order.totalAmount || 0).toLocaleString()}원</div>
