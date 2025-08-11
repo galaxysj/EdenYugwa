@@ -232,6 +232,89 @@ export default function ManagerDashboard() {
     return true;
   });
 
+  // 주문을 상품별로 분리하는 함수
+  const expandOrdersToProducts = (orders: Order[]) => {
+    const expandedItems: Array<{
+      orderId: number;
+      order: Order;
+      productName: string;
+      quantity: number;
+      productIndex: number;
+      isFirst: boolean;
+      rowSpan: number;
+    }> = [];
+
+    orders.forEach(order => {
+      const products: Array<{ name: string; quantity: number; index: number }> = [];
+
+      // 기본 상품들 추가
+      if (order.smallBoxQuantity > 0) {
+        products.push({
+          name: getProductName(0, '한과1호'),
+          quantity: order.smallBoxQuantity,
+          index: 0
+        });
+      }
+      if (order.largeBoxQuantity > 0) {
+        products.push({
+          name: getProductName(1, '한과2호'),
+          quantity: order.largeBoxQuantity,
+          index: 1
+        });
+      }
+      if (order.wrappingQuantity > 0) {
+        products.push({
+          name: getProductName(2, '보자기'),
+          quantity: order.wrappingQuantity,
+          index: 2
+        });
+      }
+
+      // 동적 상품들 추가
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          
+          Object.entries(dynamicQty || {}).forEach(([index, quantity]: [string, any]) => {
+            const productIndex = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0 && productNames && productNames[productIndex]) {
+              products.push({
+                name: productNames[productIndex].name,
+                quantity: qty,
+                index: productIndex
+              });
+            }
+          });
+        } catch (error) {
+          console.error('Dynamic product quantities parse error:', error);
+        }
+      }
+
+      // 상품이 있으면 각각을 별도 행으로 추가
+      if (products.length > 0) {
+        const rowSpan = products.length;
+        products.forEach((product, index) => {
+          expandedItems.push({
+            orderId: order.id,
+            order,
+            productName: product.name,
+            quantity: product.quantity,
+            productIndex: product.index,
+            isFirst: index === 0,
+            rowSpan: rowSpan
+          });
+        });
+      }
+    });
+
+    return expandedItems;
+  };
+
+  const expandedOrderItems = expandOrdersToProducts(filteredOrders);
+
   // SMS 일괄 발송 mutation
   const sendBulkSMSMutation = useMutation({
     mutationFn: async ({ phones, message }: { phones: string[]; message: string }) => {
@@ -712,7 +795,7 @@ export default function ManagerDashboard() {
                 <div className="bg-white border rounded-lg">
                   <div className="p-2 md:p-4 border-b">
                     <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
-                      <h2 className="text-sm md:text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개)</h2>
+                      <h2 className="text-sm md:text-lg font-semibold">주문 목록 (총 {filteredOrders.length}개 주문, {expandedOrderItems.length}개 상품)</h2>
                       <div className="flex items-center gap-2">
                         {/* 뷰 모드 전환 버튼 */}
                         <div className="flex border rounded-lg p-1">
@@ -826,199 +909,207 @@ export default function ManagerDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredOrders.map((order) => (
-                          <tr key={order.id} className={`border-b border-gray-200 hover:bg-gray-50 ${
-                            order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
+                        {expandedOrderItems.map((item, index) => (
+                          <tr key={`${item.orderId}-${item.productIndex}-${index}`} className={`border-b border-gray-200 hover:bg-gray-50 ${
+                            item.order.paymentStatus !== 'confirmed' ? 'bg-red-50' : ''
                           }`}>
-                            <td className="p-3">
-                              <input
-                                type="checkbox"
-                                checked={selectedOrders.has(order.id)}
-                                onChange={(e) => {
-                                  const newSet = new Set(selectedOrders);
-                                  if (e.target.checked) {
-                                    newSet.add(order.id);
-                                  } else {
-                                    newSet.delete(order.id);
-                                  }
-                                  setSelectedOrders(newSet);
-                                }}
-                                className="rounded"
-                              />
-                            </td>
-                            <td className="py-4 px-4">
-                              <div className="font-semibold text-gray-900 text-xs">#{order.orderNumber}</div>
-                              <div className="text-sm text-gray-600">
-                                <div className="font-medium">{new Date(order.createdAt).toLocaleDateString('ko-KR')}</div>
-                                <div className="text-sm text-gray-500">{new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
-                              </div>
-                              {order.scheduledDate ? (
-                                <div 
-                                  className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200 mt-1"
-                                  title="클릭하여 예약발송일 수정"
-                                >
-                                  {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
+                            {/* 체크박스 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="p-3" rowSpan={item.rowSpan}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedOrders.has(item.orderId)}
+                                  onChange={(e) => {
+                                    const newSet = new Set(selectedOrders);
+                                    if (e.target.checked) {
+                                      newSet.add(item.orderId);
+                                    } else {
+                                      newSet.delete(item.orderId);
+                                    }
+                                    setSelectedOrders(newSet);
+                                  }}
+                                  className="rounded"
+                                />
+                              </td>
+                            )}
+                            
+                            {/* 주문번호 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-4 px-4" rowSpan={item.rowSpan}>
+                                <div className="font-semibold text-gray-900 text-xs">#{item.order.orderNumber}</div>
+                                <div className="text-sm text-gray-600">
+                                  <div className="font-medium">{new Date(item.order.createdAt).toLocaleDateString('ko-KR')}</div>
+                                  <div className="text-sm text-gray-500">{new Date(item.order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</div>
                                 </div>
-                              ) : null}
-                            </td>
-                            <td className="py-2 px-2">
-                              {order.scheduledDate ? (
-                                <div 
-                                  className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
-                                  title="클릭하여 예약발송일 수정"
-                                >
-                                  {new Date(order.scheduledDate).toLocaleDateString('ko-KR')}
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-400">-</span>
-                              )}
-                            </td>
-                            <td className="py-2 px-2">
-                              <div className="font-medium text-gray-900 text-xs">{order.customerName}</div>
-                              {order.recipientName && order.recipientName !== order.customerName && (
-                                <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
-                              )}
-                            </td>
-                            <td className="py-2 px-2 min-w-[200px]">
-                              <div className="text-xs space-y-1">
-                                {order.smallBoxQuantity > 0 && (
-                                  <div className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</div>
-                                )}
-                                {order.largeBoxQuantity > 0 && (
-                                  <div className="whitespace-nowrap">{getProductName(1, '한과2호')} × {order.largeBoxQuantity}개</div>
-                                )}
-                                {order.wrappingQuantity > 0 && (
-                                  <div className="whitespace-nowrap">{getProductName(2, '보자기')} × {order.wrappingQuantity}개</div>
-                                )}
-                                {/* 동적 상품들도 개별 줄로 표시 */}
-                                {order.dynamicProductQuantities && (() => {
-                                  try {
-                                    const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
-                                      ? JSON.parse(order.dynamicProductQuantities) 
-                                      : order.dynamicProductQuantities;
-                                    
-                                    return Object.entries(dynamicQty || {}).map(([index, quantity]: [string, any]) => {
-                                      const productIndex = parseInt(index);
-                                      const qty = Number(quantity);
-                                      if (qty > 0 && productNames && productNames[productIndex]) {
-                                        return (
-                                          <div key={index} className="whitespace-nowrap">
-                                            {productNames[productIndex].name} × {qty}개
-                                          </div>
-                                        );
-                                      }
-                                      return null;
-                                    }).filter(Boolean);
-                                  } catch (error) {
-                                    console.error('Dynamic product quantities parse error:', error);
-                                    return null;
-                                  }
-                                })()}
-                              </div>
-                            </td>
-                            <td className="py-2 px-2">
-                              <div className="text-xs text-gray-900">{order.customerPhone}</div>
-                            </td>
-                            <td className="py-2 px-2 max-w-xs">
-                              <div>
-                                <div 
-                                  className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
-                                  title="클릭하여 전체 주소 보기"
-                                >
-                                  {order.address1.length > 15 ? `${order.address1.substring(0, 15)}...` : order.address1}
-                                </div>
-                                {checkRemoteArea(order.address1) && (
-                                  <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2 px-2 text-center">
-                              <div className="text-xs">
-                                {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? (
-                                  <span className="text-yellow-600 font-medium">부분결제</span>
-                                ) : order.paymentStatus === 'confirmed' ? (
-                                  <span className="text-green-600 font-medium">입금완료</span>
-                                ) : order.paymentStatus === 'partial' ? (
-                                  <span className="text-yellow-600 font-medium">부분결제</span>
-                                ) : order.paymentStatus === 'refunded' ? (
-                                  <span className="text-red-600 font-medium">환불</span>
-                                ) : (
-                                  <span className="text-red-600 font-medium">입금대기</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-2 px-2 text-center">
-                              <Select
-                                value={order.status}
-                                onValueChange={(value) => updateOrderStatusMutation.mutate({ id: order.id, status: value })}
-                                disabled={updateOrderStatusMutation.isPending}
-                              >
-                                <SelectTrigger className="w-28 h-6 text-xs">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="scheduled">
-                                    <div className="flex items-center space-x-1">
-                                      <Calendar className="h-3 w-3 text-blue-500" />
-                                      <span>발송주문</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="delivered">
-                                    <div className="flex items-center space-x-1">
-                                      <CheckCircle className="h-3 w-3 text-green-500" />
-                                      <span>발송완료</span>
-                                    </div>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </td>
-                            <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col items-center gap-2">
-                                {order.sellerShipped ? (
-                                  <div className="text-center">
-                                    <div 
-                                      className="text-green-600 font-medium text-xs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
-                                      onClick={() => updateSellerShippedMutation.mutate({ 
-                                        id: order.id, 
-                                        sellerShipped: false 
-                                      })}
-                                      title="클릭하여 발송 상태 취소"
-                                    >
-                                      매니저발송완료
-                                    </div>
-                                    <div className="text-gray-500 mt-1 text-xs">
-                                      {order.sellerShippedDate ? 
-                                        new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) :
-                                        new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
-                                      }
-                                    </div>
+                                {item.order.scheduledDate ? (
+                                  <div 
+                                    className="text-red-600 font-bold text-sm cursor-pointer hover:bg-red-50 px-2 py-1 rounded border border-transparent hover:border-red-200 mt-1"
+                                    title="클릭하여 예약발송일 수정"
+                                  >
+                                    {new Date(item.order.scheduledDate).toLocaleDateString('ko-KR')}
+                                  </div>
+                                ) : null}
+                              </td>
+                            )}
+                            
+                            {/* 예약발송일 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2" rowSpan={item.rowSpan}>
+                                {item.order.scheduledDate ? (
+                                  <div 
+                                    className="text-xs text-blue-600 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200"
+                                    title="클릭하여 예약발송일 수정"
+                                  >
+                                    {new Date(item.order.scheduledDate).toLocaleDateString('ko-KR')}
                                   </div>
                                 ) : (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => updateSellerShippedMutation.mutate({ 
-                                      id: order.id, 
-                                      sellerShipped: true 
-                                    })}
-                                    className="text-xs px-2 py-1 h-7"
-                                  >
-                                    발송처리
-                                  </Button>
+                                  <span className="text-xs text-gray-400">-</span>
                                 )}
+                              </td>
+                            )}
+                            
+                            {/* 주문자 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2" rowSpan={item.rowSpan}>
+                                <div className="font-medium text-gray-900 text-xs">{item.order.customerName}</div>
+                                {item.order.recipientName && item.order.recipientName !== item.order.customerName && (
+                                  <div className="text-xs text-blue-600">받는분: {item.order.recipientName}</div>
+                                )}
+                              </td>
+                            )}
+                            
+                            {/* 주문내역 - 각 상품마다 개별 행으로 표시 */}
+                            <td className="py-2 px-2 min-w-[200px]">
+                              <div className="text-xs">
+                                <div className="whitespace-nowrap font-medium">{item.productName} × {item.quantity}개</div>
                               </div>
                             </td>
-                            <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col gap-1">
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                    <MessageSquare className="h-3 w-3" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
-
-                              </div>
-                            </td>
+                            
+                            {/* 연락처 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2" rowSpan={item.rowSpan}>
+                                <div className="text-xs text-gray-900">{item.order.customerPhone}</div>
+                              </td>
+                            )}
+                            
+                            {/* 배송지 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2 max-w-xs" rowSpan={item.rowSpan}>
+                                <div>
+                                  <div 
+                                    className="text-xs text-gray-900 cursor-pointer hover:bg-blue-50 px-1 py-1 rounded border border-transparent hover:border-blue-200 truncate"
+                                    title="클릭하여 전체 주소 보기"
+                                  >
+                                    {item.order.address1.length > 15 ? `${item.order.address1.substring(0, 15)}...` : item.order.address1}
+                                  </div>
+                                  {checkRemoteArea(item.order.address1) && (
+                                    <div className="text-xs text-red-600 font-bold mt-1">배송비추가</div>
+                                  )}
+                                </div>
+                              </td>
+                            )}
+                            
+                            {/* 입금상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2 text-center" rowSpan={item.rowSpan}>
+                                <div className="text-xs">
+                                  {item.order.actualPaidAmount && item.order.actualPaidAmount < item.order.totalAmount && !item.order.discountAmount && item.order.paymentStatus === 'confirmed' ? (
+                                    <span className="text-yellow-600 font-medium">부분결제</span>
+                                  ) : item.order.paymentStatus === 'confirmed' ? (
+                                    <span className="text-green-600 font-medium">입금완료</span>
+                                  ) : item.order.paymentStatus === 'partial' ? (
+                                    <span className="text-yellow-600 font-medium">부분결제</span>
+                                  ) : item.order.paymentStatus === 'refunded' ? (
+                                    <span className="text-red-600 font-medium">환불</span>
+                                  ) : (
+                                    <span className="text-red-600 font-medium">입금대기</span>
+                                  )}
+                                </div>
+                              </td>
+                            )}
+                            
+                            {/* 주문상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2 text-center" rowSpan={item.rowSpan}>
+                                <Select
+                                  value={item.order.status}
+                                  onValueChange={(value) => updateOrderStatusMutation.mutate({ id: item.orderId, status: value })}
+                                  disabled={updateOrderStatusMutation.isPending}
+                                >
+                                  <SelectTrigger className="w-28 h-6 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="scheduled">
+                                      <div className="flex items-center space-x-1">
+                                        <Calendar className="h-3 w-3 text-blue-500" />
+                                        <span>발송주문</span>
+                                      </div>
+                                    </SelectItem>
+                                    <SelectItem value="delivered">
+                                      <div className="flex items-center space-x-1">
+                                        <CheckCircle className="h-3 w-3 text-green-500" />
+                                        <span>발송완료</span>
+                                      </div>
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            )}
+                            
+                            {/* 판매자발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2 text-center" rowSpan={item.rowSpan}>
+                                <div className="flex flex-col items-center gap-2">
+                                  {item.order.sellerShipped ? (
+                                    <div className="text-center">
+                                      <div 
+                                        className="text-green-600 font-medium text-xs cursor-pointer hover:bg-green-50 px-2 py-1 rounded border border-transparent hover:border-green-200"
+                                        onClick={() => updateSellerShippedMutation.mutate({ 
+                                          id: item.orderId, 
+                                          sellerShipped: false 
+                                        })}
+                                        title="클릭하여 발송 상태 취소"
+                                      >
+                                        매니저발송완료
+                                      </div>
+                                      <div className="text-gray-500 mt-1 text-xs">
+                                        {item.order.sellerShippedDate ? 
+                                          new Date(item.order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' }) :
+                                          new Date().toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+                                        }
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => updateSellerShippedMutation.mutate({ 
+                                        id: item.orderId, 
+                                        sellerShipped: true 
+                                      })}
+                                      className="text-xs px-2 py-1 h-7"
+                                    >
+                                      발송처리
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            )}
+                            
+                            {/* 작업 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                            {item.isFirst && (
+                              <td className="py-2 px-2 text-center" rowSpan={item.rowSpan}>
+                                <div className="flex flex-col gap-1">
+                                  <SmsDialog order={item.order}>
+                                    <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
+                                      <MessageSquare className="h-3 w-3" />
+                                      SMS
+                                    </Button>
+                                  </SmsDialog>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         ))}
                       </tbody>
