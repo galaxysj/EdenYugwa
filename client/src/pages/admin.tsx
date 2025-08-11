@@ -3794,42 +3794,6 @@ export default function Admin() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs p-1 h-7 w-full bg-blue-50 hover:bg-blue-100 border-blue-200"
-                            onClick={() => {
-                              // 예약 날짜 설정 기능
-                              console.log('예약 날짜 설정:', item.orderId);
-                            }}
-                          >
-                            예약
-                          </Button>
-                          
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs p-1 h-7 w-full bg-green-50 hover:bg-green-100 border-green-200"
-                            onClick={() => {
-                              // 배송 완료 기능 
-                              console.log('배송 완료:', item.orderId);
-                            }}
-                          >
-                            배송
-                          </Button>
-                          
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-xs p-1 h-7 w-full bg-orange-50 hover:bg-orange-100 border-orange-200"
-                            onClick={() => {
-                              // 판매자 발송 기능
-                              console.log('판매자 발송:', item.orderId);
-                            }}
-                          >
-                            발송
-                          </Button>
-                          
-                          <Button
-                            size="sm"
-                            variant="outline"
                             className="text-xs p-1 h-7 w-full"
                             onClick={() => {
                               // SMS 발송 기능
@@ -3839,19 +3803,17 @@ export default function Admin() {
                             SMS
                           </Button>
                           
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                // 휴지통으로 이동 기능
-                                console.log('휴지통으로 이동:', item.orderId);
-                              }}
-                              className="flex-1 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1 h-7"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              // 휴지통으로 이동 기능
+                              console.log('휴지통으로 이동:', item.orderId);
+                            }}
+                            className="w-full bg-gray-50 hover:bg-gray-100 border-gray-200 p-1 h-7"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </td>
                     )}
