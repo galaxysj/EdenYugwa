@@ -1205,11 +1205,46 @@ export default function ManagerDashboard() {
                                 </div>
                                 {/* 주문내역 */}
                                 <div className="mb-2 pt-2">
-                                  <div className="text-xs text-gray-700 mb-2 space-y-0.5">
-                                    {order.smallBoxQuantity > 0 && <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>}
-                                    {order.largeBoxQuantity > 0 && <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>}
-                                    {order.wrappingQuantity > 0 && <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>}
-                                    {renderDynamicProducts(order)}
+                                  <div className="text-xs text-gray-700 mb-2 space-y-1">
+                                    {order.smallBoxQuantity > 0 && (
+                                      <div className="bg-blue-50 px-2 py-1 rounded border-l-2 border-blue-300">
+                                        <span className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</span>
+                                      </div>
+                                    )}
+                                    {order.largeBoxQuantity > 0 && (
+                                      <div className="bg-green-50 px-2 py-1 rounded border-l-2 border-green-300">
+                                        <span className="whitespace-nowrap">{getProductName(1, '한과2호')} × {order.largeBoxQuantity}개</span>
+                                      </div>
+                                    )}
+                                    {order.wrappingQuantity > 0 && (
+                                      <div className="bg-purple-50 px-2 py-1 rounded border-l-2 border-purple-300">
+                                        <span className="whitespace-nowrap">{getProductName(2, '보자기')} × {order.wrappingQuantity}개</span>
+                                      </div>
+                                    )}
+                                    {/* 동적 상품들도 개별 줄로 표시 */}
+                                    {order.dynamicProductQuantities && (() => {
+                                      try {
+                                        const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                                          ? JSON.parse(order.dynamicProductQuantities) 
+                                          : order.dynamicProductQuantities;
+                                        
+                                        return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
+                                          const productIndex = parseInt(index);
+                                          const qty = Number(quantity);
+                                          if (qty > 0 && productNames && productNames[productIndex]) {
+                                            return (
+                                              <div key={index} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300">
+                                                <span className="whitespace-nowrap">{productNames[productIndex].name} × {qty}개</span>
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        }).filter(Boolean);
+                                      } catch (error) {
+                                        console.error('Dynamic product quantities parse error:', error);
+                                        return null;
+                                      }
+                                    })()}
                                   </div>
                                   
                                   {/* 입금상태와 주문상태 - 관리자와 동일한 표시 */}
