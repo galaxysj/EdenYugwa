@@ -83,7 +83,7 @@
 }
 
 .admin-table {
-  min-width: 1600px; /* 관리자 테이블은 더 넓게 */
+  min-width: 1400px; /* 관리자 테이블 너비 축소 */
 }
 
 .manager-table {
@@ -255,8 +255,8 @@
 }
 
 .admin-table .col-order-details {
-  width: 16%;
-  min-width: 160px;
+  width: 14%;
+  min-width: 140px;
 }
 
 .admin-table .col-phone {
