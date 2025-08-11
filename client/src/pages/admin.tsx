@@ -3637,7 +3637,7 @@ export default function Admin() {
                         <div className="flex items-center gap-2">
                           <StatusIcon className="h-4 w-4 text-gray-500" />
                           <span className="font-bold text-gray-900">#{item.order.orderNumber}</span>
-                          <span className="text-xs text-gray-500">{new Date(item.order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                          <span className="text-sm text-gray-500">{new Date(item.order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </td>
                     )}
@@ -3645,7 +3645,7 @@ export default function Admin() {
                     {/* 예약발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-scheduled-date" rowSpan={item.rowSpan}>
-                        <div className="text-xs">
+                        <div className="text-sm">
                           {item.order.scheduledDate ? (
                             <div className="text-blue-600 font-medium">
                               {new Date(item.order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
@@ -3673,21 +3673,21 @@ export default function Admin() {
                     
                     {/* 주문내역 - 각 상품마다 개별 행으로 표시 */}
                     <td className="col-order-details">
-                      <div className="text-xs text-gray-700 max-w-xs">
+                      <div className="text-sm text-gray-700 max-w-xs">
                         <div className="font-medium">{item.productName} × {item.quantity}개</div>
                       </div>
                     </td>
                     {/* 연락처 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-phone" rowSpan={item.rowSpan}>
-                        <div className="text-xs">{item.order.customerPhone}</div>
+                        <div className="text-sm">{item.order.customerPhone}</div>
                       </td>
                     )}
                     
                     {/* 배송주소 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-address" rowSpan={item.rowSpan}>
-                        <div className="text-xs max-w-xs">
+                        <div className="text-sm max-w-xs">
                           <div className={checkRemoteArea(item.order.address1) ? 'text-black' : 'text-gray-700'}>
                             [{item.order.zipCode}] {item.order.address1}
                             {checkRemoteArea(item.order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
@@ -3700,7 +3700,7 @@ export default function Admin() {
                     {/* 메모 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-address" rowSpan={item.rowSpan}>
-                        <div className="text-xs text-gray-600 max-w-xs truncate" title={item.order.specialRequests || ''}>
+                        <div className="text-sm text-gray-600 max-w-xs truncate" title={item.order.specialRequests || ''}>
                           {item.order.specialRequests || '-'}
                         </div>
                       </td>
@@ -3739,7 +3739,7 @@ export default function Admin() {
                     {/* 입금상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-status text-center" rowSpan={item.rowSpan}>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        <span className={`px-2 py-1 rounded text-sm font-medium ${
                           item.order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                           item.order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
                           item.order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
@@ -3756,7 +3756,7 @@ export default function Admin() {
                     {/* 주문상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-status text-center" rowSpan={item.rowSpan}>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        <span className={`px-2 py-1 rounded text-sm font-medium ${
                           item.order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           item.order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
                           item.order.status === 'delivered' ? 'bg-green-100 text-green-700' :
@@ -3770,7 +3770,7 @@ export default function Admin() {
                     {/* 판매자발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
                       <td className="col-status text-center" rowSpan={item.rowSpan}>
-                        <div className="text-xs">
+                        <div className="text-sm">
                           {item.order.sellerShipped ? (
                             <div className="text-green-600 font-medium">
                               완료
