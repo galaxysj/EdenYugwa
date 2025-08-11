@@ -1655,6 +1655,112 @@ export default function Admin() {
     }
   };
 
+  // 주문을 상품별로 분리하는 함수
+  const expandOrdersToProducts = (orders: Order[]) => {
+    // 동적 상품 이름 가져오기 함수
+    const getProductName = (index: number) => {
+      try {
+        const productNames = Array.isArray(dashboardContent.productNames) 
+          ? dashboardContent.productNames 
+          : JSON.parse(dashboardContent.productNames || '[]');
+        
+        if (productNames[index] && productNames[index].name) {
+          return productNames[index].name;
+        }
+        
+        // 기본값 반환
+        if (index === 0) return '한과1호';
+        if (index === 1) return '한과2호';
+        if (index === 2) return '보자기';
+        return `상품${index + 1}`;
+      } catch (error) {
+        console.error('상품명 파싱 오류:', error);
+        if (index === 0) return '한과1호';
+        if (index === 1) return '한과2호';
+        if (index === 2) return '보자기';
+        return `상품${index + 1}`;
+      }
+    };
+
+    const expandedItems: Array<{
+      orderId: number;
+      order: Order;
+      productName: string;
+      quantity: number;
+      productIndex: number;
+      isFirst: boolean;
+      rowSpan: number;
+    }> = [];
+
+    orders.forEach(order => {
+      const products: Array<{ name: string; quantity: number; index: number }> = [];
+
+      // 기본 상품들 추가
+      if (order.smallBoxQuantity > 0) {
+        products.push({
+          name: getProductName(0),
+          quantity: order.smallBoxQuantity,
+          index: 0
+        });
+      }
+      if (order.largeBoxQuantity > 0) {
+        products.push({
+          name: getProductName(1),
+          quantity: order.largeBoxQuantity,
+          index: 1
+        });
+      }
+      if (order.wrappingQuantity > 0) {
+        products.push({
+          name: getProductName(2),
+          quantity: order.wrappingQuantity,
+          index: 2
+        });
+      }
+
+      // 동적 상품들 추가
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          
+          Object.entries(dynamicQty || {}).forEach(([index, quantity]: [string, any]) => {
+            const productIndex = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0 && productIndex >= 3) {
+              products.push({
+                name: getProductName(productIndex),
+                quantity: qty,
+                index: productIndex
+              });
+            }
+          });
+        } catch (error) {
+          console.error('Dynamic product quantities parse error:', error);
+        }
+      }
+
+      // 상품이 있으면 각각을 별도 행으로 추가
+      if (products.length > 0) {
+        const rowSpan = products.length;
+        products.forEach((product, index) => {
+          expandedItems.push({
+            orderId: order.id,
+            order,
+            productName: product.name,
+            quantity: product.quantity,
+            productIndex: product.index,
+            isFirst: index === 0,
+            rowSpan: rowSpan
+          });
+        });
+      }
+    });
+
+    return expandedItems;
+  };
+
   // Excel export function for admin
   const exportToExcel = (ordersList: Order[], fileName: string) => {
     const excelData = ordersList.map(order => {
@@ -3489,6 +3595,9 @@ export default function Admin() {
       return details.length > 0 ? details.join(', ') : '주문상품 없음';
     };
 
+    // 주문을 상품별로 분리
+    const expandedOrderItems = expandOrdersToProducts(ordersList);
+
     return (
       <>
         {/* Desktop Table */}
@@ -3514,126 +3623,227 @@ export default function Admin() {
               </tr>
             </thead>
             <tbody>
-              {ordersList.map((order: Order) => {
-                const StatusIcon = statusIcons[order.status as keyof typeof statusIcons];
+              {expandedOrderItems.map((item, index) => {
+                const StatusIcon = statusIcons[item.order.status as keyof typeof statusIcons];
                 return (
-                  <tr key={order.id} className={`border-b border-gray-100 ${
-                    order.paymentStatus === 'pending' ? 'bg-red-100 hover:bg-red-100' : 
-                    order.status === 'seller_shipped' ? 'bg-blue-50 hover:bg-blue-100' : 
+                  <tr key={`${item.orderId}-${item.productIndex}-${index}`} className={`border-b border-gray-100 ${
+                    item.order.paymentStatus === 'pending' ? 'bg-red-100 hover:bg-red-100' : 
+                    item.order.status === 'seller_shipped' ? 'bg-blue-50 hover:bg-blue-100' : 
                     'hover:bg-gray-50'
                   }`}>
-                    <td className="col-order-number">
-                      <div className="flex items-center gap-2">
-                        <StatusIcon className="h-4 w-4 text-gray-500" />
-                        <span className="font-bold text-gray-900">#{order.orderNumber}</span>
-                        <span className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
-                      </div>
-                    </td>
-                    <td className="col-scheduled-date">
-                      <div className="text-xs">
-                        {order.scheduledDate ? (
-                          <div className="text-blue-600 font-medium">
-                            {new Date(order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">없음</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="col-customer-name">
-                      <div className="text-sm font-medium">{order.customerName}</div>
-                    </td>
-                    <td className="col-customer-name">
-                      <div className="text-sm">{order.depositorName || order.customerName}</div>
-                    </td>
+                    {/* 주문번호 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-order-number" rowSpan={item.rowSpan}>
+                        <div className="flex items-center gap-2">
+                          <StatusIcon className="h-4 w-4 text-gray-500" />
+                          <span className="font-bold text-gray-900">#{item.order.orderNumber}</span>
+                          <span className="text-xs text-gray-500">{new Date(item.order.createdAt).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 예약발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-scheduled-date" rowSpan={item.rowSpan}>
+                        <div className="text-xs">
+                          {item.order.scheduledDate ? (
+                            <div className="text-blue-600 font-medium">
+                              {new Date(item.order.scheduledDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">없음</span>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 주문자 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-customer-name" rowSpan={item.rowSpan}>
+                        <div className="text-sm font-medium">{item.order.customerName}</div>
+                      </td>
+                    )}
+                    
+                    {/* 예금자 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-customer-name" rowSpan={item.rowSpan}>
+                        <div className="text-sm">{item.order.depositorName || item.order.customerName}</div>
+                      </td>
+                    )}
+                    
+                    {/* 주문내역 - 각 상품마다 개별 행으로 표시 */}
                     <td className="col-order-details">
                       <div className="text-xs text-gray-700 max-w-xs">
-                        {renderOrderDetails(order)}
+                        <div className="font-medium">{item.productName} × {item.quantity}개</div>
                       </div>
                     </td>
-                    <td className="col-phone">
-                      <div className="text-xs">{order.customerPhone}</div>
-                    </td>
-                    <td className="col-address">
-                      <div className="text-xs max-w-xs">
-                        <div className={checkRemoteArea(order.address1) ? 'text-black' : 'text-gray-700'}>
-                          [{order.zipCode}] {order.address1}
-                          {checkRemoteArea(order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
-                        </div>
-                        {order.address2 && <div className="text-gray-600">{order.address2}</div>}
-                      </div>
-                    </td>
-                    <td className="col-address">
-                      <div className="text-xs text-gray-600 max-w-xs truncate" title={order.specialRequests || ''}>
-                        {order.specialRequests || '-'}
-                      </div>
-                    </td>
-                    <td className="col-amount text-center">
-                      <div className="text-sm font-bold text-blue-700">{formatPrice(order.totalAmount)}</div>
-                    </td>
-                    <td className="col-amount text-center">
-                      <div className="text-sm font-bold text-green-700">
-                        {formatPrice(order.actualPaidAmount || order.totalAmount)}
-                      </div>
-                    </td>
-                    <td className="col-amount text-center">
-                      <div className="text-sm font-bold text-red-700">
-                        {(() => {
-                          const discountAmount = order.discountAmount || 0;
-                          const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
-                          const unpaidAmount = order.totalAmount - actualPaidAmount - discountAmount;
-                          return unpaidAmount > 0 ? formatPrice(unpaidAmount) : (discountAmount > 0 ? formatPrice(discountAmount) : '0원');
-                        })()}
-                      </div>
-                    </td>
-                    <td className="col-status text-center">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
-                        order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
-                        order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
-                        'bg-red-100 text-red-700'
-                      }`}>
-                        {order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed' ? '부분결제' :
-                         order.paymentStatus === 'confirmed' ? '입금완료' :
-                         order.paymentStatus === 'partial' ? '부분결제' :
-                         order.paymentStatus === 'refunded' ? '환불' : '미입금'}
-                      </span>
-                    </td>
-                    <td className="col-status text-center">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-                        order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {statusLabels[order.status as keyof typeof statusLabels]}
-                      </span>
-                    </td>
-                    <td className="col-status text-center">
-                      <div className="text-xs">
-                        {order.sellerShipped ? (
-                          <div className="text-green-600 font-medium">
-                            완료
-                            {order.sellerShippedDate && (
-                              <div className="text-blue-600">
-                                {new Date(order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
-                              </div>
-                            )}
+                    {/* 연락처 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-phone" rowSpan={item.rowSpan}>
+                        <div className="text-xs">{item.order.customerPhone}</div>
+                      </td>
+                    )}
+                    
+                    {/* 배송주소 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-address" rowSpan={item.rowSpan}>
+                        <div className="text-xs max-w-xs">
+                          <div className={checkRemoteArea(item.order.address1) ? 'text-black' : 'text-gray-700'}>
+                            [{item.order.zipCode}] {item.order.address1}
+                            {checkRemoteArea(item.order.address1) && <span className="text-red-600 font-bold ml-1">배송비추가</span>}
                           </div>
-                        ) : (
-                          <div className="text-gray-400">미처리</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="col-actions text-center">
-                      <div className="flex flex-col gap-1 items-center">
-                        <SmsDialog order={order}>
-                          <Button size="sm" variant="outline" className="h-6 text-xs px-2">
-                            SMS
-                          </Button>
-                        </SmsDialog>
-                      </div>
-                    </td>
+                          {item.order.address2 && <div className="text-gray-600">{item.order.address2}</div>}
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 메모 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-address" rowSpan={item.rowSpan}>
+                        <div className="text-xs text-gray-600 max-w-xs truncate" title={item.order.specialRequests || ''}>
+                          {item.order.specialRequests || '-'}
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 매출 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-amount text-center" rowSpan={item.rowSpan}>
+                        <div className="text-sm font-bold text-blue-700">{formatPrice(item.order.totalAmount)}</div>
+                      </td>
+                    )}
+                    
+                    {/* 실입금 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-amount text-center" rowSpan={item.rowSpan}>
+                        <div className="text-sm font-bold text-green-700">
+                          {formatPrice(item.order.actualPaidAmount || item.order.totalAmount)}
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 할인/미입금 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-amount text-center" rowSpan={item.rowSpan}>
+                        <div className="text-sm font-bold text-red-700">
+                          {(() => {
+                            const discountAmount = item.order.discountAmount || 0;
+                            const actualPaidAmount = item.order.actualPaidAmount || item.order.totalAmount;
+                            const unpaidAmount = item.order.totalAmount - actualPaidAmount - discountAmount;
+                            return unpaidAmount > 0 ? formatPrice(unpaidAmount) : (discountAmount > 0 ? formatPrice(discountAmount) : '0원');
+                          })()}
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 입금상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-status text-center" rowSpan={item.rowSpan}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          item.order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
+                          item.order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
+                          item.order.paymentStatus === 'refunded' ? 'bg-red-100 text-red-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {item.order.actualPaidAmount && item.order.actualPaidAmount < item.order.totalAmount && !item.order.discountAmount && item.order.paymentStatus === 'confirmed' ? '부분결제' :
+                           item.order.paymentStatus === 'confirmed' ? '입금완료' :
+                           item.order.paymentStatus === 'partial' ? '부분결제' :
+                           item.order.paymentStatus === 'refunded' ? '환불' : '미입금'}
+                        </span>
+                      </td>
+                    )}
+                    
+                    {/* 주문상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-status text-center" rowSpan={item.rowSpan}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          item.order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          item.order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
+                          item.order.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {statusLabels[item.order.status as keyof typeof statusLabels]}
+                        </span>
+                      </td>
+                    )}
+                    
+                    {/* 판매자발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-status text-center" rowSpan={item.rowSpan}>
+                        <div className="text-xs">
+                          {item.order.sellerShipped ? (
+                            <div className="text-green-600 font-medium">
+                              완료
+                              {item.order.sellerShippedDate && (
+                                <div className="text-blue-600">
+                                  {new Date(item.order.sellerShippedDate).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">대기</span>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                    
+                    {/* 관리 - 첫 번째 상품에만 표시, rowspan 적용 */}
+                    {item.isFirst && (
+                      <td className="col-actions text-center" rowSpan={item.rowSpan}>
+                        <div className="flex flex-col gap-1">
+                          <ScheduledDatePicker orderId={item.orderId}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs p-1 h-7 w-full bg-blue-50 hover:bg-blue-100 border-blue-200"
+                            >
+                              예약
+                            </Button>
+                          </ScheduledDatePicker>
+                          
+                          <DeliveredDatePicker orderId={item.orderId}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs p-1 h-7 w-full bg-green-50 hover:bg-green-100 border-green-200"
+                            >
+                              배송
+                            </Button>
+                          </DeliveredDatePicker>
+                          
+                          <SellerShippedDatePicker orderId={item.orderId}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs p-1 h-7 w-full bg-orange-50 hover:bg-orange-100 border-orange-200"
+                            >
+                              발송
+                            </Button>
+                          </SellerShippedDatePicker>
+                          
+                          <SmsDialog order={item.order}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs p-1 h-7 w-full"
+                            >
+                              SMS
+                            </Button>
+                          </SmsDialog>
+                          
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => moveToTrashMutation.mutate(item.orderId)}
+                              className="flex-1 bg-gray-50 hover:bg-gray-100 border-gray-200 p-1 h-7"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
