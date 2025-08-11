@@ -796,7 +796,7 @@ export default function ManagerDashboard() {
                   {/* 테이블 뷰 (리스트 모드) */}
                   {viewMode === 'list' && (
                     <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full manager-table table-fixed">
+                    <table className="w-full manager-table table-fixed" style={{ minWidth: '1200px' }}>
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
                           <th className="text-left p-2 font-semibold text-gray-800" style={{ width: '40px' }}>
@@ -813,16 +813,16 @@ export default function ManagerDashboard() {
                               className="rounded w-4 h-4"
                             />
                           </th>
-                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '100px' }}>주문번호</th>
-                          <th className="text-center py-2 px-2 font-semibold text-gray-800" style={{ width: '80px' }}>예약발송일</th>
-                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '80px' }}>주문자</th>
-                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '180px' }}>주문내역</th>
-                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '100px' }}>연락처</th>
-                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '140px' }}>배송지</th>
-                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '70px' }}>입금상태</th>
-                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '70px' }}>주문상태</th>
-                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '90px' }}>판매자발송</th>
-                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '80px' }}>작업</th>
+                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '110px' }}>주문번호</th>
+                          <th className="text-center py-2 px-2 font-semibold text-gray-800" style={{ width: '90px' }}>예약발송일</th>
+                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '90px' }}>주문자</th>
+                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '200px' }}>주문내역</th>
+                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '110px' }}>연락처</th>
+                          <th className="py-2 px-2 text-left font-semibold text-gray-800" style={{ width: '150px' }}>배송지</th>
+                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '80px' }}>입금상태</th>
+                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '80px' }}>주문상태</th>
+                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '100px' }}>판매자발송</th>
+                          <th className="py-2 px-2 text-center font-semibold text-gray-800" style={{ width: '90px' }}>작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -879,22 +879,16 @@ export default function ManagerDashboard() {
                                 <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
                               )}
                             </td>
-                            <td className="py-2 px-2" style={{ width: '180px' }}>
+                            <td className="py-2 px-2 min-w-[200px]">
                               <div className="text-xs space-y-1">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div className="truncate" title={`${getProductName(0, '한과1호')} × ${order.smallBoxQuantity}개`}>
-                                    {getProductName(0, '한과1호')} × {order.smallBoxQuantity}개
-                                  </div>
+                                  <div className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div className="truncate" title={`${getProductName(1, '한과2호')} × ${order.largeBoxQuantity}개`}>
-                                    {getProductName(1, '한과2호')} × {order.largeBoxQuantity}개
-                                  </div>
+                                  <div className="whitespace-nowrap">{getProductName(1, '한과2호')} × {order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
-                                  <div className="truncate" title={`${getProductName(2, '보자기')} × ${order.wrappingQuantity}개`}>
-                                    {getProductName(2, '보자기')} × {order.wrappingQuantity}개
-                                  </div>
+                                  <div className="whitespace-nowrap">{getProductName(2, '보자기')} × {order.wrappingQuantity}개</div>
                                 )}
                                 {/* 동적 상품들도 개별 줄로 표시 */}
                                 {order.dynamicProductQuantities && (() => {
@@ -907,10 +901,9 @@ export default function ManagerDashboard() {
                                       const productIndex = parseInt(index);
                                       const qty = Number(quantity);
                                       if (qty > 0 && productNames && productNames[productIndex]) {
-                                        const fullText = `${productNames[productIndex].name} × ${qty}개`;
                                         return (
-                                          <div key={index} className="truncate" title={fullText}>
-                                            {fullText}
+                                          <div key={index} className="whitespace-nowrap">
+                                            {productNames[productIndex].name} × {qty}개
                                           </div>
                                         );
                                       }
