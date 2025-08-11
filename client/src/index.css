@@ -224,8 +224,8 @@
 }
 
 .admin-table .col-status {
-  width: 8%;
-  min-width: 90px;
+  width: 12%;
+  min-width: 130px;
 }
 
 .manager-table .col-status {
