@@ -322,72 +322,7 @@
   max-width: 100% !important;
 }
 
-/* 주문내역 상세보기 테이블 스타일 - 전체보기와 동일하게 적용 */
-.order-details-table {
-  width: 100%;
-}
 
-.order-details-table th,
-.order-details-table td {
-  padding: 8px 12px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 0.875rem;
-}
-
-.order-details-table th {
-  background-color: #f9fafb;
-  font-weight: 600;
-  color: #374151;
-}
-
-.order-details-table .col-order-number {
-  width: 6%;
-  min-width: 85px;
-}
-
-.order-details-table .col-scheduled-date {
-  width: 5%;
-  min-width: 75px;
-}
-
-.order-details-table .col-customer-name {
-  width: 4%;
-  min-width: 55px;
-}
-
-.order-details-table .col-order-details {
-  width: 10%;
-  min-width: 100px;
-}
-
-.order-details-table .col-phone {
-  width: 7%;
-  min-width: 90px;
-}
-
-.order-details-table .col-address {
-  width: 9%;
-  min-width: 90px;
-}
-
-.order-details-table .col-amount {
-  width: 5%;
-  min-width: 60px;
-  text-align: center;
-}
-
-.order-details-table .col-status {
-  width: 8%;
-  min-width: 90px;
-  text-align: center;
-}
-
-.order-details-table .col-actions {
-  width: 4%;
-  min-width: 60px;
-  text-align: center;
-}
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
 .no-wrap {

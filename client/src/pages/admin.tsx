@@ -3602,24 +3602,24 @@ export default function Admin() {
       <>
         {/* Desktop Table */}
         <div className="hidden lg:block bg-white rounded-lg border">
-          <table className="w-full order-details-table">
+          <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="col-order-number text-left">주문번호</th>
-                <th className="col-scheduled-date text-left">예약발송</th>
-                <th className="col-customer-name text-left">주문자</th>
-                <th className="col-customer-name text-left">예금자</th>
-                <th className="col-order-details text-left">주문내역</th>
-                <th className="col-phone text-left">연락처</th>
-                <th className="col-address text-left">배송주소</th>
-                <th className="col-address text-left">메모</th>
-                <th className="col-amount text-center text-blue-700">매출</th>
-                <th className="col-amount text-center text-green-700">실입금</th>
-                <th className="col-amount text-center text-red-700">할인/미입금</th>
-                <th className="col-status text-center">입금상태</th>
-                <th className="col-status text-center">주문상태</th>
-                <th className="col-status text-center">판매자발송</th>
-                <th className="col-actions text-center">관리</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문번호</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">예약발송</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문자</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">예금자</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">주문내역</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연락처</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">배송주소</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">메모</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-blue-700 uppercase tracking-wider">매출</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-green-700 uppercase tracking-wider">실입금</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-red-700 uppercase tracking-wider">할인/미입금</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">입금상태</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">주문상태</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">판매자발송</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
               </tr>
             </thead>
             <tbody>
@@ -3633,7 +3633,7 @@ export default function Admin() {
                   }`}>
                     {/* 주문번호 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-order-number" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="flex items-center gap-2">
                           <StatusIcon className="h-4 w-4 text-gray-500" />
                           <span className="font-bold text-gray-900">#{item.order.orderNumber}</span>
@@ -3644,7 +3644,7 @@ export default function Admin() {
                     
                     {/* 예약발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-scheduled-date" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="text-sm">
                           {item.order.scheduledDate ? (
                             <div className="text-blue-600 font-medium">
@@ -3659,34 +3659,34 @@ export default function Admin() {
                     
                     {/* 주문자 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-customer-name" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="text-sm font-medium">{item.order.customerName}</div>
                       </td>
                     )}
                     
                     {/* 예금자 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-customer-name" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="text-sm">{item.order.depositorName || item.order.customerName}</div>
                       </td>
                     )}
                     
                     {/* 주문내역 - 각 상품마다 개별 행으로 표시 */}
-                    <td className="col-order-details">
+                    <td className="px-3 py-2">
                       <div className="text-sm text-gray-700 max-w-xs">
                         <div className="font-medium">{item.productName} × {item.quantity}개</div>
                       </div>
                     </td>
                     {/* 연락처 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-phone" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="text-sm">{item.order.customerPhone}</div>
                       </td>
                     )}
                     
                     {/* 배송주소 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-address" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="text-sm max-w-xs">
                           <div className={checkRemoteArea(item.order.address1) ? 'text-black' : 'text-gray-700'}>
                             [{item.order.zipCode}] {item.order.address1}
@@ -3699,7 +3699,7 @@ export default function Admin() {
                     
                     {/* 메모 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-address" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2" rowSpan={item.rowSpan}>
                         <div className="text-sm text-gray-600 max-w-xs truncate" title={item.order.specialRequests || ''}>
                           {item.order.specialRequests || '-'}
                         </div>
@@ -3708,14 +3708,14 @@ export default function Admin() {
                     
                     {/* 매출 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-amount text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <div className="text-sm font-bold text-blue-700">{formatPrice(item.order.totalAmount)}</div>
                       </td>
                     )}
                     
                     {/* 실입금 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-amount text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <div className="text-sm font-bold text-green-700">
                           {formatPrice(item.order.actualPaidAmount || item.order.totalAmount)}
                         </div>
@@ -3724,7 +3724,7 @@ export default function Admin() {
                     
                     {/* 할인/미입금 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-amount text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <div className="text-sm font-bold text-red-700">
                           {(() => {
                             const discountAmount = item.order.discountAmount || 0;
@@ -3738,7 +3738,7 @@ export default function Admin() {
                     
                     {/* 입금상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-status text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <span className={`px-2 py-1 rounded text-sm font-medium ${
                           item.order.paymentStatus === 'confirmed' ? 'bg-green-100 text-green-700' :
                           item.order.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' :
@@ -3755,7 +3755,7 @@ export default function Admin() {
                     
                     {/* 주문상태 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-status text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <span className={`px-2 py-1 rounded text-sm font-medium ${
                           item.order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
                           item.order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
@@ -3769,7 +3769,7 @@ export default function Admin() {
                     
                     {/* 판매자발송 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-status text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <div className="text-sm">
                           {item.order.sellerShipped ? (
                             <div className="text-green-600 font-medium">
@@ -3789,7 +3789,7 @@ export default function Admin() {
                     
                     {/* 관리 - 첫 번째 상품에만 표시, rowspan 적용 */}
                     {item.isFirst && (
-                      <td className="col-actions text-center" rowSpan={item.rowSpan}>
+                      <td className="px-3 py-2 text-center" rowSpan={item.rowSpan}>
                         <div className="flex flex-col gap-1">
                           <Button
                             size="sm"
