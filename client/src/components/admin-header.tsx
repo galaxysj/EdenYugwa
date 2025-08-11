@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AdminHeaderProps {
   handleExcelDownload?: () => void;
@@ -14,6 +15,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSettingsDialog, passwordChangeDialog }: AdminHeaderProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAdmin, isManager } = useAuth();
 
   return (
     <div className="bg-white border-b border-gray-200 shadow-sm">
@@ -130,29 +132,13 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                 </Button>
                 <Button 
                   onClick={() => {
-                    setActiveTab('orders');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  variant="ghost" 
-                  size="sm"
-                  className={`w-full justify-start text-sm ${
-                    activeTab === 'orders' 
-                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Package className="h-4 w-4 mr-2" />
-                  주문목록
-                </Button>
-                <Button 
-                  onClick={() => {
                     setActiveTab('customers');
                     setIsMobileMenuOpen(false);
                   }}
                   variant="ghost" 
                   size="sm"
                   className={`w-full justify-start text-sm ${
-                    activeTab === 'customers' 
+                    activeTab === 'customers'
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
@@ -168,30 +154,13 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   variant="ghost" 
                   size="sm"
                   className={`w-full justify-start text-sm ${
-                    activeTab === 'members' 
+                    activeTab === 'members'
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <Users className="h-4 w-4 mr-2" />
                   회원관리
-                </Button>
-
-                <Button 
-                  onClick={() => {
-                    setActiveTab('settings');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  variant="ghost" 
-                  size="sm"
-                  className={`w-full justify-start text-sm ${
-                    activeTab === 'settings' 
-                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
-                >
-                  <Cog className="h-4 w-4 mr-2" />
-                  설정
                 </Button>
                 <Button 
                   onClick={() => {
@@ -201,7 +170,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   variant="ghost" 
                   size="sm"
                   className={`w-full justify-start text-sm ${
-                    activeTab === 'content' 
+                    activeTab === 'content'
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
@@ -217,13 +186,51 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
                   variant="ghost" 
                   size="sm"
                   className={`w-full justify-start text-sm ${
-                    activeTab === 'trash' 
+                    activeTab === 'trash'
                       ? 'bg-gray-100 text-gray-900 border border-gray-300' 
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   휴지통
+                </Button>
+              </>
+            )}
+            
+            {/* 매니저 페이지 메뉴 */}
+            {location === '/manager' && setActiveTab && (
+              <>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('orders');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start text-sm ${
+                    activeTab === 'orders'
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Package className="h-4 w-4 mr-2" />
+                  주문관리
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setActiveTab('customers');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  variant="ghost" 
+                  size="sm"
+                  className={`w-full justify-start text-sm ${
+                    activeTab === 'customers'
+                      ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  고객관리
                 </Button>
               </>
             )}
@@ -267,187 +274,189 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
           </div>
         )}
 
-        {/* 데스크톱 네비게이션 메뉴 */}
-        <div className="hidden md:block py-3">
-          <div className="flex items-center justify-between">
-            {/* 메인 메뉴 */}
-            <div className="flex items-center space-x-1">
-              {/* 관리자 페이지 메뉴 */}
-              {location === '/admin' && setActiveTab && (
-                <>
-                  <Button 
-                    onClick={() => setActiveTab('revenue')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'revenue' 
-                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    매출관리
-                  </Button>
-                  <Button 
-                    onClick={() => setActiveTab('customers')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'customers'
-                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    고객관리
-                  </Button>
-                  <Button 
-                    onClick={() => setActiveTab('members')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'members'
-                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    회원관리
-                  </Button>
-
-                </>
-              )}
-
-              {/* 매니저 페이지 메뉴 */}
-              {location === '/manager' && setActiveTab && (
-                <>
-                  <Button 
-                    onClick={() => setActiveTab('orders')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'orders'
-                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Package className="h-4 w-4 mr-2" />
-                    주문관리
-                  </Button>
-                  <Button 
-                    onClick={() => setActiveTab('customers')}
-                    variant="ghost" 
-                    size="sm"
-                    className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                      activeTab === 'customers'
-                        ? 'bg-gray-100 text-gray-900 border border-gray-300' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    고객관리
-                  </Button>
-                </>
-              )}
-
-              {/* 설정 페이지 메뉴 */}
-              {location === '/admin-settings' && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="bg-gray-100 text-gray-900 border border-gray-300 px-4 py-2 rounded-md font-medium"
-                >
-                  <Cog className="h-4 w-4 mr-2" />
-                  설정
-                </Button>
-              )}
-            </div>
-
-            {/* 설정 메뉴 */}
-            <div className="flex items-center space-x-1">
-              {(handleExcelDownload || costSettingsDialog || passwordChangeDialog || location === '/admin') && (
-                <>
-                  <Link href="/admin-settings">
+        {/* 데스크톱 네비게이션 메뉴 - 매니저는 숨김 */}
+        {!isManager && (
+          <div className="hidden md:block py-3">
+            <div className="flex items-center justify-between">
+              {/* 메인 메뉴 */}
+              <div className="flex items-center space-x-1">
+                {/* 관리자 페이지 메뉴 */}
+                {location === '/admin' && setActiveTab && (
+                  <>
                     <Button 
+                      onClick={() => setActiveTab('revenue')}
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                        activeTab === 'revenue' 
+                          ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
                     >
-                      <Cog className="h-4 w-4 mr-2" />
-                      설정
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      매출관리
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab('customers')}
+                      variant="ghost" 
+                      size="sm"
+                      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                        activeTab === 'customers'
+                          ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      고객관리
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab('members')}
+                      variant="ghost" 
+                      size="sm"
+                      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                        activeTab === 'members'
+                          ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      회원관리
+                    </Button>
+
+                  </>
+                )}
+
+                {/* 매니저 페이지 메뉴 */}
+                {location === '/manager' && setActiveTab && (
+                  <>
+                    <Button 
+                      onClick={() => setActiveTab('orders')}
+                      variant="ghost" 
+                      size="sm"
+                      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                        activeTab === 'orders'
+                          ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Package className="h-4 w-4 mr-2" />
+                      주문관리
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab('customers')}
+                      variant="ghost" 
+                      size="sm"
+                      className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                        activeTab === 'customers'
+                          ? 'bg-gray-100 text-gray-900 border border-gray-300' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      고객관리
+                    </Button>
+                  </>
+                )}
+
+                {/* 설정 페이지 메뉴 */}
+                {location === '/admin-settings' && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="bg-gray-100 text-gray-900 border border-gray-300 px-4 py-2 rounded-md font-medium"
+                  >
+                    <Cog className="h-4 w-4 mr-2" />
+                    설정
+                  </Button>
+                )}
+              </div>
+
+              {/* 설정 메뉴 */}
+              <div className="flex items-center space-x-1">
+                {(handleExcelDownload || costSettingsDialog || passwordChangeDialog || location === '/admin') && (
+                  <>
+                    <Link href="/admin-settings">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                      >
+                        <Cog className="h-4 w-4 mr-2" />
+                        설정
+                      </Button>
+                    </Link>
+                    {setActiveTab && (
+                      <Button 
+                        onClick={() => setActiveTab('content')}
+                        variant="ghost" 
+                        size="sm"
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        콘텐츠
+                      </Button>
+                    )}
+                    {setActiveTab && (
+                      <Button 
+                        onClick={() => setActiveTab('trash')}
+                        variant="ghost" 
+                        size="sm"
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        휴지통
+                      </Button>
+                    )}
+                    {costSettingsDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{costSettingsDialog}</div>}
+                    {passwordChangeDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{passwordChangeDialog}</div>}
+                    {handleExcelDownload && (
+                      <Button 
+                        onClick={handleExcelDownload}
+                        variant="ghost" 
+                        size="sm"
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        엑셀
+                      </Button>
+                    )}
+                    <div className="h-4 w-px bg-gray-200 mx-2"></div>
+                  </>
+                )}
+                
+                {/* 권한 전환 */}
+                <div className="flex items-center bg-gray-50 rounded-lg p-1">
+                  <Link href="/admin">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={`h-7 px-3 text-xs font-medium transition-all ${
+                        location === '/admin' 
+                          ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      관리자
                     </Button>
                   </Link>
-                  {setActiveTab && (
+                  <Link href="/manager">
                     <Button 
-                      onClick={() => setActiveTab('content')}
                       variant="ghost" 
-                      size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
+                      size="sm" 
+                      className={`h-7 px-3 text-xs font-medium transition-all ${
+                        location === '/manager' 
+                          ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
                     >
-                      <Edit className="h-4 w-4 mr-2" />
-                      콘텐츠
+                      매니저
                     </Button>
-                  )}
-                  {setActiveTab && (
-                    <Button 
-                      onClick={() => setActiveTab('trash')}
-                      variant="ghost" 
-                      size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      휴지통
-                    </Button>
-                  )}
-                  {costSettingsDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{costSettingsDialog}</div>}
-                  {passwordChangeDialog && <div className="[&>button]:!bg-transparent [&>button]:!text-gray-600 [&>button]:hover:!text-gray-900 [&>button]:hover:!bg-gray-50 [&>button]:!border-0 [&>button]:!px-3 [&>button]:!py-2">{passwordChangeDialog}</div>}
-                  {handleExcelDownload && (
-                    <Button 
-                      onClick={handleExcelDownload}
-                      variant="ghost" 
-                      size="sm"
-                      className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      엑셀
-                    </Button>
-                  )}
-                  <div className="h-4 w-px bg-gray-200 mx-2"></div>
-                </>
-              )}
-              
-              {/* 권한 전환 */}
-              <div className="flex items-center bg-gray-50 rounded-lg p-1">
-                <Link href="/admin">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`h-7 px-3 text-xs font-medium transition-all ${
-                      location === '/admin' 
-                        ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    관리자
-                  </Button>
-                </Link>
-                <Link href="/manager">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`h-7 px-3 text-xs font-medium transition-all ${
-                      location === '/manager' 
-                        ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    매니저
-                  </Button>
-                </Link>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
