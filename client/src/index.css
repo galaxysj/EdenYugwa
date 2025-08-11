@@ -240,23 +240,23 @@
 }
 
 .admin-table .col-order-number {
-  width: 5%;
-  min-width: 80px;
+  width: 6%;
+  min-width: 85px;
 }
 
 .admin-table .col-scheduled-date {
-  width: 4%;
-  min-width: 70px;
+  width: 5%;
+  min-width: 75px;
 }
 
 .admin-table .col-customer-name {
-  width: 3%;
-  min-width: 50px;
+  width: 4%;
+  min-width: 55px;
 }
 
 .admin-table .col-order-details {
-  width: 25%;
-  min-width: 250px;
+  width: 18%;
+  min-width: 180px;
 }
 
 .admin-table .col-phone {
@@ -273,18 +273,18 @@
 }
 
 .admin-table .col-amount {
-  width: 4%;
-  min-width: 50px;
+  width: 5%;
+  min-width: 60px;
 }
 
 .admin-table .col-status {
-  width: 4%;
-  min-width: 50px;
+  width: 5%;
+  min-width: 60px;
 }
 
 .admin-table .col-actions {
-  width: 3%;
-  min-width: 50px;
+  width: 4%;
+  min-width: 55px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
