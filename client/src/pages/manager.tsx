@@ -813,16 +813,16 @@ export default function ManagerDashboard() {
                               className="rounded w-4 h-4"
                             />
                           </th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">주문번호</th>
-                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[100px]">예약발송일</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문자</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[200px]">주문내역</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">연락처</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[160px]">배송지</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">입금상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">주문상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">판매자발송</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">작업</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문번호</th>
+                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[90px]">예약발송일</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[90px]">주문자</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">주문내역</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">연락처</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">배송지</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">입금상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">주문상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">판매자발송</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -879,41 +879,18 @@ export default function ManagerDashboard() {
                                 <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
                               )}
                             </td>
-                            <td className="py-2 px-2 min-w-[200px]">
-                              <div className="text-xs space-y-1">
+                            <td className="py-2 px-2 min-w-[80px]">
+                              <div className="text-xs space-y-0.5">
                                 {order.smallBoxQuantity > 0 && (
-                                  <div className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</div>
+                                  <div>{getProductName(0, '한과1호')}×{order.smallBoxQuantity}개</div>
                                 )}
                                 {order.largeBoxQuantity > 0 && (
-                                  <div className="whitespace-nowrap">{getProductName(1, '한과2호')} × {order.largeBoxQuantity}개</div>
+                                  <div>{getProductName(1, '한과2호')}×{order.largeBoxQuantity}개</div>
                                 )}
                                 {order.wrappingQuantity > 0 && (
-                                  <div className="whitespace-nowrap">{getProductName(2, '보자기')} × {order.wrappingQuantity}개</div>
+                                  <div>{getProductName(2, '보자기')}×{order.wrappingQuantity}개</div>
                                 )}
-                                {/* 동적 상품들도 개별 줄로 표시 */}
-                                {order.dynamicProductQuantities && (() => {
-                                  try {
-                                    const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
-                                      ? JSON.parse(order.dynamicProductQuantities) 
-                                      : order.dynamicProductQuantities;
-                                    
-                                    return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
-                                      const productIndex = parseInt(index);
-                                      const qty = Number(quantity);
-                                      if (qty > 0 && productNames && productNames[productIndex]) {
-                                        return (
-                                          <div key={index} className="whitespace-nowrap">
-                                            {productNames[productIndex].name} × {qty}개
-                                          </div>
-                                        );
-                                      }
-                                      return null;
-                                    }).filter(Boolean);
-                                  } catch (error) {
-                                    console.error('Dynamic product quantities parse error:', error);
-                                    return null;
-                                  }
-                                })()}
+                                {renderDynamicProducts(order)}
                               </div>
                             </td>
                             <td className="py-2 px-2">
@@ -1230,13 +1207,19 @@ export default function ManagerDashboard() {
                                 <div className="mb-2 pt-2">
                                   <div className="text-xs text-gray-700 mb-2 space-y-1">
                                     {order.smallBoxQuantity > 0 && (
-                                      <div className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</div>
+                                      <div className="bg-blue-50 px-2 py-1 rounded border-l-2 border-blue-300">
+                                        <span className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</span>
+                                      </div>
                                     )}
                                     {order.largeBoxQuantity > 0 && (
-                                      <div className="whitespace-nowrap">{getProductName(1, '한과2호')} × {order.largeBoxQuantity}개</div>
+                                      <div className="bg-green-50 px-2 py-1 rounded border-l-2 border-green-300">
+                                        <span className="whitespace-nowrap">{getProductName(1, '한과2호')} × {order.largeBoxQuantity}개</span>
+                                      </div>
                                     )}
                                     {order.wrappingQuantity > 0 && (
-                                      <div className="whitespace-nowrap">{getProductName(2, '보자기')} × {order.wrappingQuantity}개</div>
+                                      <div className="bg-purple-50 px-2 py-1 rounded border-l-2 border-purple-300">
+                                        <span className="whitespace-nowrap">{getProductName(2, '보자기')} × {order.wrappingQuantity}개</span>
+                                      </div>
                                     )}
                                     {/* 동적 상품들도 개별 줄로 표시 */}
                                     {order.dynamicProductQuantities && (() => {
@@ -1250,8 +1233,8 @@ export default function ManagerDashboard() {
                                           const qty = Number(quantity);
                                           if (qty > 0 && productNames && productNames[productIndex]) {
                                             return (
-                                              <div key={index} className="whitespace-nowrap">
-                                                {productNames[productIndex].name} × {qty}개
+                                              <div key={index} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300">
+                                                <span className="whitespace-nowrap">{productNames[productIndex].name} × {qty}개</span>
                                               </div>
                                             );
                                           }
