@@ -79,7 +79,7 @@
   font-size: 0.75rem; /* text-xs */
   table-layout: fixed;
   width: 100%;
-  min-width: 1200px; /* 최소 테이블 너비 설정 */
+  min-width: 1400px; /* 최소 테이블 너비 증가 */
   border-collapse: collapse;
 }
 
@@ -164,66 +164,66 @@
   font-weight: 600;
 }
 
-/* 특정 컬럼 너비 설정 - 전체 화면에 맞게 조정 */
+/* 특정 컬럼 너비 설정 - 텍스트 길이에 최적화 */
 .admin-table .col-checkbox, .manager-table .col-checkbox {
-  width: 3%;
-  min-width: 40px;
+  width: 2%;
+  min-width: 35px;
 }
 
 .admin-table .col-order-number, .manager-table .col-order-number {
-  width: 8%;
-  min-width: 100px;
+  width: 6%;
+  min-width: 85px;
 }
 
 .admin-table .col-scheduled-date, .manager-table .col-scheduled-date {
-  width: 7%;
-  min-width: 90px;
+  width: 6%;
+  min-width: 80px;
   white-space: nowrap;
   overflow: visible;
 }
 
 .admin-table .col-customer-name, .manager-table .col-customer-name {
-  width: 6%;
-  min-width: 70px;
+  width: 4%;
+  min-width: 60px;
   white-space: normal;
   word-wrap: break-word;
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
-  width: 25%;
-  min-width: 220px;
+  width: 30%;
+  min-width: 280px;
   white-space: normal;
   word-wrap: break-word;
   max-width: none;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {
-  width: 16%;
-  min-width: 150px;
+  width: 12%;
+  min-width: 130px;
   white-space: normal;
   word-wrap: break-word;
-  max-width: 180px;
+  max-width: none;
 }
 
 .admin-table .col-address, .manager-table .col-address {
-  width: 16%;
-  min-width: 160px;
-  max-width: 180px;
+  width: 18%;
+  min-width: 180px;
+  max-width: none;
 }
 
 .admin-table .col-amount, .manager-table .col-amount {
-  width: 6%;
-  min-width: 65px;
+  width: 5%;
+  min-width: 60px;
 }
 
 .admin-table .col-status, .manager-table .col-status {
-  width: 7%;
-  min-width: 80px;
+  width: 5%;
+  min-width: 70px;
 }
 
 .admin-table .col-actions, .manager-table .col-actions {
-  width: 7%;
-  min-width: 75px;
+  width: 4%;
+  min-width: 60px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */

@@ -878,7 +878,7 @@ export default function ManagerDashboard() {
                   
                   {/* 테이블 뷰 (리스트 모드) */}
                   {viewMode === 'list' && (
-                    <div className="hidden md:block overflow-x-auto">
+                    <div className="hidden md:block overflow-x-auto manager-table-container">
                     <table className="w-full manager-table">
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
