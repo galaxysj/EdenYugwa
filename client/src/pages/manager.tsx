@@ -280,7 +280,7 @@ export default function ManagerDashboard() {
             return [];
           }
         })() : [])
-      ].filter(Boolean).join(', '),
+      ].filter(Boolean).join('\n'),
       '연락처': order.customerPhone,
       '배송지': `${order.address1} ${order.address2 || ''}`.trim(),
       '판매자발송': order.sellerShipped ? '발송완료' : '발송대기'
