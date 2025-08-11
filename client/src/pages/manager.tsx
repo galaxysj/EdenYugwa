@@ -254,17 +254,13 @@ export default function ManagerDashboard() {
     },
   });
 
-  // Excel export function for manager
+  // Excel export function for manager - 매니저 전용 컬럼만 포함
   const exportToExcel = (ordersList: Order[], fileName: string) => {
     const excelData = ordersList.map(order => ({
       '주문번호': order.orderNumber,
-      '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
-      '주문시간': new Date(order.createdAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
-      '고객명': order.customerName,
-      '받는분': order.recipientName || order.customerName,
-      '전화번호': order.customerPhone,
-      '주소': `${order.address1} ${order.address2 || ''}`.trim(),
-      '상품': [
+      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
+      '주문자': order.customerName,
+      '주문내역': [
         order.smallBoxQuantity > 0 ? `${getProductName(0, '한과1호')}×${order.smallBoxQuantity}개` : '',
         order.largeBoxQuantity > 0 ? `${getProductName(1, '한과2호')}×${order.largeBoxQuantity}개` : '',
         order.wrappingQuantity > 0 ? `${getProductName(2, '보자기')}×${order.wrappingQuantity}개` : '',
@@ -285,16 +281,9 @@ export default function ManagerDashboard() {
           }
         })() : [])
       ].filter(Boolean).join(', '),
-      '주문금액': order.totalAmount,
-      '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
-                 order.paymentStatus === 'partial' ? '부분결제' :
-                 order.paymentStatus === 'refunded' ? '환불' : '미입금',
-      '주문상태': statusLabels[order.status as keyof typeof statusLabels],
-      '발송상태': order.sellerShipped ? '매니저발송완료' : '발송처리대기',
-      '예약발송일': order.scheduledDate ? new Date(order.scheduledDate).toLocaleDateString('ko-KR') : '',
-      '발송완료일': order.deliveredDate ? new Date(order.deliveredDate).toLocaleDateString('ko-KR') : '',
-      '매니저발송일': order.sellerShippedDate ? new Date(order.sellerShippedDate).toLocaleDateString('ko-KR') : '',
-      '메모': order.specialRequests || ''
+      '연락처': order.customerPhone,
+      '배송지': `${order.address1} ${order.address2 || ''}`.trim(),
+      '판매자발송': order.sellerShipped ? '발송완료' : '발송대기'
     }));
 
     const ws = XLSX.utils.json_to_sheet(excelData);
