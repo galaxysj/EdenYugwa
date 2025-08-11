@@ -26,7 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { AdminHeader } from "@/components/admin-header";
+import AdminHeader from "@/components/admin-header";
 import type { Order, Setting, DashboardContent } from "@shared/schema";
 import * as XLSX from 'xlsx';
 

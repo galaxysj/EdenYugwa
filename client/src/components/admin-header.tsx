@@ -12,7 +12,7 @@ interface AdminHeaderProps {
   passwordChangeDialog?: React.ReactNode;
 }
 
-export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSettingsDialog, passwordChangeDialog }: AdminHeaderProps) {
+function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSettingsDialog, passwordChangeDialog }: AdminHeaderProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAdmin, isManager } = useAuth();
@@ -461,3 +461,5 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
     </div>
   );
 }
+
+export default AdminHeader;

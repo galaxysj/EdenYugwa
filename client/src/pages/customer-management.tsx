@@ -1,4 +1,4 @@
-import { AdminHeader } from "@/components/admin-header";
+import AdminHeader from "@/components/admin-header";
 import { CustomerManagement } from "@/components/customer-management";
 
 export default function CustomerManagementPage() {

@@ -15,7 +15,7 @@ import type { AdminSettings, User as UserType } from "@shared/schema";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AdminHeader } from "@/components/admin-header";
+import AdminHeader from "@/components/admin-header";
 
 const adminSettingsSchema = z.object({
   adminName: z.string().min(1, "관리자명을 입력해주세요"),
