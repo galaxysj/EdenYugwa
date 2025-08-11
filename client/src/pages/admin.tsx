@@ -3458,25 +3458,13 @@ export default function Admin() {
       
       // 기본 상품들
       if (order.smallBoxQuantity > 0) {
-        details.push(
-          <div key="small" className="bg-blue-50 px-2 py-1 rounded border-l-2 border-blue-300 mb-1">
-            <span className="whitespace-nowrap text-xs">{getProductName(0)} × {order.smallBoxQuantity}개</span>
-          </div>
-        );
+        details.push(`${getProductName(0)}×${order.smallBoxQuantity}개`);
       }
       if (order.largeBoxQuantity > 0) {
-        details.push(
-          <div key="large" className="bg-green-50 px-2 py-1 rounded border-l-2 border-green-300 mb-1">
-            <span className="whitespace-nowrap text-xs">{getProductName(1)} × {order.largeBoxQuantity}개</span>
-          </div>
-        );
+        details.push(`${getProductName(1)}×${order.largeBoxQuantity}개`);
       }
       if (order.wrappingQuantity > 0) {
-        details.push(
-          <div key="wrapping" className="bg-purple-50 px-2 py-1 rounded border-l-2 border-purple-300 mb-1">
-            <span className="whitespace-nowrap text-xs">{getProductName(2)} × {order.wrappingQuantity}개</span>
-          </div>
-        );
+        details.push(`${getProductName(2)}×${order.wrappingQuantity}개`);
       }
 
       // 동적 상품들
@@ -3490,11 +3478,7 @@ export default function Admin() {
             const idx = parseInt(index);
             const qty = Number(quantity);
             if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
-              details.push(
-                <div key={`dynamic-${idx}`} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300 mb-1">
-                  <span className="whitespace-nowrap text-xs">{getProductName(idx)} × {qty}개</span>
-                </div>
-              );
+              details.push(`${getProductName(idx)}×${qty}개`);
             }
           });
         } catch (error) {
@@ -3502,7 +3486,7 @@ export default function Admin() {
         }
       }
 
-      return details.length > 0 ? <div className="space-y-1">{details}</div> : <span className="text-gray-400 text-xs">주문상품 없음</span>;
+      return details.length > 0 ? details.join(', ') : '주문상품 없음';
     };
 
     return (
@@ -3512,21 +3496,21 @@ export default function Admin() {
           <table className="w-full admin-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
-                <th className="col-order-number text-left py-3 px-2 font-semibold text-gray-800 text-xs">주문번호</th>
-                <th className="col-scheduled-date text-left py-3 px-2 font-semibold text-gray-800 text-xs">예약발송</th>
-                <th className="col-customer-name text-left py-3 px-2 font-semibold text-gray-800 text-xs">주문자</th>
-                <th className="col-customer-name text-left py-3 px-2 font-semibold text-gray-800 text-xs">예금자</th>
-                <th className="col-order-details text-left py-3 px-2 font-semibold text-gray-800 text-xs">주문내역</th>
-                <th className="col-phone text-left py-3 px-2 font-semibold text-gray-800 text-xs">연락처</th>
-                <th className="col-address text-left py-3 px-2 font-semibold text-gray-800 text-xs">배송주소</th>
-                <th className="col-address text-left py-3 px-2 font-semibold text-gray-800 text-xs">메모</th>
-                <th className="col-amount text-center py-3 px-2 font-semibold text-blue-700 text-xs">매출</th>
-                <th className="col-amount text-center py-3 px-2 font-semibold text-green-700 text-xs">실입금</th>
-                <th className="col-amount text-center py-3 px-2 font-semibold text-red-700 text-xs">할인/미입금</th>
-                <th className="col-status text-center py-3 px-2 font-semibold text-gray-800 text-xs">입금상태</th>
-                <th className="col-status text-center py-3 px-2 font-semibold text-gray-800 text-xs">주문상태</th>
-                <th className="col-status text-center py-3 px-2 font-semibold text-gray-800 text-xs">판매자발송</th>
-                <th className="col-actions text-center py-3 px-2 font-semibold text-gray-800 text-xs">관리</th>
+                <th className="col-order-number text-left">주문번호</th>
+                <th className="col-scheduled-date text-left">예약발송</th>
+                <th className="col-customer-name text-left">주문자</th>
+                <th className="col-customer-name text-left">예금자</th>
+                <th className="col-order-details text-left">주문내역</th>
+                <th className="col-phone text-left">연락처</th>
+                <th className="col-address text-left">배송주소</th>
+                <th className="col-address text-left">메모</th>
+                <th className="col-amount text-center text-blue-700">매출</th>
+                <th className="col-amount text-center text-green-700">실입금</th>
+                <th className="col-amount text-center text-red-700">할인/미입금</th>
+                <th className="col-status text-center">입금상태</th>
+                <th className="col-status text-center">주문상태</th>
+                <th className="col-status text-center">판매자발송</th>
+                <th className="col-actions text-center">관리</th>
               </tr>
             </thead>
             <tbody>

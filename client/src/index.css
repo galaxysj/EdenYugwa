@@ -82,57 +82,24 @@
   border-collapse: collapse;
 }
 
-/* 관리자 테이블 컬럼 너비 최적화 */
-.admin-table .col-order-number { width: 7%; }
-.admin-table .col-scheduled-date { width: 5%; }
-.admin-table .col-customer-name { width: 6%; }
-.admin-table .col-order-details { width: 18%; }
-.admin-table .col-phone { width: 7%; }
-.admin-table .col-address { width: 16%; }
-.admin-table .col-amount { width: 5%; }
-.admin-table .col-status { width: 6%; }
-.admin-table .col-actions { width: 4%; }
-
-/* 매니저 테이블 컬럼 너비 최적화 */
-.manager-table .col-order-number { width: 10%; }
-.manager-table .col-scheduled-date { width: 8%; }
-.manager-table .col-customer-name { width: 10%; }
-.manager-table .col-order-details { width: 20%; }
-.manager-table .col-phone { width: 12%; }
-.manager-table .col-address { width: 25%; }
-.manager-table .col-status { width: 10%; }
-.manager-table .col-actions { width: 5%; }
-
 .admin-table th, .manager-table th {
-  font-size: 0.875rem; /* text-sm */
-  font-weight: 700; /* font-bold */
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 600; /* font-semibold */
   color: rgb(31 41 55); /* text-gray-800 */
-  padding: 0.75rem 0.75rem; /* py-3 px-3 */
-  background-color: rgb(243 244 246); /* bg-gray-100 */
-  border-bottom: 3px solid rgb(209 213 219); /* border-b-3 border-gray-300 */
-  border-right: 1px solid rgb(229 231 235); /* border-r border-gray-200 */
+  padding: 0.5rem 0.25rem; /* py-2 px-1 */
+  background-color: rgb(249 250 251); /* bg-gray-50 */
+  border-bottom: 2px solid rgb(229 231 235); /* border-b-2 border-gray-200 */
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   vertical-align: top;
-  line-height: 1.25;
-}
-
-.admin-table th:last-child, .manager-table th:last-child {
-  border-right: none;
 }
 
 .admin-table td, .manager-table td {
-  font-size: 0.875rem; /* text-sm */
-  padding: 0.75rem 0.75rem; /* py-3 px-3 */
-  border-bottom: 1px solid rgb(243 244 246); /* border-b border-gray-100 */
-  border-right: 1px solid rgb(249 250 251); /* border-r border-gray-50 */
+  font-size: 0.75rem; /* text-xs */
+  padding: 0.5rem 0.25rem; /* py-2 px-1 */
+  border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
   vertical-align: top;
-  line-height: 1.4;
-}
-
-.admin-table td:last-child, .manager-table td:last-child {
-  border-right: none;
 }
 
 /* 상태 컬럼은 텍스트 줄바꿈 허용 */
