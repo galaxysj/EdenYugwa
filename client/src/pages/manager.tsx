@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -897,7 +897,7 @@ export default function ManagerDashboard() {
                                       ? JSON.parse(order.dynamicProductQuantities) 
                                       : order.dynamicProductQuantities;
                                     
-                                    return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
+                                    return Object.entries(dynamicQty || {}).map(([index, quantity]: [string, any]) => {
                                       const productIndex = parseInt(index);
                                       const qty = Number(quantity);
                                       if (qty > 0 && productNames && productNames[productIndex]) {
@@ -1092,19 +1092,29 @@ export default function ManagerDashboard() {
                                     </div>
                                   )}
                                   {/* 동적 상품들도 개별 줄로 표시 */}
-                                  {order.dynamicQuantities && typeof order.dynamicQuantities === 'object' && 
-                                    Object.entries(order.dynamicQuantities).map(([index, quantity]) => {
-                                      const productIndex = parseInt(index);
-                                      if (quantity > 0 && productNames && productNames[productIndex]) {
-                                        return (
-                                          <div key={index} className="bg-gray-50 px-2 py-1 rounded text-xs">
-                                            {productNames[productIndex].name} × {quantity}개
-                                          </div>
-                                        );
-                                      }
+                                  {order.dynamicProductQuantities && (() => {
+                                    try {
+                                      const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                                        ? JSON.parse(order.dynamicProductQuantities) 
+                                        : order.dynamicProductQuantities;
+                                      
+                                      return Object.entries(dynamicQty || {}).map(([index, quantity]: [string, any]) => {
+                                        const productIndex = parseInt(index);
+                                        const qty = Number(quantity);
+                                        if (qty > 0 && productNames && productNames[productIndex]) {
+                                          return (
+                                            <div key={index} className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                              {productNames[productIndex].name} × {qty}개
+                                            </div>
+                                          );
+                                        }
+                                        return null;
+                                      }).filter(Boolean);
+                                    } catch (error) {
+                                      console.error('Dynamic product quantities parse error:', error);
                                       return null;
-                                    })
-                                  }
+                                    }
+                                  })()}
                                 </div>
                               </div>
                               <div className="text-sm"><strong>금액:</strong> {(order.totalAmount || 0).toLocaleString()}원</div>
@@ -1245,7 +1255,7 @@ export default function ManagerDashboard() {
                                           ? JSON.parse(order.dynamicProductQuantities) 
                                           : order.dynamicProductQuantities;
                                         
-                                        return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
+                                        return Object.entries(dynamicQty || {}).map(([index, quantity]: [string, any]) => {
                                           const productIndex = parseInt(index);
                                           const qty = Number(quantity);
                                           if (qty > 0 && productNames && productNames[productIndex]) {
