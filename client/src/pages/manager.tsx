@@ -292,28 +292,55 @@ export default function ManagerDashboard() {
     const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
     for (let R = range.s.r; R <= range.e.r; ++R) {
       const orderDetailsCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); // 주문내역은 4번째 컬럼 (D)
-      if (ws[orderDetailsCellAddress]) {
+      if (ws[orderDetailsCellAddress] && ws[orderDetailsCellAddress].v) {
+        // 줄바꿈 문자를 엑셀에서 인식할 수 있도록 수정
+        ws[orderDetailsCellAddress].v = ws[orderDetailsCellAddress].v.toString();
         if (!ws[orderDetailsCellAddress].s) ws[orderDetailsCellAddress].s = {};
-        ws[orderDetailsCellAddress].s.alignment = { wrapText: true, vertical: 'top' };
+        ws[orderDetailsCellAddress].s.alignment = { 
+          wrapText: true, 
+          vertical: 'top',
+          horizontal: 'left'
+        };
       }
+    }
+    
+    // 행 높이 설정 (줄바꿈된 내용이 보이도록)
+    if (!ws['!rows']) ws['!rows'] = [];
+    for (let R = 1; R <= range.e.r; ++R) { // 헤더 제외하고 데이터 행만
+      ws['!rows'][R] = { hpt: 60 }; // 행 높이를 60으로 설정
     }
     
     // 컬럼 너비 설정
     ws['!cols'] = [
       { width: 15 }, // 주문번호
-      { width: 12 }, // 예약발송일
+      { width: 15 }, // 예약발송일
       { width: 12 }, // 주문자
-      { width: 30 }, // 주문내역 (넓게)
+      { width: 35 }, // 주문내역 (더 넓게)
       { width: 15 }, // 연락처
-      { width: 40 }, // 배송지 (넓게)
+      { width: 45 }, // 배송지 (더 넓게)
       { width: 12 }  // 판매자발송
     ];
     
     const wb = XLSX.utils.book_new();
+    
+    // 워크북에 스타일 정보 추가
+    wb.Workbook = {
+      Views: [{
+        RTL: false
+      }]
+    };
+    
+    // 시트에 스타일 정보 추가
+    ws['!margins'] = { left: 0.7, right: 0.7, top: 0.75, bottom: 0.75, header: 0.3, footer: 0.3 };
+    
     XLSX.utils.book_append_sheet(wb, ws, "매니저_주문목록");
     
     const today = new Date().toISOString().split('T')[0];
-    XLSX.writeFile(wb, `${fileName}_${today}.xlsx`);
+    XLSX.writeFile(wb, `${fileName}_${today}.xlsx`, {
+      cellStyles: true,
+      sheetStubs: false,
+      bookType: 'xlsx'
+    });
     
     toast({
       title: "엑셀 다운로드 완료",
