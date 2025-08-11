@@ -255,13 +255,13 @@
 }
 
 .admin-table .col-order-details {
-  width: 18%;
-  min-width: 180px;
+  width: 16%;
+  min-width: 160px;
 }
 
 .admin-table .col-phone {
-  width: 10%;
-  min-width: 120px;
+  width: 8%;
+  min-width: 100px;
 }
 
 .admin-table .col-address {
@@ -278,13 +278,13 @@
 }
 
 .admin-table .col-status {
-  width: 5%;
-  min-width: 60px;
+  width: 7%;
+  min-width: 80px;
 }
 
 .admin-table .col-actions {
-  width: 4%;
-  min-width: 55px;
+  width: 5%;
+  min-width: 65px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
