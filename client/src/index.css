@@ -79,8 +79,15 @@
   font-size: 0.75rem; /* text-xs */
   table-layout: fixed;
   width: 100%;
-  min-width: 1400px; /* 최소 테이블 너비 증가 */
   border-collapse: collapse;
+}
+
+.admin-table {
+  min-width: 1600px; /* 관리자 테이블은 더 넓게 */
+}
+
+.manager-table {
+  min-width: 1400px; /* 매니저 테이블은 기존 유지 */
 }
 
 /* 테이블 컨테이너 스타일 */
@@ -224,6 +231,60 @@
 .admin-table .col-actions, .manager-table .col-actions {
   width: 4%;
   min-width: 60px;
+}
+
+/* 관리자 패널 전용 컬럼 너비 설정 - 더 많은 컬럼에 맞춰 조정 */
+.admin-table .col-checkbox {
+  width: 1.5%;
+  min-width: 30px;
+}
+
+.admin-table .col-order-number {
+  width: 5%;
+  min-width: 80px;
+}
+
+.admin-table .col-scheduled-date {
+  width: 4%;
+  min-width: 70px;
+}
+
+.admin-table .col-customer-name {
+  width: 3%;
+  min-width: 50px;
+}
+
+.admin-table .col-order-details {
+  width: 25%;
+  min-width: 250px;
+}
+
+.admin-table .col-phone {
+  width: 10%;
+  min-width: 120px;
+}
+
+.admin-table .col-address {
+  width: 10%;
+  min-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-table .col-amount {
+  width: 4%;
+  min-width: 50px;
+}
+
+.admin-table .col-status {
+  width: 4%;
+  min-width: 50px;
+}
+
+.admin-table .col-actions {
+  width: 3%;
+  min-width: 50px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
