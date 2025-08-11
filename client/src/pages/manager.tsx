@@ -796,10 +796,10 @@ export default function ManagerDashboard() {
                   {/* 테이블 뷰 (리스트 모드) */}
                   {viewMode === 'list' && (
                     <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full manager-table">
+                    <table className="w-full manager-table table-fixed" style={{ minWidth: '1400px' }}>
                       <thead className="bg-gray-50 border-b-2 border-gray-200">
                         <tr>
-                          <th className="text-left p-4 font-semibold text-gray-800 w-12">
+                          <th className="text-left p-4 font-semibold text-gray-800" style={{ width: '50px' }}>
                             <input
                               type="checkbox"
                               onChange={(e) => {
@@ -813,16 +813,16 @@ export default function ManagerDashboard() {
                               className="rounded w-4 h-4"
                             />
                           </th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">주문번호</th>
-                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[100px]">예약발송일</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문자</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[200px]">주문내역</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">연락처</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[160px]">배송지</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">입금상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">주문상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">판매자발송</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">작업</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800" style={{ width: '140px' }}>주문번호</th>
+                          <th className="text-center py-4 px-4 font-semibold text-gray-800" style={{ width: '110px' }}>예약발송일</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800" style={{ width: '110px' }}>주문자</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800" style={{ width: '280px' }}>주문내역</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800" style={{ width: '130px' }}>연락처</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800" style={{ width: '180px' }}>배송지</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800" style={{ width: '100px' }}>입금상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800" style={{ width: '100px' }}>주문상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800" style={{ width: '120px' }}>판매자발송</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800" style={{ width: '120px' }}>작업</th>
                         </tr>
                       </thead>
                       <tbody>
