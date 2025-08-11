@@ -5243,7 +5243,7 @@ export default function Admin() {
                       엑셀 다운로드
                     </Button>
                   </div>
-                  {renderOrderHistoryTable(allOrders)}
+                  {renderOrdersList(allOrders)}
                 </TabsContent>
 
                 <TabsContent value="refunded" className="mt-6">

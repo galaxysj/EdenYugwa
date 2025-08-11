@@ -322,6 +322,73 @@
   max-width: 100% !important;
 }
 
+/* 모든 admin-table에 동일한 컬럼 너비 적용 */
+.admin-table-container {
+  overflow-x: auto;
+}
+
+/* 모든 주문 탭에서 공통으로 사용할 테이블 스타일 */
+.admin-table th, .admin-table td {
+  padding: 8px 12px;
+  border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 모든 탭에서 동일한 테이블 레이아웃 보장 */
+.admin-table {
+  table-layout: fixed;
+}
+
+/* 체크박스 컬럼 */
+.admin-table .col-checkbox {
+  width: 3%;
+  min-width: 40px;
+}
+
+/* 주문번호 컬럼 */
+.admin-table .col-order-number {
+  width: 8%;
+  min-width: 120px;
+}
+
+/* 예약발송 컬럼 */
+.admin-table .col-scheduled-date {
+  width: 6%;
+  min-width: 90px;
+}
+
+/* 고객명 컬럼 */
+.admin-table .col-customer-name {
+  width: 7%;
+  min-width: 100px;
+}
+
+/* 주문내역 컬럼 */
+.admin-table .col-order-details {
+  width: 12%;
+  min-width: 180px;
+}
+
+/* 연락처 컬럼 */
+.admin-table .col-phone {
+  width: 8%;
+  min-width: 120px;
+}
+
+/* 주소 컬럼 */
+.admin-table .col-address {
+  width: 15%;
+  min-width: 200px;
+}
+
+/* 금액 컬럼 */
+.admin-table .col-amount {
+  width: 6%;
+  min-width: 80px;
+}
+
 /* 텍스트 줄바꿈 방지 및 정렬 */
 .no-wrap {
   white-space: nowrap !important;
