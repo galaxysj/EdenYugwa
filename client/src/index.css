@@ -163,15 +163,15 @@
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
-  width: 12%;
-  min-width: 140px;
+  width: 16%;
+  min-width: 160px;
   white-space: normal;
   word-wrap: break-word;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {
-  width: 9%;
-  min-width: 110px;
+  width: 12%;
+  min-width: 130px;
   white-space: normal;
   word-wrap: break-word;
 }
