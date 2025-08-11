@@ -99,7 +99,12 @@
   font-size: 0.75rem; /* text-xs */
   padding: 0.5rem 0.25rem; /* py-2 px-1 */
   border-bottom: 1px solid rgb(229 231 235); /* border-b border-gray-200 */
+  border-right: 1px solid rgb(243 244 246); /* border-r border-gray-100 */
   vertical-align: top;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 /* 상태 컬럼은 텍스트 줄바꿈 허용 */
@@ -125,6 +130,21 @@
   overflow: visible;
 }
 
+/* 주문내역과 연락처 컬럼 특별 처리 */
+.admin-table .col-order-details, .manager-table .col-order-details {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: initial !important;
+}
+
+.admin-table .col-phone, .manager-table .col-phone {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: initial !important;
+}
+
 .admin-table tbody tr:hover, .manager-table tbody tr:hover {
   background-color: rgb(249 250 251); /* hover:bg-gray-50 */
 }
@@ -144,56 +164,59 @@
 }
 
 .admin-table .col-order-number, .manager-table .col-order-number {
-  width: 9%;
-  min-width: 110px;
+  width: 8%;
+  min-width: 100px;
 }
 
 .admin-table .col-scheduled-date, .manager-table .col-scheduled-date {
-  width: 9%;
-  min-width: 100px;
+  width: 7%;
+  min-width: 90px;
   white-space: nowrap;
   overflow: visible;
 }
 
 .admin-table .col-customer-name, .manager-table .col-customer-name {
-  width: 7%;
-  min-width: 80px;
+  width: 6%;
+  min-width: 70px;
   white-space: normal;
   word-wrap: break-word;
 }
 
 .admin-table .col-order-details, .manager-table .col-order-details {
-  width: 16%;
-  min-width: 160px;
+  width: 22%;
+  min-width: 200px;
   white-space: normal;
   word-wrap: break-word;
+  max-width: 250px;
 }
 
 .admin-table .col-phone, .manager-table .col-phone {
-  width: 12%;
-  min-width: 130px;
+  width: 16%;
+  min-width: 150px;
   white-space: normal;
   word-wrap: break-word;
+  max-width: 180px;
 }
 
 .admin-table .col-address, .manager-table .col-address {
-  width: 20%;
-  min-width: 200px;
+  width: 16%;
+  min-width: 160px;
+  max-width: 180px;
 }
 
 .admin-table .col-amount, .manager-table .col-amount {
-  width: 8%;
-  min-width: 80px;
+  width: 6%;
+  min-width: 65px;
 }
 
 .admin-table .col-status, .manager-table .col-status {
-  width: 10%;
-  min-width: 110px;
+  width: 7%;
+  min-width: 80px;
 }
 
 .admin-table .col-actions, .manager-table .col-actions {
-  width: 8%;
-  min-width: 80px;
+  width: 7%;
+  min-width: 75px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
