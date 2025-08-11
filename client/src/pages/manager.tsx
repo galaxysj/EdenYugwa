@@ -813,16 +813,16 @@ export default function ManagerDashboard() {
                               className="rounded w-4 h-4"
                             />
                           </th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문번호</th>
-                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[90px]">예약발송일</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[90px]">주문자</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[160px]">주문내역</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">연락처</th>
-                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[140px]">배송지</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">입금상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[80px]">주문상태</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">판매자발송</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[100px]">작업</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">주문번호</th>
+                          <th className="text-center py-4 px-4 font-semibold text-gray-800 min-w-[100px]">예약발송일</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[100px]">주문자</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[200px]">주문내역</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[120px]">연락처</th>
+                          <th className="py-4 px-4 text-left font-semibold text-gray-800 min-w-[160px]">배송지</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">입금상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">주문상태</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">판매자발송</th>
+                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -879,7 +879,7 @@ export default function ManagerDashboard() {
                                 <div className="text-xs text-blue-600">받는분: {order.recipientName}</div>
                               )}
                             </td>
-                            <td className="py-2 px-2 min-w-[160px]">
+                            <td className="py-2 px-2 min-w-[200px]">
                               <div className="text-xs space-y-1">
                                 {order.smallBoxQuantity > 0 && (
                                   <div className="whitespace-nowrap">{getProductName(0, '한과1호')} × {order.smallBoxQuantity}개</div>
