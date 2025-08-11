@@ -287,6 +287,28 @@ export default function ManagerDashboard() {
     }));
 
     const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // 주문내역 컬럼에 줄바꿈 적용을 위한 스타일 설정
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      const orderDetailsCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); // 주문내역은 4번째 컬럼 (D)
+      if (ws[orderDetailsCellAddress]) {
+        if (!ws[orderDetailsCellAddress].s) ws[orderDetailsCellAddress].s = {};
+        ws[orderDetailsCellAddress].s.alignment = { wrapText: true, vertical: 'top' };
+      }
+    }
+    
+    // 컬럼 너비 설정
+    ws['!cols'] = [
+      { width: 15 }, // 주문번호
+      { width: 12 }, // 예약발송일
+      { width: 12 }, // 주문자
+      { width: 30 }, // 주문내역 (넓게)
+      { width: 15 }, // 연락처
+      { width: 40 }, // 배송지 (넓게)
+      { width: 12 }  // 판매자발송
+    ];
+    
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "매니저_주문목록");
     
