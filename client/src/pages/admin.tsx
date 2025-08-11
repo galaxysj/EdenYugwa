@@ -4331,6 +4331,18 @@ export default function Admin() {
                             SMS
                           </Button>
                         </SmsDialog>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteOrder(order.id);
+                          }}
+                          disabled={deleteOrderMutation.isPending}
+                          className="text-xs h-7 px-2"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                         <input
                           type="checkbox"
                           checked={selectedShippingItems.has(order.id)}

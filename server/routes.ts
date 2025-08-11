@@ -2021,7 +2021,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard content management routes (admin only)
-  app.get("/api/dashboard-content", requireAdmin, async (req, res) => {
+  app.get("/api/dashboard-content", async (req, res) => {
     try {
       const content = await storage.getAllDashboardContent();
       res.json(content);
