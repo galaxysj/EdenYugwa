@@ -223,9 +223,14 @@
   min-width: 60px;
 }
 
-.admin-table .col-status, .manager-table .col-status {
-  width: 5%;
+.admin-table .col-status {
+  width: 6%;
   min-width: 70px;
+}
+
+.manager-table .col-status {
+  width: 8%;
+  min-width: 90px;
 }
 
 .admin-table .col-actions, .manager-table .col-actions {
