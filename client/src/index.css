@@ -82,6 +82,27 @@
   border-collapse: collapse;
 }
 
+/* 관리자 테이블 컬럼 너비 최적화 */
+.admin-table .col-order-number { width: 7%; }
+.admin-table .col-scheduled-date { width: 5%; }
+.admin-table .col-customer-name { width: 6%; }
+.admin-table .col-order-details { width: 18%; }
+.admin-table .col-phone { width: 7%; }
+.admin-table .col-address { width: 16%; }
+.admin-table .col-amount { width: 5%; }
+.admin-table .col-status { width: 6%; }
+.admin-table .col-actions { width: 4%; }
+
+/* 매니저 테이블 컬럼 너비 최적화 */
+.manager-table .col-order-number { width: 10%; }
+.manager-table .col-scheduled-date { width: 8%; }
+.manager-table .col-customer-name { width: 10%; }
+.manager-table .col-order-details { width: 20%; }
+.manager-table .col-phone { width: 12%; }
+.manager-table .col-address { width: 25%; }
+.manager-table .col-status { width: 10%; }
+.manager-table .col-actions { width: 5%; }
+
 .admin-table th, .manager-table th {
   font-size: 0.75rem; /* text-xs */
   font-weight: 600; /* font-semibold */

@@ -147,7 +147,7 @@ export default function ManagerDashboard() {
   };
 
   // Dynamic product display component - 한 줄씩 표시를 위한 최적화
-  const renderDynamicProducts = (order: Order) => {
+  const renderDynamicProducts = (order: Order): JSX.Element[] | null => {
     if (!order.dynamicProductQuantities) return null;
     
     try {
@@ -169,11 +169,11 @@ export default function ManagerDashboard() {
         console.log(`Available product at index ${productIndex}:`, productNames?.[productIndex]);
         
         return qty > 0 ? (
-          <div key={productIndex} className="py-0.5 border-b border-gray-100 last:border-0">
-            {productName}×{qty}개
+          <div key={productIndex} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300 mb-1">
+            <span className="whitespace-nowrap text-xs">{productName} × {qty}개</span>
           </div>
         ) : null;
-      }).filter(Boolean);
+      }).filter(Boolean) as JSX.Element[];
     } catch (error) {
       console.error('Dynamic product quantities parse error:', error);
       return null;
@@ -1054,34 +1054,43 @@ export default function ManagerDashboard() {
                                 <strong>주문내역:</strong>
                                 <div className="mt-1 space-y-1">
                                   {order.smallBoxQuantity > 0 && (
-                                    <div className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                    <div className="bg-blue-50 px-2 py-1 rounded border-l-2 border-blue-300 text-xs">
                                       {getProductName(0, '한과1호')} × {order.smallBoxQuantity}개
                                     </div>
                                   )}
                                   {order.largeBoxQuantity > 0 && (
-                                    <div className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                    <div className="bg-green-50 px-2 py-1 rounded border-l-2 border-green-300 text-xs">
                                       {getProductName(1, '한과2호')} × {order.largeBoxQuantity}개
                                     </div>
                                   )}
                                   {order.wrappingQuantity > 0 && (
-                                    <div className="bg-gray-50 px-2 py-1 rounded text-xs">
+                                    <div className="bg-purple-50 px-2 py-1 rounded border-l-2 border-purple-300 text-xs">
                                       {getProductName(2, '보자기')} × {order.wrappingQuantity}개
                                     </div>
                                   )}
                                   {/* 동적 상품들도 개별 줄로 표시 */}
-                                  {order.dynamicQuantities && typeof order.dynamicQuantities === 'object' && 
-                                    Object.entries(order.dynamicQuantities).map(([index, quantity]) => {
-                                      const productIndex = parseInt(index);
-                                      if (quantity > 0 && productNames && productNames[productIndex]) {
-                                        return (
-                                          <div key={index} className="bg-gray-50 px-2 py-1 rounded text-xs">
-                                            {productNames[productIndex].name} × {quantity}개
-                                          </div>
-                                        );
+                                  {order.dynamicProductQuantities && Object.entries(
+                                    (() => {
+                                      try {
+                                        return typeof order.dynamicProductQuantities === 'string' 
+                                          ? JSON.parse(order.dynamicProductQuantities) 
+                                          : order.dynamicProductQuantities;
+                                      } catch {
+                                        return {};
                                       }
-                                      return null;
-                                    })
-                                  }
+                                    })() || {}
+                                  ).map(([index, quantity]) => {
+                                    const productIndex = parseInt(index);
+                                    const qty = Number(quantity);
+                                    if (qty > 0 && productNames && productNames[productIndex]) {
+                                      return (
+                                        <div key={index} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300 text-xs">
+                                          {productNames[productIndex].name} × {qty}개
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  }).filter(Boolean)}
                                 </div>
                               </div>
                               <div className="text-sm"><strong>금액:</strong> {(order.totalAmount || 0).toLocaleString()}원</div>
@@ -1222,29 +1231,28 @@ export default function ManagerDashboard() {
                                       </div>
                                     )}
                                     {/* 동적 상품들도 개별 줄로 표시 */}
-                                    {order.dynamicProductQuantities && (() => {
-                                      try {
-                                        const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
-                                          ? JSON.parse(order.dynamicProductQuantities) 
-                                          : order.dynamicProductQuantities;
-                                        
-                                        return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
-                                          const productIndex = parseInt(index);
-                                          const qty = Number(quantity);
-                                          if (qty > 0 && productNames && productNames[productIndex]) {
-                                            return (
-                                              <div key={index} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300">
-                                                <span className="whitespace-nowrap">{productNames[productIndex].name} × {qty}개</span>
-                                              </div>
-                                            );
-                                          }
-                                          return null;
-                                        }).filter(Boolean);
-                                      } catch (error) {
-                                        console.error('Dynamic product quantities parse error:', error);
-                                        return null;
+                                    {order.dynamicProductQuantities && Object.entries(
+                                      (() => {
+                                        try {
+                                          return typeof order.dynamicProductQuantities === 'string' 
+                                            ? JSON.parse(order.dynamicProductQuantities) 
+                                            : order.dynamicProductQuantities;
+                                        } catch {
+                                          return {};
+                                        }
+                                      })() || {}
+                                    ).map(([index, quantity]) => {
+                                      const productIndex = parseInt(index);
+                                      const qty = Number(quantity);
+                                      if (qty > 0 && productNames && productNames[productIndex]) {
+                                        return (
+                                          <div key={index} className="bg-orange-50 px-2 py-1 rounded border-l-2 border-orange-300">
+                                            <span className="whitespace-nowrap">{productNames[productIndex].name} × {qty}개</span>
+                                          </div>
+                                        );
                                       }
-                                    })()}
+                                      return null;
+                                    }).filter(Boolean)}
                                   </div>
                                   
                                   {/* 입금상태와 주문상태 - 관리자와 동일한 표시 */}
