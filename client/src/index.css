@@ -255,8 +255,8 @@
 }
 
 .admin-table .col-order-details {
-  width: 12%;
-  min-width: 120px;
+  width: 10%;
+  min-width: 100px;
 }
 
 .admin-table .col-phone {
@@ -283,8 +283,8 @@
 }
 
 .admin-table .col-actions {
-  width: 5%;
-  min-width: 65px;
+  width: 8%;
+  min-width: 100px;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
