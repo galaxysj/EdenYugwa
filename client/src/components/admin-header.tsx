@@ -29,7 +29,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
               </Button>
             </Link>
             <h1 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate">
-              관리자 패널
+              {isManager ? '매니저 패널' : '관리자 패널'}
             </h1>
           </div>
           <div className="flex items-center space-x-1">
@@ -76,7 +76,7 @@ export function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, cost
             <div className="h-6 w-px bg-gray-200"></div>
             <h1 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center">
               <Settings className="h-5 w-5 mr-2 text-gray-600" />
-              관리자 패널
+              {isManager ? '매니저 패널' : '관리자 패널'}
             </h1>
           </div>
           <div className="flex items-center space-x-2">
