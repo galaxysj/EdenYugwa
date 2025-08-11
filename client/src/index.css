@@ -278,13 +278,25 @@
 }
 
 .admin-table .col-status {
-  width: 8%;
-  min-width: 90px;
+  width: 6%;
+  min-width: 70px;
 }
 
 .admin-table .col-actions {
-  width: 8%;
-  min-width: 100px;
+  width: 6%;
+  min-width: 80px;
+}
+
+/* 관리 버튼 컬럼 내 버튼 크기 조정 */
+.admin-table .col-actions button {
+  font-size: 0.75rem !important;
+  padding: 3px 8px !important;
+  min-width: auto !important;
+  height: auto !important;
+}
+
+.admin-table .col-actions .space-y-1 {
+  gap: 3px !important;
 }
 
 /* 텍스트 줄바꿈 방지 및 정렬 */
