@@ -3602,7 +3602,7 @@ export default function Admin() {
       <>
         {/* Desktop Table */}
         <div className="hidden lg:block bg-white rounded-lg border">
-          <table className="w-full admin-table">
+          <table className="w-full order-details-table">
             <thead className="bg-gray-50">
               <tr className="border-b border-gray-200">
                 <th className="col-order-number text-left">주문번호</th>
@@ -4424,11 +4424,11 @@ export default function Admin() {
                         })()}
                       </div>
                       <div className="flex justify-end">
-                        <span className={`px-2 py-0.5 rounded text-xs ${
+                        <span className={`px-2 py-1 rounded text-sm font-medium ${
                           order.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
                           order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                           order.status === 'seller_shipped' ? 'bg-purple-100 text-purple-700' :
-                          'bg-gray-100 text-gray-700'
+                          'bg-yellow-100 text-yellow-700'
                         }`}>
                           {order.status === 'scheduled' ? '발송주문' :
                            order.status === 'delivered' ? '발송완료' :
