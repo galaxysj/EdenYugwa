@@ -31,6 +31,287 @@ import AdminHeader from "@/components/admin-header";
 import type { Order, Setting, DashboardContent } from "@shared/schema";
 import * as XLSX from 'xlsx';
 
+// ContentManagementTab component
+function ContentManagementTab() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Dashboard Content 쿼리
+  const { data: dashboardContent = [], isLoading: contentLoading } = useQuery({
+    queryKey: ['/api/dashboard-content'],
+    queryFn: () => api.get('/api/dashboard-content'),
+  });
+
+  // Settings 쿼리
+  const { data: settings = [], isLoading: settingsLoading } = useQuery({
+    queryKey: ['/api/settings'],
+    queryFn: () => api.get('/api/settings'),
+  });
+
+  // 콘텐츠 업데이트 뮤테이션
+  const updateContentMutation = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string }) => 
+      api.post('/api/dashboard-content', { key, value }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+      toast({
+        title: "저장 완료",
+        description: "콘텐츠가 성공적으로 업데이트되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "저장 실패",
+        description: error.message || "콘텐츠 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 설정 업데이트 뮤테이션
+  const updateSettingMutation = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: string | number }) =>
+      api.post('/api/settings', { key, value: String(value) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      toast({
+        title: "설정 저장 완료",
+        description: "설정이 성공적으로 업데이트되었습니다.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "설정 저장 실패",
+        description: error.message || "설정 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // 상태 관리
+  const [editingContent, setEditingContent] = useState<{ [key: string]: string }>({});
+  const [editingSettings, setEditingSettings] = useState<{ [key: string]: string }>({});
+
+  // 콘텐츠 값 가져오기
+  const getContentValue = (key: string) => {
+    if (editingContent[key] !== undefined) return editingContent[key];
+    const content = dashboardContent.find((c: DashboardContent) => c.key === key);
+    return content?.value || '';
+  };
+
+  // 설정 값 가져오기
+  const getSettingValue = (key: string) => {
+    if (editingSettings[key] !== undefined) return editingSettings[key];
+    const setting = settings.find((s: Setting) => s.key === key);
+    return setting?.value || '';
+  };
+
+  // 콘텐츠 저장
+  const saveContent = (key: string) => {
+    const value = editingContent[key] || '';
+    updateContentMutation.mutate({ key, value });
+    setEditingContent(prev => {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  // 설정 저장
+  const saveSetting = (key: string) => {
+    const value = editingSettings[key] || '';
+    updateSettingMutation.mutate({ key, value });
+    setEditingSettings(prev => {
+      const { [key]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
+  if (contentLoading || settingsLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
+        <div className="text-gray-500">콘텐츠를 불러오는 중...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        
+        {/* 홈페이지 콘텐츠 관리 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              홈페이지 콘텐츠
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            
+            {/* 메인 타이틀 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">메인 타이틀</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={getContentValue('mainTitle')}
+                  onChange={(e) => setEditingContent(prev => ({ ...prev, mainTitle: e.target.value }))}
+                  placeholder="에덴한과 - 전통의 맛을 그대로"
+                />
+                <Button
+                  onClick={() => saveContent('mainTitle')}
+                  size="sm"
+                  disabled={updateContentMutation.isPending}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 메인 설명 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">메인 설명</Label>
+              <div className="flex gap-2">
+                <Textarea
+                  value={getContentValue('mainDescription')}
+                  onChange={(e) => setEditingContent(prev => ({ ...prev, mainDescription: e.target.value }))}
+                  placeholder="정성으로 만든 전통 한과를 맛보세요"
+                  rows={3}
+                />
+                <Button
+                  onClick={() => saveContent('mainDescription')}
+                  size="sm"
+                  disabled={updateContentMutation.isPending}
+                  className="self-start"
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 히어로 이미지 URL */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">히어로 이미지 URL</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={getContentValue('heroImageUrl')}
+                  onChange={(e) => setEditingContent(prev => ({ ...prev, heroImageUrl: e.target.value }))}
+                  placeholder="https://example.com/hero-image.jpg"
+                />
+                <Button
+                  onClick={() => saveContent('heroImageUrl')}
+                  size="sm"
+                  disabled={updateContentMutation.isPending}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+          </CardContent>
+        </Card>
+
+        {/* 상품 및 가격 설정 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              상품 및 가격 설정
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+
+            {/* 배송비 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">배송비 (원)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={getSettingValue('shippingFee')}
+                  onChange={(e) => setEditingSettings(prev => ({ ...prev, shippingFee: e.target.value }))}
+                  placeholder="3000"
+                />
+                <Button
+                  onClick={() => saveSetting('shippingFee')}
+                  size="sm"
+                  disabled={updateSettingMutation.isPending}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 무료배송 기준 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">무료배송 기준 금액 (원)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  value={getSettingValue('freeShippingThreshold')}
+                  onChange={(e) => setEditingSettings(prev => ({ ...prev, freeShippingThreshold: e.target.value }))}
+                  placeholder="50000"
+                />
+                <Button
+                  onClick={() => saveSetting('freeShippingThreshold')}
+                  size="sm"
+                  disabled={updateSettingMutation.isPending}
+                >
+                  <Save className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 상품명들 */}
+            {['product1Name', 'product2Name', 'product3Name', 'product4Name', 'product5Name'].map((key, index) => (
+              <div key={key} className="space-y-2">
+                <Label className="text-sm font-medium">상품 {index + 1} 이름</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={getSettingValue(key)}
+                    onChange={(e) => setEditingSettings(prev => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={`상품 ${index + 1} 이름`}
+                  />
+                  <Button
+                    onClick={() => saveSetting(key)}
+                    size="sm"
+                    disabled={updateSettingMutation.isPending}
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+            {/* 상품 가격들 */}
+            {['product1Price', 'product2Price', 'product3Price', 'product4Price', 'product5Price'].map((key, index) => (
+              <div key={key} className="space-y-2">
+                <Label className="text-sm font-medium">상품 {index + 1} 가격 (원)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={getSettingValue(key)}
+                    onChange={(e) => setEditingSettings(prev => ({ ...prev, [key]: e.target.value }))}
+                    placeholder="0"
+                  />
+                  <Button
+                    onClick={() => saveSetting(key)}
+                    size="sm"
+                    disabled={updateSettingMutation.isPending}
+                  >
+                    <Save className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+
+          </CardContent>
+        </Card>
+
+      </div>
+    </div>
+  );
+}
+
 // Security-related interfaces
 interface UserSession {
   id: number;
@@ -5030,7 +5311,7 @@ export default function Admin() {
                       매출관리
                     </TabsTrigger>
                   </TabsList>
-                  <TabsList className="grid w-full grid-cols-3 mb-2">
+                  <TabsList className="grid w-full grid-cols-4 mb-2">
                     <TabsTrigger value="customers" className="text-blue-600 text-xs px-1">
                       <Users className="h-3 w-3 mr-1" />
                       고객관리
@@ -5038,6 +5319,10 @@ export default function Admin() {
                     <TabsTrigger value="members" className="text-green-600 text-xs px-1">
                       <Key className="h-3 w-3 mr-1" />
                       회원관리
+                    </TabsTrigger>
+                    <TabsTrigger value="content" className="text-orange-600 text-xs px-1">
+                      <Edit className="h-3 w-3 mr-1" />
+                      콘텐츠
                     </TabsTrigger>
                     <TabsTrigger value="security" className="text-red-600 text-xs px-1">
                       <Shield className="h-3 w-3 mr-1" />
@@ -5048,7 +5333,7 @@ export default function Admin() {
                 
                 {/* 데스크톱에서는 한 줄로 표시 */}
                 <div className="hidden md:block">
-                  <TabsList className="grid w-full grid-cols-10">
+                  <TabsList className="grid w-full grid-cols-11">
                     <TabsTrigger value="all" className="text-sm">전체 ({allOrders.length})</TabsTrigger>
                     <TabsTrigger value="pending" className="text-sm">주문접수 ({pendingOrders.length})</TabsTrigger>
                     <TabsTrigger value="seller_shipped" className="text-sm">발송대기 ({sellerShippedOrders.length})</TabsTrigger>
@@ -5058,6 +5343,7 @@ export default function Admin() {
                     <TabsTrigger value="revenue" className="text-purple-600 text-sm">매출관리</TabsTrigger>
                     <TabsTrigger value="customers" className="text-blue-600 text-sm">고객관리</TabsTrigger>
                     <TabsTrigger value="members" className="text-green-600 text-sm">회원관리</TabsTrigger>
+                    <TabsTrigger value="content" className="text-orange-600 text-sm">콘텐츠관리</TabsTrigger>
                     <TabsTrigger value="security" className="text-red-600 text-sm">보안관리</TabsTrigger>
                   </TabsList>
                 </div>
@@ -5857,6 +6143,10 @@ export default function Admin() {
                       </CardContent>
                     </Card>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="content" className="mt-6">
+                  <ContentManagementTab />
                 </TabsContent>
 
                 <TabsContent value="trash" className="mt-6">
