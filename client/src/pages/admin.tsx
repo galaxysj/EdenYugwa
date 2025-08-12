@@ -2138,10 +2138,14 @@ export default function Admin() {
     const filteredTotals = filteredOrders.reduce((acc: any, order: Order) => {
       acc.count++;
       
-      // 가격설정을 기반으로 한 실제 매출 계산 (저장된 order.totalAmount 대신 현재 가격으로 재계산)
-      const calculatedSmallBoxAmount = order.smallBoxQuantity * smallBoxPriceValue;
-      const calculatedLargeBoxAmount = order.largeBoxQuantity * largeBoxPriceValue;
-      const calculatedWrappingAmount = order.wrappingQuantity * wrappingPriceValue;
+      // 주문 당시 가격을 우선 사용한 매출 계산
+      const orderSmallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : smallBoxPriceValue;
+      const orderLargeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : largeBoxPriceValue;
+      const orderWrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : wrappingPriceValue;
+      
+      const calculatedSmallBoxAmount = order.smallBoxQuantity * orderSmallBoxPrice;
+      const calculatedLargeBoxAmount = order.largeBoxQuantity * orderLargeBoxPrice;
+      const calculatedWrappingAmount = order.wrappingQuantity * orderWrappingPrice;
       const calculatedShippingAmount = order.shippingFee || 0;
       
       // 동적 상품 금액 계산
@@ -2156,8 +2160,12 @@ export default function Admin() {
             const productIndex = parseInt(index);
             const qty = Number(quantity);
             if (qty > 0 && productIndex >= 3) {
+              // 주문 당시 동적 상품 가격을 우선 사용
+              const storedDynamicPrice = order.dynamicProductPrices && order.dynamicProductPrices[productIndex];
               const dynamicPriceSetting = settings?.find(s => s.key === `product_${productIndex}Price`);
-              const dynamicPrice = dynamicPriceSetting ? parseInt(dynamicPriceSetting.value) : 0;
+              const dynamicPrice = (storedDynamicPrice && storedDynamicPrice > 0) ? 
+                storedDynamicPrice : 
+                (dynamicPriceSetting ? parseInt(dynamicPriceSetting.value) : 0);
               calculatedDynamicAmount += qty * dynamicPrice;
             }
           });
@@ -2756,10 +2764,13 @@ export default function Admin() {
                       // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                       const productNames = dashboardContent.productNames || [];
                       
-                      // 가격설정을 항상 우선 사용 (저장된 주문가격은 무시)
-                      const smallBoxPrice = smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
-                      const largeBoxPrice = largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
-                      const wrappingPrice = wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000);
+                      // 주문 당시 가격을 우선 사용, 없으면 현재 설정을 fallback으로 사용
+                      const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+                        order.smallBoxPrice : (smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000));
+                      const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+                        order.largeBoxPrice : (largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000));
+                      const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+                        order.wrappingPrice : (wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000));
                       
                       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                       const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
@@ -2776,9 +2787,13 @@ export default function Admin() {
                             const productIndex = parseInt(index);
                             const qty = Number(quantity);
                             if (productIndex >= 3 && qty > 0) {
+                              // 주문 당시 동적 상품 가격을 우선 사용, 없으면 현재 설정
+                              const storedDynamicPrice = order.dynamicProductPrices && order.dynamicProductPrices[productIndex];
                               const productPriceSetting = settings?.find(s => s.key === `product_${productIndex}Price`);
-                              const productPrice = productPriceSetting ? parseInt(productPriceSetting.value) : 
-                                                  (productNames[productIndex]?.price ? parseInt(productNames[productIndex].price) : 0);
+                              const productPrice = (storedDynamicPrice && storedDynamicPrice > 0) ? 
+                                storedDynamicPrice : 
+                                (productPriceSetting ? parseInt(productPriceSetting.value) : 
+                                (productNames[productIndex]?.price ? parseInt(productNames[productIndex].price) : 0));
                               dynamicProductsTotal += qty * productPrice;
                             }
                           });
@@ -3864,15 +3879,19 @@ export default function Admin() {
                     <td className="col-amount text-center">
                       <div className="text-xs font-medium text-blue-700 no-wrap">
                         {(() => {
-                          // 가격설정을 반영한 매출 재계산
-                          const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
-                            parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
-                            (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
-                          const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
-                            parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
-                            (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
-                          const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
-                            parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                          // 주문 당시 가격을 우선 사용하고, 없으면 현재 설정을 fallback으로 사용
+                          const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+                            order.smallBoxPrice : 
+                            (settings?.find(s => s.key === 'product_0Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 15000);
+                          const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+                            order.largeBoxPrice : 
+                            (settings?.find(s => s.key === 'product_1Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 23000);
+                          const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+                            order.wrappingPrice : 
+                            (settings?.find(s => s.key === 'product_2Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000);
                           
                           let recalculatedTotal = 
                             (order.smallBoxQuantity * smallBoxPrice) +
@@ -3913,15 +3932,19 @@ export default function Admin() {
                         <div
                           className="text-xs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 no-wrap"
                           onClick={() => {
-                            // 가격설정을 반영한 매출 재계산 (기본값용)
-                            const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
-                              (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
-                            const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
-                              (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
-                            const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                            // 주문 당시 가격을 우선 사용 (기본값용)
+                            const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+                              order.smallBoxPrice : 
+                              (settings?.find(s => s.key === 'product_0Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 15000);
+                            const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+                              order.largeBoxPrice : 
+                              (settings?.find(s => s.key === 'product_1Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 23000);
+                            const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+                              order.wrappingPrice : 
+                              (settings?.find(s => s.key === 'product_2Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000);
                             
                             let recalculatedTotal = 
                               (order.smallBoxQuantity * smallBoxPrice) +
@@ -3961,15 +3984,19 @@ export default function Admin() {
                           title="클릭하여 실제 입금금액 수정"
                         >
                           {(() => {
-                            // 가격설정을 반영한 매출 재계산 (실입금 기본값용)
-                            const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
-                              (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
-                            const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
-                              (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
-                            const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                            // 주문 당시 가격을 우선 사용 (실입금 기본값용)
+                            const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+                              order.smallBoxPrice : 
+                              (settings?.find(s => s.key === 'product_0Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 15000);
+                            const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+                              order.largeBoxPrice : 
+                              (settings?.find(s => s.key === 'product_1Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 23000);
+                            const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+                              order.wrappingPrice : 
+                              (settings?.find(s => s.key === 'product_2Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000);
                             
                             let recalculatedTotal = 
                               (order.smallBoxQuantity * smallBoxPrice) +
@@ -4015,15 +4042,19 @@ export default function Admin() {
                             -{formatPrice(Math.abs(order.discountAmount))}
                           </span>
                         ) : (() => {
-                          // 미입금액 계산도 재계산된 매출 기준으로 변경
-                          const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
-                            parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
-                            (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
-                          const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
-                            parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
-                            (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
-                          const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
-                            parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                          // 주문 당시 가격으로 미입금액 계산
+                          const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+                            order.smallBoxPrice : 
+                            (settings?.find(s => s.key === 'product_0Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 15000);
+                          const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+                            order.largeBoxPrice : 
+                            (settings?.find(s => s.key === 'product_1Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 23000);
+                          const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+                            order.wrappingPrice : 
+                            (settings?.find(s => s.key === 'product_2Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000);
                           
                           let recalculatedTotal = 
                             (order.smallBoxQuantity * smallBoxPrice) +
@@ -4069,15 +4100,19 @@ export default function Admin() {
                         key={`payment-${order.id}-${order.paymentStatus}`}
                         value={
                           (() => {
-                            // 가격설정 반영한 매출로 부분입금 상태 판단
-                            const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
-                              (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
-                            const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
-                              (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
-                            const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
-                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                            // 주문 당시 가격으로 부분입금 상태 판단
+                            const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+                              order.smallBoxPrice : 
+                              (settings?.find(s => s.key === 'product_0Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 15000);
+                            const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+                              order.largeBoxPrice : 
+                              (settings?.find(s => s.key === 'product_1Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 23000);
+                            const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+                              order.wrappingPrice : 
+                              (settings?.find(s => s.key === 'product_2Price')?.value ? 
+                                parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000);
                             
                             let recalculatedTotal = 
                               (order.smallBoxQuantity * smallBoxPrice) +
