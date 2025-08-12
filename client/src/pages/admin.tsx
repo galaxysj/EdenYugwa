@@ -2730,6 +2730,13 @@ export default function Admin() {
                       const shippingFee = order.shippingFee || 0;
                       
                       // 가격설정의 원가를 우선 사용, 없으면 주문 시점 원가, 마지막으로 콘텐츠관리 원가
+                      console.log('매출 상세내역 원가 계산:', {
+                        smallBoxCostValue, largeBoxCostValue, wrappingCostValue,
+                        orderSmallBoxCost: order.smallBoxCost,
+                        orderLargeBoxCost: order.largeBoxCost,
+                        orderWrappingCost: order.wrappingCost
+                      });
+                      
                       const smallCost = smallBoxCostValue || order.smallBoxCost || 
                                        (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
                       const largeCost = largeBoxCostValue || order.largeBoxCost || 
