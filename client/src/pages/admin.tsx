@@ -156,21 +156,36 @@ const getStatusColor = (success: boolean) => {
 
 // Payment Details Dialog Component
 function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order; onUpdate: (orderId: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number) => void; open: boolean; setOpen: (open: boolean) => void }) {
-  // settings 데이터 가져오기
+  // settings와 dashboardContent 데이터 가져오기 (매출내역과 동일한 방식)
   const { data: settings } = useQuery<any[]>({
     queryKey: ["/api/settings"],
   });
-  // 주문 당시 가격으로 총 주문금액 재계산 (settings를 전달받아 동적 상품 가격 fallback 사용)
-  const calculateRecalculatedTotal = (order: Order, settings?: any[]) => {
-    const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 15000;
-    const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 23000;
-    const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 1000;
+  const { data: dashboardContent } = useQuery<any>({
+    queryKey: ["/api/dashboard-content"],
+  });
+  // 매출내역과 동일한 방식으로 총 주문금액 계산 (현재 가격설정 우선 사용)
+  const calculateRecalculatedTotal = (order: Order, settings?: any[], dashboardContent?: any) => {
+    // 현재 가격설정에서 가격 우선 조회, 없으면 content management, 마지막으로 fallback
+    const product0PriceSetting = settings?.find(s => s.key === "product_0Price");
+    const product1PriceSetting = settings?.find(s => s.key === "product_1Price");
+    const product2PriceSetting = settings?.find(s => s.key === "product_2Price");
+    const product3PriceSetting = settings?.find(s => s.key === "product_3Price");
+    
+    const productNames = dashboardContent?.productNames || [];
+    
+    const smallBoxPrice = product0PriceSetting ? parseInt(product0PriceSetting.value) :
+                          (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
+    const largeBoxPrice = product1PriceSetting ? parseInt(product1PriceSetting.value) :
+                          (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
+    const wrappingPrice = (product2PriceSetting ? parseInt(product2PriceSetting.value) :
+                          (product3PriceSetting ? parseInt(product3PriceSetting.value) :
+                          (productNames[2]?.price ? parseInt(productNames[2].price) : 1000)));
     
     let total = (order.smallBoxQuantity * smallBoxPrice) +
                 (order.largeBoxQuantity * largeBoxPrice) +
                 (order.wrappingQuantity * wrappingPrice);
     
-    // 동적 상품 가격 추가
+    // 동적 상품 가격 추가 (현재 가격설정 사용)
     if (order.dynamicProductQuantities) {
       try {
         const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
@@ -181,7 +196,6 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
           const idx = parseInt(index);
           const qty = Number(quantity);
           if (qty > 0 && idx >= 3) {
-            // 주문 당시 동적 상품 가격을 사용할 수 없으므로 현재 가격설정 사용
             const productPriceSetting = settings?.find(s => s.key === `product_${idx}Price`);
             const dynamicPrice = productPriceSetting ? parseInt(productPriceSetting.value) : 0;
             total += qty * dynamicPrice;
@@ -195,7 +209,7 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
     return total + (order.shippingFee || 0);
   };
   
-  const recalculatedTotal = calculateRecalculatedTotal(order, settings);
+  const recalculatedTotal = calculateRecalculatedTotal(order, settings, dashboardContent);
   const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || recalculatedTotal.toString());
   const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || "0");
 
@@ -975,9 +989,12 @@ function PaymentConfirmDialog({
   setOpen: (open: boolean) => void;
   onConfirm: (actualPaidAmount: number, discountReason: string) => void;
 }) {
-  // settings 데이터 가져오기
+  // settings와 dashboardContent 데이터 가져오기 (매출내역과 동일한 방식)
   const { data: settings } = useQuery<any[]>({
     queryKey: ["/api/settings"],
+  });
+  const { data: dashboardContent } = useQuery<any>({
+    queryKey: ["/api/dashboard-content"],
   });
   
   const [actualPaidAmount, setActualPaidAmount] = useState("");
@@ -1011,17 +1028,29 @@ function PaymentConfirmDialog({
 
   if (!order) return null;
 
-  // 주문 당시 가격으로 재계산된 총 주문금액 사용 (settings를 전달받아 동적 상품 가격 fallback 사용)
-  const calculateOrderTotal = (order: Order, settings?: any[]) => {
-    const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 15000;
-    const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 23000;
-    const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 1000;
+  // 매출내역과 동일한 방식으로 총 주문금액 계산 (현재 가격설정 우선 사용)
+  const calculateOrderTotal = (order: Order, settings?: any[], dashboardContent?: any) => {
+    // 현재 가격설정에서 가격 우선 조회, 없으면 content management, 마지막으로 fallback
+    const product0PriceSetting = settings?.find(s => s.key === "product_0Price");
+    const product1PriceSetting = settings?.find(s => s.key === "product_1Price");
+    const product2PriceSetting = settings?.find(s => s.key === "product_2Price");
+    const product3PriceSetting = settings?.find(s => s.key === "product_3Price");
+    
+    const productNames = dashboardContent?.productNames || [];
+    
+    const smallBoxPrice = product0PriceSetting ? parseInt(product0PriceSetting.value) :
+                          (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
+    const largeBoxPrice = product1PriceSetting ? parseInt(product1PriceSetting.value) :
+                          (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
+    const wrappingPrice = (product2PriceSetting ? parseInt(product2PriceSetting.value) :
+                          (product3PriceSetting ? parseInt(product3PriceSetting.value) :
+                          (productNames[2]?.price ? parseInt(productNames[2].price) : 1000)));
     
     let total = (order.smallBoxQuantity * smallBoxPrice) +
                 (order.largeBoxQuantity * largeBoxPrice) +
                 (order.wrappingQuantity * wrappingPrice);
     
-    // 동적 상품 가격 추가
+    // 동적 상품 가격 추가 (현재 가격설정 사용)
     if (order.dynamicProductQuantities) {
       try {
         const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
@@ -1032,7 +1061,6 @@ function PaymentConfirmDialog({
           const idx = parseInt(index);
           const qty = Number(quantity);
           if (qty > 0 && idx >= 3) {
-            // 주문 당시 동적 상품 가격을 사용할 수 없으므로 현재 가격설정 사용
             const productPriceSetting = settings?.find(s => s.key === `product_${idx}Price`);
             const dynamicPrice = productPriceSetting ? parseInt(productPriceSetting.value) : 0;
             total += qty * dynamicPrice;
@@ -1046,7 +1074,7 @@ function PaymentConfirmDialog({
     return total + (order.shippingFee || 0);
   };
 
-  const expectedAmount = calculateOrderTotal(order, settings);
+  const expectedAmount = calculateOrderTotal(order, settings, dashboardContent);
   const paidAmount = parseInt(actualPaidAmount) || 0;
   const difference = expectedAmount - paidAmount;
 
