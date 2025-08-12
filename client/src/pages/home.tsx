@@ -56,21 +56,7 @@ export default function Home() {
             {/* 브랜드 로고와 모바일 버튼들을 세로로 배치 */}
             <div className="md:flex md:items-center md:space-x-3">
               <div className="flex items-center space-x-3 justify-center md:justify-start">
-                {/* 로고 이미지 또는 기본 아이콘 */}
-                {dashboardContent.logoUrl ? (
-                  <img 
-                    src={dashboardContent.logoUrl} 
-                    alt="에덴한과 로고" 
-                    className="h-8 w-auto object-contain"
-                    onError={(e) => {
-                      // 이미지 로드 실패시 기본 아이콘으로 대체
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                ) : null}
-                <Leaf className={`text-eden-sage text-2xl ${dashboardContent.logoUrl ? 'hidden' : ''}`} />
+                <Leaf className="text-eden-sage text-2xl" />
                 <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
               </div>
               

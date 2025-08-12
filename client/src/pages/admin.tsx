@@ -8,8 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Calculator, Save, Undo, Shield, Monitor, Activity, MapPin, Smartphone, Laptop, Tablet, Globe, Lock, ChevronDown, ChevronUp, Image } from "lucide-react";
-import { ObjectUploader } from "@/components/ObjectUploader";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, RotateCcw, Upload, Plus, Calculator, Save, Undo, Shield, Monitor, Activity, MapPin, Smartphone, Laptop, Tablet, Globe, Lock, ChevronDown, ChevronUp } from "lucide-react";
 import { SmsDialog } from "@/components/sms-dialog";
 import ScheduledDatePicker from "@/components/scheduled-date-picker";
 import { DeliveredDatePicker } from "@/components/delivered-date-picker";
@@ -30,287 +29,6 @@ import { ko } from "date-fns/locale";
 import AdminHeader from "@/components/admin-header";
 import type { Order, Setting, DashboardContent } from "@shared/schema";
 import * as XLSX from 'xlsx';
-
-// ContentManagementTab component
-function ContentManagementTab() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
-  // Dashboard Content 쿼리
-  const { data: dashboardContent = [], isLoading: contentLoading } = useQuery({
-    queryKey: ['/api/dashboard-content'],
-    queryFn: () => api.get('/api/dashboard-content'),
-  });
-
-  // Settings 쿼리
-  const { data: settings = [], isLoading: settingsLoading } = useQuery({
-    queryKey: ['/api/settings'],
-    queryFn: () => api.get('/api/settings'),
-  });
-
-  // 콘텐츠 업데이트 뮤테이션
-  const updateContentMutation = useMutation({
-    mutationFn: ({ key, value }: { key: string; value: string }) => 
-      api.post('/api/dashboard-content', { key, value }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-      toast({
-        title: "저장 완료",
-        description: "콘텐츠가 성공적으로 업데이트되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "저장 실패",
-        description: error.message || "콘텐츠 업데이트 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // 설정 업데이트 뮤테이션
-  const updateSettingMutation = useMutation({
-    mutationFn: ({ key, value }: { key: string; value: string | number }) =>
-      api.post('/api/settings', { key, value: String(value) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
-      toast({
-        title: "설정 저장 완료",
-        description: "설정이 성공적으로 업데이트되었습니다.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "설정 저장 실패",
-        description: error.message || "설정 업데이트 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // 상태 관리
-  const [editingContent, setEditingContent] = useState<{ [key: string]: string }>({});
-  const [editingSettings, setEditingSettings] = useState<{ [key: string]: string }>({});
-
-  // 콘텐츠 값 가져오기
-  const getContentValue = (key: string) => {
-    if (editingContent[key] !== undefined) return editingContent[key];
-    const content = dashboardContent.find((c: DashboardContent) => c.key === key);
-    return content?.value || '';
-  };
-
-  // 설정 값 가져오기
-  const getSettingValue = (key: string) => {
-    if (editingSettings[key] !== undefined) return editingSettings[key];
-    const setting = settings.find((s: Setting) => s.key === key);
-    return setting?.value || '';
-  };
-
-  // 콘텐츠 저장
-  const saveContent = (key: string) => {
-    const value = editingContent[key] || '';
-    updateContentMutation.mutate({ key, value });
-    setEditingContent(prev => {
-      const { [key]: _, ...rest } = prev;
-      return rest;
-    });
-  };
-
-  // 설정 저장
-  const saveSetting = (key: string) => {
-    const value = editingSettings[key] || '';
-    updateSettingMutation.mutate({ key, value });
-    setEditingSettings(prev => {
-      const { [key]: _, ...rest } = prev;
-      return rest;
-    });
-  };
-
-  if (contentLoading || settingsLoading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eden-brown mx-auto mb-4"></div>
-        <div className="text-gray-500">콘텐츠를 불러오는 중...</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        
-        {/* 홈페이지 콘텐츠 관리 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Edit className="h-5 w-5" />
-              홈페이지 콘텐츠
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            
-            {/* 메인 타이틀 */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">메인 타이틀</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={getContentValue('mainTitle')}
-                  onChange={(e) => setEditingContent(prev => ({ ...prev, mainTitle: e.target.value }))}
-                  placeholder="에덴한과 - 전통의 맛을 그대로"
-                />
-                <Button
-                  onClick={() => saveContent('mainTitle')}
-                  size="sm"
-                  disabled={updateContentMutation.isPending}
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* 메인 설명 */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">메인 설명</Label>
-              <div className="flex gap-2">
-                <Textarea
-                  value={getContentValue('mainDescription')}
-                  onChange={(e) => setEditingContent(prev => ({ ...prev, mainDescription: e.target.value }))}
-                  placeholder="정성으로 만든 전통 한과를 맛보세요"
-                  rows={3}
-                />
-                <Button
-                  onClick={() => saveContent('mainDescription')}
-                  size="sm"
-                  disabled={updateContentMutation.isPending}
-                  className="self-start"
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* 히어로 이미지 URL */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">히어로 이미지 URL</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={getContentValue('heroImageUrl')}
-                  onChange={(e) => setEditingContent(prev => ({ ...prev, heroImageUrl: e.target.value }))}
-                  placeholder="https://example.com/hero-image.jpg"
-                />
-                <Button
-                  onClick={() => saveContent('heroImageUrl')}
-                  size="sm"
-                  disabled={updateContentMutation.isPending}
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-          </CardContent>
-        </Card>
-
-        {/* 상품 및 가격 설정 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              상품 및 가격 설정
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-
-            {/* 배송비 */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">배송비 (원)</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={getSettingValue('shippingFee')}
-                  onChange={(e) => setEditingSettings(prev => ({ ...prev, shippingFee: e.target.value }))}
-                  placeholder="3000"
-                />
-                <Button
-                  onClick={() => saveSetting('shippingFee')}
-                  size="sm"
-                  disabled={updateSettingMutation.isPending}
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* 무료배송 기준 */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">무료배송 기준 금액 (원)</Label>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  value={getSettingValue('freeShippingThreshold')}
-                  onChange={(e) => setEditingSettings(prev => ({ ...prev, freeShippingThreshold: e.target.value }))}
-                  placeholder="50000"
-                />
-                <Button
-                  onClick={() => saveSetting('freeShippingThreshold')}
-                  size="sm"
-                  disabled={updateSettingMutation.isPending}
-                >
-                  <Save className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* 상품명들 */}
-            {['product1Name', 'product2Name', 'product3Name', 'product4Name', 'product5Name'].map((key, index) => (
-              <div key={key} className="space-y-2">
-                <Label className="text-sm font-medium">상품 {index + 1} 이름</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={getSettingValue(key)}
-                    onChange={(e) => setEditingSettings(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={`상품 ${index + 1} 이름`}
-                  />
-                  <Button
-                    onClick={() => saveSetting(key)}
-                    size="sm"
-                    disabled={updateSettingMutation.isPending}
-                  >
-                    <Save className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-
-            {/* 상품 가격들 */}
-            {['product1Price', 'product2Price', 'product3Price', 'product4Price', 'product5Price'].map((key, index) => (
-              <div key={key} className="space-y-2">
-                <Label className="text-sm font-medium">상품 {index + 1} 가격 (원)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    value={getSettingValue(key)}
-                    onChange={(e) => setEditingSettings(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder="0"
-                  />
-                  <Button
-                    onClick={() => saveSetting(key)}
-                    size="sm"
-                    disabled={updateSettingMutation.isPending}
-                  >
-                    <Save className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-
-          </CardContent>
-        </Card>
-
-      </div>
-    </div>
-  );
-}
 
 // Security-related interfaces
 interface UserSession {
@@ -5320,13 +5038,13 @@ export default function Admin() {
                       <Key className="h-3 w-3 mr-1" />
                       회원관리
                     </TabsTrigger>
-                    <TabsTrigger value="content" className="text-orange-600 text-xs px-1">
-                      <Edit className="h-3 w-3 mr-1" />
-                      콘텐츠
-                    </TabsTrigger>
                     <TabsTrigger value="security" className="text-red-600 text-xs px-1">
                       <Shield className="h-3 w-3 mr-1" />
                       보안관리
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-xs px-1">
+                      <Cog className="h-3 w-3 mr-1" />
+                      콘텐츠 및 상품관리
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -5343,8 +5061,8 @@ export default function Admin() {
                     <TabsTrigger value="revenue" className="text-purple-600 text-sm">매출관리</TabsTrigger>
                     <TabsTrigger value="customers" className="text-blue-600 text-sm">고객관리</TabsTrigger>
                     <TabsTrigger value="members" className="text-green-600 text-sm">회원관리</TabsTrigger>
-                    <TabsTrigger value="content" className="text-orange-600 text-sm">콘텐츠관리</TabsTrigger>
                     <TabsTrigger value="security" className="text-red-600 text-sm">보안관리</TabsTrigger>
+                    <TabsTrigger value="settings" className="text-orange-600 text-sm">콘텐츠 및 상품관리</TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -6145,10 +5863,6 @@ export default function Admin() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="content" className="mt-6">
-                  <ContentManagementTab />
-                </TabsContent>
-
                 <TabsContent value="trash" className="mt-6">
                   {isLoadingTrash ? (
                     <div className="text-center py-8">
@@ -6163,6 +5877,1121 @@ export default function Admin() {
                   ) : (
                     renderTrashOrdersList(deletedOrders)
                   )}
+                </TabsContent>
+
+
+
+                <TabsContent value="settings" className="mt-6">
+                  <div className="space-y-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="font-korean text-lg md:text-xl flex items-center gap-2">
+                          <Cog className="h-5 w-5" />
+                          시스템 설정
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {/* 컴팩트한 설정 버튼들 */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+                          <PriceSettingsDialog />
+                          <AdminInfoSettingsDialog />
+                          <PasswordChangeDialog 
+                            triggerComponent={
+                              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                                <Key className="h-4 w-4" />
+                                비밀번호 변경
+                              </Button>
+                            }
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.location.reload()}
+                            className="flex items-center gap-2"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                            새로고침
+                          </Button>
+                        </div>
+
+                        {/* 컴팩트한 현재 설정값 */}
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-medium text-gray-900">현재 설정값</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-xs">
+                            {settings && settings.map((setting) => (
+                              <div key={setting.id} className="bg-gray-50 rounded p-2 text-center">
+                                <div className="text-gray-600 truncate text-xs">{setting.description}</div>
+                                <div className="font-medium text-gray-900">
+                                  {setting.key.includes('Cost') || setting.key.includes('Fee') || setting.key.includes('Threshold') 
+                                    ? `${parseInt(setting.value).toLocaleString()}원`
+                                    : setting.value
+                                  }
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="content" className="mt-6">
+                  <div className="bg-white rounded-lg border border-gray-200">
+                    {/* 헤더 */}
+                    <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                      <h2 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                        <Edit className="h-5 w-5" />
+                        콘텐츠 및 상품 관리
+                      </h2>
+                      <Button
+                        onClick={() => {
+                          if (confirm('모든 콘텐츠를 기본값으로 완전히 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                            const defaultContent = {
+                              smallBoxName: "한과1호(약 1.1kg)",
+                              largeBoxName: "한과2호(약 1.3kg)", 
+                              smallBoxDimensions: "약 35.5×21×11.2cm",
+                              largeBoxDimensions: "약 37×23×11.5cm",
+                              wrappingName: "보자기",
+                              wrappingPrice: "개당 +1,000원",
+                              mainTitle: "진안에서 온 정성 가득 유과",
+                              mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                              heroImages: [],
+                              aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
+                              bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                              bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                            };
+                            setDashboardContent({...dashboardContent, ...defaultContent});
+                            // 각각 업데이트
+                            Object.entries(defaultContent).forEach(([key, value]) => {
+                              updateContentMutation.mutate({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
+                            });
+                            toast({ title: "모든 콘텐츠가 기본값으로 초기화되었습니다." });
+                          }
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                      >
+                        <RotateCcw className="h-4 w-4 mr-1" />
+                        전체되돌리기
+                      </Button>
+                    </div>
+                    
+                    <div className="p-4 space-y-6">
+                        <div className="space-y-6">
+                          {/* 상품 정보 관리 */}
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-lg font-semibold text-gray-900">상품 정보 관리</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      await updateContentMutation.mutateAsync({ 
+                                        key: 'productNames', 
+                                        value: JSON.stringify(dashboardContent.productNames) 
+                                      });
+                                      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "모든 상품 정보가 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "상품 정보 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('모든 상품 정보를 기본값으로 되돌리시겠습니까?')) {
+                                      const defaultProductNames = [
+                                        { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
+                                        { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' },
+                                        { name: '보자기', price: '1000', cost: '200', size: '', weight: '' }
+                                      ];
+                                      setDashboardContent({...dashboardContent, productNames: defaultProductNames});
+                                      updateContentMutation.mutate({ 
+                                        key: 'productNames', 
+                                        value: JSON.stringify(defaultProductNames) 
+                                      });
+                                      updateContentMutation.mutate({ key: 'wrappingName', value: "보자기" });
+                                      queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    const newProductNames = [...(dashboardContent.productNames || []), { name: '', price: '0', cost: '0', size: '', weight: '' }];
+                                    setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                    updateContentMutation.mutate({ 
+                                      key: 'productNames', 
+                                      value: JSON.stringify(newProductNames) 
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  상품 추가
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            {/* Dynamic Product List with Pricing - Table Format */}
+                            <div className="border rounded-lg overflow-hidden bg-white">
+                              <table className="w-full">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 w-16">#</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">상품명</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">크기/규격</th>
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">중량</th>
+                                    <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 w-36">작업</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {(dashboardContent.productNames || []).map((product: any, index: number) => (
+                                    <tr key={index} className="border-b border-gray-100">
+                                      <td className="px-4 py-3 text-sm text-gray-700 font-medium">
+                                        {index + 1}
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        <Input
+                                          value={product.name || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], name: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="상품명"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        />
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        <Input
+                                          value={product.size || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], size: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="(가로×세로×높이)"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        />
+                                      </td>
+                                      <td className="px-4 py-3">
+                                        <Input
+                                          value={product.weight || ''}
+                                          onChange={(e) => {
+                                            const newProductNames = [...dashboardContent.productNames];
+                                            newProductNames[index] = {...newProductNames[index], weight: e.target.value};
+                                            setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                          }}
+                                          placeholder="중량"
+                                          className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        />
+                                      </td>
+                                      <td className="px-4 py-3 text-center">
+                                        <div className="flex gap-1 justify-center">
+                                          <Button
+                                            size="sm"
+                                            onClick={async () => {
+                                              const buttonKey = `product-${index}`;
+                                              if (savingButtons[buttonKey]) return;
+                                              
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                              
+                                              try {
+                                                await updateContentMutation.mutateAsync({ 
+                                                  key: 'productNames', 
+                                                  value: JSON.stringify(dashboardContent.productNames) 
+                                                });
+                                                queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                                toast({
+                                                  title: "상품 정보 저장 완료",
+                                                  description: `${product.name} 정보가 업데이트되었습니다.`,
+                                                });
+                                              } catch (error) {
+                                                toast({
+                                                  title: "저장 실패",
+                                                  description: "상품 정보 저장 중 오류가 발생했습니다.",
+                                                  variant: "destructive"
+                                                });
+                                              } finally {
+                                                setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                              }
+                                            }}
+                                            disabled={savingButtons[`product-${index}`]}
+                                            variant="ghost"
+                                            className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                          >
+                                            <Save className="h-3 w-3 mr-1" />
+                                            {savingButtons[`product-${index}`] ? '저장중' : '저장'}
+                                          </Button>
+                                          <Button
+                                            onClick={() => {
+                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                              toast({
+                                                title: "되돌리기 완료",
+                                                description: `${product.name} 정보가 되돌려졌습니다.`,
+                                              });
+                                            }}
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                          >
+                                            <Undo className="h-3 w-3 mr-1" />
+                                            되돌리기
+                                          </Button>
+                                          <Button
+                                            onClick={() => {
+                                              const newProductNames = dashboardContent.productNames.filter((_: any, i: number) => i !== index);
+                                              setDashboardContent({...dashboardContent, productNames: newProductNames});
+                                              updateContentMutation.mutate({ 
+                                                key: 'productNames', 
+                                                value: JSON.stringify(newProductNames) 
+                                              });
+                                              queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            }}
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                              
+                              {(!dashboardContent.productNames || dashboardContent.productNames.length === 0) && (
+                                <div className="text-center py-8 text-gray-500">
+                                  <p className="text-sm">등록된 상품이 없습니다.</p>
+                                  <p className="text-xs">상품 추가 버튼을 클릭하여 새 상품을 추가하세요.</p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* 가격 설정 안내 */}
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Calculator className="h-4 w-4 text-blue-600" />
+                                <h4 className="text-sm font-medium text-blue-800">가격 관리 안내</h4>
+                              </div>
+                              <p className="text-sm text-blue-700">
+                                상품의 <strong>판매가와 원가</strong>는 <strong>"가격 설정"</strong> 탭에서 관리할 수 있습니다.
+                                <br />
+                                이곳에서는 상품명, 크기, 중량 등의 기본 정보만 수정하세요.
+                              </p>
+                            </div>
+
+                          </div>
+
+                          {/* 메인 콘텐츠 */}
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-lg font-semibold text-gray-900">메인 콘텐츠</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const mainContentData = {
+                                        mainTitle: dashboardContent.mainTitle,
+                                        mainDescription: dashboardContent.mainDescription,
+                                        heroImages: dashboardContent.heroImages,
+                                        aboutText: dashboardContent.aboutText
+                                      };
+                                      
+                                      await Promise.all(Object.entries(mainContentData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value: typeof value === 'string' ? value : JSON.stringify(value) })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "메인 콘텐츠가 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "메인 콘텐츠 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        mainTitle: "진안에서 온 정성 가득 유과",
+                                        mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                        heroImages: [] as string[],
+                                        aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ key, value: typeof value === 'string' ? value : JSON.stringify(value) });
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="border rounded-lg overflow-hidden">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">메인 제목</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.mainTitle}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, mainTitle: e.target.value})}
+                                        placeholder="메인 제목 (줄바꿈 가능)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'mainTitle';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'mainTitle', 
+                                                value: dashboardContent.mainTitle 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "제목 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "오류",
+                                                description: "저장 실패",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['mainTitle']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['mainTitle'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "제목 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">메인 설명</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.mainDescription}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, mainDescription: e.target.value})}
+                                        placeholder="메인 설명 (줄바꿈 가능)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={3}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'mainDescription';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'mainDescription', 
+                                                value: dashboardContent.mainDescription 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "설명 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "오류",
+                                                description: "저장 실패",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['mainDescription']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['mainDescription'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "설명 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">히어로 이미지</td>
+                                    <td className="px-4 py-3">
+                                      <div className="space-y-2">
+                                        <Input
+                                          type="file"
+                                          accept="image/*"
+                                          multiple
+                                          onChange={handleImageUpload}
+                                          className="cursor-pointer text-xs border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                          disabled={dashboardContent.heroImages.length >= 8}
+                                        />
+                                        
+                                        {dashboardContent.heroImages.length > 0 && (
+                                          <div className="grid grid-cols-4 gap-1">
+                                            {dashboardContent.heroImages.map((imageUrl, index) => (
+                                              <div key={index} className="relative group">
+                                                <img 
+                                                  src={imageUrl} 
+                                                  alt={`이미지 ${index + 1}`} 
+                                                  className="w-full h-12 object-cover rounded border"
+                                                />
+                                                <Button
+                                                  size="sm"
+                                                  variant="destructive"
+                                                  onClick={() => removeImage(index)}
+                                                  className="absolute top-0 right-0 w-3 h-3 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                  <X className="h-2 w-2" />
+                                                </Button>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                        
+                                        <div className="flex justify-between text-xs text-gray-500">
+                                          <span>최대 8개</span>
+                                          <span>{dashboardContent.heroImages.length}/8</span>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'heroImages';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'heroImages', 
+                                                value: JSON.stringify(dashboardContent.heroImages)
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "이미지 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['heroImages']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['heroImages'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "이미지 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">소개글</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.aboutText}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, aboutText: e.target.value})}
+                                        placeholder="소개 텍스트"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'aboutText';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'aboutText', 
+                                                value: dashboardContent.aboutText 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "소개글 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['aboutText']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['aboutText'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "소개글 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+
+
+                          {/* 배송 정보 */}
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-lg font-semibold text-gray-900">배송 정보</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const shippingData = {
+                                        shippingTitle: dashboardContent.shippingTitle,
+                                        shippingInfo: dashboardContent.shippingInfo
+                                      };
+                                      
+                                      await Promise.all(Object.entries(shippingData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "배송 정보가 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "배송 정보 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        shippingTitle: "에덴한과 배송",
+                                        shippingInfo: "• 물건은 입금 확인 후 1~2일 이내 발송합니다.\n• 설 명절 1~2주 전은 택배사의 과부하로 배송이 늦어질 수 있습니다.\n• 주문 접수 후 3일 이내 미도착시 반드시 연락주세요.\n• 설날 명절 2주 전에는 미리 주문 부탁드려요.\n• 미리 주문 시 예약발송 가능합니다."
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ key, value });
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="border rounded-lg overflow-hidden">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">배송 제목</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.shippingTitle || ''}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, shippingTitle: e.target.value})}
+                                        placeholder="에덴한과 배송 (줄바꿈 가능)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'shippingTitle';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'shippingTitle', 
+                                                value: dashboardContent.shippingTitle || '' 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "배송 제목 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['shippingTitle']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['shippingTitle'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "배송 제목 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">배송 안내 내용</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.shippingInfo}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, shippingInfo: e.target.value})}
+                                        placeholder="배송 안내 (줄바꿈 가능, • 로 시작하면 리스트로 표시)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={4}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'shippingInfo';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'shippingInfo', 
+                                                value: dashboardContent.shippingInfo 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "배송 안내 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['shippingInfo']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['shippingInfo'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "배송 안내 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+                          {/* 계좌 정보 */}
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                              <h3 className="text-lg font-semibold text-gray-900">계좌 정보</h3>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      const accountData = {
+                                        bankAccount: dashboardContent.bankAccount,
+                                        bankMessage: dashboardContent.bankMessage
+                                      };
+                                      
+                                      await Promise.all(Object.entries(accountData).map(([key, value]) =>
+                                        updateContentMutation.mutateAsync({ key, value })
+                                      ));
+                                      
+                                      toast({
+                                        title: "저장 완료",
+                                        description: "계좌 정보가 모두 저장되었습니다.",
+                                      });
+                                    } catch (error) {
+                                      toast({
+                                        title: "저장 실패",
+                                        description: "계좌 정보 저장 중 오류가 발생했습니다.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <Save className="h-4 w-4 mr-1" />
+                                  전체저장
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    if (confirm('기본값으로 되돌리시겠습니까?')) {
+                                      const defaults = {
+                                        bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                                        bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
+                                      };
+                                      setDashboardContent({...dashboardContent, ...defaults});
+                                      Object.entries(defaults).forEach(([key, value]) => {
+                                        updateContentMutation.mutate({ key, value });
+                                      });
+                                    }
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-1" />
+                                  전체초기화
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="border rounded-lg overflow-hidden">
+                              <table className="w-full text-sm">
+                                <thead>
+                                  <tr>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700 w-32">항목</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-700">내용</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-700 w-32">작업</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">입금 계좌</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.bankAccount}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, bankAccount: e.target.value})}
+                                        placeholder="농협 352-1701-3342-63&#10;(예금주: 손*진)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={2}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'bankAccount';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'bankAccount', 
+                                                value: dashboardContent.bankAccount 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "계좌 정보 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['bankAccount']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['bankAccount'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "계좌 정보 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">입금 안내 메시지</td>
+                                    <td className="px-4 py-3">
+                                      <Textarea
+                                        value={dashboardContent.bankMessage}
+                                        onChange={(e) => setDashboardContent({...dashboardContent, bankMessage: e.target.value})}
+                                        placeholder="주문 후 위 계좌로 입금해 주시면&#10;확인 후 발송해 드립니다 (줄바꿈 가능)"
+                                        className="text-sm border-0 focus:ring-1 focus:ring-blue-500 bg-transparent"
+                                        rows={3}
+                                      />
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          size="sm"
+                                          onClick={async () => {
+                                            const buttonKey = 'bankMessage';
+                                            if (savingButtons[buttonKey]) return;
+                                            
+                                            setSavingButtons(prev => ({...prev, [buttonKey]: true}));
+                                            
+                                            try {
+                                              await updateContentMutation.mutateAsync({ 
+                                                key: 'bankMessage', 
+                                                value: dashboardContent.bankMessage 
+                                              });
+                                              toast({
+                                                title: "저장됨",
+                                                description: "안내 메시지 저장 완료",
+                                              });
+                                            } catch (error) {
+                                              toast({
+                                                title: "저장 실패",
+                                                description: "저장 중 오류가 발생했습니다.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setSavingButtons(prev => ({...prev, [buttonKey]: false}));
+                                            }
+                                          }}
+                                          disabled={savingButtons['bankMessage']}
+                                          variant="ghost"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['bankMessage'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
+                                            toast({
+                                              title: "되돌림",
+                                              description: "안내 메시지 복원 완료",
+                                            });
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                 </TabsContent>
               </Tabs>
             )}

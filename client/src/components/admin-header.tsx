@@ -1,9 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit, Trash2, Shield, Image } from "lucide-react";
-import { ObjectUploader } from "@/components/ObjectUploader";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Settings, DollarSign, Users, Cog, LogOut, Download, Package, Menu, X, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -19,62 +16,6 @@ function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSetting
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAdmin, isManager } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // 로고 업로드 관련 함수들
-  const handleGetUploadParameters = async () => {
-    const response = await fetch('/api/objects/upload', {
-      method: 'POST',
-      credentials: 'include'
-    });
-    if (!response.ok) {
-      throw new Error('업로드 URL 생성 실패');
-    }
-    const data = await response.json();
-    return {
-      method: 'PUT' as const,
-      url: data.uploadURL,
-    };
-  };
-
-  const handleLogoUploadComplete = async (result: any) => {
-    try {
-      if (result.successful && result.successful.length > 0) {
-        const uploadedFile = result.successful[0];
-        const logoURL = uploadedFile.uploadURL;
-        
-        // 로고 URL을 서버에 저장
-        const response = await fetch('/api/logo', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ logoURL }),
-        });
-
-        if (!response.ok) {
-          throw new Error('로고 URL 저장 실패');
-        }
-
-        // 대시보드 콘텐츠 캐시 무효화하여 새 로고가 즉시 반영되도록 함
-        queryClient.invalidateQueries({ queryKey: ['/api/dashboard-content'] });
-
-        toast({
-          title: "로고 업로드 완료",
-          description: "새 로고가 성공적으로 업로드되었습니다.",
-        });
-      }
-    } catch (error) {
-      console.error('로고 업로드 처리 오류:', error);
-      toast({
-        title: "로고 업로드 실패",
-        description: "로고 업로드 처리 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="bg-white border-b border-gray-200 shadow-sm">
@@ -139,19 +80,6 @@ function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSetting
             </h1>
           </div>
           <div className="flex items-center space-x-2">
-            {/* 관리자만 로고 업로드 버튼 표시 */}
-            {isAdmin && (
-              <ObjectUploader
-                maxNumberOfFiles={1}
-                maxFileSize={5 * 1024 * 1024} // 5MB 제한
-                onGetUploadParameters={handleGetUploadParameters}
-                onComplete={handleLogoUploadComplete}
-                buttonClassName="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2"
-              >
-                <Image className="h-4 w-4 mr-2" />
-                로고 업로드
-              </ObjectUploader>
-            )}
             <Link href="/security-settings">
               <Button variant="ghost" className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2">
                 <Shield className="h-4 w-4 mr-2" />
@@ -305,20 +233,6 @@ function AdminHeader({ handleExcelDownload, setActiveTab, activeTab, costSetting
                   고객관리
                 </Button>
               </>
-            )}
-            
-            {/* 관리자만 로고 업로드 버튼 표시 (모바일) */}
-            {isAdmin && (
-              <ObjectUploader
-                maxNumberOfFiles={1}
-                maxFileSize={5 * 1024 * 1024} // 5MB 제한
-                onGetUploadParameters={handleGetUploadParameters}
-                onComplete={handleLogoUploadComplete}
-                buttonClassName="w-full justify-start text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              >
-                <Image className="h-4 w-4 mr-2" />
-                로고 업로드
-              </ObjectUploader>
             )}
             
             {/* 보안 설정 링크 */}
