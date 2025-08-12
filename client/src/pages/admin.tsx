@@ -6391,30 +6391,39 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <select 
-                                            value={(() => {
-                                              try {
-                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : 'text-eden-brown';
-                                              } catch {
-                                                return 'text-eden-brown';
-                                              }
-                                            })()}
-                                            onChange={(e) => {
-                                              try {
-                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl', color: '', textAlign: 'text-center'};
-                                                const newStyle = {...currentStyle, color: e.target.value};
-                                                updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                              } catch {}
-                                            }}
-                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-                                          >
-                                            <option value="text-eden-brown">갈색 (기본)</option>
-                                            <option value="text-eden-dark">진한 갈색</option>
-                                            <option value="text-eden-sage">녹색</option>
-                                            <option value="text-black">검정</option>
-                                            <option value="text-gray-700">회색</option>
-                                            <option value="text-eden-red">빨강</option>
-                                          </select>
+                                          <div className="grid grid-cols-3 gap-1">
+                                            {[
+                                              { value: 'text-eden-brown', color: '#8B4513', name: '갈색' },
+                                              { value: 'text-eden-dark', color: '#5D2F07', name: '진한갈색' },
+                                              { value: 'text-eden-sage', color: '#87A96B', name: '녹색' },
+                                              { value: 'text-black', color: '#000000', name: '검정' },
+                                              { value: 'text-gray-700', color: '#374151', name: '회색' },
+                                              { value: 'text-eden-red', color: '#DC2626', name: '빨강' }
+                                            ].map((colorOption) => (
+                                              <button
+                                                key={colorOption.value}
+                                                onClick={() => {
+                                                  try {
+                                                    const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl', color: '', textAlign: 'text-center'};
+                                                    const newStyle = {...currentStyle, color: colorOption.value};
+                                                    updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                  } catch {}
+                                                }}
+                                                className={`w-full h-6 rounded border-2 transition-all ${
+                                                  (() => {
+                                                    try {
+                                                      const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : 'text-eden-brown';
+                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                    } catch {
+                                                      return colorOption.value === 'text-eden-brown' ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                    }
+                                                  })()
+                                                }`}
+                                                style={{ backgroundColor: colorOption.color }}
+                                                title={colorOption.name}
+                                              />
+                                            ))}
+                                          </div>
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">정렬</label>
@@ -6482,30 +6491,39 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <select 
-                                            value={(() => {
-                                              try {
-                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : 'text-eden-dark';
-                                              } catch {
-                                                return 'text-eden-dark';
-                                              }
-                                            })()}
-                                            onChange={(e) => {
-                                              try {
-                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: 'text-sm sm:text-base md:text-lg', color: '', textAlign: 'text-center'};
-                                                const newStyle = {...currentStyle, color: e.target.value};
-                                                updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                              } catch {}
-                                            }}
-                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-                                          >
-                                            <option value="text-eden-dark">진한 갈색 (기본)</option>
-                                            <option value="text-eden-brown">갈색</option>
-                                            <option value="text-eden-sage">녹색</option>
-                                            <option value="text-black">검정</option>
-                                            <option value="text-gray-700">회색</option>
-                                            <option value="text-gray-600">연한 회색</option>
-                                          </select>
+                                          <div className="grid grid-cols-3 gap-1">
+                                            {[
+                                              { value: 'text-eden-dark', color: '#5D2F07', name: '진한갈색' },
+                                              { value: 'text-eden-brown', color: '#8B4513', name: '갈색' },
+                                              { value: 'text-eden-sage', color: '#87A96B', name: '녹색' },
+                                              { value: 'text-black', color: '#000000', name: '검정' },
+                                              { value: 'text-gray-700', color: '#374151', name: '회색' },
+                                              { value: 'text-gray-600', color: '#4B5563', name: '연한회색' }
+                                            ].map((colorOption) => (
+                                              <button
+                                                key={colorOption.value}
+                                                onClick={() => {
+                                                  try {
+                                                    const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: 'text-sm sm:text-base md:text-lg', color: '', textAlign: 'text-center'};
+                                                    const newStyle = {...currentStyle, color: colorOption.value};
+                                                    updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                  } catch {}
+                                                }}
+                                                className={`w-full h-6 rounded border-2 transition-all ${
+                                                  (() => {
+                                                    try {
+                                                      const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : 'text-eden-dark';
+                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                    } catch {
+                                                      return colorOption.value === 'text-eden-dark' ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                    }
+                                                  })()
+                                                }`}
+                                                style={{ backgroundColor: colorOption.color }}
+                                                title={colorOption.name}
+                                              />
+                                            ))}
+                                          </div>
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">정렬</label>
