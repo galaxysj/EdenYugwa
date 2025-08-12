@@ -2145,9 +2145,15 @@ export default function Admin() {
       acc.netProfit += (order.netProfit || 0);
       
       // 가격설정의 원가를 우선 사용하여 정확한 계산
-      const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || order.smallBoxCost);
-      const largeBoxCost = order.largeBoxQuantity * (largeBoxCostValue || order.largeBoxCost);
-      const wrappingCost = order.wrappingQuantity * (wrappingCostValue || order.wrappingCost);
+      const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || 
+        ((order.smallBoxCost && order.smallBoxCost > 0) ? order.smallBoxCost : 
+        (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0)));
+      const largeBoxCost = order.largeBoxQuantity * (largeBoxCostValue || 
+        ((order.largeBoxCost && order.largeBoxCost > 0) ? order.largeBoxCost : 
+        (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0)));
+      const wrappingCost = order.wrappingQuantity * (wrappingCostValue || 
+        ((order.wrappingCost && order.wrappingCost > 0) ? order.wrappingCost : 
+        (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0)));
       const shippingCost = order.shippingFee || 0;
       
       // Use historical selling prices for revenue calculations, fallback to current prices from settings
@@ -2164,9 +2170,9 @@ export default function Admin() {
                                    (product3PriceSetting ? parseInt(product3PriceSetting.value) :
                                    (productNames[2]?.price ? parseInt(productNames[2].price) : 1000)));
       
-      const smallBoxPrice = order.smallBoxPrice || currentSmallPrice;
-      const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
-      const wrappingPrice = order.wrappingPrice || currentWrappingPrice;
+      const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : currentSmallPrice;
+      const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : currentLargePrice;
+      const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : currentWrappingPrice;
       
       // 동적 상품 원가 계산 (인덱스 3부터)
       let dynamicProductsCost = 0;
@@ -2714,13 +2720,13 @@ export default function Admin() {
                       // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                       const productNames = dashboardContent.productNames || [];
                       
-                      // 주문 시점에 저장된 가격을 우선 사용, 없으면 현재 설정 사용
-                      const smallBoxPrice = order.smallBoxPrice || smallBoxPriceValue || 
-                                          (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
-                      const largeBoxPrice = order.largeBoxPrice || largeBoxPriceValue || 
-                                          (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
-                      const wrappingPrice = order.wrappingPrice || wrappingPriceValue || 
-                                          (productNames[2]?.price ? parseInt(productNames[2].price) : 1000);
+                      // 가격설정의 판매가를 우선 사용, 주문 시점 가격이 0이면 현재 설정 사용
+                      const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 
+                                          (smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000));
+                      const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 
+                                          (largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000));
+                      const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 
+                                          (wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000));
                       
                       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                       const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
@@ -2730,13 +2736,6 @@ export default function Admin() {
                       const shippingFee = order.shippingFee || 0;
                       
                       // 가격설정의 원가를 우선 사용, 없으면 주문 시점 원가, 마지막으로 콘텐츠관리 원가
-                      console.log('매출 상세내역 원가 계산:', {
-                        smallBoxCostValue, largeBoxCostValue, wrappingCostValue,
-                        orderSmallBoxCost: order.smallBoxCost,
-                        orderLargeBoxCost: order.largeBoxCost,
-                        orderWrappingCost: order.wrappingCost
-                      });
-                      
                       const smallCost = smallBoxCostValue || order.smallBoxCost || 
                                        (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
                       const largeCost = largeBoxCostValue || order.largeBoxCost || 
@@ -2976,13 +2975,13 @@ export default function Admin() {
                   // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                   const productNames = dashboardContent.productNames || [];
                   
-                  // 주문 시점에 저장된 가격을 우선 사용, 없으면 현재 설정 사용
-                  const smallBoxPrice = order.smallBoxPrice || smallBoxPriceValue || 
-                                      (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
-                  const largeBoxPrice = order.largeBoxPrice || largeBoxPriceValue || 
-                                      (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
-                  const wrappingPrice = order.wrappingPrice || wrappingPriceValue || 
-                                      (productNames[2]?.price ? parseInt(productNames[2].price) : 1000);
+                  // 가격설정의 판매가를 우선 사용, 주문 시점 가격이 0이면 현재 설정 사용
+                  const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 
+                                      (smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000));
+                  const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 
+                                      (largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000));
+                  const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 
+                                      (wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000));
                   
                   const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                   const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
