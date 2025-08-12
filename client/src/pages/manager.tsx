@@ -374,11 +374,16 @@ export default function ManagerDashboard() {
     
     // 주문내역 컬럼에 줄바꿈 적용을 위한 스타일 설정
     const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    const orderDetailsColumnIndex = 3; // 주문내역은 4번째 컬럼 (D열, 0-based로는 3)
+    
     for (let R = range.s.r; R <= range.e.r; ++R) {
-      const orderDetailsCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); // 주문내역은 4번째 컬럼 (D)
+      const orderDetailsCellAddress = XLSX.utils.encode_cell({ r: R, c: orderDetailsColumnIndex });
       if (ws[orderDetailsCellAddress] && ws[orderDetailsCellAddress].v) {
-        // 줄바꿈 문자를 엑셀에서 인식할 수 있도록 수정
-        ws[orderDetailsCellAddress].v = ws[orderDetailsCellAddress].v.toString();
+        // 줄바꿈 문자를 엑셀 내부 형식으로 변경
+        const cellValue = ws[orderDetailsCellAddress].v.toString().replace(/\n/g, String.fromCharCode(10));
+        ws[orderDetailsCellAddress].v = cellValue;
+        ws[orderDetailsCellAddress].t = 's'; // 문자열 타입으로 명시적 설정
+        
         if (!ws[orderDetailsCellAddress].s) ws[orderDetailsCellAddress].s = {};
         ws[orderDetailsCellAddress].s.alignment = { 
           wrapText: true, 

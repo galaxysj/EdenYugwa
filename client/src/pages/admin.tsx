@@ -1969,11 +1969,16 @@ export default function Admin() {
     
     // 상품 컬럼에 줄바꿈 적용을 위한 스타일 설정
     const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    const productColumnIndex = 7; // '상품' 컬럼은 8번째 (H열, 0-based로는 7)
+    
     for (let R = range.s.r; R <= range.e.r; ++R) {
-      const productCellAddress = XLSX.utils.encode_cell({ r: R, c: 6 }); // 상품은 7번째 컬럼 (G)
+      const productCellAddress = XLSX.utils.encode_cell({ r: R, c: productColumnIndex });
       if (ws[productCellAddress] && ws[productCellAddress].v) {
-        // 줄바꿈 문자를 엑셀에서 인식할 수 있도록 수정
-        ws[productCellAddress].v = ws[productCellAddress].v.toString();
+        // 줄바꿈 문자를 엑셀 내부 형식으로 변경
+        const cellValue = ws[productCellAddress].v.toString().replace(/\n/g, String.fromCharCode(10));
+        ws[productCellAddress].v = cellValue;
+        ws[productCellAddress].t = 's'; // 문자열 타입으로 명시적 설정
+        
         if (!ws[productCellAddress].s) ws[productCellAddress].s = {};
         ws[productCellAddress].s.alignment = { 
           wrapText: true, 
