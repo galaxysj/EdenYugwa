@@ -156,7 +156,42 @@ const getStatusColor = (success: boolean) => {
 
 // Payment Details Dialog Component
 function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order; onUpdate: (orderId: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number) => void; open: boolean; setOpen: (open: boolean) => void }) {
-  const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || order.totalAmount.toString());
+  // 주문 당시 가격으로 총 주문금액 재계산
+  const calculateRecalculatedTotal = (order: Order) => {
+    const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 15000;
+    const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 23000;
+    const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 1000;
+    
+    let total = (order.smallBoxQuantity * smallBoxPrice) +
+                (order.largeBoxQuantity * largeBoxPrice) +
+                (order.wrappingQuantity * wrappingPrice);
+    
+    // 동적 상품 가격 추가
+    if (order.dynamicProductQuantities) {
+      try {
+        const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+          ? JSON.parse(order.dynamicProductQuantities) 
+          : order.dynamicProductQuantities;
+        
+        Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+          const idx = parseInt(index);
+          const qty = Number(quantity);
+          if (qty > 0 && idx >= 3) {
+            const storedPrice = order.dynamicProductPrices && order.dynamicProductPrices[idx];
+            const dynamicPrice = (storedPrice && storedPrice > 0) ? storedPrice : 0;
+            total += qty * dynamicPrice;
+          }
+        });
+      } catch (error) {
+        console.error('동적 상품 가격 계산 오류:', error);
+      }
+    }
+    
+    return total + (order.shippingFee || 0);
+  };
+  
+  const recalculatedTotal = calculateRecalculatedTotal(order);
+  const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || recalculatedTotal.toString());
   const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || "0");
 
   const formatPriceLocal = (price: number | undefined | null) => {
@@ -188,7 +223,7 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
         <DialogHeader>
           <DialogTitle>입금 내역 입력</DialogTitle>
           <DialogDescription>
-            주문번호: {order.orderNumber} | 총 주문금액: {formatPriceLocal(order.totalAmount)}
+            주문번호: {order.orderNumber} | 총 주문금액: {formatPriceLocal(recalculatedTotal)}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -216,7 +251,7 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
             <div>실입금: {formatPriceLocal(Number(actualPaidAmount) || 0)}</div>
             <div>할인액: {formatPriceLocal(Number(discountAmount) || 0)}</div>
             <div className="font-medium">
-              미입금: {formatPriceLocal(Math.max(0, order.totalAmount - (Number(actualPaidAmount) || 0) - (Number(discountAmount) || 0)))}
+              미입금: {formatPriceLocal(Math.max(0, recalculatedTotal - (Number(actualPaidAmount) || 0) - (Number(discountAmount) || 0)))}
             </div>
           </div>
           <div className="flex gap-2">
@@ -966,7 +1001,41 @@ function PaymentConfirmDialog({
 
   if (!order) return null;
 
-  const expectedAmount = order.totalAmount;
+  // 주문 당시 가격으로 재계산된 총 주문금액 사용
+  const calculateOrderTotal = (order: Order) => {
+    const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 15000;
+    const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 23000;
+    const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 1000;
+    
+    let total = (order.smallBoxQuantity * smallBoxPrice) +
+                (order.largeBoxQuantity * largeBoxPrice) +
+                (order.wrappingQuantity * wrappingPrice);
+    
+    // 동적 상품 가격 추가
+    if (order.dynamicProductQuantities) {
+      try {
+        const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+          ? JSON.parse(order.dynamicProductQuantities) 
+          : order.dynamicProductQuantities;
+        
+        Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+          const idx = parseInt(index);
+          const qty = Number(quantity);
+          if (qty > 0 && idx >= 3) {
+            const storedPrice = order.dynamicProductPrices && order.dynamicProductPrices[idx];
+            const dynamicPrice = (storedPrice && storedPrice > 0) ? storedPrice : 0;
+            total += qty * dynamicPrice;
+          }
+        });
+      } catch (error) {
+        console.error('동적 상품 가격 계산 오류:', error);
+      }
+    }
+    
+    return total + (order.shippingFee || 0);
+  };
+
+  const expectedAmount = calculateOrderTotal(order);
   const paidAmount = parseInt(actualPaidAmount) || 0;
   const difference = expectedAmount - paidAmount;
 
@@ -985,7 +1054,7 @@ function PaymentConfirmDialog({
             <div className="text-sm space-y-1">
               <div><strong>주문번호:</strong> {order.orderNumber}</div>
               <div><strong>고객명:</strong> {order.customerName}</div>
-              <div><strong>주문금액:</strong> {order.totalAmount.toLocaleString()}원</div>
+              <div><strong>주문금액:</strong> {expectedAmount.toLocaleString()}원</div>
             </div>
           </div>
           
