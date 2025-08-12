@@ -1917,7 +1917,16 @@ export default function Admin() {
       const largeBoxesCost = order.largeBoxQuantity * largeCost;
       const wrappingCost = order.wrappingQuantity * wrappingCostValue;
       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
-      const netProfit = (order.actualPaidAmount || order.totalAmount) - totalCost - (order.discountAmount || 0);
+      
+      // Calculate total revenue (매출금액)
+      const totalRevenue = smallBoxTotal + largeBoxTotal + wrappingTotal + shippingFee;
+      
+      // Calculate unpaid amount (미입금액)
+      const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < totalRevenue && !(order.discountAmount || 0)) 
+        ? (totalRevenue - order.actualPaidAmount) : 0;
+      
+      // 순수익 = 매출금액 - 원가 - 할인금액 - 미입금액
+      const netProfit = totalRevenue - totalCost - (order.discountAmount || 0) - unpaidAmount;
       
       return {
         '주문번호': order.orderNumber,
@@ -3032,7 +3041,8 @@ export default function Admin() {
                       
                       // Calculate net profit using recalculated revenue
                       const actualRevenue = order.actualPaidAmount || recalculatedTotalRevenue;
-                      const netProfit = actualRevenue - totalCost - discountAmount;
+                      // 순수익 = 매출금액 - 원가 - 할인금액 - 미입금액
+                      const netProfit = recalculatedTotalRevenue - totalCost - discountAmount - unpaidAmount;
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
