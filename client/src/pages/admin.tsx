@@ -1917,7 +1917,7 @@ export default function Admin() {
       const largeBoxesCost = order.largeBoxQuantity * largeCost;
       const wrappingCost = order.wrappingQuantity * wrappingCostValue;
       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
-      const netProfit = (order.actualPaidAmount || order.totalAmount) - totalCost;
+      const netProfit = (order.actualPaidAmount || order.totalAmount) - totalCost - (order.discountAmount || 0);
       
       return {
         '주문번호': order.orderNumber,
