@@ -6356,6 +6356,188 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">
                                       <div>
+                                        메인 제목 스타일
+                                        <div className="text-xs text-gray-500 mt-1">
+                                          글씨 크기, 색상, 정렬을 설정합니다
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                          <label className="text-xs text-gray-600 block mb-1">글씨 크기</label>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).fontSize : 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
+                                              } catch {
+                                                return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '', color: 'text-eden-brown', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, fontSize: e.target.value};
+                                                updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <option value="text-lg">작게</option>
+                                            <option value="text-xl md:text-2xl">중간</option>
+                                            <option value="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">크게</option>
+                                            <option value="text-3xl sm:text-4xl md:text-5xl lg:text-6xl">매우 크게</option>
+                                          </select>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-gray-600 block mb-1">색상</label>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : 'text-eden-brown';
+                                              } catch {
+                                                return 'text-eden-brown';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl', color: '', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, color: e.target.value};
+                                                updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <option value="text-eden-brown">갈색 (기본)</option>
+                                            <option value="text-eden-dark">진한 갈색</option>
+                                            <option value="text-eden-sage">녹색</option>
+                                            <option value="text-black">검정</option>
+                                            <option value="text-gray-700">회색</option>
+                                            <option value="text-eden-red">빨강</option>
+                                          </select>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-gray-600 block mb-1">정렬</label>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).textAlign : 'text-center';
+                                              } catch {
+                                                return 'text-center';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl', color: 'text-eden-brown', textAlign: ''};
+                                                const newStyle = {...currentStyle, textAlign: e.target.value};
+                                                updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <option value="text-left">왼쪽</option>
+                                            <option value="text-center">가운데</option>
+                                            <option value="text-right">오른쪽</option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">
+                                      <div>
+                                        메인 설명 스타일
+                                        <div className="text-xs text-gray-500 mt-1">
+                                          글씨 크기, 색상, 정렬을 설정합니다
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                          <label className="text-xs text-gray-600 block mb-1">글씨 크기</label>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).fontSize : 'text-sm sm:text-base md:text-lg';
+                                              } catch {
+                                                return 'text-sm sm:text-base md:text-lg';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '', color: 'text-eden-dark', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, fontSize: e.target.value};
+                                                updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <option value="text-xs sm:text-sm">작게</option>
+                                            <option value="text-sm sm:text-base md:text-lg">중간 (기본)</option>
+                                            <option value="text-base sm:text-lg md:text-xl">크게</option>
+                                            <option value="text-lg sm:text-xl md:text-2xl">매우 크게</option>
+                                          </select>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-gray-600 block mb-1">색상</label>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : 'text-eden-dark';
+                                              } catch {
+                                                return 'text-eden-dark';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: 'text-sm sm:text-base md:text-lg', color: '', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, color: e.target.value};
+                                                updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <option value="text-eden-dark">진한 갈색 (기본)</option>
+                                            <option value="text-eden-brown">갈색</option>
+                                            <option value="text-eden-sage">녹색</option>
+                                            <option value="text-black">검정</option>
+                                            <option value="text-gray-700">회색</option>
+                                            <option value="text-gray-600">연한 회색</option>
+                                          </select>
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-gray-600 block mb-1">정렬</label>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).textAlign : 'text-center';
+                                              } catch {
+                                                return 'text-center';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: 'text-sm sm:text-base md:text-lg', color: 'text-eden-dark', textAlign: ''};
+                                                const newStyle = {...currentStyle, textAlign: e.target.value};
+                                                updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <option value="text-left">왼쪽</option>
+                                            <option value="text-center">가운데</option>
+                                            <option value="text-right">오른쪽</option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">
+                                      <div>
                                         브랜드명
                                         <div className="text-xs text-gray-500 mt-1">
                                           헤더에 표시되는 브랜드명입니다
