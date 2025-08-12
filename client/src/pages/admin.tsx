@@ -4765,8 +4765,18 @@ export default function Admin() {
         openPaymentDialog(order);
       }
     } else {
-      // 다른 상태는 바로 업데이트
-      updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+      // 입금대기로 변경시 입금금액과 할인금액 초기화
+      if (newPaymentStatus === 'pending') {
+        updatePaymentMutation.mutate({ 
+          id: orderId, 
+          paymentStatus: newPaymentStatus,
+          actualPaidAmount: 0,
+          discountAmount: 0
+        });
+      } else {
+        // 다른 상태는 바로 업데이트
+        updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
+      }
     }
   };
 
