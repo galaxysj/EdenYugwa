@@ -395,6 +395,8 @@ export class DatabaseStorage implements IStorage {
 
   // PaymentDetailsDialog에서 직접 전달받은 할인액을 사용하는 메서드
   async updatePaymentWithDiscount(id: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number): Promise<Order | undefined> {
+    console.log(`결제 정보 업데이트: ID=${id}, 상태=${paymentStatus}, 실입금=${actualPaidAmount}, 할인=${discountAmount}`);
+    
     const updateData: any = { 
       paymentStatus,
       paymentConfirmedAt: paymentStatus === 'confirmed' ? new Date() : null
@@ -402,17 +404,30 @@ export class DatabaseStorage implements IStorage {
 
     if (actualPaidAmount !== undefined) {
       updateData.actualPaidAmount = actualPaidAmount;
+      console.log(`실입금액 설정: ${actualPaidAmount}`);
     }
 
     if (discountAmount !== undefined) {
       updateData.discountAmount = discountAmount;
+      console.log(`할인금액 설정: ${discountAmount}`);
     }
+
+    // 입금대기 상태로 변경시 discountReason도 초기화
+    if (paymentStatus === 'pending') {
+      updateData.discountReason = null;
+      console.log('입금대기로 변경: discountReason도 null로 초기화');
+    }
+
+    console.log('DB 업데이트 데이터:', updateData);
 
     const [order] = await db
       .update(orders)
       .set(updateData)
       .where(eq(orders.id, id))
       .returning();
+    
+    console.log('업데이트 완료. 결과:', order ? `ID=${order.id}, 실입금=${order.actualPaidAmount}, 할인=${order.discountAmount}` : '주문 없음');
+    
     return order || undefined;
   }
 
