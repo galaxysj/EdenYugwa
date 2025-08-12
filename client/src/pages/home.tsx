@@ -15,7 +15,8 @@ export default function Home() {
   // Fetch dashboard content for dynamic text and product names
   const { data: contentData } = useQuery({
     queryKey: ['/api/dashboard-content'],
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // No caching for immediate updates
+    refetchInterval: 10000, // Refetch every 10 seconds
   });
 
   // Convert array to object for easier access
@@ -31,6 +32,9 @@ export default function Home() {
     }
     return acc;
   }, {}) : {};
+  
+  // Debug logging for logoUrl
+  console.log('Dashboard content logoUrl:', dashboardContent.logoUrl);
 
   // Get settings data for pricing
   const { data: settingsData } = useQuery({
