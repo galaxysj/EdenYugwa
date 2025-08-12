@@ -1928,10 +1928,26 @@ export default function Admin() {
         '전화번호': order.customerPhone,
         '주소': `${order.address1} ${order.address2 || ''}`.trim(),
         '상품': [
-          order.smallBoxQuantity > 0 ? `한과한과1호(약1.1kg)×${order.smallBoxQuantity}개` : '',
-          order.largeBoxQuantity > 0 ? `한과한과2호(약2.5kg)×${order.largeBoxQuantity}개` : '',
-          order.wrappingQuantity > 0 ? `보자기×${order.wrappingQuantity}개` : ''
-        ].filter(Boolean).join(', '),
+          order.smallBoxQuantity > 0 ? `${getProductName(0, '한과1호')}×${order.smallBoxQuantity}개` : '',
+          order.largeBoxQuantity > 0 ? `${getProductName(1, '한과2호')}×${order.largeBoxQuantity}개` : '',
+          order.wrappingQuantity > 0 ? `${getProductName(2, '보자기')}×${order.wrappingQuantity}개` : '',
+          ...(order.dynamicProductQuantities ? (() => {
+            try {
+              const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                ? JSON.parse(order.dynamicProductQuantities) 
+                : order.dynamicProductQuantities;
+              return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
+                const productIndex = parseInt(index);
+                const qty = Number(quantity);
+                const productName = getProductName(productIndex, `상품${productIndex + 1}`);
+                return qty > 0 ? `${productName}×${qty}개` : '';
+              }).filter(Boolean);
+            } catch (error) {
+              console.error('Dynamic product quantities parse error:', error);
+              return [];
+            }
+          })() : [])
+        ].filter(Boolean).join('\n'),
         '주문금액': order.totalAmount,
         '실입금액': order.actualPaidAmount || order.totalAmount,
         '할인금액': order.discountAmount || 0,
@@ -1950,6 +1966,53 @@ export default function Admin() {
     });
 
     const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // 상품 컬럼에 줄바꿈 적용을 위한 스타일 설정
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      const productCellAddress = XLSX.utils.encode_cell({ r: R, c: 6 }); // 상품은 7번째 컬럼 (G)
+      if (ws[productCellAddress] && ws[productCellAddress].v) {
+        // 줄바꿈 문자를 엑셀에서 인식할 수 있도록 수정
+        ws[productCellAddress].v = ws[productCellAddress].v.toString();
+        if (!ws[productCellAddress].s) ws[productCellAddress].s = {};
+        ws[productCellAddress].s.alignment = { 
+          wrapText: true, 
+          vertical: 'top',
+          horizontal: 'left'
+        };
+      }
+    }
+    
+    // 행 높이 설정 (줄바꿈된 내용이 보이도록)
+    if (!ws['!rows']) ws['!rows'] = [];
+    for (let R = 1; R <= range.e.r; ++R) { // 헤더 제외하고 데이터 행만
+      ws['!rows'][R] = { hpt: 60 }; // 행 높이를 60으로 설정
+    }
+    
+    // 컬럼 너비 설정
+    ws['!cols'] = [
+      { width: 12 }, // 주문번호
+      { width: 12 }, // 주문일
+      { width: 10 }, // 주문시간
+      { width: 12 }, // 고객명
+      { width: 12 }, // 받는분
+      { width: 15 }, // 전화번호
+      { width: 30 }, // 주소
+      { width: 25 }, // 상품
+      { width: 12 }, // 주문금액
+      { width: 12 }, // 실입금액
+      { width: 12 }, // 할인금액
+      { width: 12 }, // 입금상태
+      { width: 12 }, // 주문상태
+      { width: 12 }, // 발송상태
+      { width: 15 }, // 예약발송일
+      { width: 15 }, // 발송완료일
+      { width: 15 }, // 매니저발송일
+      { width: 12 }, // 원가합계
+      { width: 12 }, // 순수익
+      { width: 20 }  // 메모
+    ];
+    
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "주문목록");
     
