@@ -6401,7 +6401,7 @@ export default function Admin() {
                                       <div>
                                         헤더 로고
                                         <div className="text-xs text-gray-500 mt-1">
-                                          브랜드명 옆에 표시되는 나뭇잎 로고
+                                          브랜드명 왼쪽에 표시되는 나뭇잎 로고
                                         </div>
                                       </div>
                                     </td>
