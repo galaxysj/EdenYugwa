@@ -6,6 +6,7 @@ import { userService } from "./user-service";
 import { storage } from "./storage";
 import { sessionService } from "./session-service";
 import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, insertProductPriceSchema, insertAccessControlSettingsSchema, type Order, type InsertCustomer, type User, type DashboardContent, type ProductPrice } from "@shared/schema";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import * as XLSX from "xlsx";
 import multer from "multer";
 
@@ -2126,6 +2127,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting product price:", error);
       res.status(500).json({ error: "Failed to delete product price" });
+    }
+  });
+
+  // Object Storage - Logo Upload Routes
+  app.post("/api/objects/upload", requireAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  // Serve public objects (for logo display)
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Update logo URL in dashboard content
+  app.put("/api/logo", requireAdmin, async (req, res) => {
+    try {
+      const { logoURL } = req.body;
+      if (!logoURL) {
+        return res.status(400).json({ error: "logoURL is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = objectStorageService.normalizeObjectEntityPath(logoURL);
+      
+      // Store the logo URL in dashboard content
+      await storage.setDashboardContent("logoUrl", logoURL);
+      
+      res.json({ success: true, objectPath });
+    } catch (error) {
+      console.error("Error updating logo:", error);
+      res.status(500).json({ error: "Failed to update logo" });
     }
   });
 
