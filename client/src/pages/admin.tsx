@@ -4692,8 +4692,10 @@ export default function Admin() {
   });
 
   const updatePaymentMutation = useMutation({
-    mutationFn: ({ id, paymentStatus, actualPaidAmount, discountAmount }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountAmount?: number }) => 
-      api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountAmount),
+    mutationFn: ({ id, paymentStatus, actualPaidAmount, discountAmount }: { id: number; paymentStatus: string; actualPaidAmount?: number; discountAmount?: number }) => {
+      console.log(`API 호출: updatePaymentStatus(${id}, ${paymentStatus}, ${actualPaidAmount}, ${discountAmount})`);
+      return api.orders.updatePaymentStatus(id, paymentStatus, actualPaidAmount, discountAmount);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       toast({
@@ -4767,6 +4769,7 @@ export default function Admin() {
     } else {
       // 입금대기로 변경시 입금금액과 할인금액 초기화
       if (newPaymentStatus === 'pending') {
+        console.log(`입금대기로 변경: 주문 ID ${orderId}, 실입금 0으로, 할인 0으로 설정`);
         updatePaymentMutation.mutate({ 
           id: orderId, 
           paymentStatus: newPaymentStatus,
@@ -4774,6 +4777,7 @@ export default function Admin() {
           discountAmount: 0
         });
       } else {
+        console.log(`결제 상태 변경: 주문 ID ${orderId}, 상태 ${newPaymentStatus}`);
         // 다른 상태는 바로 업데이트
         updatePaymentMutation.mutate({ id: orderId, paymentStatus: newPaymentStatus });
       }
