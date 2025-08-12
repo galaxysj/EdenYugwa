@@ -816,7 +816,8 @@ function PriceSettingsDialog() {
                                     // Save immediately
                                     updateShippingMutation.mutate({ 
                                       key: `${productKey}ExcludeFromShipping`, 
-                                      value: newValue.toString() 
+                                      value: newValue.toString(),
+                                      description: `${product.name} 배송비 제외 설정`
                                     });
                                   }}
                                   className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
@@ -2141,7 +2142,7 @@ export default function Admin() {
       acc.totalDiscounts += order.discountAmount || 0;
       acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
         ? (order.totalAmount - order.actualPaidAmount) : 0;
-      acc.netProfit += order.netProfit || 0;
+      acc.netProfit += (order.netProfit || 0);
       
       // 가격설정의 원가를 우선 사용하여 정확한 계산
       const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || order.smallBoxCost);
@@ -2806,7 +2807,7 @@ export default function Admin() {
                                         {productName}×{qty}개
                                       </div>
                                     ) : null;
-                                  });
+                                  }).filter(Boolean);
                                 } catch (error) {
                                   console.error('Dynamic product quantities parse error:', error);
                                   return null;
@@ -2896,7 +2897,7 @@ export default function Admin() {
                                       );
                                     }
                                     return null;
-                                  });
+                                  }).filter(Boolean);
                                 } catch (error) {
                                   return null;
                                 }
@@ -3065,7 +3066,7 @@ export default function Admin() {
                                 const qty = Number(quantity);
                                 const productName = dashboardContent.productNames?.[productIndex]?.name || `상품${productIndex + 1}`;
                                 return qty > 0 ? ` ${productName}×${qty}` : '';
-                              }).join('');
+                              }).filter(Boolean).join('');
                             } catch (error) {
                               return '';
                             }
