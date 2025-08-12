@@ -6365,40 +6365,46 @@ export default function Admin() {
                                     <td className="px-4 py-3">
                                       <div className="grid grid-cols-3 gap-2">
                                         <div>
-                                          <label className="text-xs text-gray-600 block mb-1">글씨 크기</label>
-                                          <select 
+                                          <label className="text-xs text-gray-600 block mb-1">글씨 크기 (pt)</label>
+                                          <input
+                                            type="number"
+                                            min="8"
+                                            max="120"
+                                            step="1"
                                             value={(() => {
                                               try {
-                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).fontSize : 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
+                                                const style = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {};
+                                                return style.fontSize ? parseInt(style.fontSize) : 36;
                                               } catch {
-                                                return 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl';
+                                                return 36;
                                               }
                                             })()}
                                             onChange={(e) => {
                                               try {
-                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '', color: 'text-eden-brown', textAlign: 'text-center'};
-                                                const newStyle = {...currentStyle, fontSize: e.target.value};
+                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36', color: 'text-eden-brown', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, fontSize: e.target.value + 'pt'};
                                                 updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
                                               } catch {}
                                             }}
                                             className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-                                          >
-                                            <option value="text-lg">작게</option>
-                                            <option value="text-xl md:text-2xl">중간</option>
-                                            <option value="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">크게</option>
-                                            <option value="text-3xl sm:text-4xl md:text-5xl lg:text-6xl">매우 크게</option>
-                                          </select>
+                                          />
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <div className="grid grid-cols-3 gap-1">
+                                          <div className="grid grid-cols-6 gap-1">
                                             {[
                                               { value: 'text-eden-brown', color: '#8B4513', name: '갈색' },
                                               { value: 'text-eden-dark', color: '#5D2F07', name: '진한갈색' },
                                               { value: 'text-eden-sage', color: '#87A96B', name: '녹색' },
                                               { value: 'text-black', color: '#000000', name: '검정' },
                                               { value: 'text-gray-700', color: '#374151', name: '회색' },
-                                              { value: 'text-eden-red', color: '#DC2626', name: '빨강' }
+                                              { value: 'text-eden-red', color: '#DC2626', name: '빨강' },
+                                              { value: 'text-blue-600', color: '#2563EB', name: '파랑' },
+                                              { value: 'text-purple-600', color: '#9333EA', name: '보라' },
+                                              { value: 'text-green-600', color: '#16A34A', name: '초록' },
+                                              { value: 'text-orange-600', color: '#EA580C', name: '주황' },
+                                              { value: 'text-pink-600', color: '#DB2777', name: '분홍' },
+                                              { value: 'text-teal-600', color: '#0D9488', name: '청록' }
                                             ].map((colorOption) => (
                                               <button
                                                 key={colorOption.value}
@@ -6409,13 +6415,13 @@ export default function Admin() {
                                                     updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
                                                   } catch {}
                                                 }}
-                                                className={`w-full h-6 rounded border-2 transition-all ${
+                                                className={`w-4 h-4 rounded-full border-2 transition-all ${
                                                   (() => {
                                                     try {
                                                       const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : 'text-eden-brown';
-                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
                                                     } catch {
-                                                      return colorOption.value === 'text-eden-brown' ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                      return colorOption.value === 'text-eden-brown' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
                                                     }
                                                   })()
                                                 }`}
@@ -6465,40 +6471,46 @@ export default function Admin() {
                                     <td className="px-4 py-3">
                                       <div className="grid grid-cols-3 gap-2">
                                         <div>
-                                          <label className="text-xs text-gray-600 block mb-1">글씨 크기</label>
-                                          <select 
+                                          <label className="text-xs text-gray-600 block mb-1">글씨 크기 (pt)</label>
+                                          <input
+                                            type="number"
+                                            min="8"
+                                            max="72"
+                                            step="1"
                                             value={(() => {
                                               try {
-                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).fontSize : 'text-sm sm:text-base md:text-lg';
+                                                const style = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {};
+                                                return style.fontSize ? parseInt(style.fontSize) : 16;
                                               } catch {
-                                                return 'text-sm sm:text-base md:text-lg';
+                                                return 16;
                                               }
                                             })()}
                                             onChange={(e) => {
                                               try {
-                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '', color: 'text-eden-dark', textAlign: 'text-center'};
-                                                const newStyle = {...currentStyle, fontSize: e.target.value};
+                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16', color: 'text-eden-dark', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, fontSize: e.target.value + 'pt'};
                                                 updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
                                               } catch {}
                                             }}
                                             className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-                                          >
-                                            <option value="text-xs sm:text-sm">작게</option>
-                                            <option value="text-sm sm:text-base md:text-lg">중간 (기본)</option>
-                                            <option value="text-base sm:text-lg md:text-xl">크게</option>
-                                            <option value="text-lg sm:text-xl md:text-2xl">매우 크게</option>
-                                          </select>
+                                          />
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <div className="grid grid-cols-3 gap-1">
+                                          <div className="grid grid-cols-6 gap-1">
                                             {[
                                               { value: 'text-eden-dark', color: '#5D2F07', name: '진한갈색' },
                                               { value: 'text-eden-brown', color: '#8B4513', name: '갈색' },
                                               { value: 'text-eden-sage', color: '#87A96B', name: '녹색' },
                                               { value: 'text-black', color: '#000000', name: '검정' },
                                               { value: 'text-gray-700', color: '#374151', name: '회색' },
-                                              { value: 'text-gray-600', color: '#4B5563', name: '연한회색' }
+                                              { value: 'text-gray-600', color: '#4B5563', name: '연한회색' },
+                                              { value: 'text-blue-600', color: '#2563EB', name: '파랑' },
+                                              { value: 'text-purple-600', color: '#9333EA', name: '보라' },
+                                              { value: 'text-green-600', color: '#16A34A', name: '초록' },
+                                              { value: 'text-orange-600', color: '#EA580C', name: '주황' },
+                                              { value: 'text-pink-600', color: '#DB2777', name: '분홍' },
+                                              { value: 'text-teal-600', color: '#0D9488', name: '청록' }
                                             ].map((colorOption) => (
                                               <button
                                                 key={colorOption.value}
@@ -6509,13 +6521,13 @@ export default function Admin() {
                                                     updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
                                                   } catch {}
                                                 }}
-                                                className={`w-full h-6 rounded border-2 transition-all ${
+                                                className={`w-4 h-4 rounded-full border-2 transition-all ${
                                                   (() => {
                                                     try {
                                                       const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : 'text-eden-dark';
-                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
                                                     } catch {
-                                                      return colorOption.value === 'text-eden-dark' ? 'border-blue-500 shadow-lg' : 'border-gray-300 hover:border-gray-400';
+                                                      return colorOption.value === 'text-eden-dark' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
                                                     }
                                                   })()
                                                 }`}
