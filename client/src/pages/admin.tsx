@@ -2143,11 +2143,10 @@ export default function Admin() {
         ? (order.totalAmount - order.actualPaidAmount) : 0;
       acc.netProfit += order.netProfit || 0;
       
-      // Use historical pricing and cost data stored in the order for accurate calculations
-      // If no historical cost, use current dynamic costs
-      const smallBoxCost = order.smallBoxQuantity * (order.smallBoxCost || smallBoxCostValue);
-      const largeBoxCost = order.largeBoxQuantity * (order.largeBoxCost || largeBoxCostValue);
-      const wrappingCost = order.wrappingQuantity * (order.wrappingCost || wrappingCostValue);
+      // 가격설정의 원가를 우선 사용하여 정확한 계산
+      const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || order.smallBoxCost);
+      const largeBoxCost = order.largeBoxQuantity * (largeBoxCostValue || order.largeBoxCost);
+      const wrappingCost = order.wrappingQuantity * (wrappingCostValue || order.wrappingCost);
       const shippingCost = order.shippingFee || 0;
       
       // Use historical selling prices for revenue calculations, fallback to current prices from settings
@@ -2180,6 +2179,7 @@ export default function Admin() {
             const qty = Number(quantity);
             // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
             if (productIndex >= 3 && qty > 0) {
+              // 가격설정의 원가를 우선 사용
               const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
               const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
                                 (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
@@ -2728,12 +2728,12 @@ export default function Admin() {
                       // Get shipping fee from order
                       const shippingFee = order.shippingFee || 0;
                       
-                      // 주문 시점에 저장된 원가를 우선 사용, 없으면 현재 설정 사용
-                      const smallCost = order.smallBoxCost || smallBoxCostValue || 
+                      // 가격설정의 원가를 우선 사용, 없으면 주문 시점 원가, 마지막으로 콘텐츠관리 원가
+                      const smallCost = smallBoxCostValue || order.smallBoxCost || 
                                        (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
-                      const largeCost = order.largeBoxCost || largeBoxCostValue || 
+                      const largeCost = largeBoxCostValue || order.largeBoxCost || 
                                        (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
-                      const wrappingCost = order.wrappingCost || wrappingCostValue || 
+                      const wrappingCost = wrappingCostValue || order.wrappingCost || 
                                           (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
                       
                       // Calculate actual costs using stored historical data
@@ -2753,7 +2753,7 @@ export default function Admin() {
                             const qty = Number(quantity);
                             // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
                             if (productIndex >= 3 && qty > 0) {
-                              // 가격설정에서 동적 상품 원가 가져오기
+                              // 가격설정에서 동적 상품 원가를 우선 사용
                               const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
                               const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
                                                 (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
@@ -2884,6 +2884,7 @@ export default function Admin() {
                                     const qty = Number(quantity);
                                     // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
                                     if (productIndex >= 3 && qty > 0) {
+                                      // 가격설정에서 동적 상품 원가를 우선 사용
                                       const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
                                       const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
                                                         (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
@@ -2982,12 +2983,12 @@ export default function Admin() {
                   // Get shipping fee from order
                   const shippingFee = order.shippingFee || 0;
                   
-                  // 주문 시점에 저장된 원가를 우선 사용, 없으면 현재 설정 사용
-                  const smallCost = order.smallBoxCost || smallBoxCostValue || 
+                  // 가격설정의 원가를 우선 사용, 없으면 주문 시점 원가, 마지막으로 콘텐츠관리 원가
+                  const smallCost = smallBoxCostValue || order.smallBoxCost || 
                                    (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
-                  const largeCost = order.largeBoxCost || largeBoxCostValue || 
+                  const largeCost = largeBoxCostValue || order.largeBoxCost || 
                                    (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
-                  const wrappingCost = order.wrappingCost || wrappingCostValue || 
+                  const wrappingCost = wrappingCostValue || order.wrappingCost || 
                                       (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
                   
                   // Calculate actual costs using stored historical data
@@ -3007,7 +3008,7 @@ export default function Admin() {
                         const qty = Number(quantity);
                         // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
                         if (productIndex >= 3 && qty > 0) {
-                          // 주문 시점 원가를 우선 사용, 없으면 현재 설정 사용
+                          // 가격설정의 원가를 우선 사용, 없으면 콘텐츠관리 원가
                           const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
                           const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
                                             (productNames && productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
