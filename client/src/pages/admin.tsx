@@ -3863,7 +3863,48 @@ export default function Admin() {
                     {/* 매출 */}
                     <td className="col-amount text-center">
                       <div className="text-xs font-medium text-blue-700 no-wrap">
-                        {formatPrice(order.totalAmount)}
+                        {(() => {
+                          // 가격설정을 반영한 매출 재계산
+                          const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
+                            parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
+                            (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
+                          const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
+                            parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
+                            (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
+                          const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
+                            parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                          
+                          let recalculatedTotal = 
+                            (order.smallBoxQuantity * smallBoxPrice) +
+                            (order.largeBoxQuantity * largeBoxPrice) +
+                            (order.wrappingQuantity * wrappingPrice);
+                          
+                          // 동적 상품 가격 추가
+                          if (order.dynamicProductQuantities) {
+                            try {
+                              const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                ? JSON.parse(order.dynamicProductQuantities) 
+                                : order.dynamicProductQuantities;
+                              
+                              Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                const idx = parseInt(index);
+                                const qty = Number(quantity);
+                                if (qty > 0 && idx >= 3) {
+                                  const dynamicPrice = settings?.find(s => s.key === `product_${idx}Price`)?.value ? 
+                                    parseInt(settings.find(s => s.key === `product_${idx}Price`)!.value) : 0;
+                                  recalculatedTotal += qty * dynamicPrice;
+                                }
+                              });
+                            } catch (error) {
+                              console.error('동적 상품 가격 계산 오류:', error);
+                            }
+                          }
+                          
+                          // 배송비 추가
+                          recalculatedTotal += order.shippingFee || 0;
+                          
+                          return formatPrice(recalculatedTotal);
+                        })()}
                       </div>
                     </td>
                     {/* 실입금 */}
@@ -3872,7 +3913,46 @@ export default function Admin() {
                         <div
                           className="text-xs font-medium text-green-700 cursor-pointer hover:bg-green-50 px-1 py-1 rounded border border-transparent hover:border-green-200 no-wrap"
                           onClick={() => {
-                            const currentAmount = order.actualPaidAmount || order.totalAmount;
+                            // 가격설정을 반영한 매출 재계산 (기본값용)
+                            const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
+                              (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
+                            const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
+                              (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
+                            const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                            
+                            let recalculatedTotal = 
+                              (order.smallBoxQuantity * smallBoxPrice) +
+                              (order.largeBoxQuantity * largeBoxPrice) +
+                              (order.wrappingQuantity * wrappingPrice);
+                            
+                            // 동적 상품 가격 추가
+                            if (order.dynamicProductQuantities) {
+                              try {
+                                const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                  ? JSON.parse(order.dynamicProductQuantities) 
+                                  : order.dynamicProductQuantities;
+                                
+                                Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                  const idx = parseInt(index);
+                                  const qty = Number(quantity);
+                                  if (qty > 0 && idx >= 3) {
+                                    const dynamicPrice = settings?.find(s => s.key === `product_${idx}Price`)?.value ? 
+                                      parseInt(settings.find(s => s.key === `product_${idx}Price`)!.value) : 0;
+                                    recalculatedTotal += qty * dynamicPrice;
+                                  }
+                                });
+                              } catch (error) {
+                                console.error('동적 상품 가격 계산 오류:', error);
+                              }
+                            }
+                            
+                            // 배송비 추가
+                            recalculatedTotal += order.shippingFee || 0;
+                            
+                            const currentAmount = order.actualPaidAmount || recalculatedTotal;
                             const newAmount = prompt('실제 입금금액을 입력하세요:', currentAmount.toString());
                             if (newAmount && !isNaN(Number(newAmount))) {
                               handlePaymentStatusChange(order.id, order.paymentStatus, Number(newAmount));
@@ -3880,7 +3960,48 @@ export default function Admin() {
                           }}
                           title="클릭하여 실제 입금금액 수정"
                         >
-                          {formatPrice(order.actualPaidAmount || order.totalAmount)}
+                          {(() => {
+                            // 가격설정을 반영한 매출 재계산 (실입금 기본값용)
+                            const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
+                              (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
+                            const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
+                              (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
+                            const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                            
+                            let recalculatedTotal = 
+                              (order.smallBoxQuantity * smallBoxPrice) +
+                              (order.largeBoxQuantity * largeBoxPrice) +
+                              (order.wrappingQuantity * wrappingPrice);
+                            
+                            // 동적 상품 가격 추가
+                            if (order.dynamicProductQuantities) {
+                              try {
+                                const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                  ? JSON.parse(order.dynamicProductQuantities) 
+                                  : order.dynamicProductQuantities;
+                                
+                                Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                  const idx = parseInt(index);
+                                  const qty = Number(quantity);
+                                  if (qty > 0 && idx >= 3) {
+                                    const dynamicPrice = settings?.find(s => s.key === `product_${idx}Price`)?.value ? 
+                                      parseInt(settings.find(s => s.key === `product_${idx}Price`)!.value) : 0;
+                                    recalculatedTotal += qty * dynamicPrice;
+                                  }
+                                });
+                              } catch (error) {
+                                console.error('동적 상품 가격 계산 오류:', error);
+                              }
+                            }
+                            
+                            // 배송비 추가
+                            recalculatedTotal += order.shippingFee || 0;
+                            
+                            return formatPrice(order.actualPaidAmount || recalculatedTotal);
+                          })()}
                         </div>
                       ) : (
                         <div className="text-xs text-gray-400">-</div>
@@ -3893,22 +4014,104 @@ export default function Admin() {
                           <span className="text-blue-600 font-medium">
                             -{formatPrice(Math.abs(order.discountAmount))}
                           </span>
-                        ) : order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && (order.totalAmount - order.actualPaidAmount) > 0 ? (
-                          <span className="text-red-600 font-medium">
-                            {formatPrice(Math.max(0, order.totalAmount - order.actualPaidAmount))}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                        ) : (() => {
+                          // 미입금액 계산도 재계산된 매출 기준으로 변경
+                          const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
+                            parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
+                            (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
+                          const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
+                            parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
+                            (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
+                          const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
+                            parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                          
+                          let recalculatedTotal = 
+                            (order.smallBoxQuantity * smallBoxPrice) +
+                            (order.largeBoxQuantity * largeBoxPrice) +
+                            (order.wrappingQuantity * wrappingPrice);
+                          
+                          // 동적 상품 가격 추가
+                          if (order.dynamicProductQuantities) {
+                            try {
+                              const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                ? JSON.parse(order.dynamicProductQuantities) 
+                                : order.dynamicProductQuantities;
+                              
+                              Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                const idx = parseInt(index);
+                                const qty = Number(quantity);
+                                if (qty > 0 && idx >= 3) {
+                                  const dynamicPrice = settings?.find(s => s.key === `product_${idx}Price`)?.value ? 
+                                    parseInt(settings.find(s => s.key === `product_${idx}Price`)!.value) : 0;
+                                  recalculatedTotal += qty * dynamicPrice;
+                                }
+                              });
+                            } catch (error) {
+                              console.error('동적 상품 가격 계산 오류:', error);
+                            }
+                          }
+                          
+                          // 배송비 추가
+                          recalculatedTotal += order.shippingFee || 0;
+                          
+                          return order.actualPaidAmount && order.actualPaidAmount < recalculatedTotal && !order.discountAmount && (recalculatedTotal - order.actualPaidAmount) > 0 ? (
+                            <span className="text-red-600 font-medium">
+                              {formatPrice(Math.max(0, recalculatedTotal - order.actualPaidAmount))}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          );
+                        })()}
                       </div>
                     </td>
                     <td className="col-status text-center">
                       <Select
                         key={`payment-${order.id}-${order.paymentStatus}`}
                         value={
-                          order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount && order.paymentStatus === 'confirmed'
-                            ? 'partial'
-                            : order.paymentStatus || 'pending'
+                          (() => {
+                            // 가격설정 반영한 매출로 부분입금 상태 판단
+                            const smallBoxPrice = settings?.find(s => s.key === 'product_0Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_0Price')!.value) : 
+                              (order.smallBoxPrice > 0 ? order.smallBoxPrice : 15000);
+                            const largeBoxPrice = settings?.find(s => s.key === 'product_1Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_1Price')!.value) : 
+                              (order.largeBoxPrice > 0 ? order.largeBoxPrice : 23000);
+                            const wrappingPrice = settings?.find(s => s.key === 'product_2Price')?.value ? 
+                              parseInt(settings.find(s => s.key === 'product_2Price')!.value) : 1000;
+                            
+                            let recalculatedTotal = 
+                              (order.smallBoxQuantity * smallBoxPrice) +
+                              (order.largeBoxQuantity * largeBoxPrice) +
+                              (order.wrappingQuantity * wrappingPrice);
+                            
+                            // 동적 상품 가격 추가
+                            if (order.dynamicProductQuantities) {
+                              try {
+                                const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+                                  ? JSON.parse(order.dynamicProductQuantities) 
+                                  : order.dynamicProductQuantities;
+                                
+                                Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+                                  const idx = parseInt(index);
+                                  const qty = Number(quantity);
+                                  if (qty > 0 && idx >= 3) {
+                                    const dynamicPrice = settings?.find(s => s.key === `product_${idx}Price`)?.value ? 
+                                      parseInt(settings.find(s => s.key === `product_${idx}Price`)!.value) : 0;
+                                    recalculatedTotal += qty * dynamicPrice;
+                                  }
+                                });
+                              } catch (error) {
+                                console.error('동적 상품 가격 계산 오류:', error);
+                              }
+                            }
+                            
+                            // 배송비 추가
+                            recalculatedTotal += order.shippingFee || 0;
+                            
+                            return order.actualPaidAmount && order.actualPaidAmount < recalculatedTotal && !order.discountAmount && order.paymentStatus === 'confirmed'
+                              ? 'partial'
+                              : order.paymentStatus || 'pending';
+                          })()
                         }
                         onValueChange={(newPaymentStatus) => {
                           setTimeout(() => {
