@@ -6357,7 +6357,7 @@ export default function Admin() {
                                       <div>
                                         헤더 로고
                                         <div className="text-xs text-gray-500 mt-1">
-                                          로고 업로드 시 "에덴한과" 텍스트를 완전히 대체합니다
+                                          로고 업로드 시 기본 잎 아이콘과 텍스트 대신 로고만 표시됩니다
                                         </div>
                                       </div>
                                     </td>
