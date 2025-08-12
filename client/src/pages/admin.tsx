@@ -156,8 +156,12 @@ const getStatusColor = (success: boolean) => {
 
 // Payment Details Dialog Component
 function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order; onUpdate: (orderId: number, paymentStatus: string, actualPaidAmount?: number, discountAmount?: number) => void; open: boolean; setOpen: (open: boolean) => void }) {
-  // 주문 당시 가격으로 총 주문금액 재계산
-  const calculateRecalculatedTotal = (order: Order) => {
+  // settings 데이터 가져오기
+  const { data: settings } = useQuery<any[]>({
+    queryKey: ["/api/settings"],
+  });
+  // 주문 당시 가격으로 총 주문금액 재계산 (settings를 전달받아 동적 상품 가격 fallback 사용)
+  const calculateRecalculatedTotal = (order: Order, settings?: any[]) => {
     const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 15000;
     const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 23000;
     const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 1000;
@@ -177,8 +181,9 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
           const idx = parseInt(index);
           const qty = Number(quantity);
           if (qty > 0 && idx >= 3) {
-            const storedPrice = order.dynamicProductPrices && order.dynamicProductPrices[idx];
-            const dynamicPrice = (storedPrice && storedPrice > 0) ? storedPrice : 0;
+            // 주문 당시 동적 상품 가격을 사용할 수 없으므로 현재 가격설정 사용
+            const productPriceSetting = settings?.find(s => s.key === `product_${idx}Price`);
+            const dynamicPrice = productPriceSetting ? parseInt(productPriceSetting.value) : 0;
             total += qty * dynamicPrice;
           }
         });
@@ -190,7 +195,7 @@ function PaymentDetailsDialog({ order, onUpdate, open, setOpen }: { order: Order
     return total + (order.shippingFee || 0);
   };
   
-  const recalculatedTotal = calculateRecalculatedTotal(order);
+  const recalculatedTotal = calculateRecalculatedTotal(order, settings);
   const [actualPaidAmount, setActualPaidAmount] = useState(order.actualPaidAmount?.toString() || recalculatedTotal.toString());
   const [discountAmount, setDiscountAmount] = useState(order.discountAmount?.toString() || "0");
 
@@ -970,6 +975,11 @@ function PaymentConfirmDialog({
   setOpen: (open: boolean) => void;
   onConfirm: (actualPaidAmount: number, discountReason: string) => void;
 }) {
+  // settings 데이터 가져오기
+  const { data: settings } = useQuery<any[]>({
+    queryKey: ["/api/settings"],
+  });
+  
   const [actualPaidAmount, setActualPaidAmount] = useState("");
   const [discountType, setDiscountType] = useState("partial"); // "partial" or "discount"
   
@@ -1001,8 +1011,8 @@ function PaymentConfirmDialog({
 
   if (!order) return null;
 
-  // 주문 당시 가격으로 재계산된 총 주문금액 사용
-  const calculateOrderTotal = (order: Order) => {
+  // 주문 당시 가격으로 재계산된 총 주문금액 사용 (settings를 전달받아 동적 상품 가격 fallback 사용)
+  const calculateOrderTotal = (order: Order, settings?: any[]) => {
     const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 15000;
     const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 23000;
     const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 1000;
@@ -1022,8 +1032,9 @@ function PaymentConfirmDialog({
           const idx = parseInt(index);
           const qty = Number(quantity);
           if (qty > 0 && idx >= 3) {
-            const storedPrice = order.dynamicProductPrices && order.dynamicProductPrices[idx];
-            const dynamicPrice = (storedPrice && storedPrice > 0) ? storedPrice : 0;
+            // 주문 당시 동적 상품 가격을 사용할 수 없으므로 현재 가격설정 사용
+            const productPriceSetting = settings?.find(s => s.key === `product_${idx}Price`);
+            const dynamicPrice = productPriceSetting ? parseInt(productPriceSetting.value) : 0;
             total += qty * dynamicPrice;
           }
         });
@@ -1035,7 +1046,7 @@ function PaymentConfirmDialog({
     return total + (order.shippingFee || 0);
   };
 
-  const expectedAmount = calculateOrderTotal(order);
+  const expectedAmount = calculateOrderTotal(order, settings);
   const paidAmount = parseInt(actualPaidAmount) || 0;
   const difference = expectedAmount - paidAmount;
 
