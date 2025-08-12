@@ -2156,8 +2156,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "로고 URL이 필요합니다" });
       }
 
-      await storage.updateDashboardContent('logoUrl', logoUrl);
-      res.json({ success: true, logoUrl });
+      // Convert Google Storage URL to our server path
+      let normalizedUrl = logoUrl;
+      if (logoUrl.includes('storage.googleapis.com') && logoUrl.includes('.private/uploads/')) {
+        const parts = logoUrl.split('.private/uploads/');
+        if (parts.length > 1) {
+          normalizedUrl = `/objects/uploads/${parts[1]}`;
+        }
+      }
+
+      await storage.updateDashboardContent('logoUrl', normalizedUrl);
+      res.json({ success: true, logoUrl: normalizedUrl });
     } catch (error) {
       console.error("Error updating logo URL:", error);
       res.status(500).json({ error: "로고 업데이트에 실패했습니다" });
