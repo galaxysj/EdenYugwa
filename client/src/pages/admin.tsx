@@ -6355,9 +6355,52 @@ export default function Admin() {
                                   <tr>
                                     <td className="px-4 py-3 font-medium text-gray-600">
                                       <div>
+                                        브랜드명
+                                        <div className="text-xs text-gray-500 mt-1">
+                                          헤더에 표시되는 브랜드명입니다
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <div className="flex items-center gap-2">
+                                        <Input
+                                          type="text"
+                                          placeholder="예: 에덴한과"
+                                          value={editingValues.brandName ?? dashboardContent.brandName ?? "에덴한과"}
+                                          onChange={(e) => setEditingValues({...editingValues, brandName: e.target.value})}
+                                          className="flex-1 h-8 text-sm"
+                                        />
+                                        <Button
+                                          onClick={() => updateDashboardContent('brandName', editingValues.brandName ?? dashboardContent.brandName ?? "에덴한과")}
+                                          size="sm"
+                                          disabled={savingButtons['brandName']}
+                                          className="h-8 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                          <Save className="h-3 w-3 mr-1" />
+                                          {savingButtons['brandName'] ? '저장중' : '저장'}
+                                        </Button>
+                                        <Button
+                                          onClick={() => {
+                                            setEditingValues({...editingValues, brandName: "에덴한과"});
+                                            updateDashboardContent('brandName', "에덴한과");
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
+                                        >
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          원상태
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">
+                                      <div>
                                         헤더 로고
                                         <div className="text-xs text-gray-500 mt-1">
-                                          나뭇잎 로고만 수정 가능합니다 (텍스트는 숨김)
+                                          브랜드명 옆에 표시되는 나뭇잎 로고
                                         </div>
                                       </div>
                                     </td>

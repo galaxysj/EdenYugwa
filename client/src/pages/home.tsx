@@ -56,10 +56,13 @@ export default function Home() {
             {/* 브랜드 로고와 모바일 버튼들을 세로로 배치 */}
             <div className="md:flex md:items-center md:space-x-3">
               <div className="flex items-center space-x-3 justify-center md:justify-start">
+                <h1 className="text-2xl font-bold text-eden-brown font-korean">
+                  {dashboardContent.brandName || "에덴한과"}
+                </h1>
                 {dashboardContent.logoUrl ? (
                   <img 
                     src={dashboardContent.logoUrl} 
-                    alt="에덴한과 로고" 
+                    alt="로고" 
                     className="h-8 md:h-10 w-auto object-contain"
                   />
                 ) : (
