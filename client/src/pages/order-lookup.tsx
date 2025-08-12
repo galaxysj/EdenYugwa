@@ -59,12 +59,7 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat('ko-KR').format(price) + '원';
 };
 
-const prices = {
-  small: 19000, // 한과1호
-  large: 21000, // 한과2호
-  wrapping: 1000,
-  shipping: 4000,
-};
+// Dynamic prices from settings - will be fetched dynamically
 
 const statusLabels = {
   pending: "주문접수",
@@ -121,6 +116,12 @@ export default function OrderLookup() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch settings for dynamic pricing
+  const { data: settingsData } = useQuery({
+    queryKey: ['/api/settings'],
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   // Convert array to object for easier access
   const dashboardContent = Array.isArray(contentData) ? contentData.reduce((acc: any, item: any) => {
     if (item.key === 'heroImages' || item.key === 'productNames') {
@@ -158,6 +159,76 @@ export default function OrderLookup() {
       if (index === 2) return '보자기';
       return `상품${index + 1}`;
     }
+  };
+
+  // Helper function to get dynamic product price from settings
+  const getProductPrice = (index: number, order: Order) => {
+    // 주문에 저장된 가격이 있고 0보다 크면 사용
+    if (index === 0 && order.smallBoxPrice && order.smallBoxPrice > 0) return order.smallBoxPrice;
+    if (index === 1 && order.largeBoxPrice && order.largeBoxPrice > 0) return order.largeBoxPrice;
+    if (index === 2 && order.wrappingPrice && order.wrappingPrice > 0) return order.wrappingPrice;
+    
+    // 가격설정에서 현재 가격 가져오기 (settingsData가 배열인지 확인)
+    if (Array.isArray(settingsData)) {
+      const productPriceSetting = settingsData.find((s: any) => s.key === `product_${index}Price`);
+      if (productPriceSetting) {
+        return parseInt(productPriceSetting.value);
+      }
+    }
+    
+    // 콘텐츠 관리에서 가격 가져오기
+    try {
+      const productNames = Array.isArray(dashboardContent.productNames) 
+        ? dashboardContent.productNames 
+        : JSON.parse(dashboardContent.productNames || '[]');
+      
+      if (productNames[index] && productNames[index].price) {
+        return parseInt(productNames[index].price);
+      }
+    } catch (error) {
+      console.error('상품 가격 파싱 오류:', error);
+    }
+    
+    // 기본값 반환
+    if (index === 0) return 19000; // 한과1호
+    if (index === 1) return 21000; // 한과2호
+    if (index === 2) return 1000;  // 보자기
+    return 0;
+  };
+
+  // Calculate order total with current pricing
+  const calculateOrderTotal = (order: Order) => {
+    let total = 0;
+    
+    // 기본 상품들
+    total += order.smallBoxQuantity * getProductPrice(0, order);
+    total += order.largeBoxQuantity * getProductPrice(1, order);  
+    total += order.wrappingQuantity * getProductPrice(2, order);
+    
+    // 동적 상품들
+    if (order.dynamicProductQuantities) {
+      try {
+        const dynamicQuantities = typeof order.dynamicProductQuantities === 'string' 
+          ? JSON.parse(order.dynamicProductQuantities) 
+          : order.dynamicProductQuantities;
+
+        Object.entries(dynamicQuantities).forEach(([index, quantity]) => {
+          const idx = parseInt(index);
+          const qty = Number(quantity);
+          if (qty > 0 && idx >= 3) { // 인덱스 3부터가 동적 상품
+            const productPrice = getProductPrice(idx, order);
+            total += qty * productPrice;
+          }
+        });
+      } catch (error) {
+        console.error('동적 상품 가격 계산 오류:', error);
+      }
+    }
+    
+    // 배송비 추가
+    total += order.shippingFee || 0;
+    
+    return total;
   };
 
   const form = useForm<LookupFormData>({
@@ -352,14 +423,19 @@ export default function OrderLookup() {
   const onReorderSubmit = async (data: ReorderFormData) => {
     try {
       const totalQuantity = data.smallBoxQuantity + data.largeBoxQuantity;
-      const shippingFee = totalQuantity >= 6 ? 0 : prices.shipping;
+      const shippingFee = totalQuantity >= 6 ? 0 : 4000; // 기본 배송비
+      
+      // 현재 가격 설정 가져오기
+      const smallBoxPrice = getProductPrice(0, selectedOrder!);
+      const largeBoxPrice = getProductPrice(1, selectedOrder!);
+      const wrappingPrice = getProductPrice(2, selectedOrder!);
       
       const orderData = {
         ...data,
         shippingFee,
-        totalAmount: (data.smallBoxQuantity * prices.small) + 
-                     (data.largeBoxQuantity * prices.large) + 
-                     (data.wrappingQuantity * prices.wrapping) + 
+        totalAmount: (data.smallBoxQuantity * smallBoxPrice) + 
+                     (data.largeBoxQuantity * largeBoxPrice) + 
+                     (data.wrappingQuantity * wrappingPrice) + 
                      shippingFee,
         scheduledDate: reorderScheduledDate ? new Date(reorderScheduledDate) : null,
       };
@@ -638,12 +714,13 @@ export default function OrderLookup() {
                                   );
                                 }
                                 if (order.wrappingQuantity > 0) {
+                                  const wrappingPrice = getProductPrice(2, order);
                                   productDetails.push(
                                     <div key="wrapping" className="text-gray-600 flex items-center">
                                       <span className="text-gray-400 mr-2">•</span>
                                       {getProductName(2)} × {order.wrappingQuantity}개 
                                       <span className="ml-1 text-green-600">
-                                        (+{isAuthenticated ? `${(order.wrappingQuantity * 1000).toLocaleString()}원` : maskPrice()})
+                                        (+{isAuthenticated ? `${(order.wrappingQuantity * wrappingPrice).toLocaleString()}원` : maskPrice()})
                                       </span>
                                     </div>
                                   );
@@ -691,8 +768,13 @@ export default function OrderLookup() {
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-eden-brown">
-                                {isAuthenticated ? `${order.totalAmount.toLocaleString()}원` : maskPrice()}
+                                {isAuthenticated ? `${calculateOrderTotal(order).toLocaleString()}원` : maskPrice()}
                               </div>
+                              {isAuthenticated && calculateOrderTotal(order) !== order.totalAmount && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  (원래 금액: {order.totalAmount.toLocaleString()}원)
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -836,7 +918,7 @@ export default function OrderLookup() {
                     <div className="flex justify-between items-center p-4 border rounded">
                       <div>
                         <h4 className="font-medium">한과1호(약 1.1kg)</h4>
-                        <p className="text-sm text-gray-600">{formatPrice(prices.small)}</p>
+                        <p className="text-sm text-gray-600">{selectedOrder ? formatPrice(getProductPrice(0, selectedOrder)) : formatPrice(19000)}</p>
                       </div>
                       <FormField
                         control={reorderForm.control}
@@ -882,7 +964,7 @@ export default function OrderLookup() {
                     <div className="flex justify-between items-center p-4 border rounded">
                       <div>
                         <h4 className="font-medium">한과2호(약 1.3kg)</h4>
-                        <p className="text-sm text-gray-600">{formatPrice(prices.large)}</p>
+                        <p className="text-sm text-gray-600">{selectedOrder ? formatPrice(getProductPrice(1, selectedOrder)) : formatPrice(21000)}</p>
                       </div>
                       <FormField
                         control={reorderForm.control}
@@ -928,7 +1010,7 @@ export default function OrderLookup() {
                     <div className="flex justify-between items-center p-4 border rounded">
                       <div>
                         <h4 className="font-medium">보자기 포장</h4>
-                        <p className="text-sm text-gray-600">{formatPrice(prices.wrapping)}</p>
+                        <p className="text-sm text-gray-600">{selectedOrder ? formatPrice(getProductPrice(2, selectedOrder)) : formatPrice(1000)}</p>
                       </div>
                       <FormField
                         control={reorderForm.control}
@@ -1057,27 +1139,27 @@ export default function OrderLookup() {
                 {/* 가격 정보 */}
                 <div className="bg-gray-50 p-4 rounded">
                   <div className="space-y-2">
-                    {reorderForm.watch("smallBoxQuantity") > 0 && (
+                    {reorderForm.watch("smallBoxQuantity") > 0 && selectedOrder && (
                       <div className="flex justify-between">
-                        <span>한과1호 × {reorderForm.watch("smallBoxQuantity")}</span>
-                        <span>{formatPrice(reorderForm.watch("smallBoxQuantity") * prices.small)}</span>
+                        <span>{getProductName(0)} × {reorderForm.watch("smallBoxQuantity")}</span>
+                        <span>{formatPrice(reorderForm.watch("smallBoxQuantity") * getProductPrice(0, selectedOrder))}</span>
                       </div>
                     )}
-                    {reorderForm.watch("largeBoxQuantity") > 0 && (
+                    {reorderForm.watch("largeBoxQuantity") > 0 && selectedOrder && (
                       <div className="flex justify-between">
-                        <span>한과2호 × {reorderForm.watch("largeBoxQuantity")}</span>
-                        <span>{formatPrice(reorderForm.watch("largeBoxQuantity") * prices.large)}</span>
+                        <span>{getProductName(1)} × {reorderForm.watch("largeBoxQuantity")}</span>
+                        <span>{formatPrice(reorderForm.watch("largeBoxQuantity") * getProductPrice(1, selectedOrder))}</span>
                       </div>
                     )}
-                    {reorderForm.watch("wrappingQuantity") > 0 && (
+                    {reorderForm.watch("wrappingQuantity") > 0 && selectedOrder && (
                       <div className="flex justify-between">
-                        <span>보자기 × {reorderForm.watch("wrappingQuantity")}</span>
-                        <span>{formatPrice(reorderForm.watch("wrappingQuantity") * prices.wrapping)}</span>
+                        <span>{getProductName(2)} × {reorderForm.watch("wrappingQuantity")}</span>
+                        <span>{formatPrice(reorderForm.watch("wrappingQuantity") * getProductPrice(2, selectedOrder))}</span>
                       </div>
                     )}
                     {(() => {
                       const total = reorderForm.watch("smallBoxQuantity") + reorderForm.watch("largeBoxQuantity");
-                      const shippingFee = total >= 6 ? 0 : prices.shipping;
+                      const shippingFee = total >= 6 ? 0 : 4000;
                       if (shippingFee > 0) {
                         return (
                           <div className="flex justify-between">
@@ -1092,11 +1174,12 @@ export default function OrderLookup() {
                       <span>총 금액</span>
                       <span className="text-eden-brown">
                         {(() => {
-                          const smallTotal = reorderForm.watch("smallBoxQuantity") * prices.small;
-                          const largeTotal = reorderForm.watch("largeBoxQuantity") * prices.large;
-                          const wrappingTotal = reorderForm.watch("wrappingQuantity") * prices.wrapping;
+                          if (!selectedOrder) return formatPrice(0);
+                          const smallTotal = reorderForm.watch("smallBoxQuantity") * getProductPrice(0, selectedOrder);
+                          const largeTotal = reorderForm.watch("largeBoxQuantity") * getProductPrice(1, selectedOrder);
+                          const wrappingTotal = reorderForm.watch("wrappingQuantity") * getProductPrice(2, selectedOrder);
                           const totalQuantity = reorderForm.watch("smallBoxQuantity") + reorderForm.watch("largeBoxQuantity");
-                          const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? prices.shipping : 0);
+                          const shippingFee = totalQuantity >= 6 ? 0 : (totalQuantity > 0 ? 4000 : 0);
                           const total = smallTotal + largeTotal + wrappingTotal + shippingFee;
                           return formatPrice(total);
                         })()}
