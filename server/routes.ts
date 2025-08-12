@@ -5,6 +5,7 @@ import { requireAuth, requireAdmin, requireManagerOrAdmin } from "./auth";
 import { userService } from "./user-service";
 import { storage } from "./storage";
 import { sessionService } from "./session-service";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { insertOrderSchema, insertSmsNotificationSchema, insertManagerSchema, insertCustomerSchema, insertUserSchema, insertDashboardContentSchema, insertProductPriceSchema, insertAccessControlSettingsSchema, type Order, type InsertCustomer, type User, type DashboardContent, type ProductPrice } from "@shared/schema";
 import * as XLSX from "xlsx";
 import multer from "multer";
@@ -2126,6 +2127,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting product price:", error);
       res.status(500).json({ error: "Failed to delete product price" });
+    }
+  });
+
+  // Logo upload endpoints
+  const objectStorageService = new ObjectStorageService();
+
+  // Get upload URL for logo
+  app.post("/api/logo/upload-url", requireAdmin, async (req, res) => {
+    try {
+      const { fileName } = req.body;
+      
+      const { uploadURL, objectPath } = await objectStorageService.getObjectEntityUploadURL(fileName || 'logo.jpg');
+      
+      res.json({ uploadURL, objectPath });
+    } catch (error) {
+      console.error("Error getting logo upload URL:", error);
+      res.status(500).json({ error: "업로드 URL 생성에 실패했습니다" });
+    }
+  });
+
+  // Update logo URL in content
+  app.post("/api/logo", requireAdmin, async (req, res) => {
+    try {
+      const { logoUrl } = req.body;
+      
+      if (!logoUrl) {
+        return res.status(400).json({ error: "로고 URL이 필요합니다" });
+      }
+
+      await storage.updateDashboardContent('logoUrl', logoUrl);
+      res.json({ success: true, logoUrl });
+    } catch (error) {
+      console.error("Error updating logo URL:", error);
+      res.status(500).json({ error: "로고 업데이트에 실패했습니다" });
+    }
+  });
+
+  // Serve private objects (for logo images)
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectPath = `/objects/${req.params.objectPath}`;
+      const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving object:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
     }
   });
 

@@ -15,6 +15,7 @@ import { DeliveredDatePicker } from "@/components/delivered-date-picker";
 import { SellerShippedDatePicker } from "@/components/seller-shipped-date-picker";
 import { CustomerManagement } from "@/components/customer-management";
 import { UserManagement } from "@/components/user-management";
+import { ObjectUploader } from "@/components/ObjectUploader";
 
 import PasswordChangeDialog from "@/components/PasswordChangeDialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -1227,7 +1228,8 @@ export default function Admin() {
       { name: '한과1호', price: '20000', cost: '5000', size: '(10cm × 7cm × 7cm)', weight: '300g' },
       { name: '한과2호', price: '30000', cost: '7000', size: '(14.5cm × 7cm × 7cm)', weight: '450g' }
     ],
-    excludeWrappingFromShipping: false
+    excludeWrappingFromShipping: false,
+    logoUrl: ""
   });
 
   // Handle multiple image upload
@@ -1419,6 +1421,7 @@ export default function Admin() {
           }
         }
         if (item.key === 'excludeWrappingFromShipping') updatedContent.excludeWrappingFromShipping = item.value === 'true';
+        if (item.key === 'logoUrl') updatedContent.logoUrl = item.value;
       });
       setDashboardContent(updatedContent);
     }
@@ -6220,7 +6223,8 @@ export default function Admin() {
                                         mainTitle: dashboardContent.mainTitle,
                                         mainDescription: dashboardContent.mainDescription,
                                         heroImages: dashboardContent.heroImages,
-                                        aboutText: dashboardContent.aboutText
+                                        aboutText: dashboardContent.aboutText,
+                                        logoUrl: dashboardContent.logoUrl
                                       };
                                       
                                       await Promise.all(Object.entries(mainContentData).map(([key, value]) =>
@@ -6253,7 +6257,8 @@ export default function Admin() {
                                         mainTitle: "진안에서 온 정성 가득 유과",
                                         mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
                                         heroImages: [] as string[],
-                                        aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다."
+                                        aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
+                                        logoUrl: ""
                                       };
                                       setDashboardContent({...dashboardContent, ...defaults});
                                       Object.entries(defaults).forEach(([key, value]) => {
@@ -6342,6 +6347,85 @@ export default function Admin() {
                                         >
                                           <Undo className="h-3 w-3 mr-1" />
                                           되돌리기
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  
+                                  <tr>
+                                    <td className="px-4 py-3 font-medium text-gray-600">헤더 로고</td>
+                                    <td className="px-4 py-3">
+                                      <div className="flex items-center gap-4">
+                                        {dashboardContent.logoUrl && (
+                                          <div className="flex items-center gap-2">
+                                            <img 
+                                              src={dashboardContent.logoUrl} 
+                                              alt="Current logo" 
+                                              className="h-12 w-12 object-contain border rounded"
+                                            />
+                                            <span className="text-sm text-gray-600">현재 로고</span>
+                                          </div>
+                                        )}
+                                        <ObjectUploader
+                                          maxNumberOfFiles={1}
+                                          maxFileSize={5485760} // 5MB
+                                          onGetUploadParameters={async () => {
+                                            const response = await fetch('/api/logo/upload-url', {
+                                              method: 'POST',
+                                              headers: { 'Content-Type': 'application/json' },
+                                              credentials: 'include'
+                                            });
+                                            const { uploadURL } = await response.json();
+                                            return { method: 'PUT', url: uploadURL };
+                                          }}
+                                          onComplete={async (result) => {
+                                            if (result.successful && result.successful[0]) {
+                                              const uploadedFile = result.successful[0];
+                                              const logoUrl = uploadedFile.uploadURL?.split('?')[0]; // Remove query params
+                                              
+                                              // Update logo URL in content
+                                              await fetch('/api/logo', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                credentials: 'include',
+                                                body: JSON.stringify({ logoUrl })
+                                              });
+                                              
+                                              setDashboardContent({...dashboardContent, logoUrl});
+                                              
+                                              toast({
+                                                title: "로고 업로드 완료",
+                                                description: "새 로고가 성공적으로 업로드되었습니다.",
+                                              });
+                                            }
+                                          }}
+                                          buttonClassName="h-8 px-3 text-xs"
+                                        >
+                                          <Upload className="h-3 w-3 mr-1" />
+                                          로고 업로드
+                                        </ObjectUploader>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                      <div className="flex gap-2 justify-center">
+                                        <Button
+                                          onClick={() => {
+                                            if (dashboardContent.logoUrl && confirm('현재 로고를 삭제하시겠습니까?')) {
+                                              setDashboardContent({...dashboardContent, logoUrl: ''});
+                                              updateContentMutation.mutate({ key: 'logoUrl', value: '' });
+                                              toast({
+                                                title: "로고 삭제됨",
+                                                description: "로고가 제거되었습니다.",
+                                              });
+                                            }
+                                          }}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200"
+                                          disabled={!dashboardContent.logoUrl}
+                                        >
+                                          <Trash2 className="h-3 w-3 mr-1" />
+                                          삭제
                                         </Button>
                                       </div>
                                     </td>
