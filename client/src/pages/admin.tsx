@@ -1483,6 +1483,7 @@ export default function Admin() {
   const [selectedOrderForPayment, setSelectedOrderForPayment] = useState<Order | null>(null);
   const [showPaymentDetailsDialog, setShowPaymentDetailsDialog] = useState(false);
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest' | 'delivery-date' | 'scheduled-date' | 'order-status' | 'payment-status' | 'order-number'>('latest');
+  const [editingValues, setEditingValues] = useState<Record<string, any>>({});
 
   // Clear selections when switching tabs
   const handleTabChange = (newTab: string) => {
