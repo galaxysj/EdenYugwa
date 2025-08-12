@@ -2137,12 +2137,47 @@ export default function Admin() {
     // Calculate totals for filtered orders
     const filteredTotals = filteredOrders.reduce((acc: any, order: Order) => {
       acc.count++;
-      acc.totalAmount += order.totalAmount;
-      acc.actualRevenue += order.actualPaidAmount || order.totalAmount;
+      
+      // 가격설정을 기반으로 한 실제 매출 계산 (저장된 order.totalAmount 대신 현재 가격으로 재계산)
+      const calculatedSmallBoxAmount = order.smallBoxQuantity * smallBoxPriceValue;
+      const calculatedLargeBoxAmount = order.largeBoxQuantity * largeBoxPriceValue;
+      const calculatedWrappingAmount = order.wrappingQuantity * wrappingPriceValue;
+      const calculatedShippingAmount = order.shippingFee || 0;
+      
+      // 동적 상품 금액 계산
+      let calculatedDynamicAmount = 0;
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          
+          Object.entries(dynamicQty || {}).forEach(([index, quantity]: [string, any]) => {
+            const productIndex = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0 && productIndex >= 3) {
+              const dynamicPriceSetting = settings?.find(s => s.key === `product_${productIndex}Price`);
+              const dynamicPrice = dynamicPriceSetting ? parseInt(dynamicPriceSetting.value) : 0;
+              calculatedDynamicAmount += qty * dynamicPrice;
+            }
+          });
+        } catch (error) {
+          console.error('동적 상품 가격 계산 오류:', error);
+        }
+      }
+      
+      const recalculatedTotalAmount = calculatedSmallBoxAmount + calculatedLargeBoxAmount + calculatedWrappingAmount + calculatedDynamicAmount + calculatedShippingAmount;
+      
+      acc.totalAmount += recalculatedTotalAmount;
+      acc.actualRevenue += order.actualPaidAmount || recalculatedTotalAmount;
       acc.totalDiscounts += order.discountAmount || 0;
-      acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
-        ? (order.totalAmount - order.actualPaidAmount) : 0;
-      acc.netProfit += (order.netProfit || 0);
+      acc.totalPartialUnpaid += (order.actualPaidAmount && order.actualPaidAmount < recalculatedTotalAmount && !order.discountAmount) 
+        ? (recalculatedTotalAmount - order.actualPaidAmount) : 0;
+      
+      // 순수익을 재계산된 매출로 계산
+      const orderActualRevenue = order.actualPaidAmount || recalculatedTotalAmount;
+      const orderNetProfit = orderActualRevenue - (order.discountAmount || 0);
+      acc.netProfit += orderNetProfit;
       
       // 가격설정의 원가를 우선 사용하여 정확한 계산
       const smallBoxCost = order.smallBoxQuantity * (smallBoxCostValue || 
@@ -2170,9 +2205,10 @@ export default function Admin() {
                                    (product3PriceSetting ? parseInt(product3PriceSetting.value) :
                                    (productNames[2]?.price ? parseInt(productNames[2].price) : 1000)));
       
-      const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : currentSmallPrice;
-      const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : currentLargePrice;
-      const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : currentWrappingPrice;
+      // 가격설정을 우선 사용 (저장된 주문가격은 무시하고 현재 설정 사용)
+      const smallBoxPrice = currentSmallPrice;
+      const largeBoxPrice = currentLargePrice; 
+      const wrappingPrice = currentWrappingPrice;
       
       // 동적 상품 원가 계산 (인덱스 3부터)
       let dynamicProductsCost = 0;
@@ -2720,20 +2756,42 @@ export default function Admin() {
                       // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
                       const productNames = dashboardContent.productNames || [];
                       
-                      // 가격설정의 판매가를 우선 사용, 주문 시점 가격이 0이면 현재 설정 사용
-                      const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 
-                                          (smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000));
-                      const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 
-                                          (largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000));
-                      const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice : 
-                                          (wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000));
+                      // 가격설정을 항상 우선 사용 (저장된 주문가격은 무시)
+                      const smallBoxPrice = smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
+                      const largeBoxPrice = largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
+                      const wrappingPrice = wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000);
                       
                       const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
                       const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
                       const wrappingTotal = order.wrappingQuantity * wrappingPrice;
                       
+                      // 동적 상품 매출 계산
+                      let dynamicProductsTotal = 0;
+                      if (order.dynamicProductQuantities) {
+                        try {
+                          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                            ? JSON.parse(order.dynamicProductQuantities) 
+                            : order.dynamicProductQuantities;
+                          Object.entries(dynamicQty).forEach(([index, quantity]) => {
+                            const productIndex = parseInt(index);
+                            const qty = Number(quantity);
+                            if (productIndex >= 3 && qty > 0) {
+                              const productPriceSetting = settings?.find(s => s.key === `product_${productIndex}Price`);
+                              const productPrice = productPriceSetting ? parseInt(productPriceSetting.value) : 
+                                                  (productNames[productIndex]?.price ? parseInt(productNames[productIndex].price) : 0);
+                              dynamicProductsTotal += qty * productPrice;
+                            }
+                          });
+                        } catch (error) {
+                          console.error('Error parsing dynamic product quantities for revenue calculation:', error);
+                        }
+                      }
+                      
                       // Get shipping fee from order
                       const shippingFee = order.shippingFee || 0;
+                      
+                      // 가격설정 기반 총 매출 계산
+                      const recalculatedTotalRevenue = smallBoxTotal + largeBoxTotal + wrappingTotal + dynamicProductsTotal + shippingFee;
                       
                       // 가격설정의 원가를 우선 사용, 없으면 주문 시점 원가, 마지막으로 콘텐츠관리 원가
                       const smallCost = smallBoxCostValue || order.smallBoxCost || 
@@ -2774,10 +2832,16 @@ export default function Admin() {
                       
                       const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost + shippingFee;
                       
-                      // Calculate discount and unpaid amounts
+                      // Calculate discount amount first
                       const discountAmount = order.discountAmount || 0;
-                      const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < order.totalAmount && !order.discountAmount) 
-                        ? (order.totalAmount - order.actualPaidAmount) : 0;
+                      
+                      // Calculate unpaid amount using recalculated revenue
+                      const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < recalculatedTotalRevenue && !discountAmount) 
+                        ? (recalculatedTotalRevenue - order.actualPaidAmount) : 0;
+                      
+                      // Calculate net profit using recalculated revenue
+                      const actualRevenue = order.actualPaidAmount || recalculatedTotalRevenue;
+                      const netProfit = actualRevenue - totalCost - discountAmount;
                       
                       return (
                         <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
@@ -2823,15 +2887,15 @@ export default function Admin() {
                           </td>
                           <td className="py-2 px-3 text-right text-sm font-medium bg-gray-50 border-l-2 border-gray-300">
                             <div className="text-gray-700 font-semibold">
-                              {formatPrice(order.totalAmount)}
+                              {formatPrice(recalculatedTotalRevenue)}
                             </div>
                             <div className="text-xs text-gray-600 mt-1">
-                              주문금액
+                              매출금액
                             </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm font-medium bg-gray-50 border-l-2 border-gray-300">
                             <div className="text-gray-700 font-semibold">
-                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(order.totalAmount)}
+                              {order.actualPaidAmount ? formatPrice(order.actualPaidAmount) : formatPrice(recalculatedTotalRevenue)}
                             </div>
                             <div className="text-xs text-gray-600 mt-1">
                               실제입금액
@@ -2919,21 +2983,14 @@ export default function Admin() {
                             </div>
                           </td>
                           <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
-                            {(() => {
-                              // 실제수익 = 실제입금액 - 총원가 (총원가에 이미 배송비 포함됨)
-                              const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
-                              const actualProfit = actualPaidAmount - totalCost - discountAmount;
-                              return (
-                                <div>
-                                  <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
-                                    {formatPrice(actualProfit)}
-                                  </div>
-                                  <div className="text-xs text-gray-600 mt-1">
-                                    순수익
-                                  </div>
-                                </div>
-                              );
-                            })()}
+                            <div>
+                              <div className={`font-bold text-lg ${netProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
+                                {formatPrice(netProfit)}
+                              </div>
+                              <div className="text-xs text-gray-600 mt-1">
+                                순수익
+                              </div>
+                            </div>
                           </td>
                         </tr>
                       );
