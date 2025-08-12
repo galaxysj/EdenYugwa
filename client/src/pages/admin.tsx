@@ -6353,7 +6353,14 @@ export default function Admin() {
                                   </tr>
                                   
                                   <tr>
-                                    <td className="px-4 py-3 font-medium text-gray-600">헤더 로고</td>
+                                    <td className="px-4 py-3 font-medium text-gray-600">
+                                      <div>
+                                        헤더 로고
+                                        <div className="text-xs text-gray-500 mt-1">
+                                          로고 업로드 시 "에덴한과" 텍스트와 함께 표시됩니다
+                                        </div>
+                                      </div>
+                                    </td>
                                     <td className="px-4 py-3">
                                       <div className="flex items-center gap-4">
                                         {dashboardContent.logoUrl && (
@@ -6395,7 +6402,7 @@ export default function Admin() {
                                               
                                               toast({
                                                 title: "로고 업로드 완료",
-                                                description: "새 로고가 성공적으로 업로드되었습니다.",
+                                                description: "헤더에 로고가 추가되었습니다.",
                                               });
                                             }
                                           }}
@@ -6410,23 +6417,42 @@ export default function Admin() {
                                       <div className="flex gap-2 justify-center">
                                         <Button
                                           onClick={() => {
-                                            if (dashboardContent.logoUrl && confirm('현재 로고를 삭제하시겠습니까?')) {
+                                            if (confirm('로고를 원상태로 복원하시겠습니까? (잎 아이콘 + 텍스트만 표시)')) {
                                               setDashboardContent({...dashboardContent, logoUrl: ''});
                                               updateContentMutation.mutate({ key: 'logoUrl', value: '' });
                                               toast({
-                                                title: "로고 삭제됨",
-                                                description: "로고가 제거되었습니다.",
+                                                title: "원상태 복원",
+                                                description: "기본 로고(잎 아이콘)로 복원되었습니다.",
                                               });
                                             }
                                           }}
                                           variant="ghost"
                                           size="sm"
-                                          className="h-8 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200"
-                                          disabled={!dashboardContent.logoUrl}
+                                          className="h-8 px-2 text-xs text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-200"
                                         >
-                                          <Trash2 className="h-3 w-3 mr-1" />
-                                          삭제
+                                          <Undo className="h-3 w-3 mr-1" />
+                                          원상태 복원
                                         </Button>
+                                        {dashboardContent.logoUrl && (
+                                          <Button
+                                            onClick={() => {
+                                              if (confirm('현재 로고를 삭제하시겠습니까?')) {
+                                                setDashboardContent({...dashboardContent, logoUrl: ''});
+                                                updateContentMutation.mutate({ key: 'logoUrl', value: '' });
+                                                toast({
+                                                  title: "로고 삭제됨",
+                                                  description: "로고가 제거되었습니다.",
+                                                });
+                                              }
+                                            }}
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200"
+                                          >
+                                            <Trash2 className="h-3 w-3 mr-1" />
+                                            삭제
+                                          </Button>
+                                        )}
                                       </div>
                                     </td>
                                   </tr>
