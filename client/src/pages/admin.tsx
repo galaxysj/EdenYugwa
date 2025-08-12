@@ -1374,6 +1374,25 @@ export default function Admin() {
     toast({ title: "이미지가 삭제되었습니다." });
   };
 
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // 관련 드롭다운들을 찾아서 닫기
+      const dropdowns = ['title-color-dropdown', 'desc-color-dropdown'];
+      dropdowns.forEach(id => {
+        const dropdown = document.getElementById(id);
+        const trigger = (event.target as Element)?.closest(`[onclick*="${id}"]`) || 
+                       (event.target as Element)?.closest(`#${id}`);
+        if (dropdown && !trigger) {
+          dropdown.style.display = 'none';
+        }
+      });
+    };
+  
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Fetch dashboard content
   const { data: contentData } = useQuery<DashboardContent[]>({
     queryKey: ["/api/dashboard-content"],
@@ -6391,84 +6410,122 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <select 
-                                            value={(() => {
-                                              try {
-                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                              } catch {
-                                                return '#8B4513';
-                                              }
-                                            })()}
-                                            onChange={(e) => {
-                                              try {
-                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                const newStyle = {...currentStyle, color: e.target.value};
-                                                updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                              } catch {}
-                                            }}
-                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-                                          >
-                                            <optgroup label="기본 색상">
-                                              <option value="#000000">검정</option>
-                                              <option value="#374151">진한회색</option>
-                                              <option value="#6B7280">회색</option>
-                                              <option value="#9CA3AF">연한회색</option>
-                                              <option value="#FFFFFF">흰색</option>
-                                              <option value="#8B4513">갈색</option>
-                                              <option value="#5D2F07">진한갈색</option>
-                                              <option value="#87A96B">세이지</option>
-                                            </optgroup>
-                                            <optgroup label="빨강 계열">
-                                              <option value="#FEF2F2">연한 빨강</option>
-                                              <option value="#FEE2E2">연한 빨강 2</option>
-                                              <option value="#FECACA">연한 빨강 3</option>
-                                              <option value="#FCA5A5">연한 빨강 4</option>
-                                              <option value="#F87171">빨강</option>
-                                              <option value="#EF4444">진한 빨강</option>
-                                              <option value="#DC2626">진한 빨강 2</option>
-                                              <option value="#B91C1C">진한 빨강 3</option>
-                                            </optgroup>
-                                            <optgroup label="주황 계열">
-                                              <option value="#FFF7ED">연한 주황</option>
-                                              <option value="#FFEDD5">연한 주황 2</option>
-                                              <option value="#FED7AA">연한 주황 3</option>
-                                              <option value="#FDBA74">연한 주황 4</option>
-                                              <option value="#FB923C">주황</option>
-                                              <option value="#F97316">진한 주황</option>
-                                              <option value="#EA580C">진한 주황 2</option>
-                                              <option value="#C2410C">진한 주황 3</option>
-                                            </optgroup>
-                                            <optgroup label="녹색 계열">
-                                              <option value="#F0FDF4">연한 녹색</option>
-                                              <option value="#DCFCE7">연한 녹색 2</option>
-                                              <option value="#BBF7D0">연한 녹색 3</option>
-                                              <option value="#86EFAC">연한 녹색 4</option>
-                                              <option value="#4ADE80">녹색</option>
-                                              <option value="#22C55E">진한 녹색</option>
-                                              <option value="#16A34A">진한 녹색 2</option>
-                                              <option value="#15803D">진한 녹색 3</option>
-                                            </optgroup>
-                                            <optgroup label="파랑 계열">
-                                              <option value="#EFF6FF">연한 파랑</option>
-                                              <option value="#DBEAFE">연한 파랑 2</option>
-                                              <option value="#BFDBFE">연한 파랑 3</option>
-                                              <option value="#93C5FD">연한 파랑 4</option>
-                                              <option value="#60A5FA">파랑</option>
-                                              <option value="#3B82F6">진한 파랑</option>
-                                              <option value="#2563EB">진한 파랑 2</option>
-                                              <option value="#1D4ED8">진한 파랑 3</option>
-                                            </optgroup>
-                                            <optgroup label="보라 계열">
-                                              <option value="#FAF5FF">연한 보라</option>
-                                              <option value="#F3E8FF">연한 보라 2</option>
-                                              <option value="#E9D5FF">연한 보라 3</option>
-                                              <option value="#D8B4FE">연한 보라 4</option>
-                                              <option value="#C084FC">보라</option>
-                                              <option value="#A855F7">진한 보라</option>
-                                              <option value="#9333EA">진한 보라 2</option>
-                                              <option value="#7C3AED">진한 보라 3</option>
-                                            </optgroup>
-                                          </select>
+                                          <div className="relative">
+                                            <div className="flex items-center gap-2 p-2 border border-gray-300 rounded bg-white cursor-pointer" onClick={() => {
+                                              const dropdown = document.getElementById('title-color-dropdown');
+                                              dropdown.style.display = dropdown.style.display === 'none' || !dropdown.style.display ? 'block' : 'none';
+                                            }}>
+                                              <div 
+                                                className="w-4 h-4 rounded border border-gray-300"
+                                                style={{ 
+                                                  backgroundColor: (() => {
+                                                    try {
+                                                      return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                    } catch {
+                                                      return '#8B4513';
+                                                    }
+                                                  })()
+                                                }}
+                                              />
+                                              <span className="text-xs flex-1">
+                                                {(() => {
+                                                  const currentColor = (() => {
+                                                    try {
+                                                      return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                    } catch {
+                                                      return '#8B4513';
+                                                    }
+                                                  })();
+                                                  const colorMap = {
+                                                    '#000000': '검정', '#374151': '진한회색', '#6B7280': '회색', '#9CA3AF': '연한회색',
+                                                    '#FFFFFF': '흰색', '#8B4513': '갈색', '#5D2F07': '진한갈색', '#87A96B': '세이지',
+                                                    '#FEF2F2': '연한 빨강', '#FEE2E2': '연한 빨강 2', '#FECACA': '연한 빨강 3', '#FCA5A5': '연한 빨강 4',
+                                                    '#F87171': '빨강', '#EF4444': '진한 빨강', '#DC2626': '진한 빨강 2', '#B91C1C': '진한 빨강 3',
+                                                    '#FFF7ED': '연한 주황', '#FFEDD5': '연한 주황 2', '#FED7AA': '연한 주황 3', '#FDBA74': '연한 주황 4',
+                                                    '#FB923C': '주황', '#F97316': '진한 주황', '#EA580C': '진한 주황 2', '#C2410C': '진한 주황 3',
+                                                    '#F0FDF4': '연한 녹색', '#DCFCE7': '연한 녹색 2', '#BBF7D0': '연한 녹색 3', '#86EFAC': '연한 녹색 4',
+                                                    '#4ADE80': '녹색', '#22C55E': '진한 녹색', '#16A34A': '진한 녹색 2', '#15803D': '진한 녹색 3',
+                                                    '#EFF6FF': '연한 파랑', '#DBEAFE': '연한 파랑 2', '#BFDBFE': '연한 파랑 3', '#93C5FD': '연한 파랑 4',
+                                                    '#60A5FA': '파랑', '#3B82F6': '진한 파랑', '#2563EB': '진한 파랑 2', '#1D4ED8': '진한 파랑 3',
+                                                    '#FAF5FF': '연한 보라', '#F3E8FF': '연한 보라 2', '#E9D5FF': '연한 보라 3', '#D8B4FE': '연한 보라 4',
+                                                    '#C084FC': '보라', '#A855F7': '진한 보라', '#9333EA': '진한 보라 2', '#7C3AED': '진한 보라 3'
+                                                  };
+                                                  return colorMap[currentColor] || currentColor;
+                                                })()}
+                                              </span>
+                                              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                              </svg>
+                                            </div>
+                                            <div 
+                                              id="title-color-dropdown"
+                                              className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-60 overflow-y-auto"
+                                              style={{ display: 'none' }}
+                                            >
+                                              {[
+                                                { label: '기본 색상', colors: [
+                                                  { value: '#000000', name: '검정' }, { value: '#374151', name: '진한회색' }, 
+                                                  { value: '#6B7280', name: '회색' }, { value: '#9CA3AF', name: '연한회색' },
+                                                  { value: '#FFFFFF', name: '흰색' }, { value: '#8B4513', name: '갈색' },
+                                                  { value: '#5D2F07', name: '진한갈색' }, { value: '#87A96B', name: '세이지' }
+                                                ]},
+                                                { label: '빨강 계열', colors: [
+                                                  { value: '#FEF2F2', name: '연한 빨강' }, { value: '#FEE2E2', name: '연한 빨강 2' },
+                                                  { value: '#FECACA', name: '연한 빨강 3' }, { value: '#FCA5A5', name: '연한 빨강 4' },
+                                                  { value: '#F87171', name: '빨강' }, { value: '#EF4444', name: '진한 빨강' },
+                                                  { value: '#DC2626', name: '진한 빨강 2' }, { value: '#B91C1C', name: '진한 빨강 3' }
+                                                ]},
+                                                { label: '주황 계열', colors: [
+                                                  { value: '#FFF7ED', name: '연한 주황' }, { value: '#FFEDD5', name: '연한 주황 2' },
+                                                  { value: '#FED7AA', name: '연한 주황 3' }, { value: '#FDBA74', name: '연한 주황 4' },
+                                                  { value: '#FB923C', name: '주황' }, { value: '#F97316', name: '진한 주황' },
+                                                  { value: '#EA580C', name: '진한 주황 2' }, { value: '#C2410C', name: '진한 주황 3' }
+                                                ]},
+                                                { label: '녹색 계열', colors: [
+                                                  { value: '#F0FDF4', name: '연한 녹색' }, { value: '#DCFCE7', name: '연한 녹색 2' },
+                                                  { value: '#BBF7D0', name: '연한 녹색 3' }, { value: '#86EFAC', name: '연한 녹색 4' },
+                                                  { value: '#4ADE80', name: '녹색' }, { value: '#22C55E', name: '진한 녹색' },
+                                                  { value: '#16A34A', name: '진한 녹색 2' }, { value: '#15803D', name: '진한 녹색 3' }
+                                                ]},
+                                                { label: '파랑 계열', colors: [
+                                                  { value: '#EFF6FF', name: '연한 파랑' }, { value: '#DBEAFE', name: '연한 파랑 2' },
+                                                  { value: '#BFDBFE', name: '연한 파랑 3' }, { value: '#93C5FD', name: '연한 파랑 4' },
+                                                  { value: '#60A5FA', name: '파랑' }, { value: '#3B82F6', name: '진한 파랑' },
+                                                  { value: '#2563EB', name: '진한 파랑 2' }, { value: '#1D4ED8', name: '진한 파랑 3' }
+                                                ]},
+                                                { label: '보라 계열', colors: [
+                                                  { value: '#FAF5FF', name: '연한 보라' }, { value: '#F3E8FF', name: '연한 보라 2' },
+                                                  { value: '#E9D5FF', name: '연한 보라 3' }, { value: '#D8B4FE', name: '연한 보라 4' },
+                                                  { value: '#C084FC', name: '보라' }, { value: '#A855F7', name: '진한 보라' },
+                                                  { value: '#9333EA', name: '진한 보라 2' }, { value: '#7C3AED', name: '진한 보라 3' }
+                                                ]}
+                                              ].map((group) => (
+                                                <div key={group.label} className="border-b border-gray-200 last:border-b-0">
+                                                  <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-600">{group.label}</div>
+                                                  {group.colors.map((color) => (
+                                                    <div
+                                                      key={color.value}
+                                                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                                                      onClick={() => {
+                                                        try {
+                                                          const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                          const newStyle = {...currentStyle, color: color.value};
+                                                          updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                          document.getElementById('title-color-dropdown').style.display = 'none';
+                                                        } catch {}
+                                                      }}
+                                                    >
+                                                      <div 
+                                                        className="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
+                                                        style={{ backgroundColor: color.value }}
+                                                      />
+                                                      <span className="text-xs">{color.name}</span>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">정렬</label>
@@ -6536,84 +6593,122 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <select 
-                                            value={(() => {
-                                              try {
-                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                              } catch {
-                                                return '#5D2F07';
-                                              }
-                                            })()}
-                                            onChange={(e) => {
-                                              try {
-                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                const newStyle = {...currentStyle, color: e.target.value};
-                                                updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                              } catch {}
-                                            }}
-                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
-                                          >
-                                            <optgroup label="기본 색상">
-                                              <option value="#000000">검정</option>
-                                              <option value="#374151">진한회색</option>
-                                              <option value="#6B7280">회색</option>
-                                              <option value="#9CA3AF">연한회색</option>
-                                              <option value="#FFFFFF">흰색</option>
-                                              <option value="#8B4513">갈색</option>
-                                              <option value="#5D2F07">진한갈색</option>
-                                              <option value="#87A96B">세이지</option>
-                                            </optgroup>
-                                            <optgroup label="빨강 계열">
-                                              <option value="#FEF2F2">연한 빨강</option>
-                                              <option value="#FEE2E2">연한 빨강 2</option>
-                                              <option value="#FECACA">연한 빨강 3</option>
-                                              <option value="#FCA5A5">연한 빨강 4</option>
-                                              <option value="#F87171">빨강</option>
-                                              <option value="#EF4444">진한 빨강</option>
-                                              <option value="#DC2626">진한 빨강 2</option>
-                                              <option value="#B91C1C">진한 빨강 3</option>
-                                            </optgroup>
-                                            <optgroup label="주황 계열">
-                                              <option value="#FFF7ED">연한 주황</option>
-                                              <option value="#FFEDD5">연한 주황 2</option>
-                                              <option value="#FED7AA">연한 주황 3</option>
-                                              <option value="#FDBA74">연한 주황 4</option>
-                                              <option value="#FB923C">주황</option>
-                                              <option value="#F97316">진한 주황</option>
-                                              <option value="#EA580C">진한 주황 2</option>
-                                              <option value="#C2410C">진한 주황 3</option>
-                                            </optgroup>
-                                            <optgroup label="녹색 계열">
-                                              <option value="#F0FDF4">연한 녹색</option>
-                                              <option value="#DCFCE7">연한 녹색 2</option>
-                                              <option value="#BBF7D0">연한 녹색 3</option>
-                                              <option value="#86EFAC">연한 녹색 4</option>
-                                              <option value="#4ADE80">녹색</option>
-                                              <option value="#22C55E">진한 녹색</option>
-                                              <option value="#16A34A">진한 녹색 2</option>
-                                              <option value="#15803D">진한 녹색 3</option>
-                                            </optgroup>
-                                            <optgroup label="파랑 계열">
-                                              <option value="#EFF6FF">연한 파랑</option>
-                                              <option value="#DBEAFE">연한 파랑 2</option>
-                                              <option value="#BFDBFE">연한 파랑 3</option>
-                                              <option value="#93C5FD">연한 파랑 4</option>
-                                              <option value="#60A5FA">파랑</option>
-                                              <option value="#3B82F6">진한 파랑</option>
-                                              <option value="#2563EB">진한 파랑 2</option>
-                                              <option value="#1D4ED8">진한 파랑 3</option>
-                                            </optgroup>
-                                            <optgroup label="보라 계열">
-                                              <option value="#FAF5FF">연한 보라</option>
-                                              <option value="#F3E8FF">연한 보라 2</option>
-                                              <option value="#E9D5FF">연한 보라 3</option>
-                                              <option value="#D8B4FE">연한 보라 4</option>
-                                              <option value="#C084FC">보라</option>
-                                              <option value="#A855F7">진한 보라</option>
-                                              <option value="#9333EA">진한 보라 2</option>
-                                              <option value="#7C3AED">진한 보라 3</option>
-                                            </optgroup>
-                                          </select>
+                                          <div className="relative">
+                                            <div className="flex items-center gap-2 p-2 border border-gray-300 rounded bg-white cursor-pointer" onClick={() => {
+                                              const dropdown = document.getElementById('desc-color-dropdown');
+                                              dropdown.style.display = dropdown.style.display === 'none' || !dropdown.style.display ? 'block' : 'none';
+                                            }}>
+                                              <div 
+                                                className="w-4 h-4 rounded border border-gray-300"
+                                                style={{ 
+                                                  backgroundColor: (() => {
+                                                    try {
+                                                      return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                    } catch {
+                                                      return '#5D2F07';
+                                                    }
+                                                  })()
+                                                }}
+                                              />
+                                              <span className="text-xs flex-1">
+                                                {(() => {
+                                                  const currentColor = (() => {
+                                                    try {
+                                                      return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                    } catch {
+                                                      return '#5D2F07';
+                                                    }
+                                                  })();
+                                                  const colorMap = {
+                                                    '#000000': '검정', '#374151': '진한회색', '#6B7280': '회색', '#9CA3AF': '연한회색',
+                                                    '#FFFFFF': '흰색', '#8B4513': '갈색', '#5D2F07': '진한갈색', '#87A96B': '세이지',
+                                                    '#FEF2F2': '연한 빨강', '#FEE2E2': '연한 빨강 2', '#FECACA': '연한 빨강 3', '#FCA5A5': '연한 빨강 4',
+                                                    '#F87171': '빨강', '#EF4444': '진한 빨강', '#DC2626': '진한 빨강 2', '#B91C1C': '진한 빨강 3',
+                                                    '#FFF7ED': '연한 주황', '#FFEDD5': '연한 주황 2', '#FED7AA': '연한 주황 3', '#FDBA74': '연한 주황 4',
+                                                    '#FB923C': '주황', '#F97316': '진한 주황', '#EA580C': '진한 주황 2', '#C2410C': '진한 주황 3',
+                                                    '#F0FDF4': '연한 녹색', '#DCFCE7': '연한 녹색 2', '#BBF7D0': '연한 녹색 3', '#86EFAC': '연한 녹색 4',
+                                                    '#4ADE80': '녹색', '#22C55E': '진한 녹색', '#16A34A': '진한 녹색 2', '#15803D': '진한 녹색 3',
+                                                    '#EFF6FF': '연한 파랑', '#DBEAFE': '연한 파랑 2', '#BFDBFE': '연한 파랑 3', '#93C5FD': '연한 파랑 4',
+                                                    '#60A5FA': '파랑', '#3B82F6': '진한 파랑', '#2563EB': '진한 파랑 2', '#1D4ED8': '진한 파랑 3',
+                                                    '#FAF5FF': '연한 보라', '#F3E8FF': '연한 보라 2', '#E9D5FF': '연한 보라 3', '#D8B4FE': '연한 보라 4',
+                                                    '#C084FC': '보라', '#A855F7': '진한 보라', '#9333EA': '진한 보라 2', '#7C3AED': '진한 보라 3'
+                                                  };
+                                                  return colorMap[currentColor] || currentColor;
+                                                })()}
+                                              </span>
+                                              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                              </svg>
+                                            </div>
+                                            <div 
+                                              id="desc-color-dropdown"
+                                              className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-60 overflow-y-auto"
+                                              style={{ display: 'none' }}
+                                            >
+                                              {[
+                                                { label: '기본 색상', colors: [
+                                                  { value: '#000000', name: '검정' }, { value: '#374151', name: '진한회색' }, 
+                                                  { value: '#6B7280', name: '회색' }, { value: '#9CA3AF', name: '연한회색' },
+                                                  { value: '#FFFFFF', name: '흰색' }, { value: '#8B4513', name: '갈색' },
+                                                  { value: '#5D2F07', name: '진한갈색' }, { value: '#87A96B', name: '세이지' }
+                                                ]},
+                                                { label: '빨강 계열', colors: [
+                                                  { value: '#FEF2F2', name: '연한 빨강' }, { value: '#FEE2E2', name: '연한 빨강 2' },
+                                                  { value: '#FECACA', name: '연한 빨강 3' }, { value: '#FCA5A5', name: '연한 빨강 4' },
+                                                  { value: '#F87171', name: '빨강' }, { value: '#EF4444', name: '진한 빨강' },
+                                                  { value: '#DC2626', name: '진한 빨강 2' }, { value: '#B91C1C', name: '진한 빨강 3' }
+                                                ]},
+                                                { label: '주황 계열', colors: [
+                                                  { value: '#FFF7ED', name: '연한 주황' }, { value: '#FFEDD5', name: '연한 주황 2' },
+                                                  { value: '#FED7AA', name: '연한 주황 3' }, { value: '#FDBA74', name: '연한 주황 4' },
+                                                  { value: '#FB923C', name: '주황' }, { value: '#F97316', name: '진한 주황' },
+                                                  { value: '#EA580C', name: '진한 주황 2' }, { value: '#C2410C', name: '진한 주황 3' }
+                                                ]},
+                                                { label: '녹색 계열', colors: [
+                                                  { value: '#F0FDF4', name: '연한 녹색' }, { value: '#DCFCE7', name: '연한 녹색 2' },
+                                                  { value: '#BBF7D0', name: '연한 녹색 3' }, { value: '#86EFAC', name: '연한 녹색 4' },
+                                                  { value: '#4ADE80', name: '녹색' }, { value: '#22C55E', name: '진한 녹색' },
+                                                  { value: '#16A34A', name: '진한 녹색 2' }, { value: '#15803D', name: '진한 녹색 3' }
+                                                ]},
+                                                { label: '파랑 계열', colors: [
+                                                  { value: '#EFF6FF', name: '연한 파랑' }, { value: '#DBEAFE', name: '연한 파랑 2' },
+                                                  { value: '#BFDBFE', name: '연한 파랑 3' }, { value: '#93C5FD', name: '연한 파랑 4' },
+                                                  { value: '#60A5FA', name: '파랑' }, { value: '#3B82F6', name: '진한 파랑' },
+                                                  { value: '#2563EB', name: '진한 파랑 2' }, { value: '#1D4ED8', name: '진한 파랑 3' }
+                                                ]},
+                                                { label: '보라 계열', colors: [
+                                                  { value: '#FAF5FF', name: '연한 보라' }, { value: '#F3E8FF', name: '연한 보라 2' },
+                                                  { value: '#E9D5FF', name: '연한 보라 3' }, { value: '#D8B4FE', name: '연한 보라 4' },
+                                                  { value: '#C084FC', name: '보라' }, { value: '#A855F7', name: '진한 보라' },
+                                                  { value: '#9333EA', name: '진한 보라 2' }, { value: '#7C3AED', name: '진한 보라 3' }
+                                                ]}
+                                              ].map((group) => (
+                                                <div key={group.label} className="border-b border-gray-200 last:border-b-0">
+                                                  <div className="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-600">{group.label}</div>
+                                                  {group.colors.map((color) => (
+                                                    <div
+                                                      key={color.value}
+                                                      className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                                                      onClick={() => {
+                                                        try {
+                                                          const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                          const newStyle = {...currentStyle, color: color.value};
+                                                          updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                          document.getElementById('desc-color-dropdown').style.display = 'none';
+                                                        } catch {}
+                                                      }}
+                                                    >
+                                                      <div 
+                                                        className="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
+                                                        style={{ backgroundColor: color.value }}
+                                                      />
+                                                      <span className="text-xs">{color.name}</span>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">정렬</label>
