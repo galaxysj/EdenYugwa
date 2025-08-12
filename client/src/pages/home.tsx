@@ -205,10 +205,10 @@ export default function Home() {
 
 
           <div className={`mb-6 md:mb-12 ${dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).textAlign : 'text-center'}`}>
-            <h2 className={`font-bold ${dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : 'text-eden-brown'} mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto whitespace-pre-line`} style={{fontSize: dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).fontSize : '36pt'}}>
+            <h2 className={`font-bold mb-4 md:mb-6 leading-tight font-korean max-w-4xl mx-auto whitespace-pre-line`} style={{fontSize: dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).fontSize : '36pt', color: dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513'}}>
               {dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}
             </h2>
-            <p className={`${dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : 'text-eden-dark'} ${dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).textAlign : 'text-center'} mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line`} style={{fontSize: dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).fontSize : '16pt'}}>
+            <p className={`${dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).textAlign : 'text-center'} mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line`} style={{fontSize: dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).fontSize : '16pt', color: dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07'}}>
               {dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^"}
             </p>
           </div>

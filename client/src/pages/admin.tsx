@@ -6391,44 +6391,201 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <div className="grid grid-cols-6 gap-1">
-                                            {[
-                                              { value: 'text-eden-brown', color: '#8B4513', name: '갈색' },
-                                              { value: 'text-eden-dark', color: '#5D2F07', name: '진한갈색' },
-                                              { value: 'text-eden-sage', color: '#87A96B', name: '녹색' },
-                                              { value: 'text-black', color: '#000000', name: '검정' },
-                                              { value: 'text-gray-700', color: '#374151', name: '회색' },
-                                              { value: 'text-eden-red', color: '#DC2626', name: '빨강' },
-                                              { value: 'text-blue-600', color: '#2563EB', name: '파랑' },
-                                              { value: 'text-purple-600', color: '#9333EA', name: '보라' },
-                                              { value: 'text-green-600', color: '#16A34A', name: '초록' },
-                                              { value: 'text-orange-600', color: '#EA580C', name: '주황' },
-                                              { value: 'text-pink-600', color: '#DB2777', name: '분홍' },
-                                              { value: 'text-teal-600', color: '#0D9488', name: '청록' }
-                                            ].map((colorOption) => (
-                                              <button
-                                                key={colorOption.value}
-                                                onClick={() => {
-                                                  try {
-                                                    const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl', color: '', textAlign: 'text-center'};
-                                                    const newStyle = {...currentStyle, color: colorOption.value};
-                                                    updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                  } catch {}
-                                                }}
-                                                className={`w-4 h-4 rounded-full border-2 transition-all ${
-                                                  (() => {
+                                          <div className="space-y-2">
+                                            {/* 기본 색상 팔레트 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                { color: '#000000', name: '검정' },
+                                                { color: '#374151', name: '진한회색' },
+                                                { color: '#6B7280', name: '회색' },
+                                                { color: '#9CA3AF', name: '연한회색' },
+                                                { color: '#FFFFFF', name: '흰색' },
+                                                { color: '#8B4513', name: '갈색' },
+                                                { color: '#5D2F07', name: '진한갈색' },
+                                                { color: '#87A96B', name: '세이지' }
+                                              ].map((colorOption, index) => (
+                                                <button
+                                                  key={index}
+                                                  onClick={() => {
                                                     try {
-                                                      const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : 'text-eden-brown';
-                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                    } catch {
-                                                      return colorOption.value === 'text-eden-brown' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                    }
-                                                  })()
-                                                }`}
-                                                style={{ backgroundColor: colorOption.color }}
-                                                title={colorOption.name}
-                                              />
-                                            ))}
+                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: colorOption.color};
+                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                        return currentColor === colorOption.color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return colorOption.color === '#8B4513' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ 
+                                                    backgroundColor: colorOption.color,
+                                                    border: colorOption.color === '#FFFFFF' ? '2px solid #d1d5db' : undefined
+                                                  }}
+                                                  title={colorOption.name}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 빨강 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5',
+                                                '#F87171', '#EF4444', '#DC2626', '#B91C1C'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`red-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`빨강 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 주황 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#FFF7ED', '#FFEDD5', '#FED7AA', '#FDBA74',
+                                                '#FB923C', '#F97316', '#EA580C', '#C2410C'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`orange-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`주황 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 녹색 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC',
+                                                '#4ADE80', '#22C55E', '#16A34A', '#15803D'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`green-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`녹색 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 파랑 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD',
+                                                '#60A5FA', '#3B82F6', '#2563EB', '#1D4ED8'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`blue-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`파랑 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 보라 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#FAF5FF', '#F3E8FF', '#E9D5FF', '#D8B4FE',
+                                                '#C084FC', '#A855F7', '#9333EA', '#7C3AED'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`purple-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`보라 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
                                           </div>
                                         </div>
                                         <div>
@@ -6497,44 +6654,201 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <div className="grid grid-cols-6 gap-1">
-                                            {[
-                                              { value: 'text-eden-dark', color: '#5D2F07', name: '진한갈색' },
-                                              { value: 'text-eden-brown', color: '#8B4513', name: '갈색' },
-                                              { value: 'text-eden-sage', color: '#87A96B', name: '녹색' },
-                                              { value: 'text-black', color: '#000000', name: '검정' },
-                                              { value: 'text-gray-700', color: '#374151', name: '회색' },
-                                              { value: 'text-gray-600', color: '#4B5563', name: '연한회색' },
-                                              { value: 'text-blue-600', color: '#2563EB', name: '파랑' },
-                                              { value: 'text-purple-600', color: '#9333EA', name: '보라' },
-                                              { value: 'text-green-600', color: '#16A34A', name: '초록' },
-                                              { value: 'text-orange-600', color: '#EA580C', name: '주황' },
-                                              { value: 'text-pink-600', color: '#DB2777', name: '분홍' },
-                                              { value: 'text-teal-600', color: '#0D9488', name: '청록' }
-                                            ].map((colorOption) => (
-                                              <button
-                                                key={colorOption.value}
-                                                onClick={() => {
-                                                  try {
-                                                    const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: 'text-sm sm:text-base md:text-lg', color: '', textAlign: 'text-center'};
-                                                    const newStyle = {...currentStyle, color: colorOption.value};
-                                                    updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                  } catch {}
-                                                }}
-                                                className={`w-4 h-4 rounded-full border-2 transition-all ${
-                                                  (() => {
+                                          <div className="space-y-2">
+                                            {/* 기본 색상 팔레트 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                { color: '#000000', name: '검정' },
+                                                { color: '#374151', name: '진한회색' },
+                                                { color: '#6B7280', name: '회색' },
+                                                { color: '#9CA3AF', name: '연한회색' },
+                                                { color: '#FFFFFF', name: '흰색' },
+                                                { color: '#8B4513', name: '갈색' },
+                                                { color: '#5D2F07', name: '진한갈색' },
+                                                { color: '#87A96B', name: '세이지' }
+                                              ].map((colorOption, index) => (
+                                                <button
+                                                  key={index}
+                                                  onClick={() => {
                                                     try {
-                                                      const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : 'text-eden-dark';
-                                                      return currentColor === colorOption.value ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                    } catch {
-                                                      return colorOption.value === 'text-eden-dark' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                    }
-                                                  })()
-                                                }`}
-                                                style={{ backgroundColor: colorOption.color }}
-                                                title={colorOption.name}
-                                              />
-                                            ))}
+                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: colorOption.color};
+                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                        return currentColor === colorOption.color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return colorOption.color === '#5D2F07' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ 
+                                                    backgroundColor: colorOption.color,
+                                                    border: colorOption.color === '#FFFFFF' ? '2px solid #d1d5db' : undefined
+                                                  }}
+                                                  title={colorOption.name}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 빨강 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5',
+                                                '#F87171', '#EF4444', '#DC2626', '#B91C1C'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`red-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`빨강 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 주황 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#FFF7ED', '#FFEDD5', '#FED7AA', '#FDBA74',
+                                                '#FB923C', '#F97316', '#EA580C', '#C2410C'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`orange-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`주황 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 녹색 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC',
+                                                '#4ADE80', '#22C55E', '#16A34A', '#15803D'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`green-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`녹색 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 파랑 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD',
+                                                '#60A5FA', '#3B82F6', '#2563EB', '#1D4ED8'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`blue-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`파랑 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
+                                            
+                                            {/* 보라 계열 */}
+                                            <div className="grid grid-cols-8 gap-1">
+                                              {[
+                                                '#FAF5FF', '#F3E8FF', '#E9D5FF', '#D8B4FE',
+                                                '#C084FC', '#A855F7', '#9333EA', '#7C3AED'
+                                              ].map((color, index) => (
+                                                <button
+                                                  key={`purple-${index}`}
+                                                  onClick={() => {
+                                                    try {
+                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                      const newStyle = {...currentStyle, color: color};
+                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                                    } catch {}
+                                                  }}
+                                                  className={`w-4 h-4 rounded border-2 transition-all ${
+                                                    (() => {
+                                                      try {
+                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      } catch {
+                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
+                                                      }
+                                                    })()
+                                                  }`}
+                                                  style={{ backgroundColor: color }}
+                                                  title={`보라 ${index + 1}`}
+                                                />
+                                              ))}
+                                            </div>
                                           </div>
                                         </div>
                                         <div>
