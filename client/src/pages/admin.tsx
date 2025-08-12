@@ -6391,202 +6391,84 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <div className="space-y-2">
-                                            {/* 기본 색상 팔레트 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                { color: '#000000', name: '검정' },
-                                                { color: '#374151', name: '진한회색' },
-                                                { color: '#6B7280', name: '회색' },
-                                                { color: '#9CA3AF', name: '연한회색' },
-                                                { color: '#FFFFFF', name: '흰색' },
-                                                { color: '#8B4513', name: '갈색' },
-                                                { color: '#5D2F07', name: '진한갈색' },
-                                                { color: '#87A96B', name: '세이지' }
-                                              ].map((colorOption, index) => (
-                                                <button
-                                                  key={index}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: colorOption.color};
-                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                                        return currentColor === colorOption.color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return colorOption.color === '#8B4513' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ 
-                                                    backgroundColor: colorOption.color,
-                                                    border: colorOption.color === '#FFFFFF' ? '2px solid #d1d5db' : undefined
-                                                  }}
-                                                  title={colorOption.name}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 빨강 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5',
-                                                '#F87171', '#EF4444', '#DC2626', '#B91C1C'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`red-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`빨강 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 주황 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#FFF7ED', '#FFEDD5', '#FED7AA', '#FDBA74',
-                                                '#FB923C', '#F97316', '#EA580C', '#C2410C'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`orange-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`주황 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 녹색 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC',
-                                                '#4ADE80', '#22C55E', '#16A34A', '#15803D'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`green-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`녹색 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 파랑 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD',
-                                                '#60A5FA', '#3B82F6', '#2563EB', '#1D4ED8'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`blue-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`파랑 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 보라 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#FAF5FF', '#F3E8FF', '#E9D5FF', '#D8B4FE',
-                                                '#C084FC', '#A855F7', '#9333EA', '#7C3AED'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`purple-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`보라 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                          </div>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle).color : '#8B4513';
+                                              } catch {
+                                                return '#8B4513';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainTitleStyle ? JSON.parse(dashboardContent.mainTitleStyle) : {fontSize: '36pt', color: '', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, color: e.target.value};
+                                                updateDashboardContent('mainTitleStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <optgroup label="기본 색상">
+                                              <option value="#000000">검정</option>
+                                              <option value="#374151">진한회색</option>
+                                              <option value="#6B7280">회색</option>
+                                              <option value="#9CA3AF">연한회색</option>
+                                              <option value="#FFFFFF">흰색</option>
+                                              <option value="#8B4513">갈색</option>
+                                              <option value="#5D2F07">진한갈색</option>
+                                              <option value="#87A96B">세이지</option>
+                                            </optgroup>
+                                            <optgroup label="빨강 계열">
+                                              <option value="#FEF2F2">연한 빨강</option>
+                                              <option value="#FEE2E2">연한 빨강 2</option>
+                                              <option value="#FECACA">연한 빨강 3</option>
+                                              <option value="#FCA5A5">연한 빨강 4</option>
+                                              <option value="#F87171">빨강</option>
+                                              <option value="#EF4444">진한 빨강</option>
+                                              <option value="#DC2626">진한 빨강 2</option>
+                                              <option value="#B91C1C">진한 빨강 3</option>
+                                            </optgroup>
+                                            <optgroup label="주황 계열">
+                                              <option value="#FFF7ED">연한 주황</option>
+                                              <option value="#FFEDD5">연한 주황 2</option>
+                                              <option value="#FED7AA">연한 주황 3</option>
+                                              <option value="#FDBA74">연한 주황 4</option>
+                                              <option value="#FB923C">주황</option>
+                                              <option value="#F97316">진한 주황</option>
+                                              <option value="#EA580C">진한 주황 2</option>
+                                              <option value="#C2410C">진한 주황 3</option>
+                                            </optgroup>
+                                            <optgroup label="녹색 계열">
+                                              <option value="#F0FDF4">연한 녹색</option>
+                                              <option value="#DCFCE7">연한 녹색 2</option>
+                                              <option value="#BBF7D0">연한 녹색 3</option>
+                                              <option value="#86EFAC">연한 녹색 4</option>
+                                              <option value="#4ADE80">녹색</option>
+                                              <option value="#22C55E">진한 녹색</option>
+                                              <option value="#16A34A">진한 녹색 2</option>
+                                              <option value="#15803D">진한 녹색 3</option>
+                                            </optgroup>
+                                            <optgroup label="파랑 계열">
+                                              <option value="#EFF6FF">연한 파랑</option>
+                                              <option value="#DBEAFE">연한 파랑 2</option>
+                                              <option value="#BFDBFE">연한 파랑 3</option>
+                                              <option value="#93C5FD">연한 파랑 4</option>
+                                              <option value="#60A5FA">파랑</option>
+                                              <option value="#3B82F6">진한 파랑</option>
+                                              <option value="#2563EB">진한 파랑 2</option>
+                                              <option value="#1D4ED8">진한 파랑 3</option>
+                                            </optgroup>
+                                            <optgroup label="보라 계열">
+                                              <option value="#FAF5FF">연한 보라</option>
+                                              <option value="#F3E8FF">연한 보라 2</option>
+                                              <option value="#E9D5FF">연한 보라 3</option>
+                                              <option value="#D8B4FE">연한 보라 4</option>
+                                              <option value="#C084FC">보라</option>
+                                              <option value="#A855F7">진한 보라</option>
+                                              <option value="#9333EA">진한 보라 2</option>
+                                              <option value="#7C3AED">진한 보라 3</option>
+                                            </optgroup>
+                                          </select>
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">정렬</label>
@@ -6654,202 +6536,84 @@ export default function Admin() {
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">색상</label>
-                                          <div className="space-y-2">
-                                            {/* 기본 색상 팔레트 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                { color: '#000000', name: '검정' },
-                                                { color: '#374151', name: '진한회색' },
-                                                { color: '#6B7280', name: '회색' },
-                                                { color: '#9CA3AF', name: '연한회색' },
-                                                { color: '#FFFFFF', name: '흰색' },
-                                                { color: '#8B4513', name: '갈색' },
-                                                { color: '#5D2F07', name: '진한갈색' },
-                                                { color: '#87A96B', name: '세이지' }
-                                              ].map((colorOption, index) => (
-                                                <button
-                                                  key={index}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: colorOption.color};
-                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                                        return currentColor === colorOption.color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return colorOption.color === '#5D2F07' ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ 
-                                                    backgroundColor: colorOption.color,
-                                                    border: colorOption.color === '#FFFFFF' ? '2px solid #d1d5db' : undefined
-                                                  }}
-                                                  title={colorOption.name}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 빨강 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5',
-                                                '#F87171', '#EF4444', '#DC2626', '#B91C1C'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`red-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`빨강 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 주황 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#FFF7ED', '#FFEDD5', '#FED7AA', '#FDBA74',
-                                                '#FB923C', '#F97316', '#EA580C', '#C2410C'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`orange-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`주황 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 녹색 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC',
-                                                '#4ADE80', '#22C55E', '#16A34A', '#15803D'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`green-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`녹색 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 파랑 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#EFF6FF', '#DBEAFE', '#BFDBFE', '#93C5FD',
-                                                '#60A5FA', '#3B82F6', '#2563EB', '#1D4ED8'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`blue-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`파랑 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                            
-                                            {/* 보라 계열 */}
-                                            <div className="grid grid-cols-8 gap-1">
-                                              {[
-                                                '#FAF5FF', '#F3E8FF', '#E9D5FF', '#D8B4FE',
-                                                '#C084FC', '#A855F7', '#9333EA', '#7C3AED'
-                                              ].map((color, index) => (
-                                                <button
-                                                  key={`purple-${index}`}
-                                                  onClick={() => {
-                                                    try {
-                                                      const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
-                                                      const newStyle = {...currentStyle, color: color};
-                                                      updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
-                                                    } catch {}
-                                                  }}
-                                                  className={`w-4 h-4 rounded border-2 transition-all ${
-                                                    (() => {
-                                                      try {
-                                                        const currentColor = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
-                                                        return currentColor === color ? 'border-blue-500 shadow-lg scale-110' : 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      } catch {
-                                                        return 'border-gray-300 hover:border-gray-400 hover:scale-105';
-                                                      }
-                                                    })()
-                                                  }`}
-                                                  style={{ backgroundColor: color }}
-                                                  title={`보라 ${index + 1}`}
-                                                />
-                                              ))}
-                                            </div>
-                                          </div>
+                                          <select 
+                                            value={(() => {
+                                              try {
+                                                return dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07';
+                                              } catch {
+                                                return '#5D2F07';
+                                              }
+                                            })()}
+                                            onChange={(e) => {
+                                              try {
+                                                const currentStyle = dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle) : {fontSize: '16pt', color: '', textAlign: 'text-center'};
+                                                const newStyle = {...currentStyle, color: e.target.value};
+                                                updateDashboardContent('mainDescriptionStyle', JSON.stringify(newStyle));
+                                              } catch {}
+                                            }}
+                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                          >
+                                            <optgroup label="기본 색상">
+                                              <option value="#000000">검정</option>
+                                              <option value="#374151">진한회색</option>
+                                              <option value="#6B7280">회색</option>
+                                              <option value="#9CA3AF">연한회색</option>
+                                              <option value="#FFFFFF">흰색</option>
+                                              <option value="#8B4513">갈색</option>
+                                              <option value="#5D2F07">진한갈색</option>
+                                              <option value="#87A96B">세이지</option>
+                                            </optgroup>
+                                            <optgroup label="빨강 계열">
+                                              <option value="#FEF2F2">연한 빨강</option>
+                                              <option value="#FEE2E2">연한 빨강 2</option>
+                                              <option value="#FECACA">연한 빨강 3</option>
+                                              <option value="#FCA5A5">연한 빨강 4</option>
+                                              <option value="#F87171">빨강</option>
+                                              <option value="#EF4444">진한 빨강</option>
+                                              <option value="#DC2626">진한 빨강 2</option>
+                                              <option value="#B91C1C">진한 빨강 3</option>
+                                            </optgroup>
+                                            <optgroup label="주황 계열">
+                                              <option value="#FFF7ED">연한 주황</option>
+                                              <option value="#FFEDD5">연한 주황 2</option>
+                                              <option value="#FED7AA">연한 주황 3</option>
+                                              <option value="#FDBA74">연한 주황 4</option>
+                                              <option value="#FB923C">주황</option>
+                                              <option value="#F97316">진한 주황</option>
+                                              <option value="#EA580C">진한 주황 2</option>
+                                              <option value="#C2410C">진한 주황 3</option>
+                                            </optgroup>
+                                            <optgroup label="녹색 계열">
+                                              <option value="#F0FDF4">연한 녹색</option>
+                                              <option value="#DCFCE7">연한 녹색 2</option>
+                                              <option value="#BBF7D0">연한 녹색 3</option>
+                                              <option value="#86EFAC">연한 녹색 4</option>
+                                              <option value="#4ADE80">녹색</option>
+                                              <option value="#22C55E">진한 녹색</option>
+                                              <option value="#16A34A">진한 녹색 2</option>
+                                              <option value="#15803D">진한 녹색 3</option>
+                                            </optgroup>
+                                            <optgroup label="파랑 계열">
+                                              <option value="#EFF6FF">연한 파랑</option>
+                                              <option value="#DBEAFE">연한 파랑 2</option>
+                                              <option value="#BFDBFE">연한 파랑 3</option>
+                                              <option value="#93C5FD">연한 파랑 4</option>
+                                              <option value="#60A5FA">파랑</option>
+                                              <option value="#3B82F6">진한 파랑</option>
+                                              <option value="#2563EB">진한 파랑 2</option>
+                                              <option value="#1D4ED8">진한 파랑 3</option>
+                                            </optgroup>
+                                            <optgroup label="보라 계열">
+                                              <option value="#FAF5FF">연한 보라</option>
+                                              <option value="#F3E8FF">연한 보라 2</option>
+                                              <option value="#E9D5FF">연한 보라 3</option>
+                                              <option value="#D8B4FE">연한 보라 4</option>
+                                              <option value="#C084FC">보라</option>
+                                              <option value="#A855F7">진한 보라</option>
+                                              <option value="#9333EA">진한 보라 2</option>
+                                              <option value="#7C3AED">진한 보라 3</option>
+                                            </optgroup>
+                                          </select>
                                         </div>
                                         <div>
                                           <label className="text-xs text-gray-600 block mb-1">정렬</label>
