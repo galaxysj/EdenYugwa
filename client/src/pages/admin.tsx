@@ -2168,7 +2168,30 @@ export default function Admin() {
       const largeBoxPrice = order.largeBoxPrice || currentLargePrice;
       const wrappingPrice = order.wrappingPrice || currentWrappingPrice;
       
-      acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost;
+      // 동적 상품 원가 계산 (인덱스 3부터)
+      let dynamicProductsCost = 0;
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          Object.entries(dynamicQty).forEach(([index, quantity]) => {
+            const productIndex = parseInt(index);
+            const qty = Number(quantity);
+            // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
+            if (productIndex >= 3 && qty > 0) {
+              const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
+              const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
+                                (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+              dynamicProductsCost += qty * productCost;
+            }
+          });
+        } catch (error) {
+          console.error('Error parsing dynamic product quantities for cost calculation:', error);
+        }
+      }
+      
+      acc.totalCost += smallBoxCost + largeBoxCost + wrappingCost + shippingCost + dynamicProductsCost;
       acc.smallBoxAmount += order.smallBoxQuantity * smallBoxPrice;
       acc.largeBoxAmount += order.largeBoxQuantity * largeBoxPrice;
       acc.wrappingAmount += order.wrappingQuantity * wrappingPrice;
@@ -2718,7 +2741,7 @@ export default function Admin() {
                       const largeBoxesCost = order.largeBoxQuantity * largeCost;
                       const wrappingCostTotal = order.wrappingQuantity * wrappingCost;
                       
-                      // 동적 상품들의 원가 계산
+                      // 동적 상품들의 원가 계산 (인덱스 3부터가 추가 동적 상품)
                       let dynamicProductsCost = 0;
                       if (order.dynamicProductQuantities) {
                         try {
@@ -2728,18 +2751,21 @@ export default function Admin() {
                           Object.entries(dynamicQty).forEach(([index, quantity]) => {
                             const productIndex = parseInt(index);
                             const qty = Number(quantity);
-                            // 가격설정에서 동적 상품 원가 가져오기
-                            const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
-                            const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
-                                              (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
-                            dynamicProductsCost += qty * productCost;
+                            // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
+                            if (productIndex >= 3 && qty > 0) {
+                              // 가격설정에서 동적 상품 원가 가져오기
+                              const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
+                              const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
+                                                (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+                              dynamicProductsCost += qty * productCost;
+                            }
                           });
                         } catch (error) {
                           console.error('Error parsing dynamic product quantities for cost calculation:', error);
                         }
                       }
                       
-                      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost;
+                      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost + shippingFee;
                       
                       // Calculate discount and unpaid amounts
                       const discountAmount = order.discountAmount || 0;
@@ -2847,7 +2873,7 @@ export default function Admin() {
                                   {getOrderTimeProductName(2, '보자기')}: {formatPrice(wrappingCostTotal)}
                                 </div>
                               )}
-                              {/* 동적 상품들 원가 표시 */}
+                              {/* 동적 상품들 원가 표시 (인덱스 3부터) */}
                               {order.dynamicProductQuantities && (() => {
                                 try {
                                   const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
@@ -2856,15 +2882,19 @@ export default function Admin() {
                                   return Object.entries(dynamicQty).map(([index, quantity]) => {
                                     const productIndex = parseInt(index);
                                     const qty = Number(quantity);
-                                    const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
-                                    const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
-                                                      (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
-                                    const itemCost = qty * productCost;
-                                    return qty > 0 ? (
-                                      <div key={productIndex} className="text-gray-600">
-                                        {getOrderTimeProductName(productIndex, `상품${productIndex + 1}`)}: {formatPrice(itemCost)}
-                                      </div>
-                                    ) : null;
+                                    // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
+                                    if (productIndex >= 3 && qty > 0) {
+                                      const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
+                                      const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
+                                                        (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+                                      const itemCost = qty * productCost;
+                                      return (
+                                        <div key={productIndex} className="text-gray-600">
+                                          {getOrderTimeProductName(productIndex, `상품${productIndex + 1}`)}: {formatPrice(itemCost)}
+                                        </div>
+                                      );
+                                    }
+                                    return null;
                                   });
                                 } catch (error) {
                                   return null;
@@ -2882,8 +2912,9 @@ export default function Admin() {
                           </td>
                           <td className="py-2 px-3 text-right text-sm bg-gray-50 border-l-2 border-gray-300">
                             {(() => {
-                              // 실제수익 = 주문가격 - 원가 - 배송비 - 할인/미입금
-                              const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
+                              // 실제수익 = 실제입금액 - 총원가 (총원가에 이미 배송비 포함됨)
+                              const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
+                              const actualProfit = actualPaidAmount - totalCost - discountAmount;
                               return (
                                 <div>
                                   <div className={`font-bold text-lg ${actualProfit >= 0 ? "text-gray-700" : "text-gray-600"}`}>
@@ -2964,7 +2995,7 @@ export default function Admin() {
                   const largeBoxesCost = order.largeBoxQuantity * largeCost;
                   const wrappingCostTotal = order.wrappingQuantity * wrappingCost;
                   
-                  // 실제 주문에 저장된 동적 상품들의 원가 계산
+                  // 실제 주문에 저장된 동적 상품들의 원가 계산 (인덱스 3부터)
                   let dynamicProductsCost = 0;
                   if (order.dynamicProductQuantities) {
                     try {
@@ -2974,18 +3005,21 @@ export default function Admin() {
                       Object.entries(dynamicQty).forEach(([index, quantity]) => {
                         const productIndex = parseInt(index);
                         const qty = Number(quantity);
-                        // 주문 시점 원가를 우선 사용, 없으면 현재 설정 사용
-                        const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
-                        const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
-                                          (productNames && productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
-                        dynamicProductsCost += qty * productCost;
+                        // 인덱스 3부터가 동적 상품 (0,1,2는 기본 상품)
+                        if (productIndex >= 3 && qty > 0) {
+                          // 주문 시점 원가를 우선 사용, 없으면 현재 설정 사용
+                          const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
+                          const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
+                                            (productNames && productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+                          dynamicProductsCost += qty * productCost;
+                        }
                       });
                     } catch (error) {
                       console.error('Error parsing dynamic product quantities for cost calculation:', error);
                     }
                   }
                   
-                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost;
+                  const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost + shippingFee;
                   
                   // Calculate discount and unpaid amounts
                   const discountAmount = order.discountAmount || 0;
@@ -2993,7 +3027,8 @@ export default function Admin() {
                     ? (order.totalAmount - order.actualPaidAmount) : 0;
                   
                   // Calculate profit
-                  const actualProfit = order.totalAmount - totalCost - shippingFee - discountAmount - unpaidAmount;
+                  const actualPaidAmount = order.actualPaidAmount || order.totalAmount;
+                  const actualProfit = actualPaidAmount - totalCost - discountAmount;
                   
                   return (
                     <div key={order.id} className="bg-white border border-gray-200 rounded-lg p-3">
