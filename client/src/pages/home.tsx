@@ -57,19 +57,13 @@ export default function Home() {
             <div className="md:flex md:items-center md:space-x-3">
               <div className="flex items-center space-x-3 justify-center md:justify-start">
                 {dashboardContent.logoUrl ? (
-                  <>
-                    <img 
-                      src={dashboardContent.logoUrl} 
-                      alt="에덴한과 로고" 
-                      className="h-8 md:h-10 w-auto object-contain"
-                    />
-                    <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-                  </>
+                  <img 
+                    src={dashboardContent.logoUrl} 
+                    alt="에덴한과 로고" 
+                    className="h-8 md:h-10 w-auto object-contain"
+                  />
                 ) : (
-                  <>
-                    <Leaf className="text-eden-sage text-2xl" />
-                    <h1 className="text-2xl font-bold text-eden-brown font-korean">에덴한과</h1>
-                  </>
+                  <Leaf className="text-eden-sage text-2xl" />
                 )}
               </div>
               

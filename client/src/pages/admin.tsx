@@ -6357,7 +6357,7 @@ export default function Admin() {
                                       <div>
                                         헤더 로고
                                         <div className="text-xs text-gray-500 mt-1">
-                                          로고 업로드 시 "에덴한과" 텍스트와 함께 표시됩니다
+                                          나뭇잎 로고만 수정 가능합니다 (텍스트는 숨김)
                                         </div>
                                       </div>
                                     </td>
@@ -6402,7 +6402,7 @@ export default function Admin() {
                                               
                                               toast({
                                                 title: "로고 업로드 완료",
-                                                description: "헤더에 로고가 추가되었습니다.",
+                                                description: "새 나뭇잎 로고가 업로드되었습니다.",
                                               });
                                             }
                                           }}
@@ -6417,12 +6417,12 @@ export default function Admin() {
                                       <div className="flex gap-2 justify-center">
                                         <Button
                                           onClick={() => {
-                                            if (confirm('로고를 원상태로 복원하시겠습니까? (잎 아이콘 + 텍스트만 표시)')) {
+                                            if (confirm('로고를 원상태로 복원하시겠습니까? (기본 나뭇잎 아이콘만 표시)')) {
                                               setDashboardContent({...dashboardContent, logoUrl: ''});
                                               updateContentMutation.mutate({ key: 'logoUrl', value: '' });
                                               toast({
                                                 title: "원상태 복원",
-                                                description: "기본 로고(잎 아이콘)로 복원되었습니다.",
+                                                description: "기본 나뭇잎 아이콘으로 복원되었습니다.",
                                               });
                                             }
                                           }}
