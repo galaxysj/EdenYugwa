@@ -378,7 +378,8 @@ export default function OrderLookup() {
   // 재주문하기 함수
   const handleReorder = (order: Order) => {
     setSelectedOrder(order);
-    setReorderScheduledDate(order.scheduledDate ? new Date(order.scheduledDate).toISOString().split('T')[0] : '');
+    // 예약 발송일은 초기화 (빈 값으로)
+    setReorderScheduledDate('');
     setReorderDialogOpen(true);
   };
 
@@ -404,17 +405,19 @@ export default function OrderLookup() {
   useEffect(() => {
     if (selectedOrder) {
       reorderForm.reset({
+        // 고객 정보와 배송 정보는 유지
         customerName: selectedOrder.customerName,
         customerPhone: selectedOrder.customerPhone,
         zipCode: selectedOrder.zipCode || "",
         address1: selectedOrder.address1,
         address2: selectedOrder.address2 || "",
         specialRequests: selectedOrder.specialRequests || "",
-        smallBoxQuantity: selectedOrder.smallBoxQuantity,
-        largeBoxQuantity: selectedOrder.largeBoxQuantity,
-        wrappingQuantity: selectedOrder.wrappingQuantity,
         isDifferentDepositor: selectedOrder.isDifferentDepositor || false,
         depositorName: selectedOrder.depositorName || "",
+        // 상품 선택은 초기화 (0으로 설정)
+        smallBoxQuantity: 0,
+        largeBoxQuantity: 0,
+        wrappingQuantity: 0,
       });
     }
   }, [selectedOrder, reorderForm]);
