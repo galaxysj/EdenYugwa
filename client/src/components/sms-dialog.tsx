@@ -85,70 +85,74 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
   // iOS 단축어 링크로 SMS 발송하는 함수
   const sendSMSViaShortcut = (phoneNumber: string, message: string) => {
     const input = `${phoneNumber}/${message}`;
-    
-    // 다양한 방법으로 시도
-    const methods = [
-      () => {
-        // 방법 1: shortcuts:// URL 스킴 (기본)
-        const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
-        console.log('방법 1 시도:', shortcutUrl);
-        window.location.href = shortcutUrl;
-      },
-      () => {
-        // 방법 2: x-callback-url 방식
-        const callbackUrl = `shortcuts://x-callback-url/run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
-        console.log('방법 2 시도:', callbackUrl);
-        window.location.href = callbackUrl;
-      },
-      () => {
-        // 방법 3: 단순한 shortcuts://run-shortcut
-        const simpleUrl = `shortcuts://run-shortcut?name=eden&input=${input}`;
-        console.log('방법 3 시도:', simpleUrl);
-        window.location.href = simpleUrl;
-      }
-    ];
-
     console.log('전화번호:', phoneNumber);
     console.log('메시지:', message);
     console.log('입력값:', input);
     
-    try {
-      // 첫 번째 방법 시도
-      methods[0]();
+    // 개선된 단축어 실행 방법
+    const executeShortcut = () => {
+      // 방법 1: 기본 shortcuts URL scheme
+      const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
+      console.log('단축어 실행 시도:', shortcutUrl);
       
-      // 1초 후 페이지가 여전히 있으면 다른 방법들 시도
-      setTimeout(() => {
-        console.log('첫 번째 방법 실패, 두 번째 방법 시도');
-        methods[1]();
-      }, 1000);
+      // 새 창에서 열기 시도
+      const newWindow = window.open(shortcutUrl, '_blank');
       
+      // 새 창이 막혔거나 안 열렸으면 직접 location 변경
       setTimeout(() => {
-        console.log('두 번째 방법 실패, 세 번째 방법 시도');
-        methods[2]();
+        if (!newWindow || newWindow.closed) {
+          console.log('새 창 열기 실패, location.href로 시도');
+          window.location.href = shortcutUrl;
+        }
+      }, 100);
+      
+      // 백업 방법들
+      setTimeout(() => {
+        console.log('기본 방법 실패, x-callback-url 시도');
+        const callbackUrl = `shortcuts://x-callback-url/run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
+        window.location.href = callbackUrl;
       }, 2000);
       
-      toast({
-        title: "단축어 실행",
-        description: "iOS 단축어 앱을 열고 있습니다. 잠시만 기다려주세요.",
+      // 최종 백업
+      setTimeout(() => {
+        console.log('x-callback-url 실패, 직접 링크 복사 제안');
+        copyToClipboardFallback(shortcutUrl);
+      }, 4000);
+    };
+    
+    const copyToClipboardFallback = (url: string) => {
+      navigator.clipboard?.writeText(url).then(() => {
+        toast({
+          title: "단축어 URL 복사됨",
+          description: "단축어가 자동 실행되지 않아 URL을 클립보드에 복사했습니다. Safari 주소창에 붙여넣기 후 실행해주세요.",
+          duration: 10000,
+        });
+      }).catch(() => {
+        // 클립보드 복사도 실패한 경우
+        toast({
+          title: "수동 실행 필요",
+          description: `다음 URL을 Safari에서 실행해주세요: ${url}`,
+          variant: "destructive",
+          duration: 15000,
+        });
       });
+    };
+    
+    try {
+      executeShortcut();
+      
+      toast({
+        title: "단축어 실행 중",
+        description: "iOS 단축어 앱으로 연결 중입니다. 단축어가 'eden'이라는 이름으로 저장되어 있는지 확인해주세요.",
+        duration: 5000,
+      });
+      
       setOpen(false);
       form.reset();
     } catch (error) {
       console.error('단축어 실행 오류:', error);
-      // URL을 클립보드에 복사
       const finalUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
-      navigator.clipboard?.writeText(finalUrl).then(() => {
-        toast({
-          title: "단축어 URL 복사됨",
-          description: "단축어 URL이 클립보드에 복사되었습니다. Safari에서 붙여넣기하여 실행해주세요.",
-        });
-      }).catch(() => {
-        toast({
-          title: "단축어 실행 실패",
-          description: `수동으로 복사하여 Safari에서 실행해주세요: ${finalUrl}`,
-          variant: "destructive",
-        });
-      });
+      copyToClipboardFallback(finalUrl);
     }
   };
 
@@ -214,6 +218,15 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* 단축어 설정 안내 */}
+        <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <AlertCircle className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            <strong>단축어 설정 확인:</strong> iOS 단축어 앱에서 'eden'이라는 이름으로 SMS 발송 단축어가 만들어져 있는지 확인해주세요. 
+            단축어는 전화번호와 메시지를 '/' 구분자로 받아서 SMS를 발송하도록 설정되어야 합니다.
+          </AlertDescription>
+        </Alert>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
