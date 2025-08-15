@@ -86,7 +86,7 @@ export default function OrderForm() {
   // Fetch dashboard content for dynamic product names
   const { data: contentData } = useQuery({
     queryKey: ['/api/dashboard-content'],
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // 2 minutes for better responsiveness
   });
 
   // Convert array to object for easier access
@@ -236,16 +236,17 @@ export default function OrderForm() {
     loadSettings();
   }, []);
 
-  // Fetch settings data for pricing
+  // Fetch settings data for pricing with shorter cache for real-time updates
   const { data: settingsData } = useQuery({
     queryKey: ['/api/settings'],
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds for real-time price updates
+    refetchInterval: 1000 * 30, // Poll every 30 seconds
   });
 
   // Fetch dashboard content for dynamic product names
   const { data: dashboardData } = useQuery({
     queryKey: ['/api/dashboard-content'],
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
   // Helper function to get product name from dashboard content
@@ -270,8 +271,30 @@ export default function OrderForm() {
     return fallback;
   };
 
-  // Update product names with prices from settings when data changes
+  // Update product names with prices from settings when data changes - Real-time sync
   useEffect(() => {
+    if (settingsData && Array.isArray(settingsData)) {
+      // 실시간 가격 업데이트 - settings 데이터가 변경될 때마다 즉시 반영
+      const updatedPrices = {
+        small: (() => {
+          const setting = settingsData.find((s: any) => s.key === "product_0Price");
+          return setting ? parseInt(setting.value) : prices.small;
+        })(),
+        large: (() => {
+          const setting = settingsData.find((s: any) => s.key === "product_1Price");
+          return setting ? parseInt(setting.value) : prices.large;
+        })(),
+        wrapping: (() => {
+          const setting = settingsData.find((s: any) => s.key === "product_2Price");
+          return setting ? parseInt(setting.value) : prices.wrapping;
+        })(),
+      };
+
+      setPrices(updatedPrices);
+      console.log('=== 실시간 가격 업데이트 ===');
+      console.log('업데이트된 가격:', updatedPrices);
+    }
+    
     if (dashboardContent && dashboardContent.productNames && settingsData) {
       try {
         const productNamesData = parseProductNames();
@@ -301,17 +324,6 @@ export default function OrderForm() {
           setDynamicQuantities(initialQuantities);
           setIsProductsInitialized(true);
         }
-        
-        // 기존 가격 업데이트 로직
-        const wrappingProduct = updatedProductNames.find((p: any) => p.name === '보자기' || p.name === dashboardContent.wrappingName);
-        const updatedPrices = {
-          small: updatedProductNames[0]?.price ? parseInt(updatedProductNames[0].price) : prices.small,
-          large: updatedProductNames[1]?.price ? parseInt(updatedProductNames[1].price) : prices.large,
-          wrapping: wrappingProduct?.price ? parseInt(wrappingProduct.price) : 
-                   (dashboardContent.wrappingPriceAmount ? parseInt(dashboardContent.wrappingPriceAmount) : 1000),
-        };
-
-        setPrices(updatedPrices);
         
       } catch (error) {
         console.error('상품 가격 로드 실패:', error);

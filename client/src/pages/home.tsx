@@ -32,10 +32,11 @@ export default function Home() {
     return acc;
   }, {}) : {};
 
-  // Get settings data for pricing
+  // Get settings data for pricing with real-time updates
   const { data: settingsData } = useQuery({
     queryKey: ['/api/settings'],
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30, // 30 seconds for real-time price updates
+    refetchInterval: 1000 * 30, // Poll every 30 seconds
   });
 
   const settings = settingsData;
