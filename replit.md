@@ -7,7 +7,7 @@ This is a full-stack web application for the Eden Hangwa (Korean traditional swe
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
-The application features a modern full-stack architecture with distinct frontend and backend components. It emphasizes modularity, scalability, and maintainability.
+The application features a modern full-stack architecture with distinct frontend and backend components. It emphasizes modularity, scalability, and maintainability. Now includes **Raspberry Pi deployment support** with optimized SQLite database configuration and ARM architecture compatibility.
 
 ### General Architecture
 - **Frontend**: React-based Single Page Application (SPA) utilizing Vite.
@@ -35,6 +35,7 @@ The application features a modern full-stack architecture with distinct frontend
     - **Remote Area Detection**: Automatic detection and notification for remote shipping addresses.
     - **Role Separation**: Admin and Manager roles have specific permissions, e.g., only managers can mark orders as "delivered".
     - **Mobile Access**: Dedicated panel access buttons on mobile dashboards for both admin and manager.
+    - **Raspberry Pi Support**: Optimized deployment for ARM architecture with SQLite database, memory optimization, and automated setup scripts.
 
 ## External Dependencies
 
