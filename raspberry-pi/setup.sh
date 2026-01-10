@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# 라즈베리 파이 Eden 한과 주문관리 시스템 설치 스크립트
+# 라즈베리 파이 Eden 한과 주문관리 시스템 설치 스크립트 (데비안 OS용)
 
-echo "=== 라즈베리 파이용 Eden 한과 주문관리 시스템 설치 시작 ==="
+echo "=== 라즈베리 파이용 Eden 한과 주문관리 시스템 설치 시작 (데비안 OS) ==="
 
 # 시스템 업데이트
 echo "시스템 업데이트 중..."
 sudo apt update && sudo apt upgrade -y
 
-# 필수 패키지 설치
+# 필수 패키지 설치 (데비안용)
 echo "필수 패키지 설치 중..."
-sudo apt install -y git curl build-essential python3-dev sqlite3
+sudo apt install -y git curl build-essential python3-dev sqlite3 ufw
 
 # Node.js 설치 (라즈베리 파이 최적화)
 if ! command -v node &> /dev/null; then
@@ -71,18 +71,17 @@ sudo dphys-swapfile swapon
 echo "자동 백업 cron job 설정..."
 (crontab -l 2>/dev/null; echo "0 2 * * * $PROJECT_DIR/backup.sh") | crontab -
 
-# 방화벽 설정
-if command -v ufw &> /dev/null; then
-    echo "방화벽 설정 중..."
-    sudo ufw allow 3000/tcp
-    sudo ufw --force enable
-fi
+# 방화벽 설정 (포트 7000)
+echo "방화벽 설정 중..."
+sudo ufw allow 7000/tcp
+sudo ufw allow 22/tcp
+sudo ufw --force enable
 
 # 라즈베리 파이 IP 주소 확인
 PI_IP=$(hostname -I | awk '{print $1}')
 
 echo ""
-echo "=== 설치 완료 ==="
+echo "=== 설치 완료 (데비안 OS) ==="
 echo ""
 echo "다음 단계:"
 echo "1. 프로젝트 코드를 $PROJECT_DIR 에 복사하세요"
@@ -91,7 +90,7 @@ echo "3. npm run build"
 echo "4. sudo systemctl enable eden-hangwa.service"
 echo "5. sudo systemctl start eden-hangwa.service"
 echo ""
-echo "접속 주소: http://$PI_IP:3000"
+echo "접속 주소: http://$PI_IP:7000"
 echo ""
 echo "서비스 상태 확인: sudo systemctl status eden-hangwa.service"
 echo "로그 확인: sudo journalctl -u eden-hangwa.service -f"

@@ -35,7 +35,7 @@ The application features a modern full-stack architecture with distinct frontend
     - **Remote Area Detection**: Automatic detection and notification for remote shipping addresses.
     - **Role Separation**: Admin and Manager roles have specific permissions, e.g., only managers can mark orders as "delivered".
     - **Mobile Access**: Dedicated panel access buttons on mobile dashboards for both admin and manager.
-    - **Raspberry Pi Support**: Optimized deployment for ARM architecture with SQLite database, memory optimization, and automated setup scripts.
+    - **Raspberry Pi Support**: Optimized deployment for Debian OS on ARM architecture with SQLite database, port 7000, memory optimization, and automated setup scripts.
 
 ## External Dependencies
 

@@ -5,9 +5,10 @@
 ## 📋 시스템 요구사항
 
 - **라즈베리 파이**: 3B+ 이상 (4GB RAM 권장)
-- **운영체제**: Raspberry Pi OS (64-bit)
+- **운영체제**: 데비안 (Debian) 또는 Raspberry Pi OS (64-bit)
 - **저장공간**: 최소 8GB (16GB 이상 권장)
 - **네트워크**: 인터넷 연결
+- **포트**: 7000번 포트 사용
 
 ## 🚀 빠른 설치 (자동 설치)
 
@@ -91,8 +92,8 @@ sudo systemctl status eden-hangwa.service
 ## 📱 접속 방법
 
 설치 완료 후:
-- **로컬**: http://localhost:3000
-- **네트워크**: http://라즈베리파이IP:3000
+- **로컬**: http://localhost:7000
+- **네트워크**: http://라즈베리파이IP:7000
 
 라즈베리 파이 IP 확인:
 ```bash
@@ -157,7 +158,8 @@ sudo journalctl --vacuum-size=100M
 ### 방화벽
 ```bash
 # UFW 방화벽 활성화 (자동 설치 시 포함)
-sudo ufw allow 3000
+sudo ufw allow 7000
+sudo ufw allow 22
 sudo ufw enable
 ```
 
@@ -185,9 +187,9 @@ top
 ```
 
 ### 포트 충돌
-`.env.local` 파일에서 포트 변경:
+기본 포트는 7000입니다. `.env.local` 파일에서 포트 변경 가능:
 ```bash
-PORT=8080
+PORT=7000
 ```
 
 ### 데이터베이스 문제

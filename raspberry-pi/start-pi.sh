@@ -46,8 +46,8 @@ echo "애플리케이션 시작 중..."
 PI_IP=$(hostname -I | awk '{print $1}')
 
 echo ""
-echo "Eden 한과 주문관리 시스템이 시작됩니다."
-echo "접속 주소: http://$PI_IP:3000"
+echo "Eden 한과 주문관리 시스템이 시작됩니다. (데비안 OS)"
+echo "접속 주소: http://$PI_IP:7000"
 echo "종료하려면 Ctrl+C를 누르세요."
 echo ""
 
