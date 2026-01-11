@@ -93,6 +93,9 @@ export class DatabaseStorage implements IStorage {
   private async ensureDefaultSettings() {
     try {
       const defaultSettings = [
+        { key: 'smallBoxPrice', value: '19000', description: '한과1호 가격' },
+        { key: 'largeBoxPrice', value: '21000', description: '한과2호 가격' },
+        { key: 'wrappingPrice', value: '1000', description: '보자기 가격' },
         { key: 'smallBoxCost', value: '15000', description: '한과1호 원가 (개당)' },
         { key: 'largeBoxCost', value: '17000', description: '한과2호 원가 (개당)' },
         { key: 'wrappingCost', value: '500', description: '보자기 포장 원가 (개당)' },
