@@ -2301,10 +2301,10 @@ export default function Admin() {
                               (wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
                               parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000))));
     
-    // Include all orders with confirmed payment status (including scheduled and delivered orders)
-    // Exclude refunded orders from revenue calculation
+    // Include only orders with actual paid amount entered (actualPaidAmount > 0)
+    // This excludes orders without payment information
     const paidOrders = orders.filter((order: Order) => 
-      order.paymentStatus === 'confirmed'
+      (order.actualPaidAmount !== null && order.actualPaidAmount !== undefined && order.actualPaidAmount > 0)
     );
     
     // Count refunded orders separately
@@ -5981,7 +5981,7 @@ export default function Admin() {
                               mainDescription: "부모님이 100% 국내산 찹쌀로\\n직접 만드는 찹쌀유과입니다.\\n달지않고 고소한 맛이 일품!\\n선물로도 완벽한 에덴한과 ^^",
                               heroImages: [],
                               aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
-                              bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
+                              bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)", 
                               bankMessage: "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"
                             };
                             setDashboardContent({...dashboardContent, ...defaultContent});
