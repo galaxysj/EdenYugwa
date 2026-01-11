@@ -1,5 +1,5 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, productPrices, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent, type ProductPrice, type InsertProductPrice } from "@shared/schema";
-import { db, isSQLite, sqliteDb, dbBool, dbNow, dbJson, mapSqliteRow, mapSqliteRows } from "./db";
+import { db } from "./db";
 import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -237,16 +237,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllOrders(): Promise<Order[]> {
-    let allOrders: Order[];
-    
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM orders WHERE is_deleted = 0 ORDER BY created_at DESC');
-      allOrders = mapSqliteRows<Order>(stmt.all());
-    } else {
-      allOrders = await db.select().from(orders)
-        .where(eq(orders.isDeleted, dbBool(false)))
-        .orderBy(desc(orders.createdAt));
-    }
+    const allOrders = await db.select().from(orders)
+      .where(eq(orders.isDeleted, false))
+      .orderBy(desc(orders.createdAt));
     
     // Get global cost settings
     const smallBoxCostSetting = await this.getSetting("smallBoxCost");
@@ -331,32 +324,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getOrdersByPhone(phone: string): Promise<Order[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM orders WHERE customer_phone = ? AND is_deleted = 0 ORDER BY created_at DESC');
-      return mapSqliteRows<Order>(stmt.all(phone));
-    }
     return await db.select().from(orders)
-      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, dbBool(false))))
+      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByName(name: string): Promise<Order[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM orders WHERE customer_name = ? AND is_deleted = 0 ORDER BY created_at DESC');
-      return mapSqliteRows<Order>(stmt.all(name));
-    }
     return await db.select().from(orders)
-      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, dbBool(false))))
+      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByUserId(userId: number): Promise<Order[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM orders WHERE user_id = ? AND is_deleted = 0 ORDER BY created_at DESC');
-      return mapSqliteRows<Order>(stmt.all(userId));
-    }
     return await db.select().from(orders)
-      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, dbBool(false))))
+      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
@@ -675,12 +656,6 @@ export class DatabaseStorage implements IStorage {
 
   // Trash/Delete operations
   async softDeleteOrder(id: number): Promise<Order | undefined> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE orders SET is_deleted = 1, deleted_at = datetime('now') WHERE id = ?`);
-      stmt.run(id);
-      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-      return mapSqliteRow<Order>(selectStmt.get(id));
-    }
     const [deletedOrder] = await db.update(orders)
       .set({ 
         isDeleted: true,
@@ -692,12 +667,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async restoreOrder(id: number): Promise<Order | undefined> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE orders SET is_deleted = 0, deleted_at = NULL WHERE id = ?`);
-      stmt.run(id);
-      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-      return mapSqliteRow<Order>(selectStmt.get(id));
-    }
     const [restoredOrder] = await db.update(orders)
       .set({ 
         isDeleted: false,
@@ -709,12 +678,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDeletedOrders(): Promise<Order[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM orders WHERE is_deleted = 1 ORDER BY deleted_at DESC');
-      return mapSqliteRows<Order>(stmt.all());
-    }
     return await db.select().from(orders)
-      .where(eq(orders.isDeleted, dbBool(true)))
+      .where(eq(orders.isDeleted, true))
       .orderBy(desc(orders.deletedAt));
   }
 
@@ -770,22 +735,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllCustomers(): Promise<Customer[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM customers WHERE is_deleted = 0 ORDER BY created_at DESC');
-      return mapSqliteRows<Customer>(stmt.all());
-    }
     return await db.select().from(customers)
-      .where(eq(customers.isDeleted, dbBool(false)))
+      .where(eq(customers.isDeleted, false))
       .orderBy(desc(customers.createdAt));
   }
 
   async getTrashedCustomers(): Promise<Customer[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM customers WHERE is_deleted = 1 ORDER BY deleted_at DESC');
-      return mapSqliteRows<Customer>(stmt.all());
-    }
     return await db.select().from(customers)
-      .where(eq(customers.isDeleted, dbBool(true)))
+      .where(eq(customers.isDeleted, true))
       .orderBy(desc(customers.deletedAt));
   }
 
@@ -813,11 +770,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCustomer(id: number): Promise<void> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE customers SET is_deleted = 1, deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`);
-      stmt.run(id);
-      return;
-    }
     await db.update(customers)
       .set({ 
         isDeleted: true, 
@@ -828,11 +780,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async restoreCustomer(id: number): Promise<void> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE customers SET is_deleted = 0, deleted_at = NULL, updated_at = datetime('now') WHERE id = ?`);
-      stmt.run(id);
-      return;
-    }
     await db.update(customers)
       .set({ 
         isDeleted: false, 
@@ -1164,12 +1111,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllProductPrices(): Promise<ProductPrice[]> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE is_active = 1 ORDER BY product_index');
-      return mapSqliteRows<ProductPrice>(stmt.all());
-    }
     return await db.select().from(productPrices)
-      .where(eq(productPrices.isActive, dbBool(true)))
+      .where(eq(productPrices.isActive, true))
       .orderBy(productPrices.productIndex);
   }
 
@@ -1182,11 +1125,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProductPrice(productIndex: number): Promise<void> {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE product_prices SET is_active = 0, updated_at = datetime('now') WHERE product_index = ?`);
-      stmt.run(productIndex);
-      return;
-    }
     await db.update(productPrices)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(productPrices.productIndex, productIndex));

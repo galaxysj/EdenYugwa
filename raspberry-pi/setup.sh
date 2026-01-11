@@ -10,7 +10,7 @@ sudo apt update && sudo apt upgrade -y
 
 # 필수 패키지 설치
 echo "필수 패키지 설치 중..."
-sudo apt install -y git curl build-essential python3-dev sqlite3
+sudo apt install -y git curl build-essential python3-dev
 
 # Node.js 설치 (라즈베리 파이 최적화)
 if ! command -v node &> /dev/null; then
@@ -22,6 +22,37 @@ if ! command -v node &> /dev/null; then
     npm cache clean --force
 fi
 
+# PostgreSQL 설치
+echo "PostgreSQL 설치 중..."
+sudo apt install -y postgresql postgresql-contrib
+
+# PostgreSQL 서비스 시작
+echo "PostgreSQL 서비스 시작..."
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# 데이터베이스 및 사용자 생성
+echo "데이터베이스 및 사용자 생성 중..."
+sudo -u postgres psql << 'EOF'
+-- 사용자 생성 (이미 있으면 무시)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'eden_hangwa') THEN
+        CREATE USER eden_hangwa WITH PASSWORD 'eden3452';
+    END IF;
+END
+$$;
+
+-- 데이터베이스 생성 (이미 있으면 무시)
+SELECT 'CREATE DATABASE eden_hangwa OWNER eden_hangwa'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'eden_hangwa')\gexec
+
+-- 권한 부여
+GRANT ALL PRIVILEGES ON DATABASE eden_hangwa TO eden_hangwa;
+\c eden_hangwa
+GRANT ALL ON SCHEMA public TO eden_hangwa;
+EOF
+
 # 프로젝트 디렉토리 설정
 PROJECT_DIR="/home/$USER/eden-hangwa"
 BACKUP_DIR="/home/$USER/backup"
@@ -29,7 +60,6 @@ BACKUP_DIR="/home/$USER/backup"
 # 필요한 디렉토리 생성
 mkdir -p $PROJECT_DIR
 mkdir -p $BACKUP_DIR
-mkdir -p $PROJECT_DIR/data
 mkdir -p $PROJECT_DIR/uploads
 mkdir -p $PROJECT_DIR/logs
 
@@ -75,6 +105,7 @@ echo "자동 백업 cron job 설정..."
 if command -v ufw &> /dev/null; then
     echo "방화벽 설정 중..."
     sudo ufw allow 7000/tcp
+    sudo ufw allow 5432/tcp  # PostgreSQL
     sudo ufw --force enable
 fi
 
@@ -84,12 +115,20 @@ PI_IP=$(hostname -I | awk '{print $1}')
 echo ""
 echo "=== 설치 완료 ==="
 echo ""
+echo "PostgreSQL 정보:"
+echo "  Host: localhost"
+echo "  Port: 5432"
+echo "  Database: eden_hangwa"
+echo "  User: eden_hangwa"
+echo "  Password: eden3452"
+echo ""
 echo "다음 단계:"
 echo "1. 프로젝트 코드를 $PROJECT_DIR 에 복사하세요"
 echo "2. cd $PROJECT_DIR && npm install"
 echo "3. npm run build"
-echo "4. sudo systemctl enable eden-hangwa.service"
-echo "5. sudo systemctl start eden-hangwa.service"
+echo "4. npm run db:push  # 데이터베이스 스키마 생성"
+echo "5. sudo systemctl enable eden-hangwa.service"
+echo "6. sudo systemctl start eden-hangwa.service"
 echo ""
 echo "접속 주소: http://$PI_IP:7000"
 echo ""

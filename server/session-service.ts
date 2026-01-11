@@ -1,4 +1,4 @@
-import { db, isSQLite, sqliteDb, dbBool, dbNow, mapSqliteRow } from "./db";
+import { db } from "./db";
 import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest, type UserSession } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
 
@@ -78,11 +78,6 @@ export class SessionService {
 
   // 세션 비활성화
   async deactivateSession(sessionId: string) {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE user_sessions SET is_active = 0 WHERE session_id = ?`);
-      stmt.run(sessionId);
-      return;
-    }
     await db
       .update(userSessions)
       .set({ isActive: false })
@@ -91,17 +86,13 @@ export class SessionService {
 
   // 사용자의 모든 활성 세션 조회
   async getUserActiveSessions(userId: number) {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`SELECT * FROM user_sessions WHERE user_id = ? AND is_active = 1 AND expires_at > datetime('now') ORDER BY last_activity DESC`);
-      return stmt.all(userId).map((row: any) => mapSqliteRow<UserSession>(row)).filter((r): r is UserSession => r !== undefined);
-    }
     return await db
       .select()
       .from(userSessions)
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, dbBool(true)),
+          eq(userSessions.isActive, true),
           gte(userSessions.expiresAt, new Date())
         )
       )
@@ -110,16 +101,11 @@ export class SessionService {
 
   // 만료된 세션 정리
   async cleanupExpiredSessions() {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE user_sessions SET is_active = 0 WHERE is_active = 1 AND expires_at < datetime('now')`);
-      stmt.run();
-      return;
-    }
     await db
       .update(userSessions)
       .set({ isActive: false })
       .where(and(
-        eq(userSessions.isActive, dbBool(true)),
+        eq(userSessions.isActive, true),
         lt(userSessions.expiresAt, new Date())
       ));
   }
@@ -265,22 +251,13 @@ export class SessionService {
 
   // 사용자의 다른 모든 세션 종료 (현재 세션 제외)
   async terminateOtherSessions(userId: number, currentSessionId: string) {
-    if (isSQLite && sqliteDb) {
-      const stmt = sqliteDb.prepare(`UPDATE user_sessions SET is_active = 0 WHERE user_id = ? AND is_active = 1 AND session_id != ?`);
-      stmt.run(userId, currentSessionId);
-      return;
+    // 현재 세션을 제외한 모든 활성 세션 조회
+    const activeSessions = await this.getUserActiveSessions(userId);
+    const sessionsToDeactivate = activeSessions.filter(s => s.sessionId !== currentSessionId);
+    
+    for (const session of sessionsToDeactivate) {
+      await this.deactivateSession(session.sessionId);
     }
-    await db
-      .update(userSessions)
-      .set({ isActive: false })
-      .where(
-        and(
-          eq(userSessions.userId, userId),
-          eq(userSessions.isActive, dbBool(true)),
-          // 현재 세션이 아닌 것들만
-          // Note: currentSessionId가 다른 것들만 선택
-        )
-      );
   }
 
   // 로그인 승인 요청 생성

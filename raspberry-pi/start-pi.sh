@@ -12,7 +12,6 @@ fi
 
 # 필요한 디렉토리 생성
 echo "디렉토리 설정 중..."
-mkdir -p data
 mkdir -p uploads
 mkdir -p logs
 mkdir -p backup
@@ -31,11 +30,12 @@ if [ -f ".env.local" ]; then
     export $(grep -v '^#' .env.local | xargs)
 fi
 
-# SQLite 데이터베이스 초기화
-if [ ! -f "data/eden-hangwa.db" ]; then
-    echo "SQLite 데이터베이스 초기화 중..."
-    sqlite3 data/eden-hangwa.db < raspberry-pi/init-sqlite.sql
-    echo "데이터베이스 초기화 완료"
+# PostgreSQL 연결 확인
+echo "PostgreSQL 연결 확인 중..."
+if ! pg_isready -h localhost -p 5432 -U eden_hangwa > /dev/null 2>&1; then
+    echo "PostgreSQL 서비스 시작 중..."
+    sudo systemctl start postgresql
+    sleep 2
 fi
 
 # Node.js 메모리 제한 설정
@@ -52,6 +52,10 @@ if [ ! -d "dist" ]; then
     echo "프로덕션 빌드 중..."
     npm run build
 fi
+
+# 데이터베이스 스키마 푸시 (처음 실행시)
+echo "데이터베이스 스키마 확인 중..."
+npm run db:push 2>/dev/null || echo "스키마 이미 최신 상태입니다."
 
 echo "애플리케이션 시작 중..."
 
