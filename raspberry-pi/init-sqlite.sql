@@ -124,12 +124,16 @@ CREATE TABLE IF NOT EXISTS dashboard_content (
 -- 관리자 설정 테이블
 CREATE TABLE IF NOT EXISTS admin_settings (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  admin_name TEXT NOT NULL,
+  admin_name TEXT DEFAULT '',
   admin_phone TEXT,
   bank_name TEXT,
   account_number TEXT,
   account_holder TEXT,
   signature TEXT,
+  account_info_html TEXT,
+  refund_shipping_fee INTEGER DEFAULT 3000,
+  is_shipping_restriction_enabled INTEGER DEFAULT 0,
+  shipping_restricted_products TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -192,6 +196,7 @@ CREATE TABLE IF NOT EXISTS access_control_settings (
   session_timeout INTEGER NOT NULL DEFAULT 24,
   require_location_verification INTEGER NOT NULL DEFAULT 0,
   is_enabled INTEGER NOT NULL DEFAULT 0,
+  is_device_restriction_enabled INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -204,7 +209,7 @@ CREATE TABLE IF NOT EXISTS login_attempts (
   user_agent TEXT,
   location TEXT,
   device_type TEXT,
-  success INTEGER NOT NULL,
+  was_successful INTEGER NOT NULL DEFAULT 0,
   failure_reason TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

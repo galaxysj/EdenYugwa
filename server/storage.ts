@@ -956,20 +956,40 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(customers.deletedAt));
   }
 
-  async updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined> {
-    // 업데이트 전에 기존 고객 정보 조회
+  async updateCustomer(id: number, customer: Partial<InsertCustomer> & { orderCount?: number; totalSpent?: number }): Promise<Customer | undefined> {
     const existingCustomer = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
     const oldPhone = existingCustomer[0]?.customerPhone;
     
+    if (isSQLite) {
+      const setClauses: string[] = [];
+      const params: any = { id };
+      if (customer.customerName !== undefined) { setClauses.push('customer_name = @customerName'); params.customerName = customer.customerName; }
+      if (customer.customerPhone !== undefined) { setClauses.push('customer_phone = @customerPhone'); params.customerPhone = customer.customerPhone; }
+      if (customer.zipCode !== undefined) { setClauses.push('zip_code = @zipCode'); params.zipCode = customer.zipCode; }
+      if (customer.address1 !== undefined) { setClauses.push('address1 = @address1'); params.address1 = customer.address1; }
+      if (customer.address2 !== undefined) { setClauses.push('address2 = @address2'); params.address2 = customer.address2; }
+      if (customer.orderCount !== undefined) { setClauses.push('order_count = @orderCount'); params.orderCount = customer.orderCount; }
+      if (customer.totalSpent !== undefined) { setClauses.push('total_spent = @totalSpent'); params.totalSpent = customer.totalSpent; }
+      if (customer.notes !== undefined) { setClauses.push('notes = @notes'); params.notes = customer.notes; }
+      if (customer.userId !== undefined) { setClauses.push('user_id = @userId'); params.userId = customer.userId; }
+      if (customer.userRegisteredName !== undefined) { setClauses.push('user_registered_name = @userRegisteredName'); params.userRegisteredName = customer.userRegisteredName; }
+      if (customer.userRegisteredPhone !== undefined) { setClauses.push('user_registered_phone = @userRegisteredPhone'); params.userRegisteredPhone = customer.userRegisteredPhone; }
+      setClauses.push("updated_at = datetime('now')");
+      const stmt = sqliteDb.prepare(`UPDATE customers SET ${setClauses.join(', ')} WHERE id = @id`);
+      stmt.run(params);
+      const selectStmt = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?');
+      const updated = mapSqliteRow<Customer>(selectStmt.get(id));
+      if (updated && oldPhone && customer.customerPhone && customer.customerPhone !== oldPhone) {
+        sqliteDb.prepare('UPDATE orders SET customer_phone = @newPhone WHERE customer_phone = @oldPhone').run({ newPhone: customer.customerPhone, oldPhone });
+      }
+      return updated;
+    }
+    
     const [updated] = await db.update(customers)
-      .set({
-        ...customer,
-        updatedAt: new Date()
-      })
+      .set({ ...customer, updatedAt: new Date() } as any)
       .where(eq(customers.id, id))
       .returning();
     
-    // 연락처가 변경된 경우에만 주문 테이블의 연락처 업데이트 (주소는 각 주문의 원본 유지)
     if (updated && oldPhone && customer.customerPhone && customer.customerPhone !== oldPhone) {
       await db.update(orders)
         .set({ customerPhone: customer.customerPhone })
@@ -980,50 +1000,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCustomer(id: number): Promise<void> {
-    await db.update(customers)
-      .set({ 
-        isDeleted: true, 
-        deletedAt: new Date(),
-        updatedAt: new Date()
-      })
-      .where(eq(customers.id, id));
+    if (isSQLite) {
+      sqliteDb.prepare("UPDATE customers SET is_deleted = 1, deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = @id").run({ id });
+      return;
+    }
+    await db.update(customers).set({ isDeleted: true, deletedAt: new Date(), updatedAt: new Date() }).where(eq(customers.id, id));
   }
 
   async restoreCustomer(id: number): Promise<void> {
-    await db.update(customers)
-      .set({ 
-        isDeleted: false, 
-        deletedAt: null,
-        updatedAt: new Date()
-      })
-      .where(eq(customers.id, id));
+    if (isSQLite) {
+      sqliteDb.prepare("UPDATE customers SET is_deleted = 0, deleted_at = NULL, updated_at = datetime('now') WHERE id = @id").run({ id });
+      return;
+    }
+    await db.update(customers).set({ isDeleted: false, deletedAt: null, updatedAt: new Date() }).where(eq(customers.id, id));
   }
 
   async permanentlyDeleteCustomer(id: number): Promise<void> {
+    if (isSQLite) {
+      sqliteDb.prepare('DELETE FROM customers WHERE id = @id').run({ id });
+      return;
+    }
     await db.delete(customers).where(eq(customers.id, id));
   }
 
   async bulkDeleteCustomers(ids: number[]): Promise<void> {
-    await db.update(customers)
-      .set({ 
-        isDeleted: true, 
-        deletedAt: new Date(),
-        updatedAt: new Date()
-      })
-      .where(inArray(customers.id, ids));
+    if (isSQLite) {
+      const placeholders = ids.map(() => '?').join(',');
+      sqliteDb.prepare(`UPDATE customers SET is_deleted = 1, deleted_at = datetime('now'), updated_at = datetime('now') WHERE id IN (${placeholders})`).run(...ids);
+      return;
+    }
+    await db.update(customers).set({ isDeleted: true, deletedAt: new Date(), updatedAt: new Date() }).where(inArray(customers.id, ids));
   }
 
   async bulkRestoreCustomers(ids: number[]): Promise<void> {
-    await db.update(customers)
-      .set({ 
-        isDeleted: false, 
-        deletedAt: null,
-        updatedAt: new Date()
-      })
-      .where(inArray(customers.id, ids));
+    if (isSQLite) {
+      const placeholders = ids.map(() => '?').join(',');
+      sqliteDb.prepare(`UPDATE customers SET is_deleted = 0, deleted_at = NULL, updated_at = datetime('now') WHERE id IN (${placeholders})`).run(...ids);
+      return;
+    }
+    await db.update(customers).set({ isDeleted: false, deletedAt: null, updatedAt: new Date() }).where(inArray(customers.id, ids));
   }
 
   async bulkPermanentlyDeleteCustomers(ids: number[]): Promise<void> {
+    if (isSQLite) {
+      const placeholders = ids.map(() => '?').join(',');
+      sqliteDb.prepare(`DELETE FROM customers WHERE id IN (${placeholders})`).run(...ids);
+      return;
+    }
     await db.delete(customers).where(inArray(customers.id, ids));
   }
 
@@ -1047,16 +1070,18 @@ export class DatabaseStorage implements IStorage {
     const existingCustomer = await this.getCustomerByPhone(phoneNumber);
     
     if (customerOrders.length === 0) {
-      // No orders found, set count to 0
       if (existingCustomer) {
-        await db.update(customers)
-          .set({
-            orderCount: 0,
-            totalSpent: 0,
-            lastOrderDate: null,
-            updatedAt: new Date()
-          })
-          .where(eq(customers.id, existingCustomer.id));
+        if (isSQLite) {
+          const stmt = sqliteDb.prepare(`
+            UPDATE customers SET order_count = 0, total_spent = 0, last_order_date = NULL, updated_at = datetime('now')
+            WHERE id = @id
+          `);
+          stmt.run({ id: existingCustomer.id });
+        } else {
+          await db.update(customers)
+            .set({ orderCount: 0, totalSpent: 0, lastOrderDate: null, updatedAt: new Date() })
+            .where(eq(customers.id, existingCustomer.id));
+        }
         console.log(`${phoneNumber} 고객 통계를 0으로 초기화`);
       }
       return;
@@ -1075,15 +1100,23 @@ export class DatabaseStorage implements IStorage {
     console.log(`${phoneNumber} 새로운 통계: 주문횟수=${orderCount}, 총구매금액=${totalSpent}, 마지막주문일=${lastOrderDate}`);
     
     if (existingCustomer) {
-      // Update existing customer
-      await db.update(customers)
-        .set({
+      if (isSQLite) {
+        const stmt = sqliteDb.prepare(`
+          UPDATE customers SET order_count = @orderCount, total_spent = @totalSpent,
+          last_order_date = @lastOrderDate, updated_at = datetime('now')
+          WHERE id = @id
+        `);
+        stmt.run({
           orderCount,
           totalSpent,
-          lastOrderDate,
-          updatedAt: new Date()
-        })
-        .where(eq(customers.id, existingCustomer.id));
+          lastOrderDate: lastOrderDate instanceof Date ? lastOrderDate.toISOString() : lastOrderDate,
+          id: existingCustomer.id
+        });
+      } else {
+        await db.update(customers)
+          .set({ orderCount, totalSpent, lastOrderDate, updatedAt: new Date() })
+          .where(eq(customers.id, existingCustomer.id));
+      }
       console.log(`${phoneNumber} 고객 통계 업데이트 완료`);
     } else {
       // Create new customer record from first order
