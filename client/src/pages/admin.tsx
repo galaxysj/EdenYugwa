@@ -2302,9 +2302,8 @@ export default function Admin() {
                               parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000))));
     
     const paidOrders = orders.filter((order: Order) => {
-      // 매출 관리 리포트에서는 실제 입금액이 입력된 주문만 표시합니다. (환불된 주문 제외)
-      const hasActualPaidAmount = order.actualPaidAmount !== null && typeof order.actualPaidAmount !== 'undefined';
-      return hasActualPaidAmount && order.paymentStatus !== 'refunded';
+      // 매출 관리 리포트에서는 입금 처리된 주문(입금대기, 환불 제외)만 표시합니다.
+      return order.paymentStatus !== 'pending' && order.paymentStatus !== 'refunded';
     });
     
     // Count refunded orders separately
