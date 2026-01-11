@@ -4,7 +4,7 @@ import connectPg from "connect-pg-simple";
 import passport from "./auth";
 import { userService } from "./user-service";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { log, serveStatic } from "./static";
 
 const app = express();
 app.use(express.json({ limit: '50mb' })); // Increase limit for image uploads
@@ -80,6 +80,8 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    // Dynamic import to avoid bundling vite in production
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
     serveStatic(app);
