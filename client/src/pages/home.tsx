@@ -210,7 +210,7 @@ export default function Home() {
               {dashboardContent.mainTitle || "진안에서 온 정성 가득 유과"}
             </h2>
             <p className={`${dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).textAlign : 'text-center'} mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto px-2 whitespace-pre-line`} style={{fontSize: dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).fontSize : '16pt', color: dashboardContent.mainDescriptionStyle ? JSON.parse(dashboardContent.mainDescriptionStyle).color : '#5D2F07'}}>
-              {dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^"}
+              {dashboardContent.mainDescription || "부모님이 100% 국내산 찹쌀로\n직접 만드는 찹쌀유과입니다.\n달지않고 고소한 맛이 일품!\n선물로도 완벽한 에덴한과 ^^"}
             </p>
           </div>
 
