@@ -1,29 +1,21 @@
 #!/bin/bash
 
-# Eden 한과 주문관리 시스템 백업 스크립트 (PostgreSQL 버전)
+# Eden 한과 주문관리 시스템 백업 스크립트
 
-PROJECT_DIR="/home/$USER/eden-hangwa"
-BACKUP_DIR="/home/$USER/backup"
+PROJECT_DIR="/home/pi/eden-hangwa"
+BACKUP_DIR="/home/pi/backup"
 DATE=$(date +%Y%m%d_%H%M%S)
-
-# .env 파일에서 DATABASE_URL 로드
-if [ -f "$PROJECT_DIR/.env" ]; then
-    source "$PROJECT_DIR/.env"
-fi
 
 # 백업 디렉토리 생성
 mkdir -p $BACKUP_DIR
 
 echo "=== Eden 한과 시스템 백업 시작 ($DATE) ==="
 
-# PostgreSQL 데이터베이스 백업
-echo "PostgreSQL 데이터베이스 백업 중..."
-PGPASSWORD="eden_hangwa_secure_password" pg_dump -h localhost -U eden -d eden_hangwa > "$BACKUP_DIR/eden-hangwa-db-$DATE.sql"
-if [ $? -eq 0 ]; then
-    gzip "$BACKUP_DIR/eden-hangwa-db-$DATE.sql"
-    echo "데이터베이스 백업 완료: $BACKUP_DIR/eden-hangwa-db-$DATE.sql.gz"
-else
-    echo "데이터베이스 백업 실패"
+# 데이터베이스 백업
+if [ -f "$PROJECT_DIR/data/eden-hangwa.db" ]; then
+    echo "데이터베이스 백업 중..."
+    cp "$PROJECT_DIR/data/eden-hangwa.db" "$BACKUP_DIR/eden-hangwa-db-$DATE.db"
+    echo "데이터베이스 백업 완료: $BACKUP_DIR/eden-hangwa-db-$DATE.db"
 fi
 
 # 업로드 파일 백업
@@ -34,9 +26,9 @@ if [ -d "$PROJECT_DIR/uploads" ]; then
 fi
 
 # 설정 파일 백업
-if [ -f "$PROJECT_DIR/.env" ]; then
+if [ -f "$PROJECT_DIR/.env.local" ]; then
     echo "설정 파일 백업 중..."
-    cp "$PROJECT_DIR/.env" "$BACKUP_DIR/env-$DATE.backup"
+    cp "$PROJECT_DIR/.env.local" "$BACKUP_DIR/env-$DATE.backup"
     echo "설정 파일 백업 완료: $BACKUP_DIR/env-$DATE.backup"
 fi
 
@@ -51,7 +43,7 @@ echo "=== 백업 완료 ==="
 # 백업 결과 로그
 {
     echo "[$DATE] 백업 완료"
-    echo "데이터베이스: $(ls -lh $BACKUP_DIR/eden-hangwa-db-$DATE.sql.gz 2>/dev/null || echo '없음')"
+    echo "데이터베이스: $(ls -lh $BACKUP_DIR/eden-hangwa-db-$DATE.db 2>/dev/null || echo '없음')"
     echo "업로드 파일: $(ls -lh $BACKUP_DIR/uploads-$DATE.tar.gz 2>/dev/null || echo '없음')"
     echo "설정 파일: $(ls -lh $BACKUP_DIR/env-$DATE.backup 2>/dev/null || echo '없음')"
     echo "---"

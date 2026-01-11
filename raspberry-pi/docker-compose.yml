@@ -1,25 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL 데이터베이스
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: eden
-      POSTGRES_PASSWORD: eden_hangwa_secure_password
-      POSTGRES_DB: eden_hangwa
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-    networks:
-      - eden-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U eden -d eden_hangwa"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # 애플리케이션 서버
   app:
     build:
       context: ..
@@ -28,19 +9,17 @@ services:
       - "3000:5000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://eden:eden_hangwa_secure_password@postgres:5432/eden_hangwa
-      - SESSION_SECRET=your-secret-key-here-change-this
+      - DATABASE_URL=file:./data/eden-hangwa.db
+      - SESSION_SECRET=your-secret-key-here
     volumes:
+      - app_data:/app/data
       - ./uploads:/app/uploads
-    depends_on:
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - eden-network
 
 volumes:
-  postgres_data:
+  app_data:
     driver: local
 
 networks:

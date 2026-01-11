@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 라즈베리 파이 배포용 패키지 생성 스크립트 (PostgreSQL 버전)
+# 라즈베리 파이 배포용 패키지 생성 스크립트
 
 PACKAGE_NAME="eden-hangwa-pi"
 VERSION=$(date +%Y%m%d)
@@ -44,7 +44,7 @@ cp vite.config.ts $PACKAGE_DIR/
 cp raspberry-pi/README-Korean.md $PACKAGE_DIR/README.md
 cp raspberry-pi/install-guide.md $PACKAGE_DIR/
 
-# 프로덕션 전용 package.json 생성 (PostgreSQL 사용)
+# 프로덕션 전용 package.json 생성
 cat > $PACKAGE_DIR/package.json << EOF
 {
   "name": "$PACKAGE_NAME",
@@ -53,7 +53,6 @@ cat > $PACKAGE_DIR/package.json << EOF
   "license": "MIT",
   "scripts": {
     "start": "NODE_ENV=production node dist/index.js",
-    "db:push": "drizzle-kit push",
     "pi:start": "bash raspberry-pi/start-pi.sh",
     "pi:service": "sudo systemctl start eden-hangwa.service"
   },
@@ -62,18 +61,15 @@ cat > $PACKAGE_DIR/package.json << EOF
     "npm": ">=8.0.0"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
+    "better-sqlite3": "^8.7.0",
     "drizzle-orm": "^0.39.1",
-    "drizzle-kit": "^0.30.4",
     "express": "^4.21.2",
     "bcryptjs": "^3.0.2",
-    "express-session": "^1.18.2",
-    "pg": "^8.11.3",
-    "ws": "^8.14.2"
+    "express-session": "^1.18.2"
   },
   "os": ["linux"],
   "cpu": ["arm", "arm64"],
-  "keywords": ["raspberry-pi", "order-management", "korean-sweets", "ecommerce", "postgresql"]
+  "keywords": ["raspberry-pi", "order-management", "korean-sweets", "ecommerce"]
 }
 EOF
 
@@ -91,41 +87,24 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
-# PostgreSQL 확인
-if ! command -v psql &> /dev/null; then
-    echo "PostgreSQL이 필요합니다. 먼저 PostgreSQL을 설치해주세요."
-    echo "sudo apt install -y postgresql postgresql-contrib"
-    exit 1
-fi
-
 # 의존성 설치
 echo "의존성 설치 중..."
 npm install --only=production
 
 # 디렉토리 생성
-mkdir -p uploads logs backup
+mkdir -p data uploads logs backup
 
-# 환경변수 파일 생성
-if [ ! -f ".env" ]; then
-    cat > .env << ENVEOF
-DATABASE_URL=postgresql://eden:your_password@localhost:5432/eden_hangwa
-NODE_ENV=production
-PORT=3000
-SESSION_SECRET=$(openssl rand -hex 32)
-ENVEOF
-    echo ".env 파일이 생성되었습니다. DATABASE_URL을 편집하여 설정을 변경하세요."
+# 환경변수 파일 복사
+if [ ! -f ".env.local" ]; then
+    cp raspberry-pi/.env.pi .env.local
+    echo "환경변수 파일이 생성되었습니다. .env.local을 편집하여 설정을 변경할 수 있습니다."
 fi
 
 # 실행 권한 부여
 chmod +x raspberry-pi/*.sh
 
 echo "설치 완료!"
-echo ""
-echo "다음 단계:"
-echo "1. .env 파일의 DATABASE_URL을 수정하세요"
-echo "2. npm run db:push  # 데이터베이스 스키마 적용"
-echo "3. bash raspberry-pi/start-pi.sh  # 시작"
-echo ""
+echo "시작하려면: bash raspberry-pi/start-pi.sh"
 echo "서비스 설치: bash raspberry-pi/setup.sh"
 EOF
 
@@ -147,6 +126,4 @@ echo "라즈베리 파이에서 설치 방법:"
 echo "1. tar -xzf ${PACKAGE_NAME}-${VERSION}.tar.gz"
 echo "2. cd $(basename $PACKAGE_DIR)"
 echo "3. bash install.sh"
-echo "4. .env 파일 수정 (DATABASE_URL 설정)"
-echo "5. npm run db:push"
-echo "6. bash raspberry-pi/start-pi.sh"
+echo "4. bash raspberry-pi/start-pi.sh"

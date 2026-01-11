@@ -1,7 +1,5 @@
 # 라즈베리 파이용 Eden 한과 주문관리 시스템 설치 가이드
 
-**Replit과 동일한 PostgreSQL 데이터베이스를 사용합니다.**
-
 ## 시스템 요구사항
 
 - **라즈베리 파이**: 3B+ 이상 권장 (4GB RAM 이상)
@@ -28,8 +26,8 @@ chmod +x setup.sh
 # 시스템 업데이트
 sudo apt update && sudo apt upgrade -y
 
-# 필요한 패키지 설치 (PostgreSQL 포함)
-sudo apt install -y git curl postgresql postgresql-contrib
+# 필요한 패키지 설치
+sudo apt install -y git curl
 ```
 
 #### 2단계: Node.js 설치
@@ -40,20 +38,7 @@ curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-#### 3단계: PostgreSQL 설정
-
-```bash
-# PostgreSQL 서비스 시작 및 자동 시작 설정
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# 데이터베이스 및 사용자 생성
-sudo -u postgres psql -c "CREATE USER eden WITH PASSWORD 'your_secure_password';"
-sudo -u postgres psql -c "CREATE DATABASE eden_hangwa OWNER eden;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE eden_hangwa TO eden;"
-```
-
-#### 4단계: 프로젝트 설정
+#### 3단계: 프로젝트 설정
 
 ```bash
 # 프로젝트 클론
@@ -62,30 +47,27 @@ cd eden-hangwa
 
 # 종속성 설치
 npm install
+
+# 환경변수 설정
+cp .env.example .env.local
+nano .env.local
 ```
 
-#### 5단계: 환경변수 설정
+#### 4단계: 환경변수 설정
 
-`.env` 파일에 다음 내용을 추가:
+`.env.local` 파일에 다음 내용을 추가:
 
 ```bash
-# .env 파일 생성
-cat > .env << EOF
-DATABASE_URL=postgresql://eden:your_secure_password@localhost:5432/eden_hangwa
 NODE_ENV=production
+DATABASE_URL=file:./data/eden-hangwa.db
+SESSION_SECRET=your-very-secure-session-secret-here
 PORT=3000
-SESSION_SECRET=$(openssl rand -hex 32)
-EOF
+
+# 라즈베리 파이 최적화 설정
+NODE_OPTIONS=--max-old-space-size=512
 ```
 
-#### 6단계: 데이터베이스 스키마 적용
-
-```bash
-# 데이터베이스 테이블 생성
-npm run db:push
-```
-
-#### 7단계: 빌드 및 실행
+#### 5단계: 빌드 및 실행
 
 ```bash
 # 프로덕션 빌드
@@ -105,7 +87,7 @@ sudo usermod -aG docker $USER
 
 # 로그아웃 후 재로그인 또는 재부팅
 
-# Docker Compose로 실행 (PostgreSQL 포함)
+# Docker Compose로 실행
 docker-compose -f raspberry-pi/docker-compose.yml up -d
 ```
 
@@ -132,14 +114,32 @@ sudo dphys-swapfile swapon
 systemd 서비스로 자동 시작 설정:
 
 ```bash
-# 서비스 파일 복사
-sudo cp raspberry-pi/systemd/eden-hangwa.service /etc/systemd/system/
-
-# 사용자 이름 수정 (필요한 경우)
+# 서비스 파일 생성
 sudo nano /etc/systemd/system/eden-hangwa.service
+```
 
-# 서비스 활성화
-sudo systemctl daemon-reload
+서비스 파일 내용:
+```ini
+[Unit]
+Description=Eden Hangwa Order Management System
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/eden-hangwa
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=NODE_OPTIONS=--max-old-space-size=512
+
+[Install]
+WantedBy=multi-user.target
+```
+
+서비스 활성화:
+```bash
 sudo systemctl enable eden-hangwa.service
 sudo systemctl start eden-hangwa.service
 ```
@@ -158,29 +158,16 @@ hostname -I
 
 ## 문제 해결
 
-### PostgreSQL 연결 오류
-
-```bash
-# PostgreSQL 상태 확인
-sudo systemctl status postgresql
-
-# 연결 테스트
-psql -h localhost -U eden -d eden_hangwa -c "SELECT 1;"
-
-# PostgreSQL 로그 확인
-sudo tail -f /var/log/postgresql/postgresql-*-main.log
-```
-
 ### 메모리 부족 오류
 
 ```bash
-# Node.js 메모리 제한 설정
+# Node.js 메모리 제한 증가
 export NODE_OPTIONS="--max-old-space-size=512"
 ```
 
 ### 포트 변경
 
-`.env` 파일에서 포트 변경:
+`.env.local` 파일에서 포트 변경:
 ```bash
 PORT=8080
 ```
@@ -197,21 +184,11 @@ tail -f /home/pi/eden-hangwa/logs/app.log
 
 ## 백업 및 복원
 
-### PostgreSQL 데이터베이스 백업
+### 데이터베이스 백업
 
 ```bash
-# 백업
-PGPASSWORD="your_password" pg_dump -h localhost -U eden -d eden_hangwa > backup/eden-hangwa-$(date +%Y%m%d).sql
-
-# 압축
-gzip backup/eden-hangwa-$(date +%Y%m%d).sql
-```
-
-### 복원
-
-```bash
-# 복원
-gunzip -c backup/eden-hangwa-YYYYMMDD.sql.gz | psql -h localhost -U eden -d eden_hangwa
+# SQLite 데이터베이스 백업
+cp ./data/eden-hangwa.db ./backup/eden-hangwa-$(date +%Y%m%d).db
 ```
 
 ### 자동 백업 설정
@@ -221,7 +198,7 @@ gunzip -c backup/eden-hangwa-YYYYMMDD.sql.gz | psql -h localhost -U eden -d eden
 crontab -e
 
 # 매일 오전 2시에 백업
-0 2 * * * /home/pi/eden-hangwa/backup.sh
+0 2 * * * cp /home/pi/eden-hangwa/data/eden-hangwa.db /home/pi/backup/eden-hangwa-$(date +\%Y\%m\%d).db
 ```
 
 ## 보안 설정
@@ -254,6 +231,5 @@ cd /home/pi/eden-hangwa
 git pull origin main
 npm install
 npm run build
-npm run db:push  # 스키마 변경 사항 적용
 sudo systemctl restart eden-hangwa.service
 ```

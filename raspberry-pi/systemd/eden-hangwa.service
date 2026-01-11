@@ -1,6 +1,6 @@
 [Unit]
 Description=Eden Hangwa Order Management System
-After=network.target postgresql.service
+After=network.target
 Wants=network.target
 
 [Service]
@@ -12,12 +12,11 @@ ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=10
 
-# 환경변수 (PostgreSQL 사용)
+# 환경변수
 Environment=NODE_ENV=production
 Environment=NODE_OPTIONS=--max-old-space-size=512
+Environment=DATABASE_URL=file:./data/eden-hangwa.db
 Environment=PORT=3000
-# DATABASE_URL은 .env 파일에서 로드됩니다
-EnvironmentFile=/home/pi/eden-hangwa/.env
 
 # 보안 설정
 NoNewPrivileges=true
