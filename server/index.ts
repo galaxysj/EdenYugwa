@@ -29,7 +29,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24시간
-    secure: process.env.NODE_ENV === 'production', // production에서는 HTTPS 사용
+    secure: process.env.COOKIE_SECURE === 'true', // HTTPS 환경에서만 true로 설정
     httpOnly: true,
   },
 }));
