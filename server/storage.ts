@@ -1,179 +1,6 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, productPrices, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent, type ProductPrice, type InsertProductPrice } from "@shared/schema";
-import { db, isSQLite, sqliteDb, dbBool } from "./db";
-import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
-
-// SQLite snake_case to camelCase mapping utility
-function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-function mapSqliteRow<T>(row: any): T {
-  if (!row) return row;
-  const mapped: any = {};
-  for (const key in row) {
-    const camelKey = snakeToCamel(key);
-    let value = row[key];
-    // Parse JSON strings back to objects
-    if (typeof value === 'string' && (camelKey.includes('Quantities') || camelKey === 'shippingRestrictedProducts' || camelKey === 'allowedIpRanges')) {
-      try { value = JSON.parse(value); } catch {}
-    }
-    // Convert SQLite integers to booleans where appropriate
-    if ((camelKey.startsWith('is') || camelKey === 'isActive' || camelKey === 'isDeleted' || camelKey === 'isDeviceRestrictionEnabled' || camelKey === 'isApproved') && typeof value === 'number') {
-      value = value === 1;
-    }
-    mapped[camelKey] = value;
-  }
-  return mapped as T;
-}
-
-function mapSqliteRows<T>(rows: any[]): T[] {
-  return rows.map(row => mapSqliteRow<T>(row));
-}
-
-// SQLite raw SQL helper for inserts that avoid Drizzle's PostgreSQL timestamp handling
-function sqliteInsertOrder(orderData: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO orders (
-      order_number, customer_name, customer_phone, zip_code, address1, address2,
-      recipient_name, recipient_phone, recipient_zip_code, recipient_address1, recipient_address2,
-      depositor_name, is_different_depositor, special_requests,
-      small_box_quantity, large_box_quantity, wrapping_quantity, dynamic_product_quantities,
-      shipping_fee, total_amount, status, payment_status, user_id, order_password
-    ) VALUES (
-      @orderNumber, @customerName, @customerPhone, @zipCode, @address1, @address2,
-      @recipientName, @recipientPhone, @recipientZipCode, @recipientAddress1, @recipientAddress2,
-      @depositorName, @isDifferentDepositor, @specialRequests,
-      @smallBoxQuantity, @largeBoxQuantity, @wrappingQuantity, @dynamicProductQuantities,
-      @shippingFee, @totalAmount, @status, @paymentStatus, @userId, @orderPassword
-    )
-  `);
-  
-  const result = stmt.run({
-    orderNumber: orderData.orderNumber,
-    customerName: orderData.customerName,
-    customerPhone: orderData.customerPhone,
-    zipCode: orderData.zipCode || null,
-    address1: orderData.address1,
-    address2: orderData.address2 || null,
-    recipientName: orderData.recipientName || null,
-    recipientPhone: orderData.recipientPhone || null,
-    recipientZipCode: orderData.recipientZipCode || null,
-    recipientAddress1: orderData.recipientAddress1 || null,
-    recipientAddress2: orderData.recipientAddress2 || null,
-    depositorName: orderData.depositorName || null,
-    isDifferentDepositor: orderData.isDifferentDepositor ? 1 : 0,
-    specialRequests: orderData.specialRequests || null,
-    smallBoxQuantity: orderData.smallBoxQuantity || 0,
-    largeBoxQuantity: orderData.largeBoxQuantity || 0,
-    wrappingQuantity: orderData.wrappingQuantity || 0,
-    dynamicProductQuantities: orderData.dynamicProductQuantities ? JSON.stringify(orderData.dynamicProductQuantities) : null,
-    shippingFee: orderData.shippingFee || 0,
-    totalAmount: orderData.totalAmount,
-    status: orderData.status || 'pending',
-    paymentStatus: orderData.paymentStatus || 'pending',
-    userId: orderData.userId || null,
-    orderPassword: orderData.orderPassword || null
-  });
-  
-  const lastId = result.lastInsertRowid;
-  const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-  return mapSqliteRow<Order>(selectStmt.get(lastId));
-}
-
-function sqliteInsertCustomer(customerData: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO customers (
-      customer_name, customer_phone, zip_code, address1, address2,
-      order_count, total_spent, notes, user_id, user_registered_name, user_registered_phone
-    ) VALUES (
-      @customerName, @customerPhone, @zipCode, @address1, @address2,
-      @orderCount, @totalSpent, @notes, @userId, @userRegisteredName, @userRegisteredPhone
-    )
-  `);
-  
-  const result = stmt.run({
-    customerName: customerData.customerName,
-    customerPhone: customerData.customerPhone,
-    zipCode: customerData.zipCode || null,
-    address1: customerData.address1 || '',
-    address2: customerData.address2 || '',
-    orderCount: customerData.orderCount || 0,
-    totalSpent: customerData.totalSpent || 0,
-    notes: customerData.notes || null,
-    userId: customerData.userId || null,
-    userRegisteredName: customerData.userRegisteredName || null,
-    userRegisteredPhone: customerData.userRegisteredPhone || null
-  });
-  
-  const lastId = result.lastInsertRowid;
-  const selectStmt = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?');
-  return mapSqliteRow<Customer>(selectStmt.get(lastId));
-}
-
-function sqliteInsertAdminSettings(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO admin_settings (
-      account_info_html, refund_shipping_fee, is_shipping_restriction_enabled, shipping_restricted_products
-    ) VALUES (
-      @accountInfoHtml, @refundShippingFee, @isShippingRestrictionEnabled, @shippingRestrictedProducts
-    )
-  `);
-  const result = stmt.run({
-    accountInfoHtml: data.accountInfoHtml || '',
-    refundShippingFee: data.refundShippingFee || 3000,
-    isShippingRestrictionEnabled: data.isShippingRestrictionEnabled ? 1 : 0,
-    shippingRestrictedProducts: data.shippingRestrictedProducts ? JSON.stringify(data.shippingRestrictedProducts) : null
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM admin_settings WHERE id = ?');
-  return mapSqliteRow<AdminSettings>(selectStmt.get(result.lastInsertRowid));
-}
-
-function sqliteInsertUser(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO users (username, password_hash, name, phone_number, role, is_active)
-    VALUES (@username, @passwordHash, @name, @phoneNumber, @role, @isActive)
-  `);
-  const result = stmt.run({
-    username: data.username,
-    passwordHash: data.passwordHash,
-    name: data.name || null,
-    phoneNumber: data.phoneNumber || null,
-    role: data.role || 'user',
-    isActive: data.isActive !== false ? 1 : 0
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM users WHERE id = ?');
-  return mapSqliteRow<User>(selectStmt.get(result.lastInsertRowid));
-}
-
-function sqliteInsertDashboardContent(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO dashboard_content (key, value, type)
-    VALUES (@key, @value, @type)
-  `);
-  const result = stmt.run({
-    key: data.key,
-    value: data.value,
-    type: data.type || 'text'
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE id = ?');
-  return mapSqliteRow<DashboardContent>(selectStmt.get(result.lastInsertRowid));
-}
-
-function sqliteInsertProductPrice(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO product_prices (product_index, product_name, price, cost, is_active)
-    VALUES (@productIndex, @productName, @price, @cost, @isActive)
-  `);
-  const result = stmt.run({
-    productIndex: data.productIndex,
-    productName: data.productName,
-    price: data.price,
-    cost: data.cost || 0,
-    isActive: data.isActive !== false ? 1 : 0
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE id = ?');
-  return mapSqliteRow<ProductPrice>(selectStmt.get(result.lastInsertRowid));
-}
+import { db } from "./db";
+import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Order management
@@ -300,9 +127,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async ensureDefaultAdmin() {
-    if (isSQLite) {
-      return;
-    }
     try {
       const existingAdmin = await this.getAdminByUsername("admin");
       if (!existingAdmin) {
@@ -317,9 +141,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async ensureDefaultManager() {
-    if (isSQLite) {
-      return;
-    }
     try {
       const existingManager = await this.getManagerByUsername("manager");
       if (!existingManager) {
@@ -367,17 +188,19 @@ export class DatabaseStorage implements IStorage {
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const orderNumber = await this.generateOrderNumber();
-    const orderData: any = {
+    const orderData = {
       customerName: insertOrder.customerName,
       customerPhone: insertOrder.customerPhone,
       zipCode: insertOrder.zipCode,
       address1: insertOrder.address1,
       address2: insertOrder.address2,
+      // 받는 분 정보
       recipientName: insertOrder.recipientName,
       recipientPhone: insertOrder.recipientPhone,
       recipientZipCode: insertOrder.recipientZipCode,
       recipientAddress1: insertOrder.recipientAddress1,
       recipientAddress2: insertOrder.recipientAddress2,
+      // 예금자 정보
       isDifferentDepositor: insertOrder.isDifferentDepositor || false,
       depositorName: insertOrder.depositorName,
       smallBoxQuantity: insertOrder.smallBoxQuantity,
@@ -389,17 +212,12 @@ export class DatabaseStorage implements IStorage {
       scheduledDate: insertOrder.scheduledDate,
       shippingFee: insertOrder.shippingFee || 0,
       orderNumber,
-      status: "pending",
+      status: "pending", // 예약날짜와 상관없이 항상 pending으로 시작
       paymentStatus: "pending",
+      // 인증 관련 필드
       userId: insertOrder.userId,
       orderPassword: insertOrder.orderPassword,
     };
-    
-    if (isSQLite) {
-      // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
-      const order = sqliteInsertOrder(orderData);
-      return order as Order;
-    }
     
     const [order] = await db
       .insert(orders)
@@ -420,7 +238,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAllOrders(): Promise<Order[]> {
     const allOrders = await db.select().from(orders)
-      .where(eq(orders.isDeleted, dbBool(false)))
+      .where(eq(orders.isDeleted, false))
       .orderBy(desc(orders.createdAt)); // 기본적으로 생성일 역순으로 정렬
     
     // Get global cost settings
@@ -507,19 +325,19 @@ export class DatabaseStorage implements IStorage {
 
   async getOrdersByPhone(phone: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, dbBool(false))))
+      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByName(name: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, dbBool(false))))
+      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByUserId(userId: number): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, dbBool(false))))
+      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, false)))
       .orderBy(desc(orders.createdAt));
   }
 
@@ -544,46 +362,18 @@ export class DatabaseStorage implements IStorage {
     // 상태별 필드 초기화 및 설정
     if (status === 'pending') {
       // 주문접수 상태로 변경 시 모든 발송 관련 필드 초기화
-      updateData.sellerShipped = isSQLite ? 0 : false;
+      updateData.sellerShipped = false;
       updateData.sellerShippedDate = null;
       updateData.scheduledDate = null;
       updateData.deliveredDate = null;
     } else if (status === 'scheduled') {
       // 발송주문 상태로 변경 시 예약발송일 설정 (발송완료 관련 필드는 초기화)
       updateData.deliveredDate = null;
-      updateData.sellerShipped = isSQLite ? 0 : false;
+      updateData.sellerShipped = false;
       updateData.sellerShippedDate = null;
     } else if (status === 'delivered') {
       // 발송완료 상태로 변경하는 경우 현재 날짜를 설정
       updateData.deliveredDate = new Date();
-    }
-    
-    if (isSQLite) {
-      // SQLite: use raw SQL for timestamp handling
-      const setClauses: string[] = ['status = @status'];
-      const params: any = { status, id };
-      
-      if (updateData.sellerShipped !== undefined) {
-        setClauses.push('seller_shipped = @sellerShipped');
-        params.sellerShipped = updateData.sellerShipped;
-      }
-      if (updateData.sellerShippedDate !== undefined) {
-        setClauses.push('seller_shipped_date = @sellerShippedDate');
-        params.sellerShippedDate = updateData.sellerShippedDate;
-      }
-      if (updateData.scheduledDate !== undefined) {
-        setClauses.push('scheduled_date = @scheduledDate');
-        params.scheduledDate = updateData.scheduledDate;
-      }
-      if (updateData.deliveredDate !== undefined) {
-        setClauses.push('delivered_date = @deliveredDate');
-        params.deliveredDate = updateData.deliveredDate ? updateData.deliveredDate.toISOString() : null;
-      }
-      
-      const stmt = sqliteDb.prepare(`UPDATE orders SET ${setClauses.join(', ')} WHERE id = @id`);
-      stmt.run(params);
-      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-      return mapSqliteRow<Order>(selectStmt.get(id));
     }
     
     const [order] = await db
@@ -720,30 +510,6 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
     try {
-      if (isSQLite) {
-        const setClauses: string[] = [
-          'seller_shipped = @sellerShipped',
-          'seller_shipped_date = @sellerShippedDate'
-        ];
-        const params: any = {
-          id,
-          sellerShipped: sellerShipped ? 1 : 0,
-          sellerShippedDate: sellerShipped && sellerShippedDate ? sellerShippedDate.toISOString() : null
-        };
-        
-        if (sellerShipped) {
-          setClauses.push('status = @status');
-          setClauses.push('delivered_date = @deliveredDate');
-          params.status = 'delivered';
-          params.deliveredDate = sellerShippedDate ? sellerShippedDate.toISOString() : null;
-        }
-        
-        const stmt = sqliteDb.prepare(`UPDATE orders SET ${setClauses.join(', ')} WHERE id = @id`);
-        stmt.run(params);
-        const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-        return mapSqliteRow<Order>(selectStmt.get(id));
-      }
-      
       const updateData: any = { 
         sellerShipped,
         sellerShippedDate: sellerShipped ? sellerShippedDate : null
@@ -791,12 +557,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
-    const values = isSQLite 
-      ? { ...insertAdmin, createdAt: new Date() }
-      : insertAdmin;
     const [admin] = await db
       .insert(admins)
-      .values(values as any)
+      .values(insertAdmin)
       .returning();
     return admin;
   }
@@ -808,12 +571,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createManager(insertManager: InsertManager): Promise<Manager> {
-    const values = isSQLite 
-      ? { ...insertManager, createdAt: new Date() }
-      : insertManager;
     const [manager] = await db
       .insert(managers)
-      .values(values as any)
+      .values(insertManager)
       .returning();
     return manager;
   }
@@ -896,12 +656,6 @@ export class DatabaseStorage implements IStorage {
 
   // Trash/Delete operations
   async softDeleteOrder(id: number): Promise<Order | undefined> {
-    if (isSQLite) {
-      const stmt = sqliteDb.prepare(`UPDATE orders SET is_deleted = 1, deleted_at = datetime('now') WHERE id = @id`);
-      stmt.run({ id });
-      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-      return mapSqliteRow<Order>(selectStmt.get(id));
-    }
     const [deletedOrder] = await db.update(orders)
       .set({ 
         isDeleted: true,
@@ -913,12 +667,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async restoreOrder(id: number): Promise<Order | undefined> {
-    if (isSQLite) {
-      const stmt = sqliteDb.prepare(`UPDATE orders SET is_deleted = 0, deleted_at = NULL WHERE id = @id`);
-      stmt.run({ id });
-      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-      return mapSqliteRow<Order>(selectStmt.get(id));
-    }
     const [restoredOrder] = await db.update(orders)
       .set({ 
         isDeleted: false,
@@ -931,7 +679,7 @@ export class DatabaseStorage implements IStorage {
 
   async getDeletedOrders(): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(eq(orders.isDeleted, dbBool(true)))
+      .where(eq(orders.isDeleted, true))
       .orderBy(desc(orders.deletedAt));
   }
 
@@ -946,38 +694,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateAdminSettings(settings: InsertAdminSettings): Promise<AdminSettings> {
+    // Check if admin settings exist
     const existing = await this.getAdminSettings();
     
     if (existing) {
-      if (isSQLite) {
-        const updateStmt = sqliteDb.prepare(`
-          UPDATE admin_settings SET
-            account_info_html = @accountInfoHtml,
-            refund_shipping_fee = @refundShippingFee,
-            is_shipping_restriction_enabled = @isShippingRestrictionEnabled,
-            shipping_restricted_products = @shippingRestrictedProducts,
-            updated_at = datetime('now')
-          WHERE id = @id
-        `);
-        updateStmt.run({
-          accountInfoHtml: settings.accountInfoHtml || existing.accountInfoHtml,
-          refundShippingFee: settings.refundShippingFee ?? existing.refundShippingFee,
-          isShippingRestrictionEnabled: settings.isShippingRestrictionEnabled !== undefined ? (settings.isShippingRestrictionEnabled ? 1 : 0) : (existing.isShippingRestrictionEnabled ? 1 : 0),
-          shippingRestrictedProducts: settings.shippingRestrictedProducts ? JSON.stringify(settings.shippingRestrictedProducts) : (existing.shippingRestrictedProducts ? JSON.stringify(existing.shippingRestrictedProducts) : null),
-          id: existing.id
-        });
-        const selectStmt = sqliteDb.prepare('SELECT * FROM admin_settings WHERE id = ?');
-        return mapSqliteRow<AdminSettings>(selectStmt.get(existing.id));
-      }
+      // Update existing settings
       const [updated] = await db.update(adminSettings)
-        .set({ ...settings, updatedAt: new Date() })
+        .set({
+          ...settings,
+          updatedAt: new Date()
+        })
         .where(eq(adminSettings.id, existing.id))
         .returning();
       return updated;
     } else {
-      if (isSQLite) {
-        return sqliteInsertAdminSettings(settings) as AdminSettings;
-      }
+      // Create new settings
       const [created] = await db.insert(adminSettings)
         .values(settings)
         .returning();
@@ -989,12 +720,7 @@ export class DatabaseStorage implements IStorage {
 
   // Customer management functions
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    if (isSQLite) {
-      // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
-      const newCustomer = sqliteInsertCustomer(customer);
-      return newCustomer as Customer;
-    }
-    const [newCustomer] = await db.insert(customers).values(customer as any).returning();
+    const [newCustomer] = await db.insert(customers).values(customer).returning();
     return newCustomer;
   }
 
@@ -1010,50 +736,30 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCustomers(): Promise<Customer[]> {
     return await db.select().from(customers)
-      .where(eq(customers.isDeleted, dbBool(false)))
+      .where(eq(customers.isDeleted, false))
       .orderBy(desc(customers.createdAt));
   }
 
   async getTrashedCustomers(): Promise<Customer[]> {
     return await db.select().from(customers)
-      .where(eq(customers.isDeleted, dbBool(true)))
+      .where(eq(customers.isDeleted, true))
       .orderBy(desc(customers.deletedAt));
   }
 
-  async updateCustomer(id: number, customer: Partial<InsertCustomer> & { orderCount?: number; totalSpent?: number }): Promise<Customer | undefined> {
+  async updateCustomer(id: number, customer: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    // 업데이트 전에 기존 고객 정보 조회
     const existingCustomer = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
     const oldPhone = existingCustomer[0]?.customerPhone;
     
-    if (isSQLite) {
-      const setClauses: string[] = [];
-      const params: any = { id };
-      if (customer.customerName !== undefined) { setClauses.push('customer_name = @customerName'); params.customerName = customer.customerName; }
-      if (customer.customerPhone !== undefined) { setClauses.push('customer_phone = @customerPhone'); params.customerPhone = customer.customerPhone; }
-      if (customer.zipCode !== undefined) { setClauses.push('zip_code = @zipCode'); params.zipCode = customer.zipCode; }
-      if (customer.address1 !== undefined) { setClauses.push('address1 = @address1'); params.address1 = customer.address1; }
-      if (customer.address2 !== undefined) { setClauses.push('address2 = @address2'); params.address2 = customer.address2; }
-      if (customer.orderCount !== undefined) { setClauses.push('order_count = @orderCount'); params.orderCount = customer.orderCount; }
-      if (customer.totalSpent !== undefined) { setClauses.push('total_spent = @totalSpent'); params.totalSpent = customer.totalSpent; }
-      if (customer.notes !== undefined) { setClauses.push('notes = @notes'); params.notes = customer.notes; }
-      if (customer.userId !== undefined) { setClauses.push('user_id = @userId'); params.userId = customer.userId; }
-      if (customer.userRegisteredName !== undefined) { setClauses.push('user_registered_name = @userRegisteredName'); params.userRegisteredName = customer.userRegisteredName; }
-      if (customer.userRegisteredPhone !== undefined) { setClauses.push('user_registered_phone = @userRegisteredPhone'); params.userRegisteredPhone = customer.userRegisteredPhone; }
-      setClauses.push("updated_at = datetime('now')");
-      const stmt = sqliteDb.prepare(`UPDATE customers SET ${setClauses.join(', ')} WHERE id = @id`);
-      stmt.run(params);
-      const selectStmt = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?');
-      const updated = mapSqliteRow<Customer>(selectStmt.get(id));
-      if (updated && oldPhone && customer.customerPhone && customer.customerPhone !== oldPhone) {
-        sqliteDb.prepare('UPDATE orders SET customer_phone = @newPhone WHERE customer_phone = @oldPhone').run({ newPhone: customer.customerPhone, oldPhone });
-      }
-      return updated;
-    }
-    
     const [updated] = await db.update(customers)
-      .set({ ...customer, updatedAt: new Date() } as any)
+      .set({
+        ...customer,
+        updatedAt: new Date()
+      })
       .where(eq(customers.id, id))
       .returning();
     
+    // 연락처가 변경된 경우에만 주문 테이블의 연락처 업데이트 (주소는 각 주문의 원본 유지)
     if (updated && oldPhone && customer.customerPhone && customer.customerPhone !== oldPhone) {
       await db.update(orders)
         .set({ customerPhone: customer.customerPhone })
@@ -1064,53 +770,50 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCustomer(id: number): Promise<void> {
-    if (isSQLite) {
-      sqliteDb.prepare("UPDATE customers SET is_deleted = 1, deleted_at = datetime('now'), updated_at = datetime('now') WHERE id = @id").run({ id });
-      return;
-    }
-    await db.update(customers).set({ isDeleted: true, deletedAt: new Date(), updatedAt: new Date() }).where(eq(customers.id, id));
+    await db.update(customers)
+      .set({ 
+        isDeleted: true, 
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id));
   }
 
   async restoreCustomer(id: number): Promise<void> {
-    if (isSQLite) {
-      sqliteDb.prepare("UPDATE customers SET is_deleted = 0, deleted_at = NULL, updated_at = datetime('now') WHERE id = @id").run({ id });
-      return;
-    }
-    await db.update(customers).set({ isDeleted: false, deletedAt: null, updatedAt: new Date() }).where(eq(customers.id, id));
+    await db.update(customers)
+      .set({ 
+        isDeleted: false, 
+        deletedAt: null,
+        updatedAt: new Date()
+      })
+      .where(eq(customers.id, id));
   }
 
   async permanentlyDeleteCustomer(id: number): Promise<void> {
-    if (isSQLite) {
-      sqliteDb.prepare('DELETE FROM customers WHERE id = @id').run({ id });
-      return;
-    }
     await db.delete(customers).where(eq(customers.id, id));
   }
 
   async bulkDeleteCustomers(ids: number[]): Promise<void> {
-    if (isSQLite) {
-      const placeholders = ids.map(() => '?').join(',');
-      sqliteDb.prepare(`UPDATE customers SET is_deleted = 1, deleted_at = datetime('now'), updated_at = datetime('now') WHERE id IN (${placeholders})`).run(...ids);
-      return;
-    }
-    await db.update(customers).set({ isDeleted: true, deletedAt: new Date(), updatedAt: new Date() }).where(inArray(customers.id, ids));
+    await db.update(customers)
+      .set({ 
+        isDeleted: true, 
+        deletedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(inArray(customers.id, ids));
   }
 
   async bulkRestoreCustomers(ids: number[]): Promise<void> {
-    if (isSQLite) {
-      const placeholders = ids.map(() => '?').join(',');
-      sqliteDb.prepare(`UPDATE customers SET is_deleted = 0, deleted_at = NULL, updated_at = datetime('now') WHERE id IN (${placeholders})`).run(...ids);
-      return;
-    }
-    await db.update(customers).set({ isDeleted: false, deletedAt: null, updatedAt: new Date() }).where(inArray(customers.id, ids));
+    await db.update(customers)
+      .set({ 
+        isDeleted: false, 
+        deletedAt: null,
+        updatedAt: new Date()
+      })
+      .where(inArray(customers.id, ids));
   }
 
   async bulkPermanentlyDeleteCustomers(ids: number[]): Promise<void> {
-    if (isSQLite) {
-      const placeholders = ids.map(() => '?').join(',');
-      sqliteDb.prepare(`DELETE FROM customers WHERE id IN (${placeholders})`).run(...ids);
-      return;
-    }
     await db.delete(customers).where(inArray(customers.id, ids));
   }
 
@@ -1123,7 +826,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(orders.customerPhone, phoneNumber),
-          eq(orders.isDeleted, dbBool(false)) // 삭제된 주문만 제외
+          eq(orders.isDeleted, false) // 삭제된 주문만 제외
         )
       )
       .orderBy(desc(orders.createdAt));
@@ -1134,18 +837,16 @@ export class DatabaseStorage implements IStorage {
     const existingCustomer = await this.getCustomerByPhone(phoneNumber);
     
     if (customerOrders.length === 0) {
+      // No orders found, set count to 0
       if (existingCustomer) {
-        if (isSQLite) {
-          const stmt = sqliteDb.prepare(`
-            UPDATE customers SET order_count = 0, total_spent = 0, last_order_date = NULL, updated_at = datetime('now')
-            WHERE id = @id
-          `);
-          stmt.run({ id: existingCustomer.id });
-        } else {
-          await db.update(customers)
-            .set({ orderCount: 0, totalSpent: 0, lastOrderDate: null, updatedAt: new Date() })
-            .where(eq(customers.id, existingCustomer.id));
-        }
+        await db.update(customers)
+          .set({
+            orderCount: 0,
+            totalSpent: 0,
+            lastOrderDate: null,
+            updatedAt: new Date()
+          })
+          .where(eq(customers.id, existingCustomer.id));
         console.log(`${phoneNumber} 고객 통계를 0으로 초기화`);
       }
       return;
@@ -1164,28 +865,20 @@ export class DatabaseStorage implements IStorage {
     console.log(`${phoneNumber} 새로운 통계: 주문횟수=${orderCount}, 총구매금액=${totalSpent}, 마지막주문일=${lastOrderDate}`);
     
     if (existingCustomer) {
-      if (isSQLite) {
-        const stmt = sqliteDb.prepare(`
-          UPDATE customers SET order_count = @orderCount, total_spent = @totalSpent,
-          last_order_date = @lastOrderDate, updated_at = datetime('now')
-          WHERE id = @id
-        `);
-        stmt.run({
+      // Update existing customer
+      await db.update(customers)
+        .set({
           orderCount,
           totalSpent,
-          lastOrderDate: lastOrderDate instanceof Date ? lastOrderDate.toISOString() : lastOrderDate,
-          id: existingCustomer.id
-        });
-      } else {
-        await db.update(customers)
-          .set({ orderCount, totalSpent, lastOrderDate, updatedAt: new Date() })
-          .where(eq(customers.id, existingCustomer.id));
-      }
+          lastOrderDate,
+          updatedAt: new Date()
+        })
+        .where(eq(customers.id, existingCustomer.id));
       console.log(`${phoneNumber} 고객 통계 업데이트 완료`);
     } else {
       // Create new customer record from first order
       const firstOrder = customerOrders[customerOrders.length - 1]; // Last in descending order = first chronologically
-      const newCustomerData: any = {
+      await db.insert(customers).values({
         customerName: firstOrder.customerName,
         customerPhone: phoneNumber,
         zipCode: firstOrder.zipCode,
@@ -1193,15 +886,9 @@ export class DatabaseStorage implements IStorage {
         address2: firstOrder.address2,
         orderCount,
         totalSpent,
+        lastOrderDate,
         notes: null
-      };
-      if (isSQLite) {
-        // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
-        sqliteInsertCustomer(newCustomerData);
-      } else {
-        newCustomerData.lastOrderDate = lastOrderDate;
-        await db.insert(customers).values(newCustomerData);
-      }
+      });
       console.log(`${phoneNumber} 새로운 고객 생성 완료`);
     }
   }
@@ -1242,7 +929,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Create new customer with user link if provided
-      const customerValues: any = {
+      const [newCustomer] = await db.insert(customers).values({
         customerName: customerData.name,
         customerPhone: customerData.phone,
         address1: customerData.address || '',
@@ -1250,20 +937,13 @@ export class DatabaseStorage implements IStorage {
         zipCode: customerData.zipCode,
         orderCount: 0,
         totalSpent: 0,
+        lastOrderDate: null,
         notes: null,
         userId: customerData.userId || null,
         userRegisteredName: customerData.userRegisteredName || null,
         userRegisteredPhone: customerData.userRegisteredPhone || null
-      };
-      
-      if (isSQLite) {
-        // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
-        const newCustomer = sqliteInsertCustomer(customerValues);
-        return newCustomer as Customer;
-      }
-      
-      customerValues.lastOrderDate = null;
-      const [newCustomer] = await db.insert(customers).values(customerValues).returning();
+      }).returning();
+
       return newCustomer;
     } catch (error) {
       console.error('Auto register customer error:', error);
@@ -1273,16 +953,7 @@ export class DatabaseStorage implements IStorage {
 
   async bulkCreateCustomers(customersData: InsertCustomer[]): Promise<Customer[]> {
     try {
-      if (isSQLite) {
-        // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
-        const results: Customer[] = [];
-        for (const c of customersData) {
-          const newCustomer = sqliteInsertCustomer(c);
-          results.push(newCustomer as Customer);
-        }
-        return results;
-      }
-      const result = await db.insert(customers).values(customersData as any).returning();
+      const result = await db.insert(customers).values(customersData).returning();
       return result;
     } catch (error) {
       console.error('Bulk create customers error:', error);
@@ -1337,17 +1008,6 @@ export class DatabaseStorage implements IStorage {
     const bcrypt = await import('bcryptjs');
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     
-    if (isSQLite) {
-      return sqliteInsertUser({
-        username: userData.username,
-        passwordHash: hashedPassword,
-        name: userData.name,
-        phoneNumber: userData.phoneNumber,
-        role: userData.role || 'user',
-        isActive: userData.isActive ?? true
-      }) as User;
-    }
-    
     const [user] = await db.insert(users).values({
       username: userData.username,
       passwordHash: hashedPassword,
@@ -1379,25 +1039,17 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getDashboardContent(key);
     
     if (existing) {
-      if (isSQLite) {
-        const updateStmt = sqliteDb.prepare(`
-          UPDATE dashboard_content SET value = @value, type = @type, updated_at = datetime('now')
-          WHERE key = @key
-        `);
-        updateStmt.run({ value, type, key });
-        const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE key = ?');
-        return mapSqliteRow<DashboardContent>(selectStmt.get(key));
-      }
       const [updated] = await db
         .update(dashboardContent)
-        .set({ value, type, updatedAt: new Date() })
+        .set({ 
+          value,
+          type,
+          updatedAt: new Date()  
+        })
         .where(eq(dashboardContent.key, key))
         .returning();
       return updated;
     } else {
-      if (isSQLite) {
-        return sqliteInsertDashboardContent({ key, value, type });
-      }
       const [created] = await db
         .insert(dashboardContent)
         .values({ key, value, type })
@@ -1411,18 +1063,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateDashboardContent(key: string, value: string): Promise<DashboardContent | undefined> {
-    if (isSQLite) {
-      const updateStmt = sqliteDb.prepare(`
-        UPDATE dashboard_content SET value = @value, updated_at = datetime('now')
-        WHERE key = @key
-      `);
-      updateStmt.run({ value, key });
-      const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE key = ?');
-      return mapSqliteRow<DashboardContent>(selectStmt.get(key));
-    }
     const [updated] = await db
       .update(dashboardContent)
-      .set({ value, updatedAt: new Date() })
+      .set({ 
+        value,
+        updatedAt: new Date()  
+      })
       .where(eq(dashboardContent.key, key))
       .returning();
     return updated || undefined;
@@ -1437,28 +1083,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async setProductPrice(productPrice: InsertProductPrice): Promise<ProductPrice> {
+    // Check if product price already exists
     const existingPrice = await db.select().from(productPrices)
       .where(eq(productPrices.productIndex, productPrice.productIndex))
       .limit(1);
 
     if (existingPrice.length > 0) {
-      if (isSQLite) {
-        const updateStmt = sqliteDb.prepare(`
-          UPDATE product_prices SET
-            product_name = @productName, price = @price, cost = @cost,
-            is_active = @isActive, updated_at = datetime('now')
-          WHERE product_index = @productIndex
-        `);
-        updateStmt.run({
-          productName: productPrice.productName,
-          price: productPrice.price,
-          cost: productPrice.cost || 0,
-          isActive: productPrice.isActive !== false ? 1 : 0,
-          productIndex: productPrice.productIndex
-        });
-        const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE product_index = ?');
-        return mapSqliteRow<ProductPrice>(selectStmt.get(productPrice.productIndex));
-      }
+      // Update existing product price
       const [updated] = await db.update(productPrices)
         .set({
           productName: productPrice.productName,
@@ -1471,9 +1102,7 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updated;
     } else {
-      if (isSQLite) {
-        return sqliteInsertProductPrice(productPrice);
-      }
+      // Create new product price
       const [created] = await db.insert(productPrices)
         .values(productPrice)
         .returning();
@@ -1483,20 +1112,11 @@ export class DatabaseStorage implements IStorage {
 
   async getAllProductPrices(): Promise<ProductPrice[]> {
     return await db.select().from(productPrices)
-      .where(eq(productPrices.isActive, dbBool(true)))
+      .where(eq(productPrices.isActive, true))
       .orderBy(productPrices.productIndex);
   }
 
   async updateProductPrice(productIndex: number, price: number, cost: number): Promise<ProductPrice | undefined> {
-    if (isSQLite) {
-      const updateStmt = sqliteDb.prepare(`
-        UPDATE product_prices SET price = @price, cost = @cost, updated_at = datetime('now')
-        WHERE product_index = @productIndex
-      `);
-      updateStmt.run({ price, cost, productIndex });
-      const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE product_index = ?');
-      return mapSqliteRow<ProductPrice>(selectStmt.get(productIndex));
-    }
     const [updated] = await db.update(productPrices)
       .set({ price, cost, updatedAt: new Date() })
       .where(eq(productPrices.productIndex, productIndex))
@@ -1505,14 +1125,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProductPrice(productIndex: number): Promise<void> {
-    if (isSQLite) {
-      const stmt = sqliteDb.prepare(`
-        UPDATE product_prices SET is_active = 0, updated_at = datetime('now')
-        WHERE product_index = @productIndex
-      `);
-      stmt.run({ productIndex });
-      return;
-    }
     await db.update(productPrices)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(productPrices.productIndex, productIndex));

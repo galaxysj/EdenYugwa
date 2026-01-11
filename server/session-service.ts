@@ -1,118 +1,6 @@
-import { db, isSQLite, sqliteDb, dbBool } from "./db";
-import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest, type UserSession, type AccessControlSettings, type LoginAttempt, type LoginApprovalRequest } from "@shared/schema";
+import { db } from "./db";
+import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
-
-// SQLite snake_case to camelCase mapping utility
-function snakeToCamel(str: string): string {
-  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-function mapSqliteRow<T>(row: any): T {
-  if (!row) return row;
-  const mapped: any = {};
-  for (const key in row) {
-    const camelKey = snakeToCamel(key);
-    let value = row[key];
-    // Parse JSON strings back to objects
-    if (typeof value === 'string' && (camelKey === 'allowedIpRanges' || camelKey === 'allowedDeviceTypes')) {
-      try { value = JSON.parse(value); } catch {}
-    }
-    // Convert SQLite integers to booleans where appropriate
-    if ((camelKey.startsWith('is') || camelKey === 'wasSuccessful' || camelKey === 'isActive' || camelKey === 'isEnabled' || camelKey === 'isDeviceRestrictionEnabled' || camelKey === 'isApproved') && typeof value === 'number') {
-      value = value === 1;
-    }
-    mapped[camelKey] = value;
-  }
-  return mapped as T;
-}
-
-// SQLite raw SQL insert helpers
-function sqliteInsertSession(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO user_sessions (
-      user_id, session_id, ip_address, user_agent, location,
-      device_type, browser_info, is_active, expires_at
-    ) VALUES (
-      @userId, @sessionId, @ipAddress, @userAgent, @location,
-      @deviceType, @browserInfo, @isActive, @expiresAt
-    )
-  `);
-  const result = stmt.run({
-    userId: data.userId,
-    sessionId: data.sessionId,
-    ipAddress: data.ipAddress,
-    userAgent: data.userAgent,
-    location: data.location,
-    deviceType: data.deviceType,
-    browserInfo: data.browserInfo,
-    isActive: data.isActive ? 1 : 0,
-    expiresAt: data.expiresAt instanceof Date ? data.expiresAt.toISOString() : data.expiresAt
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM user_sessions WHERE id = ?');
-  return mapSqliteRow<UserSession>(selectStmt.get(result.lastInsertRowid));
-}
-
-function sqliteInsertAccessControlSettings(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO access_control_settings (
-      user_id, is_enabled, max_concurrent_sessions, allowed_ip_ranges, allowed_device_types
-    ) VALUES (
-      @userId, @isEnabled, @maxConcurrentSessions, @allowedIpRanges, @allowedDeviceTypes
-    )
-  `);
-  const result = stmt.run({
-    userId: data.userId,
-    isEnabled: data.isEnabled ? 1 : 0,
-    maxConcurrentSessions: data.maxConcurrentSessions || 3,
-    allowedIpRanges: data.allowedIpRanges ? JSON.stringify(data.allowedIpRanges) : null,
-    allowedDeviceTypes: data.allowedDeviceTypes ? JSON.stringify(data.allowedDeviceTypes) : null
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM access_control_settings WHERE id = ?');
-  return mapSqliteRow<AccessControlSettings>(selectStmt.get(result.lastInsertRowid));
-}
-
-function sqliteInsertLoginAttempt(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO login_attempts (
-      username, ip_address, user_agent, location, device_type, was_successful
-    ) VALUES (
-      @username, @ipAddress, @userAgent, @location, @deviceType, @wasSuccessful
-    )
-  `);
-  const result = stmt.run({
-    username: data.username,
-    ipAddress: data.ipAddress,
-    userAgent: data.userAgent || '',
-    location: data.location || '',
-    deviceType: data.deviceType || 'desktop',
-    wasSuccessful: data.wasSuccessful ? 1 : 0
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM login_attempts WHERE id = ?');
-  return mapSqliteRow<LoginAttempt>(selectStmt.get(result.lastInsertRowid));
-}
-
-function sqliteInsertApprovalRequest(data: any): any {
-  const stmt = sqliteDb.prepare(`
-    INSERT INTO login_approval_requests (
-      user_id, session_id, ip_address, user_agent, location, device_type, request_reason, status, expires_at
-    ) VALUES (
-      @userId, @sessionId, @ipAddress, @userAgent, @location, @deviceType, @requestReason, @status, @expiresAt
-    )
-  `);
-  const result = stmt.run({
-    userId: data.userId,
-    sessionId: data.sessionId,
-    ipAddress: data.ipAddress,
-    userAgent: data.userAgent || '',
-    location: data.location || '',
-    deviceType: data.deviceType || 'desktop',
-    requestReason: data.requestReason || '',
-    status: data.status || 'pending',
-    expiresAt: data.expiresAt instanceof Date ? data.expiresAt.toISOString() : data.expiresAt
-  });
-  const selectStmt = sqliteDb.prepare('SELECT * FROM login_approval_requests WHERE id = ?');
-  return mapSqliteRow<LoginApprovalRequest>(selectStmt.get(result.lastInsertRowid));
-}
 
 // User-Agent 파싱을 위한 간단한 유틸리티
 function parseUserAgent(userAgent: string) {
@@ -164,7 +52,7 @@ export class SessionService {
     const { deviceType, browserInfo } = parseUserAgent(sessionData.userAgent);
     const location = getLocationFromIP(sessionData.ipAddress);
 
-    const newSession: any = {
+    const newSession: InsertUserSession = {
       userId: sessionData.userId,
       sessionId: sessionData.sessionId,
       ipAddress: sessionData.ipAddress,
@@ -175,11 +63,6 @@ export class SessionService {
       isActive: true,
       expiresAt: sessionData.expiresAt,
     };
-    
-    if (isSQLite) {
-      // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
-      return sqliteInsertSession(newSession);
-    }
 
     const [session] = await db.insert(userSessions).values(newSession).returning();
     return session;
@@ -209,7 +92,7 @@ export class SessionService {
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, dbBool(true)),
+          eq(userSessions.isActive, true),
           gte(userSessions.expiresAt, new Date())
         )
       )
@@ -222,7 +105,7 @@ export class SessionService {
       .update(userSessions)
       .set({ isActive: false })
       .where(and(
-        eq(userSessions.isActive, dbBool(true)),
+        eq(userSessions.isActive, true),
         gte(userSessions.expiresAt, new Date())
       ));
   }
@@ -242,27 +125,6 @@ export class SessionService {
     const existingSettings = await this.getAccessControlSettings(userId);
     
     if (existingSettings) {
-      if (isSQLite) {
-        // For SQLite updates, use raw SQL to handle timestamp
-        const updateStmt = sqliteDb.prepare(`
-          UPDATE access_control_settings SET
-            is_enabled = @isEnabled,
-            max_concurrent_sessions = @maxConcurrentSessions,
-            allowed_ip_ranges = @allowedIpRanges,
-            allowed_device_types = @allowedDeviceTypes,
-            updated_at = datetime('now')
-          WHERE user_id = @userId
-        `);
-        updateStmt.run({
-          isEnabled: settings.isEnabled !== undefined ? (settings.isEnabled ? 1 : 0) : (existingSettings.isEnabled ? 1 : 0),
-          maxConcurrentSessions: settings.maxConcurrentSessions || existingSettings.maxConcurrentSessions,
-          allowedIpRanges: settings.allowedIpRanges ? JSON.stringify(settings.allowedIpRanges) : (existingSettings.allowedIpRanges ? JSON.stringify(existingSettings.allowedIpRanges) : null),
-          allowedDeviceTypes: settings.allowedDeviceTypes ? JSON.stringify(settings.allowedDeviceTypes) : (existingSettings.allowedDeviceTypes ? JSON.stringify(existingSettings.allowedDeviceTypes) : null),
-          userId
-        });
-        const selectStmt = sqliteDb.prepare('SELECT * FROM access_control_settings WHERE user_id = ?');
-        return mapSqliteRow<AccessControlSettings>(selectStmt.get(userId));
-      }
       const [updated] = await db
         .update(accessControlSettings)
         .set({ ...settings, updatedAt: new Date() })
@@ -270,13 +132,9 @@ export class SessionService {
         .returning();
       return updated;
     } else {
-      const values: any = { userId, ...settings };
-      if (isSQLite) {
-        return sqliteInsertAccessControlSettings(values) as AccessControlSettings;
-      }
       const [created] = await db
         .insert(accessControlSettings)
-        .values(values)
+        .values({ userId, ...settings })
         .returning();
       return created;
     }
@@ -287,19 +145,13 @@ export class SessionService {
     const { deviceType } = parseUserAgent(attemptData.userAgent || '');
     const location = getLocationFromIP(attemptData.ipAddress);
 
-    const values: any = {
-      ...attemptData,
-      location,
-      deviceType,
-    };
-    
-    if (isSQLite) {
-      return sqliteInsertLoginAttempt(values);
-    }
-    
     const [attempt] = await db
       .insert(loginAttempts)
-      .values(values)
+      .values({
+        ...attemptData,
+        location,
+        deviceType,
+      })
       .returning();
     
     return attempt;
@@ -405,7 +257,7 @@ export class SessionService {
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, dbBool(true))
+          eq(userSessions.isActive, true),
           // 현재 세션이 아닌 것들만
           // Note: currentSessionId가 다른 것들만 선택
         )
@@ -424,25 +276,18 @@ export class SessionService {
     const location = getLocationFromIP(requestData.ipAddress);
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30분 후 만료
 
-    const values: any = {
-      userId: requestData.userId,
-      sessionId: requestData.sessionId,
-      ipAddress: requestData.ipAddress,
-      userAgent: requestData.userAgent,
-      location,
-      deviceType,
-      requestReason: requestData.requestReason,
-      status: 'pending',
-      expiresAt,
-    };
-    
-    if (isSQLite) {
-      return sqliteInsertApprovalRequest(values);
-    }
-    
     const [request] = await db
       .insert(loginApprovalRequests)
-      .values([values])
+      .values([{
+        userId: requestData.userId,
+        sessionId: requestData.sessionId,
+        ipAddress: requestData.ipAddress,
+        userAgent: requestData.userAgent,
+        location,
+        deviceType,
+        requestReason: requestData.requestReason,
+        expiresAt,
+      }])
       .returning();
 
     return request;
@@ -542,17 +387,6 @@ export class SessionService {
           lt(loginApprovalRequests.expiresAt, new Date())
         )
       );
-  }
-
-  // 디바이스 타입 레이블 변환
-  getDeviceTypeLabel(deviceType: string): string {
-    const labels: { [key: string]: string } = {
-      'desktop': '데스크탑',
-      'laptop': '노트북',
-      'mobile': '모바일',
-      'tablet': '태블릿'
-    };
-    return labels[deviceType] || deviceType;
   }
 }
 

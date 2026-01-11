@@ -6,10 +6,9 @@ services:
       context: ..
       dockerfile: raspberry-pi/Dockerfile
     ports:
-      - "7000:7000"
+      - "3000:5000"
     environment:
       - NODE_ENV=production
-      - PORT=7000
       - DATABASE_URL=file:./data/eden-hangwa.db
       - SESSION_SECRET=your-secret-key-here
     volumes:

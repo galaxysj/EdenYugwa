@@ -174,7 +174,7 @@ export const loginAttempts = pgTable("login_attempts", {
   userAgent: text("user_agent"),
   location: text("location"),
   deviceType: text("device_type"),
-  wasSuccessful: boolean("was_successful").notNull(),
+  success: boolean("success").notNull(),
   failureReason: text("failure_reason"), // 실패 사유
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
@@ -321,16 +321,12 @@ export type DashboardContent = typeof dashboardContent.$inferSelect;
 // Admin settings schema for business information
 export const adminSettings = pgTable("admin_settings", {
   id: serial("id").primaryKey(),
-  adminName: text("admin_name").default(''),
-  adminPhone: text("admin_phone"),
-  bankName: text("bank_name"),
-  accountNumber: text("account_number"),
-  accountHolder: text("account_holder"),
-  signature: text("signature"),
-  accountInfoHtml: text("account_info_html"),
-  refundShippingFee: integer("refund_shipping_fee").default(3000),
-  isShippingRestrictionEnabled: boolean("is_shipping_restriction_enabled").default(false),
-  shippingRestrictedProducts: text("shipping_restricted_products"),
+  adminName: text("admin_name").notNull(),
+  adminPhone: text("admin_phone").notNull(),
+  businessName: text("business_name").notNull(),
+  businessAddress: text("business_address"),
+  businessPhone: text("business_phone"),
+  bankAccount: text("bank_account"), // 계좌번호 정보
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

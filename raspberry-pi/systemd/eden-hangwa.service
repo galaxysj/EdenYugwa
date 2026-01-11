@@ -5,10 +5,9 @@ Wants=network.target
 
 [Service]
 Type=simple
-# 사용자명을 실제 계정으로 변경하세요 (예: pi, debian 등)
-User=debian
-Group=debian
-WorkingDirectory=/home/debian/eden-hangwa
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/eden-hangwa
 ExecStart=/usr/bin/npm start
 Restart=always
 RestartSec=10
@@ -17,7 +16,7 @@ RestartSec=10
 Environment=NODE_ENV=production
 Environment=NODE_OPTIONS=--max-old-space-size=512
 Environment=DATABASE_URL=file:./data/eden-hangwa.db
-Environment=PORT=7000
+Environment=PORT=3000
 
 # 보안 설정
 NoNewPrivileges=true

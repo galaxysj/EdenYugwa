@@ -1,37 +1,25 @@
 #!/bin/bash
 
-# 라즈베리 파이 Eden 한과 주문관리 시스템 설치 스크립트 (데비안 OS용)
+# 라즈베리 파이 Eden 한과 주문관리 시스템 설치 스크립트
 
-echo "=== 라즈베리 파이용 Eden 한과 주문관리 시스템 설치 시작 (데비안 OS) ==="
+echo "=== 라즈베리 파이용 Eden 한과 주문관리 시스템 설치 시작 ==="
 
 # 시스템 업데이트
 echo "시스템 업데이트 중..."
 sudo apt update && sudo apt upgrade -y
 
-# 필수 패키지 설치 (데비안용)
+# 필수 패키지 설치
 echo "필수 패키지 설치 중..."
-sudo apt install -y git curl build-essential python3-dev sqlite3 ufw
+sudo apt install -y git curl build-essential python3-dev sqlite3
 
-# Node.js 설치 (라즈베리 파이 최적화 - 20.x 필수)
-REQUIRED_NODE_MAJOR=20
-CURRENT_NODE_VERSION=$(node -v 2>/dev/null | cut -d'v' -f2 | cut -d'.' -f1)
-
-if [ -z "$CURRENT_NODE_VERSION" ] || [ "$CURRENT_NODE_VERSION" -lt "$REQUIRED_NODE_MAJOR" ]; then
-    echo "Node.js 20.x 설치 중... (better-sqlite3 호환성 필요)"
-    
-    # 기존 Node.js 제거
-    sudo apt-get remove -y nodejs 2>/dev/null || true
-    
-    # Node.js 20.x 설치
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node.js 설치 (라즈베리 파이 최적화)
+if ! command -v node &> /dev/null; then
+    echo "Node.js 18.x 설치 중..."
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     sudo apt-get install -y nodejs
     
     # npm 글로벌 캐시 정리 (용량 절약)
     npm cache clean --force
-    
-    echo "Node.js $(node -v) 설치 완료"
-else
-    echo "Node.js $(node -v) 이미 설치됨"
 fi
 
 # 프로젝트 디렉토리 설정
@@ -83,17 +71,18 @@ sudo dphys-swapfile swapon
 echo "자동 백업 cron job 설정..."
 (crontab -l 2>/dev/null; echo "0 2 * * * $PROJECT_DIR/backup.sh") | crontab -
 
-# 방화벽 설정 (포트 7000)
-echo "방화벽 설정 중..."
-sudo ufw allow 7000/tcp
-sudo ufw allow 22/tcp
-sudo ufw --force enable
+# 방화벽 설정
+if command -v ufw &> /dev/null; then
+    echo "방화벽 설정 중..."
+    sudo ufw allow 3000/tcp
+    sudo ufw --force enable
+fi
 
 # 라즈베리 파이 IP 주소 확인
 PI_IP=$(hostname -I | awk '{print $1}')
 
 echo ""
-echo "=== 설치 완료 (데비안 OS) ==="
+echo "=== 설치 완료 ==="
 echo ""
 echo "다음 단계:"
 echo "1. 프로젝트 코드를 $PROJECT_DIR 에 복사하세요"
@@ -102,7 +91,7 @@ echo "3. npm run build"
 echo "4. sudo systemctl enable eden-hangwa.service"
 echo "5. sudo systemctl start eden-hangwa.service"
 echo ""
-echo "접속 주소: http://$PI_IP:7000"
+echo "접속 주소: http://$PI_IP:3000"
 echo ""
 echo "서비스 상태 확인: sudo systemctl status eden-hangwa.service"
 echo "로그 확인: sudo journalctl -u eden-hangwa.service -f"
