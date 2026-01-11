@@ -441,6 +441,12 @@ export class DatabaseStorage implements IStorage {
       console.log('입금대기로 변경: discountReason도 null로 초기화');
     }
 
+    // 입금완료 시 주문상태를 발송대기(seller_shipped)로 변경
+    if (paymentStatus === 'confirmed') {
+      updateData.status = 'seller_shipped';
+      console.log('입금완료: 주문상태를 발송대기로 변경');
+    }
+
     console.log('DB 업데이트 데이터:', updateData);
 
     const [order] = await db
