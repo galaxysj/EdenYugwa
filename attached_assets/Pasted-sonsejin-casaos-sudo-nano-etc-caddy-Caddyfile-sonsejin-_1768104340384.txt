@@ -1,0 +1,26 @@
+sonsejin@casaos:~$ sudo nano /etc/caddy/Caddyfile
+sonsejin@casaos:~$ sudo systemctl restart caddy
+sudo systemctl status caddy
+Job for caddy.service failed because the control process exited with error code.
+See "systemctl status caddy.service" and "journalctl -xeu caddy.service" for details.
+× caddy.service - Caddy
+     Loaded: loaded (/usr/lib/systemd/system/caddy.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Sun 2026-01-11 04:05:37 GMT; 29ms ago
+ Invocation: 2a2ab2a5d0ea4beeb909d137044780eb
+       Docs: https://caddyserver.com/docs/
+    Process: 43592 ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile (code=exited, status=1/FAILURE)
+   Main PID: 43592 (code=exited, status=1/FAILURE)
+     Status: "loading new config: http app module: start: listening on :80: listen tcp :80: bind: address already in us>
+        CPU: 39ms
+
+Jan 11 04:05:37 casaos caddy[43592]: {"level":"info","ts":1768104337.042362,"logger":"tls","msg":"cleaning storage unit>
+Jan 11 04:05:37 casaos caddy[43592]: {"level":"info","ts":1768104337.0423875,"logger":"tls","msg":"finished cleaning st>
+Jan 11 04:05:37 casaos caddy[43592]: {"level":"info","ts":1768104337.0424876,"logger":"http","msg":"enabling HTTP/3 lis>
+Jan 11 04:05:37 casaos caddy[43592]: {"level":"info","ts":1768104337.042612,"msg":"failed to sufficiently increase rece>
+Jan 11 04:05:37 casaos caddy[43592]: {"level":"info","ts":1768104337.0427692,"logger":"http.log","msg":"server running">
+Jan 11 04:05:37 casaos caddy[43592]: {"level":"info","ts":1768104337.0428958,"logger":"tls.cache.maintenance","msg":"st>
+Jan 11 04:05:37 casaos caddy[43592]: Error: loading initial config: loading new config: http app module: start: listeni>
+Jan 11 04:05:37 casaos systemd[1]: caddy.service: Main process exited, code=exited, status=1/FAILURE
+Jan 11 04:05:37 casaos systemd[1]: caddy.service: Failed with result 'exit-code'.
+Jan 11 04:05:37 casaos systemd[1]: Failed to start caddy.service - Caddy.
+lines 1-20/20 (END)
