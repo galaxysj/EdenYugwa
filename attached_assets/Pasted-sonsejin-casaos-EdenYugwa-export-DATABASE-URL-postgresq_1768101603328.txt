@@ -1,0 +1,134 @@
+sonsejin@casaos:~/EdenYugwa$ export DATABASE_URL="postgresql://neondb_owner:npg_kU0ZuBOcHR6j@ep-quiet-king-ahb6gd7v-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
+export SESSION_SECRET="fgdsohuiuisgfuihod"
+export NODE_ENV="production"
+export ADMIN_USERNAME="galaxysj"
+export ADMIN_PASSWORD="eden*3452"
+export MANAGER_USERNAME="ceohj"
+export MANAGER_PASSWORD="eden*2376"
+
+npm run start
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+Failed to create default admin: error: relation "admins" does not exist
+    at file:///home/sonsejin/EdenYugwa/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (file:///home/sonsejin/EdenYugwa/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+    at async DatabaseStorage.getAdminByUsername (file:///home/sonsejin/EdenYugwa/dist/index.js:923:21)
+    at async DatabaseStorage.ensureDefaultAdmin (file:///home/sonsejin/EdenYugwa/dist/index.js:643:29) {
+  length: 105,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '56',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Failed to create default manager: error: relation "managers" does not exist
+    at file:///home/sonsejin/EdenYugwa/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (file:///home/sonsejin/EdenYugwa/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+    at async DatabaseStorage.getManagerByUsername (file:///home/sonsejin/EdenYugwa/dist/index.js:932:23)
+    at async DatabaseStorage.ensureDefaultManager (file:///home/sonsejin/EdenYugwa/dist/index.js:656:31) {
+  length: 107,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '56',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Failed to initialize order counter: error: relation "orders" does not exist
+    at file:///home/sonsejin/EdenYugwa/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (file:///home/sonsejin/EdenYugwa/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+    at async DatabaseStorage.initializeOrderCounter (file:///home/sonsejin/EdenYugwa/dist/index.js:630:25) {
+  length: 106,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '796',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Failed to create default settings: error: relation "settings" does not exist
+    at file:///home/sonsejin/EdenYugwa/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (file:///home/sonsejin/EdenYugwa/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+    at async DatabaseStorage.getSetting (file:///home/sonsejin/EdenYugwa/dist/index.js:962:23)
+    at async DatabaseStorage.ensureDefaultSettings (file:///home/sonsejin/EdenYugwa/dist/index.js:619:26) {
+  length: 107,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '63',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+Error creating initial accounts: error: relation "users" does not exist
+    at file:///home/sonsejin/EdenYugwa/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async NeonPreparedQuery.execute (file:///home/sonsejin/EdenYugwa/node_modules/drizzle-orm/neon-serverless/session.js:76:20)
+    at async UserService.getUserByUsername (file:///home/sonsejin/EdenYugwa/dist/index.js:504:20)
+    at async UserService.createInitialAccounts (file:///home/sonsejin/EdenYugwa/dist/index.js:561:29)
+    at async file:///home/sonsejin/EdenYugwa/dist/index.js:3604:3 {
+  length: 105,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '123',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}
+3:19:47 AM [express] serving on port 7000
