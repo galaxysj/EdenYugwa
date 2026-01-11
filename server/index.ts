@@ -5,6 +5,9 @@ import passport from "./auth";
 import { userService } from "./user-service";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import https from "https";
+import http from "http";
+import fs from "fs";
 
 const app = express();
 
@@ -96,11 +99,47 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  
+  // HTTPS 설정 (Let's Encrypt 인증서 사용)
+  const sslKeyPath = process.env.SSL_KEY_PATH;
+  const sslCertPath = process.env.SSL_CERT_PATH;
+  const httpsPort = parseInt(process.env.HTTPS_PORT || '443', 10);
+  
+  if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
+    // HTTPS 서버 실행
+    const httpsOptions = {
+      key: fs.readFileSync(sslKeyPath),
+      cert: fs.readFileSync(sslCertPath),
+    };
+    
+    const httpsServer = https.createServer(httpsOptions, app);
+    httpsServer.listen(httpsPort, "0.0.0.0", () => {
+      log(`HTTPS serving on port ${httpsPort}`);
+    });
+    
+    // HTTP → HTTPS 리다이렉트 (선택사항)
+    if (process.env.HTTP_REDIRECT === 'true') {
+      const httpApp = express();
+      httpApp.all('*', (req, res) => {
+        res.redirect(301, `https://${req.headers.host}${req.url}`);
+      });
+      http.createServer(httpApp).listen(port, "0.0.0.0", () => {
+        log(`HTTP redirect server on port ${port}`);
+      });
+    } else {
+      // HTTP도 같이 실행
+      server.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
+        log(`HTTP serving on port ${port}`);
+      });
+    }
+  } else {
+    // SSL 인증서 없으면 HTTP만 실행
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  }
 })();
