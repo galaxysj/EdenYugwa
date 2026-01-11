@@ -522,6 +522,17 @@ export default function OrderLookup() {
                             <Input
                               placeholder="010-1234-5678"
                               {...field}
+                              onChange={(e) => {
+                                let value = e.target.value.replace(/\D/g, '');
+                                if (value.length <= 3) {
+                                  value = value;
+                                } else if (value.length <= 7) {
+                                  value = value.slice(0, 3) + '-' + value.slice(3);
+                                } else {
+                                  value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+                                }
+                                field.onChange(value);
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
