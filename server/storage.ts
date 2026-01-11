@@ -159,7 +159,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const defaultContent = [
         { key: 'brandName', value: '에덴한과' },
-        { key: 'mainTitle', value: '진안에서 온 정성 가득 유과' },
+        { key: 'mainTitle', value: '진안에서 온\n정성 가득 유과' },
         { key: 'mainDescription', value: '부모님이 100% 국내산 찹쌀로\n직접 만드는 찹쌀유과입니다.\n달지않고 고소한 맛이 일품!\n선물로도 완벽한 에덴한과 ^^' },
         { key: 'aboutText', value: '이든 한과는 전통 방식으로 만든 건강한 한과입니다.' },
         { key: 'bankAccount', value: '농협 352-1701-3342-63 (예금주: 손*진)' },
