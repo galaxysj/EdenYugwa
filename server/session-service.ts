@@ -1,5 +1,5 @@
-import { db } from "./db";
-import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
+import { db, isSQLite, sqliteDb, dbBool, dbNow, mapSqliteRow } from "./db";
+import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest, type UserSession } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
 
 // User-Agent 파싱을 위한 간단한 유틸리티
@@ -78,6 +78,11 @@ export class SessionService {
 
   // 세션 비활성화
   async deactivateSession(sessionId: string) {
+    if (isSQLite && sqliteDb) {
+      const stmt = sqliteDb.prepare(`UPDATE user_sessions SET is_active = 0 WHERE session_id = ?`);
+      stmt.run(sessionId);
+      return;
+    }
     await db
       .update(userSessions)
       .set({ isActive: false })
@@ -92,7 +97,7 @@ export class SessionService {
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, true),
+          eq(userSessions.isActive, dbBool(true)),
           gte(userSessions.expiresAt, new Date())
         )
       )
@@ -101,12 +106,17 @@ export class SessionService {
 
   // 만료된 세션 정리
   async cleanupExpiredSessions() {
+    if (isSQLite && sqliteDb) {
+      const stmt = sqliteDb.prepare(`UPDATE user_sessions SET is_active = 0 WHERE is_active = 1 AND expires_at < datetime('now')`);
+      stmt.run();
+      return;
+    }
     await db
       .update(userSessions)
       .set({ isActive: false })
       .where(and(
-        eq(userSessions.isActive, true),
-        gte(userSessions.expiresAt, new Date())
+        eq(userSessions.isActive, dbBool(true)),
+        lt(userSessions.expiresAt, new Date())
       ));
   }
 
@@ -257,7 +267,7 @@ export class SessionService {
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, true),
+          eq(userSessions.isActive, dbBool(true)),
           // 현재 세션이 아닌 것들만
           // Note: currentSessionId가 다른 것들만 선택
         )

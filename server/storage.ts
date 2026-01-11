@@ -1,5 +1,5 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, productPrices, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent, type ProductPrice, type InsertProductPrice } from "@shared/schema";
-import { db } from "./db";
+import { db, isSQLite, sqliteDb, dbBool, dbNow, dbJson, mapSqliteRow, mapSqliteRows } from "./db";
 import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -238,7 +238,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAllOrders(): Promise<Order[]> {
     const allOrders = await db.select().from(orders)
-      .where(eq(orders.isDeleted, false))
+      .where(eq(orders.isDeleted, dbBool(false)))
       .orderBy(desc(orders.createdAt)); // 기본적으로 생성일 역순으로 정렬
     
     // Get global cost settings
@@ -325,19 +325,19 @@ export class DatabaseStorage implements IStorage {
 
   async getOrdersByPhone(phone: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, false)))
+      .where(and(eq(orders.customerPhone, phone), eq(orders.isDeleted, dbBool(false))))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByName(name: string): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, false)))
+      .where(and(eq(orders.customerName, name), eq(orders.isDeleted, dbBool(false))))
       .orderBy(desc(orders.createdAt));
   }
 
   async getOrdersByUserId(userId: number): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, false)))
+      .where(and(eq(orders.userId, userId), eq(orders.isDeleted, dbBool(false))))
       .orderBy(desc(orders.createdAt));
   }
 
@@ -679,7 +679,7 @@ export class DatabaseStorage implements IStorage {
 
   async getDeletedOrders(): Promise<Order[]> {
     return await db.select().from(orders)
-      .where(eq(orders.isDeleted, true))
+      .where(eq(orders.isDeleted, dbBool(true)))
       .orderBy(desc(orders.deletedAt));
   }
 
@@ -736,13 +736,13 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCustomers(): Promise<Customer[]> {
     return await db.select().from(customers)
-      .where(eq(customers.isDeleted, false))
+      .where(eq(customers.isDeleted, dbBool(false)))
       .orderBy(desc(customers.createdAt));
   }
 
   async getTrashedCustomers(): Promise<Customer[]> {
     return await db.select().from(customers)
-      .where(eq(customers.isDeleted, true))
+      .where(eq(customers.isDeleted, dbBool(true)))
       .orderBy(desc(customers.deletedAt));
   }
 
@@ -826,7 +826,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(orders.customerPhone, phoneNumber),
-          eq(orders.isDeleted, false) // 삭제된 주문만 제외
+          eq(orders.isDeleted, dbBool(false)) // 삭제된 주문만 제외
         )
       )
       .orderBy(desc(orders.createdAt));
@@ -1112,7 +1112,7 @@ export class DatabaseStorage implements IStorage {
 
   async getAllProductPrices(): Promise<ProductPrice[]> {
     return await db.select().from(productPrices)
-      .where(eq(productPrices.isActive, true))
+      .where(eq(productPrices.isActive, dbBool(true)))
       .orderBy(productPrices.productIndex);
   }
 
