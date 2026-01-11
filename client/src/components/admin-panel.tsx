@@ -246,7 +246,7 @@ export default function AdminPanel({ isOpen, onClose }: AdminPanelProps) {
                                       <SelectItem value="pending">주문 접수</SelectItem>
                                       <SelectItem value="preparing">제작 중</SelectItem>
                                       <SelectItem value="shipping">배송 중</SelectItem>
-                                      {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
+                                      <SelectItem value="delivered">배송 완료</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </td>
