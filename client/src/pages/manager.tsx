@@ -877,7 +877,6 @@ export default function ManagerDashboard() {
                           <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">입금상태</th>
                           <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[90px]">주문상태</th>
                           <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">판매자발송</th>
-                          <th className="py-4 px-4 text-center font-semibold text-gray-800 min-w-[110px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1537,7 +1536,6 @@ export default function ManagerDashboard() {
                           <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
                           <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
                           <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1887,7 +1885,6 @@ export default function ManagerDashboard() {
                           <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">입금상태</th>
                           <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[60px]">주문상태</th>
                           <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">판매자발송</th>
-                          <th className="py-3 px-3 text-center text-sm font-semibold text-gray-700 min-w-[80px]">작업</th>
                         </tr>
                       </thead>
                       <tbody>
