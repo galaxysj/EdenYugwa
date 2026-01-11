@@ -12,14 +12,26 @@ sudo apt update && sudo apt upgrade -y
 echo "필수 패키지 설치 중..."
 sudo apt install -y git curl build-essential python3-dev sqlite3 ufw
 
-# Node.js 설치 (라즈베리 파이 최적화)
-if ! command -v node &> /dev/null; then
-    echo "Node.js 18.x 설치 중..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# Node.js 설치 (라즈베리 파이 최적화 - 20.x 필수)
+REQUIRED_NODE_MAJOR=20
+CURRENT_NODE_VERSION=$(node -v 2>/dev/null | cut -d'v' -f2 | cut -d'.' -f1)
+
+if [ -z "$CURRENT_NODE_VERSION" ] || [ "$CURRENT_NODE_VERSION" -lt "$REQUIRED_NODE_MAJOR" ]; then
+    echo "Node.js 20.x 설치 중... (better-sqlite3 호환성 필요)"
+    
+    # 기존 Node.js 제거
+    sudo apt-get remove -y nodejs 2>/dev/null || true
+    
+    # Node.js 20.x 설치
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
     sudo apt-get install -y nodejs
     
     # npm 글로벌 캐시 정리 (용량 절약)
     npm cache clean --force
+    
+    echo "Node.js $(node -v) 설치 완료"
+else
+    echo "Node.js $(node -v) 이미 설치됨"
 fi
 
 # 프로젝트 디렉토리 설정
