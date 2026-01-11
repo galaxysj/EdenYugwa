@@ -91,6 +91,10 @@ export class SessionService {
 
   // 사용자의 모든 활성 세션 조회
   async getUserActiveSessions(userId: number) {
+    if (isSQLite && sqliteDb) {
+      const stmt = sqliteDb.prepare(`SELECT * FROM user_sessions WHERE user_id = ? AND is_active = 1 AND expires_at > datetime('now') ORDER BY last_activity DESC`);
+      return stmt.all(userId).map((row: any) => mapSqliteRow<UserSession>(row)).filter((r): r is UserSession => r !== undefined);
+    }
     return await db
       .select()
       .from(userSessions)
