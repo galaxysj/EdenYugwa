@@ -1,0 +1,22 @@
+databases:
+  - name: eden-hangwa-db
+    plan: free
+    databaseName: eden_hangwa
+    user: eden_hangwa
+
+services:
+  - type: web
+    name: eden-hangwa
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: eden-hangwa-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true

@@ -7,6 +7,12 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Render, Railway 등 리버스 프록시 환경에서 필요
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(express.json({ limit: '50mb' })); // Increase limit for image uploads
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
@@ -23,7 +29,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24시간
-    secure: false, // development에서는 false
+    secure: process.env.NODE_ENV === 'production', // production에서는 HTTPS 사용
     httpOnly: true,
   },
 }));
