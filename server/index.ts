@@ -80,8 +80,9 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    // Dynamic import to avoid bundling vite in production
-    const { setupVite } = await import("./vite");
+    // Use variable path to prevent esbuild from bundling vite
+    const vitePath = "./vite" + "";
+    const { setupVite } = await import(vitePath);
     await setupVite(app, server);
   } else {
     serveStatic(app);

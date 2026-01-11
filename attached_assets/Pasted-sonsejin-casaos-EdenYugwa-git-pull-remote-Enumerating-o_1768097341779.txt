@@ -1,0 +1,58 @@
+sonsejin@casaos:~/EdenYugwa$ git pull
+remote: Enumerating objects: 8, done.
+remote: Counting objects: 100% (8/8), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 5 (delta 3), reused 5 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 1.28 KiB | 1.28 MiB/s, done.
+From https://github.com/galaxysj/EdenYugwa
+   ef982a4..4009a70  main       -> origin/main
+Updating ef982a4..4009a70
+Fast-forward
+ server/index.ts  |  4 +++-
+ server/static.ts | 31 +++++++++++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 1 deletion(-)
+ create mode 100644 server/static.ts
+sonsejin@casaos:~/EdenYugwa$ npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+  dist/index.js  152.1kb
+
+⚡ Done in 12ms
+sonsejin@casaos:~/EdenYugwa$ ./raspberry-pi/start-pi.sh
+=== Eden 한과 주문관리 시스템 시작 ===
+디렉토리 설정 중...
+환경변수 로드 중...
+PostgreSQL 연결 확인 중...
+데이터베이스 스키마 확인 중...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+스키마 이미 최신 상태입니다.
+애플리케이션 시작 중...
+
+Eden 한과 주문관리 시스템이 시작됩니다.
+접속 주소: http://192.168.219.106:7000
+종료하려면 Ctrl+C를 누르세요.
+
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+node:internal/modules/esm/resolve:873
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /home/sonsejin/EdenYugwa/dist/index.js
+    at packageResolve (node:internal/modules/esm/resolve:873:9)
+    at moduleResolve (node:internal/modules/esm/resolve:946:18)
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:708:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:657:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:640:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:264:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:168:49) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v20.19.6
+sonsejin@casaos:~/EdenYugwa$
