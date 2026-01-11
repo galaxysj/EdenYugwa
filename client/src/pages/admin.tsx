@@ -2302,9 +2302,8 @@ export default function Admin() {
                               parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000))));
     
     const paidOrders = orders.filter((order: Order) => {
-      // 매출 관리 리포트에서는 실제 입금액이 입력된 주문만 표시합니다. (환불된 주문 제외)
-      const hasActualPaidAmount = order.actualPaidAmount !== null && typeof order.actualPaidAmount !== 'undefined';
-      return hasActualPaidAmount && order.paymentStatus !== 'refunded';
+      // 매출 관리 리포트에서는 입금 처리된 주문(입금대기, 환불 제외)만 표시합니다.
+      return order.paymentStatus !== 'pending' && order.paymentStatus !== 'refunded';
     });
     
     // Count refunded orders separately
@@ -4396,7 +4395,7 @@ export default function Admin() {
                           <SelectItem value="pending">주문접수</SelectItem>
                           <SelectItem value="seller_shipped">발송대기</SelectItem>
                           <SelectItem value="scheduled">발송주문</SelectItem>
-                          {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
+                          <SelectItem value="delivered">발송완료</SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
@@ -4834,15 +4833,6 @@ export default function Admin() {
   };
 
   const handleStatusChange = (orderId: number, newStatus: string) => {
-    // 관리자는 발송완료(delivered) 상태로 변경할 수 없음 - 매니저만 가능
-    if (newStatus === 'delivered') {
-      toast({
-        title: "권한 없음",
-        description: "발송완료 처리는 매니저만 할 수 있습니다.",
-        variant: "destructive",
-      });
-      return;
-    }
     updateStatusMutation.mutate({ id: orderId, status: newStatus });
   };
 
