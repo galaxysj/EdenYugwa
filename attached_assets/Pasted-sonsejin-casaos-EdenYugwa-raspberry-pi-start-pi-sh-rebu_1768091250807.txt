@@ -1,0 +1,67 @@
+sonsejin@casaos:~/EdenYugwa$ raspberry-pi/start-pi.sh --rebuild
+=== Eden 한과 주문관리 시스템 시작 ===
+디렉토리 설정 중...
+환경변수 로드 중...
+SQLite 데이터베이스 초기화 중...
+데이터베이스 테이블 생성 완료
+프로덕션 빌드 중...
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.19 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 15 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2948 modules transformed.
+../dist/public/index.html                                   0.63 kB │ gzip:   0.38 kB
+../dist/public/assets/image_1753160530604-PVH-hVn6.png    819.66 kB
+../dist/public/assets/image_1753160591635-DGoiBymc.png    826.39 kB
+../dist/public/assets/index-C5RFP-4E.css                  149.13 kB │ gzip:  24.43 kB
+../dist/public/assets/index-B482W_eF.js                 1,472.60 kB │ gzip: 422.13 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.59s
+
+  dist/index.js  152.8kb
+
+⚡ Done in 15ms
+애플리케이션 시작 중...
+
+Eden 한과 주문관리 시스템이 시작됩니다. (데비안 OS)
+접속 주소: http://192.168.219.106:7000
+종료하려면 Ctrl+C를 누르세요.
+
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+SQLite 데이터베이스 사용: /home/sonsejin/EdenYugwa/data/eden-hangwa.db
+메모리 세션 스토어 사용 (SQLite 모드)
+Admin/Manager credentials not found in environment variables
+12:27:00 AM [express] serving on port 7000
+12:27:06 AM [express] GET /api/settings 200 in 10ms :: [{"id":1,"key":"smallBoxPrice","value":"20000"…
+12:27:07 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"로그인이 필요합니다."}
+12:27:07 AM [express] GET /api/dashboard-content 200 in 1ms :: [{"id":1,"key":"welcomeTitle","value":…
+12:27:07 AM [express] GET /api/settings 304 in 3ms :: [{"id":1,"key":"smallBoxPrice","value":"20000",…
+12:27:07 AM [express] GET /api/settings/shippingFee 200 in 2ms :: {"id":4,"key":"shippingFee","value"…
+12:27:07 AM [express] GET /api/settings 304 in 2ms :: [{"id":1,"key":"smallBoxPrice","value":"20000",…
+12:27:07 AM [express] GET /api/settings/freeShippingThreshold 200 in 1ms :: {"id":5,"key":"freeShippi…
+Login error: TypeError: value.toISOString is not a function
+    at PgTimestamp.mapToDriverValue (file:///home/sonsejin/EdenYugwa/node_modules/drizzle-orm/pg-core/columns/timestamp.js:34:18)
+    at /home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sql/sql.cjs:172:73
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sql/sql.cjs:114:32)
+    at /home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sql/sql.cjs:133:21
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sql/sql.cjs:114:32)
+    at /home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sql/sql.cjs:136:21
+    at Array.map (<anonymous>)
+    at SQL.buildQueryFromSourceParams (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sql/sql.cjs:114:32)
+12:27:14 AM [express] POST /api/auth/login 500 in 8ms :: {"message":"로그인 처리 중 오류가 발생했습니다"}
+12:27:22 AM [express] GET /api/settings/shippingFee 304 in 2ms :: {"id":4,"key":"shippingFee","value"…
+12:27:22 AM [express] GET /api/settings/freeShippingThreshold 304 in 2ms :: {"id":5,"key":"freeShippi…
+12:27:22 AM [express] GET /api/settings 304 in 2ms :: [{"id":1,"key":"smallBoxPrice","value":"20000",…

@@ -564,7 +564,7 @@ export class DatabaseStorage implements IStorage {
 
   async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
     const values = isSQLite 
-      ? { ...insertAdmin, createdAt: new Date().toISOString() }
+      ? { ...insertAdmin, createdAt: new Date() }
       : insertAdmin;
     const [admin] = await db
       .insert(admins)
@@ -581,7 +581,7 @@ export class DatabaseStorage implements IStorage {
 
   async createManager(insertManager: InsertManager): Promise<Manager> {
     const values = isSQLite 
-      ? { ...insertManager, createdAt: new Date().toISOString() }
+      ? { ...insertManager, createdAt: new Date() }
       : insertManager;
     const [manager] = await db
       .insert(managers)
