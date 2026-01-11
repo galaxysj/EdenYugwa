@@ -1,0 +1,65 @@
+sonsejin@casaos:~/EdenYugwa$ npm install --include=dev
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 679 packages, and audited 680 packages in 19s
+
+92 packages are looking for funding
+  run `npm fund` for details
+
+16 vulnerabilities (1 low, 7 moderate, 8 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+sonsejin@casaos:~/EdenYugwa$ npm audit fix
+
+added 8 packages, removed 4 packages, changed 11 packages, and audited 587 packages in 3s
+
+82 packages are looking for funding
+  run `npm fund` for details
+
+# npm audit report
+
+xlsx  *
+Severity: high
+Prototype Pollution in sheetJS - https://github.com/advisories/GHSA-4r6h-8v6p-xvw6
+SheetJS Regular Expression Denial of Service (ReDoS) - https://github.com/advisories/GHSA-5pgg-2g8v-p4x9
+No fix available
+node_modules/xlsx
+
+1 high severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+sonsejin@casaos:~/EdenYugwa$ npm audit fix --force
+npm warn using --force Recommended protections disabled.
+npm warn audit No fix available for xlsx@*
+
+up to date, audited 587 packages in 2s
+
+82 packages are looking for funding
+  run `npm fund` for details
+
+# npm audit report
+
+xlsx  *
+Severity: high
+Prototype Pollution in sheetJS - https://github.com/advisories/GHSA-4r6h-8v6p-xvw6
+SheetJS Regular Expression Denial of Service (ReDoS) - https://github.com/advisories/GHSA-5pgg-2g8v-p4x9
+No fix available
+node_modules/xlsx
+
+1 high severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+sonsejin@casaos:~/EdenYugwa$
