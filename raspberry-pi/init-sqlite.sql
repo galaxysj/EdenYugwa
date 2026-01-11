@@ -283,3 +283,12 @@ INSERT OR IGNORE INTO admins (username, password, created_at) VALUES ('admin', '
 
 -- 기본 매니저 계정 (비밀번호: eden2024!)
 INSERT OR IGNORE INTO managers (username, password, created_at) VALUES ('manager', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', datetime('now'));
+
+-- 기본 사용자 계정 (users 테이블 - 로그인 시스템에서 사용)
+-- 관리자 계정 (비밀번호: eden2024!)
+INSERT OR IGNORE INTO users (username, password_hash, name, phone_number, role, is_active) 
+VALUES ('admin', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', '관리자', '', 'admin', 1);
+
+-- 매니저 계정 (비밀번호: eden2024!)
+INSERT OR IGNORE INTO users (username, password_hash, name, phone_number, role, is_active) 
+VALUES ('manager', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', '매니저', '', 'manager', 1);
