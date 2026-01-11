@@ -8,8 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
-import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, MessageSquare, List, Grid3x3 } from "lucide-react";
-import { SmsDialog } from "@/components/sms-dialog";
+import { ArrowLeft, Settings, Package, Truck, CheckCircle, Clock, Eye, LogOut, DollarSign, AlertCircle, Download, Calendar, Trash2, PiggyBank, Edit, Cog, RefreshCw, X, Users, Key, List, Grid3x3 } from "lucide-react";
 import AdminHeader from "@/components/admin-header";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -63,8 +62,6 @@ export default function ManagerDashboard() {
   const [selectedOrders, setSelectedOrders] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
   const [expandedOrders, setExpandedOrders] = useState<Set<number>>(new Set());
-  const [showBulkSMSDialog, setShowBulkSMSDialog] = useState(false);
-  const [bulkSMSMessage, setBulkSMSMessage] = useState('');
   const [currentPage, setCurrentPage] = useState("orders");
 
   // 주문 확장/축소 토글
@@ -315,28 +312,6 @@ export default function ManagerDashboard() {
 
   const expandedOrderItems = expandOrdersToProducts(filteredOrders);
 
-  // SMS 일괄 발송 mutation
-  const sendBulkSMSMutation = useMutation({
-    mutationFn: async ({ phones, message }: { phones: string[]; message: string }) => {
-      return api.post('/api/sms/bulk', { phones, message });
-    },
-    onSuccess: () => {
-      toast({
-        title: "SMS 발송 완료",
-        description: `${selectedOrders.size}명에게 SMS가 발송되었습니다.`,
-      });
-      setShowBulkSMSDialog(false);
-      setBulkSMSMessage('');
-      setSelectedOrders(new Set());
-    },
-    onError: (error: any) => {
-      toast({
-        title: "SMS 발송 실패",
-        description: error.message || "SMS 발송 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Excel export function for manager - 매니저 전용 컬럼만 포함
   const exportToExcel = (ordersList: Order[], fileName: string) => {
@@ -610,14 +585,6 @@ export default function ManagerDashboard() {
                     {selectedOrders.size}개 주문이 선택되었습니다
                   </span>
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setShowBulkSMSDialog(true)}
-                      className="bg-white"
-                    >
-                      일괄 SMS 발송
-                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -1102,19 +1069,6 @@ export default function ManagerDashboard() {
                               </td>
                             )}
                             
-                            {/* 작업 - 첫 번째 상품에만 표시, rowspan 적용 */}
-                            {item.isFirst && (
-                              <td className="py-2 px-2 text-center" rowSpan={item.rowSpan}>
-                                <div className="flex flex-col gap-1">
-                                  <SmsDialog order={item.order}>
-                                    <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                      <MessageSquare className="h-3 w-3" />
-                                      SMS
-                                    </Button>
-                                  </SmsDialog>
-                                </div>
-                              </td>
-                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -1231,12 +1185,6 @@ export default function ManagerDashboard() {
                                 >
                                   {order.sellerShipped ? '발송완료' : '발송처리'}
                                 </Button>
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="text-xs px-2">
-                                    <MessageSquare className="h-3 w-3 mr-1" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
                               </div>
                               <span className="text-xs text-gray-500">
                                 {new Date(order.createdAt).toLocaleDateString('ko-KR')}
@@ -1486,12 +1434,6 @@ export default function ManagerDashboard() {
                                       </Button>
                                     )}
                                     
-                                    <SmsDialog order={order}>
-                                      <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
-                                        <MessageSquare className="h-3 w-3" />
-                                        SMS
-                                      </Button>
-                                    </SmsDialog>
                                   </div>
                                 </div>
                               </div>
@@ -1760,16 +1702,6 @@ export default function ManagerDashboard() {
                                 )}
                               </div>
                             </td>
-                            <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col gap-1">
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                    <MessageSquare className="h-3 w-3" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
-                              </div>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -1899,12 +1831,6 @@ export default function ManagerDashboard() {
                                 발송처리
                               </Button>
                               
-                              <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-1.5 py-0.5 h-6">
-                                  <MessageSquare className="h-3 w-3" />
-                                  SMS
-                                </Button>
-                              </SmsDialog>
                             </div>
                           </div>
                         </div>
@@ -2126,16 +2052,6 @@ export default function ManagerDashboard() {
                                 )}
                               </div>
                             </td>
-                            <td className="py-2 px-2 text-center">
-                              <div className="flex flex-col gap-1">
-                                <SmsDialog order={order}>
-                                  <Button size="sm" variant="outline" className="flex items-center gap-1 w-full">
-                                    <MessageSquare className="h-3 w-3" />
-                                    SMS
-                                  </Button>
-                                </SmsDialog>
-                              </div>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -2264,12 +2180,6 @@ export default function ManagerDashboard() {
                                 발송완료
                               </div>
                               
-                              <SmsDialog order={order}>
-                                <Button size="sm" variant="outline" className="flex items-center gap-1 text-xs px-2 py-1 h-7">
-                                  <MessageSquare className="h-3 w-3" />
-                                  SMS
-                                </Button>
-                              </SmsDialog>
                             </div>
                           </div>
                         </div>
@@ -2281,47 +2191,6 @@ export default function ManagerDashboard() {
             </Tabs>
           </>
         )}
-
-        {/* SMS 일괄 발송 다이얼로그 */}
-        <Dialog open={showBulkSMSDialog} onOpenChange={setShowBulkSMSDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>일괄 SMS 발송</DialogTitle>
-              <DialogDescription>
-                선택된 {selectedOrders.size}명의 고객에게 SMS를 발송합니다.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="smsMessage">SMS 내용</Label>
-                <Textarea
-                  id="smsMessage"
-                  placeholder="SMS 메시지를 입력하세요..."
-                  value={bulkSMSMessage}
-                  onChange={(e) => setBulkSMSMessage(e.target.value)}
-                  rows={4}
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowBulkSMSDialog(false)}>
-                취소
-              </Button>
-              <Button 
-                onClick={() => {
-                  const selectedOrderList = filteredOrders.filter(o => selectedOrders.has(o.id));
-                  const phones = selectedOrderList.map(o => o.customerPhone);
-                  sendBulkSMSMutation.mutate({ phones, message: bulkSMSMessage });
-                }}
-                disabled={!bulkSMSMessage.trim() || sendBulkSMSMutation.isPending}
-              >
-                {sendBulkSMSMutation.isPending ? "발송 중..." : "SMS 발송"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   );
