@@ -42,6 +42,16 @@ if [ -z "$DATABASE_URL" ]; then
     echo "SQLite 데이터베이스 사용: $DATABASE_URL"
 fi
 
+# SQLite 데이터베이스 초기화 (테이블이 없으면 생성)
+DB_FILE="./data/eden-hangwa.db"
+if [ ! -f "$DB_FILE" ] || [ ! -s "$DB_FILE" ]; then
+    echo "SQLite 데이터베이스 초기화 중..."
+    if [ -f "raspberry-pi/init-sqlite.sql" ]; then
+        sqlite3 "$DB_FILE" < raspberry-pi/init-sqlite.sql
+        echo "데이터베이스 테이블 생성 완료"
+    fi
+fi
+
 # 포트 설정
 export PORT=${PORT:-7000}
 
