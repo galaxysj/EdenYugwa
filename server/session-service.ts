@@ -1,6 +1,30 @@
 import { db, isSQLite, sqliteDb } from "./db";
-import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
+import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest, type UserSession, type AccessControlSettings, type LoginAttempt, type LoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
+
+// SQLite snake_case to camelCase mapping utility
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function mapSqliteRow<T>(row: any): T {
+  if (!row) return row;
+  const mapped: any = {};
+  for (const key in row) {
+    const camelKey = snakeToCamel(key);
+    let value = row[key];
+    // Parse JSON strings back to objects
+    if (typeof value === 'string' && (camelKey === 'allowedIpRanges' || camelKey === 'allowedDeviceTypes')) {
+      try { value = JSON.parse(value); } catch {}
+    }
+    // Convert SQLite integers to booleans where appropriate
+    if ((camelKey.startsWith('is') || camelKey === 'wasSuccessful' || camelKey === 'isActive' || camelKey === 'isEnabled' || camelKey === 'isDeviceRestrictionEnabled' || camelKey === 'isApproved') && typeof value === 'number') {
+      value = value === 1;
+    }
+    mapped[camelKey] = value;
+  }
+  return mapped as T;
+}
 
 // SQLite raw SQL insert helpers
 function sqliteInsertSession(data: any): any {
@@ -25,7 +49,7 @@ function sqliteInsertSession(data: any): any {
     expiresAt: data.expiresAt instanceof Date ? data.expiresAt.toISOString() : data.expiresAt
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM user_sessions WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<UserSession>(selectStmt.get(result.lastInsertRowid));
 }
 
 function sqliteInsertAccessControlSettings(data: any): any {
@@ -44,7 +68,7 @@ function sqliteInsertAccessControlSettings(data: any): any {
     allowedDeviceTypes: data.allowedDeviceTypes ? JSON.stringify(data.allowedDeviceTypes) : null
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM access_control_settings WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<AccessControlSettings>(selectStmt.get(result.lastInsertRowid));
 }
 
 function sqliteInsertLoginAttempt(data: any): any {
@@ -64,7 +88,7 @@ function sqliteInsertLoginAttempt(data: any): any {
     wasSuccessful: data.wasSuccessful ? 1 : 0
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM login_attempts WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<LoginAttempt>(selectStmt.get(result.lastInsertRowid));
 }
 
 function sqliteInsertApprovalRequest(data: any): any {
@@ -87,7 +111,7 @@ function sqliteInsertApprovalRequest(data: any): any {
     expiresAt: data.expiresAt instanceof Date ? data.expiresAt.toISOString() : data.expiresAt
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM login_approval_requests WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<LoginApprovalRequest>(selectStmt.get(result.lastInsertRowid));
 }
 
 // User-Agent 파싱을 위한 간단한 유틸리티
@@ -237,7 +261,7 @@ export class SessionService {
           userId
         });
         const selectStmt = sqliteDb.prepare('SELECT * FROM access_control_settings WHERE user_id = ?');
-        return selectStmt.get(userId);
+        return mapSqliteRow<AccessControlSettings>(selectStmt.get(userId));
       }
       const [updated] = await db
         .update(accessControlSettings)
@@ -248,7 +272,7 @@ export class SessionService {
     } else {
       const values: any = { userId, ...settings };
       if (isSQLite) {
-        return sqliteInsertAccessControlSettings(values);
+        return sqliteInsertAccessControlSettings(values) as AccessControlSettings;
       }
       const [created] = await db
         .insert(accessControlSettings)

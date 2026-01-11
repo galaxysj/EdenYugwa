@@ -2,6 +2,34 @@ import { orders, smsNotifications, admins, managers, settings, adminSettings, cu
 import { db, isSQLite, sqliteDb } from "./db";
 import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
 
+// SQLite snake_case to camelCase mapping utility
+function snakeToCamel(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function mapSqliteRow<T>(row: any): T {
+  if (!row) return row;
+  const mapped: any = {};
+  for (const key in row) {
+    const camelKey = snakeToCamel(key);
+    let value = row[key];
+    // Parse JSON strings back to objects
+    if (typeof value === 'string' && (camelKey.includes('Quantities') || camelKey === 'shippingRestrictedProducts' || camelKey === 'allowedIpRanges')) {
+      try { value = JSON.parse(value); } catch {}
+    }
+    // Convert SQLite integers to booleans where appropriate
+    if ((camelKey.startsWith('is') || camelKey === 'isActive' || camelKey === 'isDeleted' || camelKey === 'isDeviceRestrictionEnabled' || camelKey === 'isApproved') && typeof value === 'number') {
+      value = value === 1;
+    }
+    mapped[camelKey] = value;
+  }
+  return mapped as T;
+}
+
+function mapSqliteRows<T>(rows: any[]): T[] {
+  return rows.map(row => mapSqliteRow<T>(row));
+}
+
 // SQLite raw SQL helper for inserts that avoid Drizzle's PostgreSQL timestamp handling
 function sqliteInsertOrder(orderData: any): any {
   const stmt = sqliteDb.prepare(`
@@ -49,7 +77,7 @@ function sqliteInsertOrder(orderData: any): any {
   
   const lastId = result.lastInsertRowid;
   const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
-  return selectStmt.get(lastId);
+  return mapSqliteRow<Order>(selectStmt.get(lastId));
 }
 
 function sqliteInsertCustomer(customerData: any): any {
@@ -79,7 +107,7 @@ function sqliteInsertCustomer(customerData: any): any {
   
   const lastId = result.lastInsertRowid;
   const selectStmt = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?');
-  return selectStmt.get(lastId);
+  return mapSqliteRow<Customer>(selectStmt.get(lastId));
 }
 
 function sqliteInsertAdminSettings(data: any): any {
@@ -97,7 +125,7 @@ function sqliteInsertAdminSettings(data: any): any {
     shippingRestrictedProducts: data.shippingRestrictedProducts ? JSON.stringify(data.shippingRestrictedProducts) : null
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM admin_settings WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<AdminSettings>(selectStmt.get(result.lastInsertRowid));
 }
 
 function sqliteInsertUser(data: any): any {
@@ -114,7 +142,7 @@ function sqliteInsertUser(data: any): any {
     isActive: data.isActive !== false ? 1 : 0
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM users WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<User>(selectStmt.get(result.lastInsertRowid));
 }
 
 function sqliteInsertDashboardContent(data: any): any {
@@ -128,7 +156,7 @@ function sqliteInsertDashboardContent(data: any): any {
     type: data.type || 'text'
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<DashboardContent>(selectStmt.get(result.lastInsertRowid));
 }
 
 function sqliteInsertProductPrice(data: any): any {
@@ -144,7 +172,7 @@ function sqliteInsertProductPrice(data: any): any {
     isActive: data.isActive !== false ? 1 : 0
   });
   const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE id = ?');
-  return selectStmt.get(result.lastInsertRowid);
+  return mapSqliteRow<ProductPrice>(selectStmt.get(result.lastInsertRowid));
 }
 
 export interface IStorage {
@@ -875,7 +903,7 @@ export class DatabaseStorage implements IStorage {
           id: existing.id
         });
         const selectStmt = sqliteDb.prepare('SELECT * FROM admin_settings WHERE id = ?');
-        return selectStmt.get(existing.id) as AdminSettings;
+        return mapSqliteRow<AdminSettings>(selectStmt.get(existing.id));
       }
       const [updated] = await db.update(adminSettings)
         .set({ ...settings, updatedAt: new Date() })
@@ -1261,7 +1289,7 @@ export class DatabaseStorage implements IStorage {
         `);
         updateStmt.run({ value, type, key });
         const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE key = ?');
-        return selectStmt.get(key) as DashboardContent;
+        return mapSqliteRow<DashboardContent>(selectStmt.get(key));
       }
       const [updated] = await db
         .update(dashboardContent)
@@ -1271,7 +1299,7 @@ export class DatabaseStorage implements IStorage {
       return updated;
     } else {
       if (isSQLite) {
-        return sqliteInsertDashboardContent({ key, value, type }) as DashboardContent;
+        return sqliteInsertDashboardContent({ key, value, type });
       }
       const [created] = await db
         .insert(dashboardContent)
@@ -1293,7 +1321,7 @@ export class DatabaseStorage implements IStorage {
       `);
       updateStmt.run({ value, key });
       const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE key = ?');
-      return selectStmt.get(key) as DashboardContent;
+      return mapSqliteRow<DashboardContent>(selectStmt.get(key));
     }
     const [updated] = await db
       .update(dashboardContent)
@@ -1332,7 +1360,7 @@ export class DatabaseStorage implements IStorage {
           productIndex: productPrice.productIndex
         });
         const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE product_index = ?');
-        return selectStmt.get(productPrice.productIndex) as ProductPrice;
+        return mapSqliteRow<ProductPrice>(selectStmt.get(productPrice.productIndex));
       }
       const [updated] = await db.update(productPrices)
         .set({
@@ -1347,7 +1375,7 @@ export class DatabaseStorage implements IStorage {
       return updated;
     } else {
       if (isSQLite) {
-        return sqliteInsertProductPrice(productPrice) as ProductPrice;
+        return sqliteInsertProductPrice(productPrice);
       }
       const [created] = await db.insert(productPrices)
         .values(productPrice)
@@ -1370,7 +1398,7 @@ export class DatabaseStorage implements IStorage {
       `);
       updateStmt.run({ price, cost, productIndex });
       const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE product_index = ?');
-      return selectStmt.get(productIndex) as ProductPrice;
+      return mapSqliteRow<ProductPrice>(selectStmt.get(productIndex));
     }
     const [updated] = await db.update(productPrices)
       .set({ price, cost, updatedAt: new Date() })
