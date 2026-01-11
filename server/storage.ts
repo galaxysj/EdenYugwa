@@ -544,18 +544,46 @@ export class DatabaseStorage implements IStorage {
     // 상태별 필드 초기화 및 설정
     if (status === 'pending') {
       // 주문접수 상태로 변경 시 모든 발송 관련 필드 초기화
-      updateData.sellerShipped = false;
+      updateData.sellerShipped = isSQLite ? 0 : false;
       updateData.sellerShippedDate = null;
       updateData.scheduledDate = null;
       updateData.deliveredDate = null;
     } else if (status === 'scheduled') {
       // 발송주문 상태로 변경 시 예약발송일 설정 (발송완료 관련 필드는 초기화)
       updateData.deliveredDate = null;
-      updateData.sellerShipped = false;
+      updateData.sellerShipped = isSQLite ? 0 : false;
       updateData.sellerShippedDate = null;
     } else if (status === 'delivered') {
       // 발송완료 상태로 변경하는 경우 현재 날짜를 설정
       updateData.deliveredDate = new Date();
+    }
+    
+    if (isSQLite) {
+      // SQLite: use raw SQL for timestamp handling
+      const setClauses: string[] = ['status = @status'];
+      const params: any = { status, id };
+      
+      if (updateData.sellerShipped !== undefined) {
+        setClauses.push('seller_shipped = @sellerShipped');
+        params.sellerShipped = updateData.sellerShipped;
+      }
+      if (updateData.sellerShippedDate !== undefined) {
+        setClauses.push('seller_shipped_date = @sellerShippedDate');
+        params.sellerShippedDate = updateData.sellerShippedDate;
+      }
+      if (updateData.scheduledDate !== undefined) {
+        setClauses.push('scheduled_date = @scheduledDate');
+        params.scheduledDate = updateData.scheduledDate;
+      }
+      if (updateData.deliveredDate !== undefined) {
+        setClauses.push('delivered_date = @deliveredDate');
+        params.deliveredDate = updateData.deliveredDate ? updateData.deliveredDate.toISOString() : null;
+      }
+      
+      const stmt = sqliteDb.prepare(`UPDATE orders SET ${setClauses.join(', ')} WHERE id = @id`);
+      stmt.run(params);
+      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
+      return mapSqliteRow<Order>(selectStmt.get(id));
     }
     
     const [order] = await db
@@ -692,6 +720,30 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderSellerShipped(id: number, sellerShipped: boolean, sellerShippedDate: Date | null): Promise<Order | undefined> {
     try {
+      if (isSQLite) {
+        const setClauses: string[] = [
+          'seller_shipped = @sellerShipped',
+          'seller_shipped_date = @sellerShippedDate'
+        ];
+        const params: any = {
+          id,
+          sellerShipped: sellerShipped ? 1 : 0,
+          sellerShippedDate: sellerShipped && sellerShippedDate ? sellerShippedDate.toISOString() : null
+        };
+        
+        if (sellerShipped) {
+          setClauses.push('status = @status');
+          setClauses.push('delivered_date = @deliveredDate');
+          params.status = 'delivered';
+          params.deliveredDate = sellerShippedDate ? sellerShippedDate.toISOString() : null;
+        }
+        
+        const stmt = sqliteDb.prepare(`UPDATE orders SET ${setClauses.join(', ')} WHERE id = @id`);
+        stmt.run(params);
+        const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
+        return mapSqliteRow<Order>(selectStmt.get(id));
+      }
+      
       const updateData: any = { 
         sellerShipped,
         sellerShippedDate: sellerShipped ? sellerShippedDate : null
@@ -844,6 +896,12 @@ export class DatabaseStorage implements IStorage {
 
   // Trash/Delete operations
   async softDeleteOrder(id: number): Promise<Order | undefined> {
+    if (isSQLite) {
+      const stmt = sqliteDb.prepare(`UPDATE orders SET is_deleted = 1, deleted_at = datetime('now') WHERE id = @id`);
+      stmt.run({ id });
+      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
+      return mapSqliteRow<Order>(selectStmt.get(id));
+    }
     const [deletedOrder] = await db.update(orders)
       .set({ 
         isDeleted: true,
@@ -855,6 +913,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async restoreOrder(id: number): Promise<Order | undefined> {
+    if (isSQLite) {
+      const stmt = sqliteDb.prepare(`UPDATE orders SET is_deleted = 0, deleted_at = NULL WHERE id = @id`);
+      stmt.run({ id });
+      const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
+      return mapSqliteRow<Order>(selectStmt.get(id));
+    }
     const [restoredOrder] = await db.update(orders)
       .set({ 
         isDeleted: false,

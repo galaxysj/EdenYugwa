@@ -1,4 +1,4 @@
-import { db, isSQLite, sqliteDb } from "./db";
+import { db, isSQLite, sqliteDb, dbBool } from "./db";
 import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest, type UserSession, type AccessControlSettings, type LoginAttempt, type LoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
 
@@ -209,7 +209,7 @@ export class SessionService {
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, true),
+          eq(userSessions.isActive, dbBool(true)),
           gte(userSessions.expiresAt, new Date())
         )
       )
@@ -222,7 +222,7 @@ export class SessionService {
       .update(userSessions)
       .set({ isActive: false })
       .where(and(
-        eq(userSessions.isActive, true),
+        eq(userSessions.isActive, dbBool(true)),
         gte(userSessions.expiresAt, new Date())
       ));
   }
@@ -405,7 +405,7 @@ export class SessionService {
       .where(
         and(
           eq(userSessions.userId, userId),
-          eq(userSessions.isActive, true),
+          eq(userSessions.isActive, dbBool(true))
           // 현재 세션이 아닌 것들만
           // Note: currentSessionId가 다른 것들만 선택
         )
