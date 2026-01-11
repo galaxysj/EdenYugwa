@@ -5978,7 +5978,7 @@ export default function Admin() {
                               wrappingName: "보자기",
                               wrappingPrice: "개당 +1,000원",
                               mainTitle: "진안에서 온 정성 가득 유과",
-                              mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                              mainDescription: "부모님이 100% 국내산 찹쌀로\\n직접 만드는 찹쌀유과입니다.\\n달지않고 고소한 맛이 일품!\\n선물로도 완벽한 에덴한과 ^^",
                               heroImages: [],
                               aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
                               bankAccount: "농협 352-1701-3342-63 (예금주: 손*진)",
@@ -6275,7 +6275,7 @@ export default function Admin() {
                                     if (confirm('기본값으로 되돌리시겠습니까?')) {
                                       const defaults = {
                                         mainTitle: "진안에서 온 정성 가득 유과",
-                                        mainDescription: "부모님이 100% 국내산 찹쌀로 직접 만드는 찹쌀유과\\n달지않고 고소한 맛이 일품! 선물로도 완벽한 에덴한과 ^^",
+                                        mainDescription: "부모님이 100% 국내산 찹쌀로\\n직접 만드는 찹쌀유과입니다.\\n달지않고 고소한 맛이 일품!\\n선물로도 완벽한 에덴한과 ^^",
                                         heroImages: [] as string[],
                                         aboutText: "이든 한과는 전통 방식으로 만든 건강한 한과입니다.",
                                         logoUrl: ""
