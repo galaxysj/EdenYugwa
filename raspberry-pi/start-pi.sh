@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 라즈베리 파이에서 Eden 한과 시스템 시작 스크립트
+# 라즈베리 파이에서 Eden 한과 시스템 시작 스크립트 (PostgreSQL 버전)
 
 echo "=== Eden 한과 주문관리 시스템 시작 ==="
 
@@ -12,17 +12,29 @@ fi
 
 # 필요한 디렉토리 생성
 echo "디렉토리 설정 중..."
-mkdir -p data
 mkdir -p uploads
 mkdir -p logs
-mkdir -p backup
 
-# 환경변수 파일 확인 및 복사
-if [ ! -f ".env.local" ] && [ -f "raspberry-pi/.env.pi" ]; then
-    echo "환경변수 파일 설정 중..."
-    cp raspberry-pi/.env.pi .env.local
-    echo "라즈베리 파이용 환경변수 파일이 복사되었습니다."
-    echo "필요시 .env.local 파일을 편집하여 설정을 변경하세요."
+# .env 파일 확인
+if [ ! -f ".env" ]; then
+    echo "오류: .env 파일이 없습니다. DATABASE_URL 설정이 필요합니다."
+    echo "다음 형식으로 .env 파일을 생성해주세요:"
+    echo ""
+    echo "DATABASE_URL=postgresql://eden:password@localhost:5432/eden_hangwa"
+    echo "NODE_ENV=production"
+    echo "PORT=3000"
+    echo "SESSION_SECRET=your-random-secret-key"
+    exit 1
+fi
+
+# PostgreSQL 연결 테스트
+echo "PostgreSQL 연결 확인 중..."
+if command -v pg_isready &> /dev/null; then
+    pg_isready -h localhost -p 5432
+    if [ $? -ne 0 ]; then
+        echo "경고: PostgreSQL 서버에 연결할 수 없습니다."
+        echo "PostgreSQL 서비스를 시작해주세요: sudo systemctl start postgresql"
+    fi
 fi
 
 # Node.js 메모리 제한 설정

@@ -11,8 +11,8 @@ WORKDIR /app
 # 패키지 파일 복사
 COPY package*.json ./
 
-# ARM 아키텍처용 네이티브 모듈 재빌드를 위한 도구 설치
-RUN apk add --no-cache python3 make g++ sqlite
+# ARM 아키텍처용 네이티브 모듈 재빌드를 위한 도구 설치 (PostgreSQL 클라이언트 포함)
+RUN apk add --no-cache python3 make g++ postgresql-client
 
 # 종속성 설치 (프로덕션 모드)
 RUN npm ci --only=production && npm cache clean --force
@@ -23,14 +23,14 @@ COPY . .
 # 클라이언트 빌드
 RUN npm run build
 
-# SQLite 데이터베이스 디렉토리 생성
-RUN mkdir -p /app/data
+# 업로드 디렉토리 생성
+RUN mkdir -p /app/uploads
 
 # 포트 노출
 EXPOSE 5000
 
-# 데이터 볼륨
-VOLUME ["/app/data", "/app/uploads"]
+# 데이터 볼륨 (업로드 파일용)
+VOLUME ["/app/uploads"]
 
 # 애플리케이션 시작
 CMD ["npm", "start"]
