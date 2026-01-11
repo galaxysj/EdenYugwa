@@ -232,20 +232,18 @@ CREATE TABLE IF NOT EXISTS customers (
 );
 
 -- Insert default admin account (galaxysj / eden*3452)
--- bcrypt hash for 'eden*3452'
 INSERT OR IGNORE INTO admins (username, password, created_at) 
-VALUES ('galaxysj', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', datetime('now'));
+VALUES ('galaxysj', '$2b$10$Le26.VIzeC9vLFwKfaYhdu0r.b9IUG7IrzOa9AvMzTa99Gm5wC8Ni', datetime('now'));
 
 -- Insert default manager account (ceohj / eden*2376)
--- bcrypt hash for 'eden*2376'
 INSERT OR IGNORE INTO managers (username, password, created_at) 
-VALUES ('ceohj', '$2a$10$rJ.Z1FoU8.SY5K8.e4.rCOgYkA8F.uQ0O8g.xA8EqEKZz.Z/8m1Oi', datetime('now'));
+VALUES ('ceohj', '$2b$10$.4lafzqqtmhhJWRmKLhZIeHKKbea0wm3vUYjwAf/QYrmJ6ecH6BrS', datetime('now'));
 
 -- Insert default user accounts for web login
 INSERT OR IGNORE INTO users (username, password_hash, name, phone_number, role, is_active, created_at)
 VALUES 
-  ('galaxysj', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', '관리자', '010-0000-0000', 'admin', 1, datetime('now')),
-  ('ceohj', '$2a$10$rJ.Z1FoU8.SY5K8.e4.rCOgYkA8F.uQ0O8g.xA8EqEKZz.Z/8m1Oi', '매니저', '010-0000-0001', 'manager', 1, datetime('now'));
+  ('galaxysj', '$2b$10$Le26.VIzeC9vLFwKfaYhdu0r.b9IUG7IrzOa9AvMzTa99Gm5wC8Ni', '관리자', '010-0000-0000', 'admin', 1, datetime('now')),
+  ('ceohj', '$2b$10$.4lafzqqtmhhJWRmKLhZIeHKKbea0wm3vUYjwAf/QYrmJ6ecH6BrS', '매니저', '010-0000-0001', 'manager', 1, datetime('now'));
 
 -- Insert default settings
 INSERT OR IGNORE INTO settings (key, value, description, updated_at) VALUES
