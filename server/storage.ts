@@ -815,18 +815,12 @@ export class DatabaseStorage implements IStorage {
 
   // Customer management functions
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    const values: any = { ...customer };
     if (isSQLite) {
-      // Don't pass timestamps - let SQLite use DEFAULT (datetime('now'))
-      delete values.createdAt;
-      delete values.updatedAt;
-      if (values.lastOrderDate instanceof Date) {
-        values.lastOrderDate = values.lastOrderDate.toISOString();
-      } else if (values.lastOrderDate === undefined) {
-        delete values.lastOrderDate;
-      }
+      // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
+      const newCustomer = sqliteInsertCustomer(customer);
+      return newCustomer as Customer;
     }
-    const [newCustomer] = await db.insert(customers).values(values).returning();
+    const [newCustomer] = await db.insert(customers).values(customer as any).returning();
     return newCustomer;
   }
 
@@ -994,16 +988,13 @@ export class DatabaseStorage implements IStorage {
         totalSpent,
         notes: null
       };
-      // For SQLite, convert lastOrderDate to string or omit if it will cause issues
       if (isSQLite) {
-        if (lastOrderDate instanceof Date) {
-          newCustomerData.lastOrderDate = lastOrderDate.toISOString();
-        }
-        // Don't pass createdAt/updatedAt - let SQLite use DEFAULT
+        // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
+        sqliteInsertCustomer(newCustomerData);
       } else {
         newCustomerData.lastOrderDate = lastOrderDate;
+        await db.insert(customers).values(newCustomerData);
       }
-      await db.insert(customers).values(newCustomerData);
       console.log(`${phoneNumber} 새로운 고객 생성 완료`);
     }
   }
@@ -1057,12 +1048,15 @@ export class DatabaseStorage implements IStorage {
         userRegisteredName: customerData.userRegisteredName || null,
         userRegisteredPhone: customerData.userRegisteredPhone || null
       };
-      // Don't pass timestamps for SQLite - let database defaults handle them
-      if (!isSQLite) {
-        customerValues.lastOrderDate = null;
+      
+      if (isSQLite) {
+        // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
+        const newCustomer = sqliteInsertCustomer(customerValues);
+        return newCustomer as Customer;
       }
+      
+      customerValues.lastOrderDate = null;
       const [newCustomer] = await db.insert(customers).values(customerValues).returning();
-
       return newCustomer;
     } catch (error) {
       console.error('Auto register customer error:', error);
@@ -1072,17 +1066,16 @@ export class DatabaseStorage implements IStorage {
 
   async bulkCreateCustomers(customersData: InsertCustomer[]): Promise<Customer[]> {
     try {
-      const values = isSQLite 
-        ? customersData.map(c => {
-            const { createdAt, updatedAt, lastOrderDate, ...rest } = c as any;
-            const result: any = { ...rest };
-            if (lastOrderDate instanceof Date) {
-              result.lastOrderDate = lastOrderDate.toISOString();
-            }
-            return result;
-          })
-        : customersData;
-      const result = await db.insert(customers).values(values as any).returning();
+      if (isSQLite) {
+        // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
+        const results: Customer[] = [];
+        for (const c of customersData) {
+          const newCustomer = sqliteInsertCustomer(c);
+          results.push(newCustomer as Customer);
+        }
+        return results;
+      }
+      const result = await db.insert(customers).values(customersData as any).returning();
       return result;
     } catch (error) {
       console.error('Bulk create customers error:', error);
