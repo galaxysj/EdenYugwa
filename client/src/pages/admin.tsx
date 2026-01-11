@@ -4654,7 +4654,7 @@ export default function Admin() {
                           <SelectItem value="pending">주문접수</SelectItem>
                           <SelectItem value="scheduled">발송주문</SelectItem>
                           <SelectItem value="seller_shipped">발송대기</SelectItem>
-                          {/* 관리자는 발송완료로 변경할 수 없음 - 매니저만 가능 */}
+                          <SelectItem value="delivered">발송완료</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
