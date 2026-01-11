@@ -25,6 +25,19 @@ if [ ! -f ".env.local" ] && [ -f "raspberry-pi/.env.pi" ]; then
     echo "필요시 .env.local 파일을 편집하여 설정을 변경하세요."
 fi
 
+# 환경변수 로드
+if [ -f ".env.local" ]; then
+    echo "환경변수 로드 중..."
+    export $(grep -v '^#' .env.local | xargs)
+fi
+
+# SQLite 데이터베이스 초기화
+if [ ! -f "data/eden-hangwa.db" ]; then
+    echo "SQLite 데이터베이스 초기화 중..."
+    sqlite3 data/eden-hangwa.db < raspberry-pi/init-sqlite.sql
+    echo "데이터베이스 초기화 완료"
+fi
+
 # Node.js 메모리 제한 설정
 export NODE_OPTIONS="--max-old-space-size=512"
 
@@ -47,7 +60,7 @@ PI_IP=$(hostname -I | awk '{print $1}')
 
 echo ""
 echo "Eden 한과 주문관리 시스템이 시작됩니다."
-echo "접속 주소: http://$PI_IP:3000"
+echo "접속 주소: http://$PI_IP:7000"
 echo "종료하려면 Ctrl+C를 누르세요."
 echo ""
 

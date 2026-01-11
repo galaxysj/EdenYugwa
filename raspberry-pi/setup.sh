@@ -74,7 +74,7 @@ echo "자동 백업 cron job 설정..."
 # 방화벽 설정
 if command -v ufw &> /dev/null; then
     echo "방화벽 설정 중..."
-    sudo ufw allow 3000/tcp
+    sudo ufw allow 7000/tcp
     sudo ufw --force enable
 fi
 
@@ -91,7 +91,7 @@ echo "3. npm run build"
 echo "4. sudo systemctl enable eden-hangwa.service"
 echo "5. sudo systemctl start eden-hangwa.service"
 echo ""
-echo "접속 주소: http://$PI_IP:3000"
+echo "접속 주소: http://$PI_IP:7000"
 echo ""
 echo "서비스 상태 확인: sudo systemctl status eden-hangwa.service"
 echo "로그 확인: sudo journalctl -u eden-hangwa.service -f"
