@@ -234,9 +234,9 @@ CREATE INDEX IF NOT EXISTS idx_login_attempts_username ON login_attempts(usernam
 CREATE INDEX IF NOT EXISTS idx_session_expire ON sessions(expire);
 
 -- 기본 설정값 삽입
-INSERT OR IGNORE INTO settings (key, value, description) VALUES ('smallBoxPrice', '20000', '한과1호 판매가');
-INSERT OR IGNORE INTO settings (key, value, description) VALUES ('largeBoxPrice', '30000', '한과2호 판매가');
-INSERT OR IGNORE INTO settings (key, value, description) VALUES ('wrappingPrice', '1000', '보자기 상품 판매가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('smallBoxPrice', '10000', '한과1호 (소박스) 판매가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('largeBoxPrice', '20000', '한과2호 (대박스) 판매가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('wrappingPrice', '2000', '보자기 판매가');
 INSERT OR IGNORE INTO settings (key, value, description) VALUES ('shippingFee', '4000', '기본 배송비');
 INSERT OR IGNORE INTO settings (key, value, description) VALUES ('freeShippingThreshold', '3', '무료배송 기준 수량');
 INSERT OR IGNORE INTO settings (key, value, description) VALUES ('smallBoxCost', '15000', '한과1호 원가');
@@ -246,10 +246,19 @@ INSERT OR IGNORE INTO settings (key, value, description) VALUES ('smallBoxName',
 INSERT OR IGNORE INTO settings (key, value, description) VALUES ('largeBoxName', '한과2호', '한과2호 상품명');
 INSERT OR IGNORE INTO settings (key, value, description) VALUES ('wrappingName', '보자기 상품', '보자기 상품명');
 
+-- 동적 상품 가격 설정 (실제 가격)
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_0Price', '19000', '한과1호(약1.1.kg) 판매가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_0Cost', '15500', '한과1호(약1.1.kg) 원가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_1Price', '21000', '한과2호(약1.3kg) 판매가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_1Cost', '17500', '한과2호(약1.3kg) 원가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_2Price', '1000', '보자기 판매가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_2Cost', '1000', '보자기 원가');
+INSERT OR IGNORE INTO settings (key, value, description) VALUES ('product_2ExcludeFromShipping', 'true', '');
+
 -- 기본 대시보드 컨텐츠
 INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('welcomeTitle', 'Eden 한과', 'text');
 INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('welcomeSubtitle', '전통의 맛을 담은 프리미엄 한과', 'text');
-INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('productNames', '[{"name":"한과1호(약1.1kg)","price":"20000","size":"약 35.5×21×11.2cm","weight":"","cost":"15000"},{"name":"한과2호(약1.3kg)","price":"30000","cost":"22000","size":"약 37×23×11.5cm","weight":""},{"name":"보자기","price":"1000","cost":"500","size":"","weight":""}]', 'text');
+INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('productNames', '[{"name":"한과1호(약1.1kg)","price":"19000","size":"약 35.5×21×11.2cm","weight":"","cost":"15500"},{"name":"한과2호(약1.3kg)","price":"21000","cost":"17500","size":"약 37×23×11.5cm","weight":""},{"name":"보자기","price":"1000","cost":"1000","size":"","weight":""}]', 'text');
 
 -- 기본 관리자 설정
 INSERT OR IGNORE INTO admin_settings (id, admin_name, admin_phone) VALUES (1, 'Eden 한과', '');
