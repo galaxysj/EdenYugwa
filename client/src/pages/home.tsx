@@ -271,8 +271,7 @@ export default function Home() {
           <div className="max-w-lg mx-auto mb-6 md:mb-8">
             <div className="bg-gradient-to-r from-eden-sage/10 to-eden-brown/10 rounded-lg p-3 md:p-4 border border-eden-brown/20 mx-2 md:mx-0">
               <div className="text-center">
-                <div className="text-sm md:text-base font-bold break-keep text-[#0d0000] whitespace-pre-line">입금계좌 
-                {dashboardContent.bankAccount || "농협 352-1701-3342-63 (예금주: 손*진)"}</div>
+                <div className="text-sm md:text-base font-bold break-keep text-[#0d0000] whitespace-pre-line">입금계좌: {dashboardContent.bankAccount || "농협 352-1701-3342-63 (예금주: 손*진)"}</div>
                 <p className="text-xs text-gray-600 mt-1 whitespace-pre-line">{dashboardContent.bankMessage || "주문 후 위 계좌로 입금해 주시면 확인 후 발송해 드립니다"}</p>
               </div>
             </div>
