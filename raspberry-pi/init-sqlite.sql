@@ -249,6 +249,7 @@ INSERT OR IGNORE INTO settings (key, value, description) VALUES ('wrappingName',
 -- 기본 대시보드 컨텐츠
 INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('welcomeTitle', 'Eden 한과', 'text');
 INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('welcomeSubtitle', '전통의 맛을 담은 프리미엄 한과', 'text');
+INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('productNames', '[{"name":"한과1호(약1.1kg)","price":"20000","size":"약 35.5×21×11.2cm","weight":"","cost":"15000"},{"name":"한과2호(약1.3kg)","price":"30000","cost":"22000","size":"약 37×23×11.5cm","weight":""},{"name":"보자기","price":"1000","cost":"500","size":"","weight":""}]', 'text');
 
 -- 기본 관리자 설정
 INSERT OR IGNORE INTO admin_settings (id, admin_name, admin_phone) VALUES (1, 'Eden 한과', '');
