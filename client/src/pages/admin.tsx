@@ -2301,11 +2301,11 @@ export default function Admin() {
                               (wrappingProductCost ?? (settings?.find(s => s.key === "wrappingCost")?.value ? 
                               parseInt(settings.find(s => s.key === "wrappingCost")?.value || "0") : 1000))));
     
-    // Include only orders with actual paid amount entered (actualPaidAmount > 0)
-    // This excludes orders without payment information
-    const paidOrders = orders.filter((order: Order) => 
-      (order.actualPaidAmount !== null && order.actualPaidAmount !== undefined && order.actualPaidAmount > 0)
-    );
+    const paidOrders = orders.filter((order: Order) => {
+      // 매출 관리 리포트에서는 실제 입금액이 입력된 주문만 표시합니다. (환불된 주문 제외)
+      const hasActualPaidAmount = order.actualPaidAmount !== null && typeof order.actualPaidAmount !== 'undefined';
+      return hasActualPaidAmount && order.paymentStatus !== 'refunded';
+    });
     
     // Count refunded orders separately
     const refundedOrders = orders.filter((order: Order) => 
@@ -2927,13 +2927,14 @@ export default function Admin() {
         </Card>
         
         {/* 매출관리 주문 상세 리스트 */}
-        {orders.length > 0 && (
+        {filteredOrders.length > 0 && (
           <Card className="border-gray-200">
             <CardHeader className="bg-gray-50">
               <CardTitle className="flex items-center justify-between">
                 <span className="text-base md:text-lg text-gray-800">📊 매출 상세내역</span>
                 <span className="text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded">
                   {orders.length}건
+                  {filteredOrders.length}건
                 </span>
               </CardTitle>
               <p className="text-xs md:text-sm text-gray-700 mt-1">
@@ -2958,7 +2959,7 @@ export default function Admin() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders
+                    {filteredOrders
                       .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                       .map((order: Order) => {
                       // 주문 시점의 실제 상품명을 사용하기 위한 함수 (현재 콘텐츠관리의 상품명 참조)
@@ -3227,7 +3228,7 @@ export default function Admin() {
               <div className="md:hidden">
                 <div className="mb-3 p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm font-bold text-gray-800 mb-1">
-                    📊 매출 요약 ({orders.length}건)
+                    📊 매출 요약 ({filteredOrders.length}건)
                   </p>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-white p-2 rounded border">
@@ -3250,7 +3251,7 @@ export default function Admin() {
                 </div>
                 
                 <div className="space-y-2">
-                {orders
+                {filteredOrders
                   .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order: Order) => {
                   // 주문 시점의 실제 선택 상품과 가격을 우선 사용 (원가분석의 정확성을 위해)
