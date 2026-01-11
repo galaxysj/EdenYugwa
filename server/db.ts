@@ -15,6 +15,7 @@ const isSQLite = DATABASE_URL.startsWith('file:');
 
 let db: any;
 let pool: any = null;
+let sqliteDb: any = null;
 
 if (isSQLite) {
   // SQLite 모드 (라즈베리 파이)
@@ -38,14 +39,14 @@ if (isSQLite) {
 
   console.log('SQLite 데이터베이스 사용:', absolutePath);
   
-  const sqlite = new Database(absolutePath);
+  sqliteDb = new Database(absolutePath);
   
-  sqlite.pragma('journal_mode = WAL');
-  sqlite.pragma('synchronous = NORMAL');
-  sqlite.pragma('cache_size = 10000');
-  sqlite.pragma('temp_store = memory');
+  sqliteDb.pragma('journal_mode = WAL');
+  sqliteDb.pragma('synchronous = NORMAL');
+  sqliteDb.pragma('cache_size = 10000');
+  sqliteDb.pragma('temp_store = memory');
 
-  db = drizzle(sqlite, { schema });
+  db = drizzle(sqliteDb, { schema });
 } else {
   // PostgreSQL 모드 (Replit)
   const { Pool, neonConfig } = require('@neondatabase/serverless');
@@ -57,4 +58,4 @@ if (isSQLite) {
   db = drizzle({ client: pool, schema });
 }
 
-export { db, pool, isSQLite };
+export { db, pool, isSQLite, sqliteDb };

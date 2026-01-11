@@ -1,6 +1,86 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, productPrices, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent, type ProductPrice, type InsertProductPrice } from "@shared/schema";
-import { db, isSQLite } from "./db";
+import { db, isSQLite, sqliteDb } from "./db";
 import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
+
+// SQLite raw SQL helper for inserts that avoid Drizzle's PostgreSQL timestamp handling
+function sqliteInsertOrder(orderData: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO orders (
+      order_number, customer_name, customer_phone, zip_code, address1, address2,
+      recipient_name, recipient_phone, recipient_zip_code, recipient_address1, recipient_address2,
+      depositor_name, is_different_depositor, special_requests,
+      small_box_quantity, large_box_quantity, wrapping_quantity, dynamic_product_quantities,
+      shipping_fee, total_amount, status, payment_status, user_id, order_password
+    ) VALUES (
+      @orderNumber, @customerName, @customerPhone, @zipCode, @address1, @address2,
+      @recipientName, @recipientPhone, @recipientZipCode, @recipientAddress1, @recipientAddress2,
+      @depositorName, @isDifferentDepositor, @specialRequests,
+      @smallBoxQuantity, @largeBoxQuantity, @wrappingQuantity, @dynamicProductQuantities,
+      @shippingFee, @totalAmount, @status, @paymentStatus, @userId, @orderPassword
+    )
+  `);
+  
+  const result = stmt.run({
+    orderNumber: orderData.orderNumber,
+    customerName: orderData.customerName,
+    customerPhone: orderData.customerPhone,
+    zipCode: orderData.zipCode || null,
+    address1: orderData.address1,
+    address2: orderData.address2 || null,
+    recipientName: orderData.recipientName || null,
+    recipientPhone: orderData.recipientPhone || null,
+    recipientZipCode: orderData.recipientZipCode || null,
+    recipientAddress1: orderData.recipientAddress1 || null,
+    recipientAddress2: orderData.recipientAddress2 || null,
+    depositorName: orderData.depositorName || null,
+    isDifferentDepositor: orderData.isDifferentDepositor ? 1 : 0,
+    specialRequests: orderData.specialRequests || null,
+    smallBoxQuantity: orderData.smallBoxQuantity || 0,
+    largeBoxQuantity: orderData.largeBoxQuantity || 0,
+    wrappingQuantity: orderData.wrappingQuantity || 0,
+    dynamicProductQuantities: orderData.dynamicProductQuantities ? JSON.stringify(orderData.dynamicProductQuantities) : null,
+    shippingFee: orderData.shippingFee || 0,
+    totalAmount: orderData.totalAmount,
+    status: orderData.status || 'pending',
+    paymentStatus: orderData.paymentStatus || 'pending',
+    userId: orderData.userId || null,
+    orderPassword: orderData.orderPassword || null
+  });
+  
+  const lastId = result.lastInsertRowid;
+  const selectStmt = sqliteDb.prepare('SELECT * FROM orders WHERE id = ?');
+  return selectStmt.get(lastId);
+}
+
+function sqliteInsertCustomer(customerData: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO customers (
+      customer_name, customer_phone, zip_code, address1, address2,
+      order_count, total_spent, notes, user_id, user_registered_name, user_registered_phone
+    ) VALUES (
+      @customerName, @customerPhone, @zipCode, @address1, @address2,
+      @orderCount, @totalSpent, @notes, @userId, @userRegisteredName, @userRegisteredPhone
+    )
+  `);
+  
+  const result = stmt.run({
+    customerName: customerData.customerName,
+    customerPhone: customerData.customerPhone,
+    zipCode: customerData.zipCode || null,
+    address1: customerData.address1 || '',
+    address2: customerData.address2 || '',
+    orderCount: customerData.orderCount || 0,
+    totalSpent: customerData.totalSpent || 0,
+    notes: customerData.notes || null,
+    userId: customerData.userId || null,
+    userRegisteredName: customerData.userRegisteredName || null,
+    userRegisteredPhone: customerData.userRegisteredPhone || null
+  });
+  
+  const lastId = result.lastInsertRowid;
+  const selectStmt = sqliteDb.prepare('SELECT * FROM customers WHERE id = ?');
+  return selectStmt.get(lastId);
+}
 
 export interface IStorage {
   // Order management
@@ -200,13 +280,11 @@ export class DatabaseStorage implements IStorage {
       zipCode: insertOrder.zipCode,
       address1: insertOrder.address1,
       address2: insertOrder.address2,
-      // 받는 분 정보
       recipientName: insertOrder.recipientName,
       recipientPhone: insertOrder.recipientPhone,
       recipientZipCode: insertOrder.recipientZipCode,
       recipientAddress1: insertOrder.recipientAddress1,
       recipientAddress2: insertOrder.recipientAddress2,
-      // 예금자 정보
       isDifferentDepositor: insertOrder.isDifferentDepositor || false,
       depositorName: insertOrder.depositorName,
       smallBoxQuantity: insertOrder.smallBoxQuantity,
@@ -218,31 +296,16 @@ export class DatabaseStorage implements IStorage {
       scheduledDate: insertOrder.scheduledDate,
       shippingFee: insertOrder.shippingFee || 0,
       orderNumber,
-      status: "pending", // 예약날짜와 상관없이 항상 pending으로 시작
+      status: "pending",
       paymentStatus: "pending",
-      // 인증 관련 필드
       userId: insertOrder.userId,
       orderPassword: insertOrder.orderPassword,
     };
     
     if (isSQLite) {
-      // Don't pass createdAt - let SQLite use DEFAULT (datetime('now'))
-      // SQLite can't handle JSON objects directly, stringify them
-      if (orderData.dynamicProductQuantities !== null && orderData.dynamicProductQuantities !== undefined) {
-        if (typeof orderData.dynamicProductQuantities === 'object') {
-          orderData.dynamicProductQuantities = JSON.stringify(orderData.dynamicProductQuantities);
-        }
-      }
-      // Convert Date objects to ISO strings for SQLite
-      if (orderData.scheduledDate instanceof Date) {
-        orderData.scheduledDate = orderData.scheduledDate.toISOString();
-      } else if (orderData.scheduledDate && typeof orderData.scheduledDate === 'string') {
-        // Already a string, keep it
-      } else {
-        delete orderData.scheduledDate;
-      }
-      // Convert booleans to integers for SQLite
-      orderData.isDifferentDepositor = orderData.isDifferentDepositor ? 1 : 0;
+      // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
+      const order = sqliteInsertOrder(orderData);
+      return order as Order;
     }
     
     const [order] = await db
