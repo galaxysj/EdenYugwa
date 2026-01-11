@@ -1,6 +1,6 @@
 import { orders, smsNotifications, admins, managers, settings, adminSettings, customers, users, dashboardContent, productPrices, type Order, type InsertOrder, type SmsNotification, type InsertSmsNotification, type Admin, type InsertAdmin, type Manager, type InsertManager, type Setting, type InsertSetting, type AdminSettings, type InsertAdminSettings, type Customer, type InsertCustomer, type User, type InsertUser, type DashboardContent, type InsertDashboardContent, type ProductPrice, type InsertProductPrice } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, and, gte, lte, inArray } from "drizzle-orm";
+import { db, isSQLite } from "./db";
+import { eq, desc, and, gte, lte, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Order management
@@ -557,9 +557,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAdmin(insertAdmin: InsertAdmin): Promise<Admin> {
+    const values = isSQLite 
+      ? { ...insertAdmin, createdAt: new Date().toISOString() }
+      : insertAdmin;
     const [admin] = await db
       .insert(admins)
-      .values(insertAdmin)
+      .values(values as any)
       .returning();
     return admin;
   }
@@ -571,9 +574,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createManager(insertManager: InsertManager): Promise<Manager> {
+    const values = isSQLite 
+      ? { ...insertManager, createdAt: new Date().toISOString() }
+      : insertManager;
     const [manager] = await db
       .insert(managers)
-      .values(insertManager)
+      .values(values as any)
       .returning();
     return manager;
   }
