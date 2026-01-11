@@ -194,7 +194,7 @@ export class DatabaseStorage implements IStorage {
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
     const orderNumber = await this.generateOrderNumber();
-    const orderData = {
+    const orderData: any = {
       customerName: insertOrder.customerName,
       customerPhone: insertOrder.customerPhone,
       zipCode: insertOrder.zipCode,
@@ -224,6 +224,10 @@ export class DatabaseStorage implements IStorage {
       userId: insertOrder.userId,
       orderPassword: insertOrder.orderPassword,
     };
+    
+    if (isSQLite) {
+      orderData.createdAt = new Date();
+    }
     
     const [order] = await db
       .insert(orders)
@@ -732,7 +736,12 @@ export class DatabaseStorage implements IStorage {
 
   // Customer management functions
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    const values: any = { ...customer };
+    if (isSQLite) {
+      values.createdAt = new Date();
+      values.updatedAt = new Date();
+    }
+    const [newCustomer] = await db.insert(customers).values(values).returning();
     return newCustomer;
   }
 
@@ -890,7 +899,7 @@ export class DatabaseStorage implements IStorage {
     } else {
       // Create new customer record from first order
       const firstOrder = customerOrders[customerOrders.length - 1]; // Last in descending order = first chronologically
-      await db.insert(customers).values({
+      const newCustomerData: any = {
         customerName: firstOrder.customerName,
         customerPhone: phoneNumber,
         zipCode: firstOrder.zipCode,
@@ -900,7 +909,12 @@ export class DatabaseStorage implements IStorage {
         totalSpent,
         lastOrderDate,
         notes: null
-      });
+      };
+      if (isSQLite) {
+        newCustomerData.createdAt = new Date();
+        newCustomerData.updatedAt = new Date();
+      }
+      await db.insert(customers).values(newCustomerData);
       console.log(`${phoneNumber} 새로운 고객 생성 완료`);
     }
   }
@@ -941,7 +955,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Create new customer with user link if provided
-      const [newCustomer] = await db.insert(customers).values({
+      const customerValues: any = {
         customerName: customerData.name,
         customerPhone: customerData.phone,
         address1: customerData.address || '',
@@ -954,7 +968,12 @@ export class DatabaseStorage implements IStorage {
         userId: customerData.userId || null,
         userRegisteredName: customerData.userRegisteredName || null,
         userRegisteredPhone: customerData.userRegisteredPhone || null
-      }).returning();
+      };
+      if (isSQLite) {
+        customerValues.createdAt = new Date();
+        customerValues.updatedAt = new Date();
+      }
+      const [newCustomer] = await db.insert(customers).values(customerValues).returning();
 
       return newCustomer;
     } catch (error) {
@@ -965,7 +984,10 @@ export class DatabaseStorage implements IStorage {
 
   async bulkCreateCustomers(customersData: InsertCustomer[]): Promise<Customer[]> {
     try {
-      const result = await db.insert(customers).values(customersData).returning();
+      const values = isSQLite 
+        ? customersData.map(c => ({ ...c, createdAt: new Date(), updatedAt: new Date() }))
+        : customersData;
+      const result = await db.insert(customers).values(values as any).returning();
       return result;
     } catch (error) {
       console.error('Bulk create customers error:', error);

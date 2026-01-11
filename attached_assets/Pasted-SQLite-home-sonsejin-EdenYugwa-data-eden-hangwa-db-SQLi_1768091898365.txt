@@ -1,0 +1,48 @@
+SQLite 데이터베이스 사용: /home/sonsejin/EdenYugwa/data/eden-hangwa.db
+메모리 세션 스토어 사용 (SQLite 모드)
+Admin/Manager credentials not found in environment variables
+12:37:45 AM [express] serving on port 7000
+12:37:52 AM [express] GET /api/auth/user 401 in 2ms :: {"message":"로그인이 필요합니다."}
+12:37:52 AM [express] GET /api/dashboard-content 200 in 2ms :: [{"id":1,"key":"welcomeTitle","value":…
+12:37:52 AM [express] GET /api/settings/freeShippingThreshold 200 in 2ms :: {"id":5,"key":"freeShippi…
+12:37:52 AM [express] GET /api/settings/shippingFee 200 in 2ms :: {"id":4,"key":"shippingFee","value"…
+12:37:52 AM [express] GET /api/settings 200 in 2ms :: [{"id":1,"key":"smallBoxPrice","value":"10000",…
+12:37:52 AM [express] GET /api/settings 304 in 2ms :: [{"id":1,"key":"smallBoxPrice","value":"10000",…
+=== 주문 요청 분석 시작 ===
+Raw body: {
+  customerName: '노세영',
+  customerPhone: '106-4852-8349',
+  zipCode: '34672',
+  address1: '대전 동구 판교1길 3 (판암동)',
+  address2: '',
+  isDifferentDepositor: false,
+  depositorName: '',
+  smallBoxQuantity: 1,
+  largeBoxQuantity: 1,
+  wrappingQuantity: 0,
+  specialRequests: '',
+  scheduledDate: null,
+  totalAmount: 44000,
+  status: 'pending',
+  shippingFee: 4000,
+  dynamicProductQuantities: null
+}
+orderPassword: undefined
+orderPassword type: undefined
+orderPassword length: undefined
+=== 주문 요청 분석 끝 ===
+비로그인 사용자 주문
+orderPassword 없음 - 비밀번호 없이 주문 생성
+주문 생성 전 validatedData.userId: null
+Auto register customer error: SqliteError: no such column: "customer_name" - should this be a string literal in single-quotes?
+    at Database.prepare (/home/sonsejin/EdenYugwa/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+    at BetterSQLiteSession.prepareQuery (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/better-sqlite3/session.cjs:42:30)
+    at BetterSQLiteSession.prepareOneTimeQuery (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sqlite-core/session.cjs:91:17)
+    at SQLiteSelectBase._prepare (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sqlite-core/query-builders/select.cjs:595:88)
+    at SQLiteSelectBase.all (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sqlite-core/query-builders/select.cjs:611:17)
+    at SQLiteSelectBase.execute (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/sqlite-core/query-builders/select.cjs:620:17)
+    at SQLiteSelectBase.then (/home/sonsejin/EdenYugwa/node_modules/drizzle-orm/query-promise.cjs:44:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  code: 'SQLITE_ERROR'
+}
+12:37:58 AM [express] POST /api/orders 400 in 20ms :: {"message":"no such function: now"}

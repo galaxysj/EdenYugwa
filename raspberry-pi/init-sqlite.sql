@@ -137,10 +137,17 @@ CREATE TABLE IF NOT EXISTS admin_settings (
 -- 고객 테이블
 CREATE TABLE IF NOT EXISTS customers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  address TEXT,
-  memo TEXT,
+  customer_name TEXT NOT NULL,
+  customer_phone TEXT NOT NULL,
+  zip_code TEXT,
+  address1 TEXT,
+  address2 TEXT,
+  order_count INTEGER NOT NULL DEFAULT 0,
+  total_spent INTEGER NOT NULL DEFAULT 0,
+  last_order_date TEXT,
+  notes TEXT,
+  user_id INTEGER,
+  user_registered_name TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
