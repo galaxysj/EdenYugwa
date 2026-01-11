@@ -252,3 +252,9 @@ INSERT OR IGNORE INTO dashboard_content (key, value, type) VALUES ('welcomeSubti
 
 -- 기본 관리자 설정
 INSERT OR IGNORE INTO admin_settings (id, admin_name, admin_phone) VALUES (1, 'Eden 한과', '');
+
+-- 기본 관리자 계정 (비밀번호: eden2024!)
+INSERT OR IGNORE INTO admins (username, password, created_at) VALUES ('admin', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', datetime('now'));
+
+-- 기본 매니저 계정 (비밀번호: eden2024!)
+INSERT OR IGNORE INTO managers (username, password, created_at) VALUES ('manager', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', datetime('now'));

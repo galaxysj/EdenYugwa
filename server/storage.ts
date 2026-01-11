@@ -127,6 +127,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async ensureDefaultAdmin() {
+    if (isSQLite) {
+      return;
+    }
     try {
       const existingAdmin = await this.getAdminByUsername("admin");
       if (!existingAdmin) {
@@ -141,6 +144,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async ensureDefaultManager() {
+    if (isSQLite) {
+      return;
+    }
     try {
       const existingManager = await this.getManagerByUsername("manager");
       if (!existingManager) {
