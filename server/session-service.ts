@@ -65,11 +65,15 @@ export class SessionService {
       deviceType,
       browserInfo,
       isActive: true,
-      expiresAt: sessionData.expiresAt,
     };
     if (isSQLite) {
-      newSession.createdAt = getSQLiteTimestamp();
-      newSession.lastActivity = getSQLiteTimestamp();
+      // Convert Date to ISO string for SQLite
+      newSession.expiresAt = sessionData.expiresAt instanceof Date 
+        ? sessionData.expiresAt.toISOString() 
+        : sessionData.expiresAt;
+      // Don't pass createdAt/lastActivity - let SQLite use DEFAULT
+    } else {
+      newSession.expiresAt = sessionData.expiresAt;
     }
 
     const [session] = await db.insert(userSessions).values(newSession).returning();
@@ -141,10 +145,7 @@ export class SessionService {
       return updated;
     } else {
       const values: any = { userId, ...settings };
-      if (isSQLite) {
-        values.createdAt = getSQLiteTimestamp();
-        values.updatedAt = getSQLiteTimestamp();
-      }
+      // Don't pass timestamps for SQLite - let database defaults handle them
       const [created] = await db
         .insert(accessControlSettings)
         .values(values)
@@ -163,9 +164,7 @@ export class SessionService {
       location,
       deviceType,
     };
-    if (isSQLite) {
-      values.createdAt = getSQLiteTimestamp();
-    }
+    // Don't pass createdAt for SQLite - let database default handle it
     const [attempt] = await db
       .insert(loginAttempts)
       .values(values)
@@ -301,11 +300,14 @@ export class SessionService {
       location,
       deviceType,
       requestReason: requestData.requestReason,
-      expiresAt,
     };
+    // Convert Date to ISO string for SQLite
     if (isSQLite) {
-      values.createdAt = getSQLiteTimestamp();
+      values.expiresAt = expiresAt.toISOString();
+    } else {
+      values.expiresAt = expiresAt;
     }
+    // Don't pass createdAt - let database default handle it
     const [request] = await db
       .insert(loginApprovalRequests)
       .values([values])

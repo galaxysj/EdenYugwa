@@ -226,7 +226,7 @@ export class DatabaseStorage implements IStorage {
     };
     
     if (isSQLite) {
-      orderData.createdAt = new Date().toISOString();
+      // Don't pass createdAt - let SQLite use DEFAULT (datetime('now'))
       // SQLite can't handle JSON objects directly, stringify them
       if (orderData.dynamicProductQuantities !== null && orderData.dynamicProductQuantities !== undefined) {
         if (typeof orderData.dynamicProductQuantities === 'object') {
@@ -239,7 +239,7 @@ export class DatabaseStorage implements IStorage {
       } else if (orderData.scheduledDate && typeof orderData.scheduledDate === 'string') {
         // Already a string, keep it
       } else {
-        orderData.scheduledDate = null;
+        delete orderData.scheduledDate;
       }
       // Convert booleans to integers for SQLite
       orderData.isDifferentDepositor = orderData.isDifferentDepositor ? 1 : 0;
@@ -754,10 +754,13 @@ export class DatabaseStorage implements IStorage {
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
     const values: any = { ...customer };
     if (isSQLite) {
-      values.createdAt = new Date().toISOString();
-      values.updatedAt = new Date().toISOString();
+      // Don't pass timestamps - let SQLite use DEFAULT (datetime('now'))
+      delete values.createdAt;
+      delete values.updatedAt;
       if (values.lastOrderDate instanceof Date) {
         values.lastOrderDate = values.lastOrderDate.toISOString();
+      } else if (values.lastOrderDate === undefined) {
+        delete values.lastOrderDate;
       }
     }
     const [newCustomer] = await db.insert(customers).values(values).returning();
@@ -926,12 +929,16 @@ export class DatabaseStorage implements IStorage {
         address2: firstOrder.address2,
         orderCount,
         totalSpent,
-        lastOrderDate: lastOrderDate instanceof Date ? (isSQLite ? lastOrderDate.toISOString() : lastOrderDate) : lastOrderDate,
         notes: null
       };
+      // For SQLite, convert lastOrderDate to string or omit if it will cause issues
       if (isSQLite) {
-        newCustomerData.createdAt = new Date().toISOString();
-        newCustomerData.updatedAt = new Date().toISOString();
+        if (lastOrderDate instanceof Date) {
+          newCustomerData.lastOrderDate = lastOrderDate.toISOString();
+        }
+        // Don't pass createdAt/updatedAt - let SQLite use DEFAULT
+      } else {
+        newCustomerData.lastOrderDate = lastOrderDate;
       }
       await db.insert(customers).values(newCustomerData);
       console.log(`${phoneNumber} 새로운 고객 생성 완료`);
@@ -982,15 +989,14 @@ export class DatabaseStorage implements IStorage {
         zipCode: customerData.zipCode,
         orderCount: 0,
         totalSpent: 0,
-        lastOrderDate: null,
         notes: null,
         userId: customerData.userId || null,
         userRegisteredName: customerData.userRegisteredName || null,
         userRegisteredPhone: customerData.userRegisteredPhone || null
       };
-      if (isSQLite) {
-        customerValues.createdAt = new Date().toISOString();
-        customerValues.updatedAt = new Date().toISOString();
+      // Don't pass timestamps for SQLite - let database defaults handle them
+      if (!isSQLite) {
+        customerValues.lastOrderDate = null;
       }
       const [newCustomer] = await db.insert(customers).values(customerValues).returning();
 
@@ -1004,12 +1010,14 @@ export class DatabaseStorage implements IStorage {
   async bulkCreateCustomers(customersData: InsertCustomer[]): Promise<Customer[]> {
     try {
       const values = isSQLite 
-        ? customersData.map(c => ({ 
-            ...c, 
-            createdAt: new Date().toISOString(), 
-            updatedAt: new Date().toISOString(),
-            lastOrderDate: c.lastOrderDate instanceof Date ? c.lastOrderDate.toISOString() : c.lastOrderDate
-          }))
+        ? customersData.map(c => {
+            const { createdAt, updatedAt, lastOrderDate, ...rest } = c as any;
+            const result: any = { ...rest };
+            if (lastOrderDate instanceof Date) {
+              result.lastOrderDate = lastOrderDate.toISOString();
+            }
+            return result;
+          })
         : customersData;
       const result = await db.insert(customers).values(values as any).returning();
       return result;
