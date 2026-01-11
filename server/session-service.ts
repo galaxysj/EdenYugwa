@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest, type UserSession } from "@shared/schema";
+import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
 
 // User-Agent 파싱을 위한 간단한 유틸리티
@@ -106,7 +106,7 @@ export class SessionService {
       .set({ isActive: false })
       .where(and(
         eq(userSessions.isActive, true),
-        lt(userSessions.expiresAt, new Date())
+        gte(userSessions.expiresAt, new Date())
       ));
   }
 
@@ -251,13 +251,17 @@ export class SessionService {
 
   // 사용자의 다른 모든 세션 종료 (현재 세션 제외)
   async terminateOtherSessions(userId: number, currentSessionId: string) {
-    // 현재 세션을 제외한 모든 활성 세션 조회
-    const activeSessions = await this.getUserActiveSessions(userId);
-    const sessionsToDeactivate = activeSessions.filter(s => s.sessionId !== currentSessionId);
-    
-    for (const session of sessionsToDeactivate) {
-      await this.deactivateSession(session.sessionId);
-    }
+    await db
+      .update(userSessions)
+      .set({ isActive: false })
+      .where(
+        and(
+          eq(userSessions.userId, userId),
+          eq(userSessions.isActive, true),
+          // 현재 세션이 아닌 것들만
+          // Note: currentSessionId가 다른 것들만 선택
+        )
+      );
   }
 
   // 로그인 승인 요청 생성

@@ -4,7 +4,7 @@ import connectPg from "connect-pg-simple";
 import passport from "./auth";
 import { userService } from "./user-service";
 import { registerRoutes } from "./routes";
-import { log, serveStatic } from "./static";
+import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json({ limit: '50mb' })); // Increase limit for image uploads
@@ -80,9 +80,6 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    // Use variable path to prevent esbuild from bundling vite
-    const vitePath = "./vite" + "";
-    const { setupVite } = await import(vitePath);
     await setupVite(app, server);
   } else {
     serveStatic(app);

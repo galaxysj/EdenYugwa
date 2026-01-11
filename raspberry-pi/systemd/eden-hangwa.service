@@ -15,10 +15,8 @@ RestartSec=10
 # 환경변수
 Environment=NODE_ENV=production
 Environment=NODE_OPTIONS=--max-old-space-size=512
-Environment=DB_DIALECT=sqlite
-Environment=SQLITE_PATH=data/eden-hangwa.db
-Environment=PORT=7000
-Environment=SESSION_SECRET=change-this-to-a-secure-random-string
+Environment=DATABASE_URL=file:./data/eden-hangwa.db
+Environment=PORT=3000
 
 # 보안 설정
 NoNewPrivileges=true
