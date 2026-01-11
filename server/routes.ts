@@ -195,7 +195,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         id: user.id, 
-        username: user.username, 
+        username: user.username,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
         role: user.role 
       });
     } catch (error) {
@@ -203,7 +205,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = req.user as User;
       res.json({ 
         id: user.id, 
-        username: user.username, 
+        username: user.username,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
         role: user.role 
       });
     }
