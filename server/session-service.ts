@@ -1,9 +1,93 @@
-import { db, isSQLite } from "./db";
+import { db, isSQLite, sqliteDb } from "./db";
 import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
 
-function getSQLiteTimestamp(): string {
-  return new Date().toISOString();
+// SQLite raw SQL insert helpers
+function sqliteInsertSession(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO user_sessions (
+      user_id, session_id, ip_address, user_agent, location,
+      device_type, browser_info, is_active, expires_at
+    ) VALUES (
+      @userId, @sessionId, @ipAddress, @userAgent, @location,
+      @deviceType, @browserInfo, @isActive, @expiresAt
+    )
+  `);
+  const result = stmt.run({
+    userId: data.userId,
+    sessionId: data.sessionId,
+    ipAddress: data.ipAddress,
+    userAgent: data.userAgent,
+    location: data.location,
+    deviceType: data.deviceType,
+    browserInfo: data.browserInfo,
+    isActive: data.isActive ? 1 : 0,
+    expiresAt: data.expiresAt instanceof Date ? data.expiresAt.toISOString() : data.expiresAt
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM user_sessions WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
+function sqliteInsertAccessControlSettings(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO access_control_settings (
+      user_id, is_enabled, max_concurrent_sessions, allowed_ip_ranges, allowed_device_types
+    ) VALUES (
+      @userId, @isEnabled, @maxConcurrentSessions, @allowedIpRanges, @allowedDeviceTypes
+    )
+  `);
+  const result = stmt.run({
+    userId: data.userId,
+    isEnabled: data.isEnabled ? 1 : 0,
+    maxConcurrentSessions: data.maxConcurrentSessions || 3,
+    allowedIpRanges: data.allowedIpRanges ? JSON.stringify(data.allowedIpRanges) : null,
+    allowedDeviceTypes: data.allowedDeviceTypes ? JSON.stringify(data.allowedDeviceTypes) : null
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM access_control_settings WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
+function sqliteInsertLoginAttempt(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO login_attempts (
+      username, ip_address, user_agent, location, device_type, was_successful
+    ) VALUES (
+      @username, @ipAddress, @userAgent, @location, @deviceType, @wasSuccessful
+    )
+  `);
+  const result = stmt.run({
+    username: data.username,
+    ipAddress: data.ipAddress,
+    userAgent: data.userAgent || '',
+    location: data.location || '',
+    deviceType: data.deviceType || 'desktop',
+    wasSuccessful: data.wasSuccessful ? 1 : 0
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM login_attempts WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
+function sqliteInsertApprovalRequest(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO login_approval_requests (
+      user_id, session_id, ip_address, user_agent, location, device_type, request_reason, status, expires_at
+    ) VALUES (
+      @userId, @sessionId, @ipAddress, @userAgent, @location, @deviceType, @requestReason, @status, @expiresAt
+    )
+  `);
+  const result = stmt.run({
+    userId: data.userId,
+    sessionId: data.sessionId,
+    ipAddress: data.ipAddress,
+    userAgent: data.userAgent || '',
+    location: data.location || '',
+    deviceType: data.deviceType || 'desktop',
+    requestReason: data.requestReason || '',
+    status: data.status || 'pending',
+    expiresAt: data.expiresAt instanceof Date ? data.expiresAt.toISOString() : data.expiresAt
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM login_approval_requests WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
 }
 
 // User-Agent 파싱을 위한 간단한 유틸리티
@@ -65,15 +149,12 @@ export class SessionService {
       deviceType,
       browserInfo,
       isActive: true,
+      expiresAt: sessionData.expiresAt,
     };
+    
     if (isSQLite) {
-      // Convert Date to ISO string for SQLite
-      newSession.expiresAt = sessionData.expiresAt instanceof Date 
-        ? sessionData.expiresAt.toISOString() 
-        : sessionData.expiresAt;
-      // Don't pass createdAt/lastActivity - let SQLite use DEFAULT
-    } else {
-      newSession.expiresAt = sessionData.expiresAt;
+      // Use raw SQL to avoid Drizzle's PostgreSQL timestamp handling
+      return sqliteInsertSession(newSession);
     }
 
     const [session] = await db.insert(userSessions).values(newSession).returning();
@@ -137,6 +218,27 @@ export class SessionService {
     const existingSettings = await this.getAccessControlSettings(userId);
     
     if (existingSettings) {
+      if (isSQLite) {
+        // For SQLite updates, use raw SQL to handle timestamp
+        const updateStmt = sqliteDb.prepare(`
+          UPDATE access_control_settings SET
+            is_enabled = @isEnabled,
+            max_concurrent_sessions = @maxConcurrentSessions,
+            allowed_ip_ranges = @allowedIpRanges,
+            allowed_device_types = @allowedDeviceTypes,
+            updated_at = datetime('now')
+          WHERE user_id = @userId
+        `);
+        updateStmt.run({
+          isEnabled: settings.isEnabled !== undefined ? (settings.isEnabled ? 1 : 0) : (existingSettings.isEnabled ? 1 : 0),
+          maxConcurrentSessions: settings.maxConcurrentSessions || existingSettings.maxConcurrentSessions,
+          allowedIpRanges: settings.allowedIpRanges ? JSON.stringify(settings.allowedIpRanges) : (existingSettings.allowedIpRanges ? JSON.stringify(existingSettings.allowedIpRanges) : null),
+          allowedDeviceTypes: settings.allowedDeviceTypes ? JSON.stringify(settings.allowedDeviceTypes) : (existingSettings.allowedDeviceTypes ? JSON.stringify(existingSettings.allowedDeviceTypes) : null),
+          userId
+        });
+        const selectStmt = sqliteDb.prepare('SELECT * FROM access_control_settings WHERE user_id = ?');
+        return selectStmt.get(userId);
+      }
       const [updated] = await db
         .update(accessControlSettings)
         .set({ ...settings, updatedAt: new Date() })
@@ -145,7 +247,9 @@ export class SessionService {
       return updated;
     } else {
       const values: any = { userId, ...settings };
-      // Don't pass timestamps for SQLite - let database defaults handle them
+      if (isSQLite) {
+        return sqliteInsertAccessControlSettings(values);
+      }
       const [created] = await db
         .insert(accessControlSettings)
         .values(values)
@@ -164,7 +268,11 @@ export class SessionService {
       location,
       deviceType,
     };
-    // Don't pass createdAt for SQLite - let database default handle it
+    
+    if (isSQLite) {
+      return sqliteInsertLoginAttempt(values);
+    }
+    
     const [attempt] = await db
       .insert(loginAttempts)
       .values(values)
@@ -300,14 +408,14 @@ export class SessionService {
       location,
       deviceType,
       requestReason: requestData.requestReason,
+      status: 'pending',
+      expiresAt,
     };
-    // Convert Date to ISO string for SQLite
+    
     if (isSQLite) {
-      values.expiresAt = expiresAt.toISOString();
-    } else {
-      values.expiresAt = expiresAt;
+      return sqliteInsertApprovalRequest(values);
     }
-    // Don't pass createdAt - let database default handle it
+    
     const [request] = await db
       .insert(loginApprovalRequests)
       .values([values])
@@ -410,6 +518,17 @@ export class SessionService {
           lt(loginApprovalRequests.expiresAt, new Date())
         )
       );
+  }
+
+  // 디바이스 타입 레이블 변환
+  getDeviceTypeLabel(deviceType: string): string {
+    const labels: { [key: string]: string } = {
+      'desktop': '데스크탑',
+      'laptop': '노트북',
+      'mobile': '모바일',
+      'tablet': '태블릿'
+    };
+    return labels[deviceType] || deviceType;
   }
 }
 

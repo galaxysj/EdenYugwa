@@ -82,6 +82,71 @@ function sqliteInsertCustomer(customerData: any): any {
   return selectStmt.get(lastId);
 }
 
+function sqliteInsertAdminSettings(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO admin_settings (
+      account_info_html, refund_shipping_fee, is_shipping_restriction_enabled, shipping_restricted_products
+    ) VALUES (
+      @accountInfoHtml, @refundShippingFee, @isShippingRestrictionEnabled, @shippingRestrictedProducts
+    )
+  `);
+  const result = stmt.run({
+    accountInfoHtml: data.accountInfoHtml || '',
+    refundShippingFee: data.refundShippingFee || 3000,
+    isShippingRestrictionEnabled: data.isShippingRestrictionEnabled ? 1 : 0,
+    shippingRestrictedProducts: data.shippingRestrictedProducts ? JSON.stringify(data.shippingRestrictedProducts) : null
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM admin_settings WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
+function sqliteInsertUser(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO users (username, password_hash, name, phone_number, role, is_active)
+    VALUES (@username, @passwordHash, @name, @phoneNumber, @role, @isActive)
+  `);
+  const result = stmt.run({
+    username: data.username,
+    passwordHash: data.passwordHash,
+    name: data.name || null,
+    phoneNumber: data.phoneNumber || null,
+    role: data.role || 'user',
+    isActive: data.isActive !== false ? 1 : 0
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM users WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
+function sqliteInsertDashboardContent(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO dashboard_content (key, value, type)
+    VALUES (@key, @value, @type)
+  `);
+  const result = stmt.run({
+    key: data.key,
+    value: data.value,
+    type: data.type || 'text'
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
+function sqliteInsertProductPrice(data: any): any {
+  const stmt = sqliteDb.prepare(`
+    INSERT INTO product_prices (product_index, product_name, price, cost, is_active)
+    VALUES (@productIndex, @productName, @price, @cost, @isActive)
+  `);
+  const result = stmt.run({
+    productIndex: data.productIndex,
+    productName: data.productName,
+    price: data.price,
+    cost: data.cost || 0,
+    isActive: data.isActive !== false ? 1 : 0
+  });
+  const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE id = ?');
+  return selectStmt.get(result.lastInsertRowid);
+}
+
 export interface IStorage {
   // Order management
   createOrder(order: InsertOrder): Promise<Order>;
@@ -789,21 +854,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateAdminSettings(settings: InsertAdminSettings): Promise<AdminSettings> {
-    // Check if admin settings exist
     const existing = await this.getAdminSettings();
     
     if (existing) {
-      // Update existing settings
+      if (isSQLite) {
+        const updateStmt = sqliteDb.prepare(`
+          UPDATE admin_settings SET
+            account_info_html = @accountInfoHtml,
+            refund_shipping_fee = @refundShippingFee,
+            is_shipping_restriction_enabled = @isShippingRestrictionEnabled,
+            shipping_restricted_products = @shippingRestrictedProducts,
+            updated_at = datetime('now')
+          WHERE id = @id
+        `);
+        updateStmt.run({
+          accountInfoHtml: settings.accountInfoHtml || existing.accountInfoHtml,
+          refundShippingFee: settings.refundShippingFee ?? existing.refundShippingFee,
+          isShippingRestrictionEnabled: settings.isShippingRestrictionEnabled !== undefined ? (settings.isShippingRestrictionEnabled ? 1 : 0) : (existing.isShippingRestrictionEnabled ? 1 : 0),
+          shippingRestrictedProducts: settings.shippingRestrictedProducts ? JSON.stringify(settings.shippingRestrictedProducts) : (existing.shippingRestrictedProducts ? JSON.stringify(existing.shippingRestrictedProducts) : null),
+          id: existing.id
+        });
+        const selectStmt = sqliteDb.prepare('SELECT * FROM admin_settings WHERE id = ?');
+        return selectStmt.get(existing.id) as AdminSettings;
+      }
       const [updated] = await db.update(adminSettings)
-        .set({
-          ...settings,
-          updatedAt: new Date()
-        })
+        .set({ ...settings, updatedAt: new Date() })
         .where(eq(adminSettings.id, existing.id))
         .returning();
       return updated;
     } else {
-      // Create new settings
+      if (isSQLite) {
+        return sqliteInsertAdminSettings(settings) as AdminSettings;
+      }
       const [created] = await db.insert(adminSettings)
         .values(settings)
         .returning();
@@ -1130,6 +1212,17 @@ export class DatabaseStorage implements IStorage {
     const bcrypt = await import('bcryptjs');
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     
+    if (isSQLite) {
+      return sqliteInsertUser({
+        username: userData.username,
+        passwordHash: hashedPassword,
+        name: userData.name,
+        phoneNumber: userData.phoneNumber,
+        role: userData.role || 'user',
+        isActive: userData.isActive ?? true
+      }) as User;
+    }
+    
     const [user] = await db.insert(users).values({
       username: userData.username,
       passwordHash: hashedPassword,
@@ -1161,17 +1254,25 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getDashboardContent(key);
     
     if (existing) {
+      if (isSQLite) {
+        const updateStmt = sqliteDb.prepare(`
+          UPDATE dashboard_content SET value = @value, type = @type, updated_at = datetime('now')
+          WHERE key = @key
+        `);
+        updateStmt.run({ value, type, key });
+        const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE key = ?');
+        return selectStmt.get(key) as DashboardContent;
+      }
       const [updated] = await db
         .update(dashboardContent)
-        .set({ 
-          value,
-          type,
-          updatedAt: new Date()  
-        })
+        .set({ value, type, updatedAt: new Date() })
         .where(eq(dashboardContent.key, key))
         .returning();
       return updated;
     } else {
+      if (isSQLite) {
+        return sqliteInsertDashboardContent({ key, value, type }) as DashboardContent;
+      }
       const [created] = await db
         .insert(dashboardContent)
         .values({ key, value, type })
@@ -1185,12 +1286,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateDashboardContent(key: string, value: string): Promise<DashboardContent | undefined> {
+    if (isSQLite) {
+      const updateStmt = sqliteDb.prepare(`
+        UPDATE dashboard_content SET value = @value, updated_at = datetime('now')
+        WHERE key = @key
+      `);
+      updateStmt.run({ value, key });
+      const selectStmt = sqliteDb.prepare('SELECT * FROM dashboard_content WHERE key = ?');
+      return selectStmt.get(key) as DashboardContent;
+    }
     const [updated] = await db
       .update(dashboardContent)
-      .set({ 
-        value,
-        updatedAt: new Date()  
-      })
+      .set({ value, updatedAt: new Date() })
       .where(eq(dashboardContent.key, key))
       .returning();
     return updated || undefined;
@@ -1205,13 +1312,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async setProductPrice(productPrice: InsertProductPrice): Promise<ProductPrice> {
-    // Check if product price already exists
     const existingPrice = await db.select().from(productPrices)
       .where(eq(productPrices.productIndex, productPrice.productIndex))
       .limit(1);
 
     if (existingPrice.length > 0) {
-      // Update existing product price
+      if (isSQLite) {
+        const updateStmt = sqliteDb.prepare(`
+          UPDATE product_prices SET
+            product_name = @productName, price = @price, cost = @cost,
+            is_active = @isActive, updated_at = datetime('now')
+          WHERE product_index = @productIndex
+        `);
+        updateStmt.run({
+          productName: productPrice.productName,
+          price: productPrice.price,
+          cost: productPrice.cost || 0,
+          isActive: productPrice.isActive !== false ? 1 : 0,
+          productIndex: productPrice.productIndex
+        });
+        const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE product_index = ?');
+        return selectStmt.get(productPrice.productIndex) as ProductPrice;
+      }
       const [updated] = await db.update(productPrices)
         .set({
           productName: productPrice.productName,
@@ -1224,7 +1346,9 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updated;
     } else {
-      // Create new product price
+      if (isSQLite) {
+        return sqliteInsertProductPrice(productPrice) as ProductPrice;
+      }
       const [created] = await db.insert(productPrices)
         .values(productPrice)
         .returning();
@@ -1239,6 +1363,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProductPrice(productIndex: number, price: number, cost: number): Promise<ProductPrice | undefined> {
+    if (isSQLite) {
+      const updateStmt = sqliteDb.prepare(`
+        UPDATE product_prices SET price = @price, cost = @cost, updated_at = datetime('now')
+        WHERE product_index = @productIndex
+      `);
+      updateStmt.run({ price, cost, productIndex });
+      const selectStmt = sqliteDb.prepare('SELECT * FROM product_prices WHERE product_index = ?');
+      return selectStmt.get(productIndex) as ProductPrice;
+    }
     const [updated] = await db.update(productPrices)
       .set({ price, cost, updatedAt: new Date() })
       .where(eq(productPrices.productIndex, productIndex))
@@ -1247,6 +1380,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProductPrice(productIndex: number): Promise<void> {
+    if (isSQLite) {
+      const stmt = sqliteDb.prepare(`
+        UPDATE product_prices SET is_active = 0, updated_at = datetime('now')
+        WHERE product_index = @productIndex
+      `);
+      stmt.run({ productIndex });
+      return;
+    }
     await db.update(productPrices)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(productPrices.productIndex, productIndex));
