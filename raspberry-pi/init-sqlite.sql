@@ -148,6 +148,9 @@ CREATE TABLE IF NOT EXISTS customers (
   notes TEXT,
   user_id INTEGER,
   user_registered_name TEXT,
+  user_registered_phone TEXT,
+  is_deleted INTEGER NOT NULL DEFAULT 0,
+  deleted_at TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

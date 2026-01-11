@@ -229,11 +229,17 @@ export class DatabaseStorage implements IStorage {
       orderData.createdAt = new Date().toISOString();
       // SQLite can't handle JSON objects directly, stringify them
       if (orderData.dynamicProductQuantities !== null && orderData.dynamicProductQuantities !== undefined) {
-        orderData.dynamicProductQuantities = JSON.stringify(orderData.dynamicProductQuantities);
+        if (typeof orderData.dynamicProductQuantities === 'object') {
+          orderData.dynamicProductQuantities = JSON.stringify(orderData.dynamicProductQuantities);
+        }
       }
       // Convert Date objects to ISO strings for SQLite
       if (orderData.scheduledDate instanceof Date) {
         orderData.scheduledDate = orderData.scheduledDate.toISOString();
+      } else if (orderData.scheduledDate && typeof orderData.scheduledDate === 'string') {
+        // Already a string, keep it
+      } else {
+        orderData.scheduledDate = null;
       }
       // Convert booleans to integers for SQLite
       orderData.isDifferentDepositor = orderData.isDifferentDepositor ? 1 : 0;
