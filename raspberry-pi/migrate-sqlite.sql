@@ -16,10 +16,10 @@ ALTER TABLE admin_settings ADD COLUMN shipping_restricted_products TEXT;
 ALTER TABLE access_control_settings ADD COLUMN is_device_restriction_enabled INTEGER DEFAULT 0;
 
 -- 기본 사용자 계정 추가 (users 테이블에 없는 경우)
--- 관리자 계정 (비밀번호: eden2024!)
+-- 관리자 계정 (galaxysj / eden*3452)
 INSERT OR IGNORE INTO users (username, password_hash, name, phone_number, role, is_active) 
-VALUES ('admin', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', '관리자', '', 'admin', 1);
+VALUES ('galaxysj', '$2b$10$On/BZhLNw4dOc6ao3eb3yelk05cZ8Eu911Gm4Swob3EioqsSRiD/6', '관리자', '', 'admin', 1);
 
--- 매니저 계정 (비밀번호: eden2024!)
+-- 매니저 계정 (ceohj / eden*2376)
 INSERT OR IGNORE INTO users (username, password_hash, name, phone_number, role, is_active) 
-VALUES ('manager', '$2b$10$euHzf7uCpOiMLHeAAEUSle.DQlDL0Urp1kTpe8TSwp/WuMiy1A/1a', '매니저', '', 'manager', 1);
+VALUES ('ceohj', '$2b$10$EpkxCNayyiAfrjmTYyn3YunbRiq1NrYBuPEYkhAKTzjgDkkcPvWVy', '매니저', '', 'manager', 1);
