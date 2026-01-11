@@ -1,0 +1,196 @@
+sonsejin@casaos:~/EdenYugwa$ ./raspberry-pi/start-pi.sh
+=== Eden 한과 주문관리 시스템 시작 ===
+디렉토리 설정 중...
+환경변수 로드 중...
+PostgreSQL 연결 확인 중...
+데이터베이스 스키마 확인 중...
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/home/sonsejin/EdenYugwa/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+애플리케이션 시작 중...
+
+Eden 한과 주문관리 시스템이 시작됩니다.
+접속 주소: http://192.168.219.106:7000
+종료하려면 Ctrl+C를 누르세요.
+
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+PostgreSQL database connected
+Admin/Manager credentials not found in environment variables
+2:01:27 AM [express] serving on port 7000
+Failed to initialize order counter: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: AggregateError [ECONNREFUSED]:
+      at internalConnectMultiple (node:net:1122:18)
+      at afterConnectMultiple (node:net:1689:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  },
+  [Symbol(kMessage)]: ''
+}
+Failed to create default admin: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: AggregateError [ECONNREFUSED]:
+      at internalConnectMultiple (node:net:1122:18)
+      at afterConnectMultiple (node:net:1689:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  },
+  [Symbol(kMessage)]: ''
+}
+Failed to create default manager: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: AggregateError [ECONNREFUSED]:
+      at internalConnectMultiple (node:net:1122:18)
+      at afterConnectMultiple (node:net:1689:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  },
+  [Symbol(kMessage)]: ''
+}
+Failed to create default settings: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(shapeMode)]: false,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: AggregateError [ECONNREFUSED]:
+      at internalConnectMultiple (node:net:1122:18)
+      at afterConnectMultiple (node:net:1689:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  },
+  [Symbol(kMessage)]: ''
+}
