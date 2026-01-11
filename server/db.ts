@@ -58,4 +58,20 @@ if (isSQLite) {
   db = drizzle({ client: pool, schema });
 }
 
-export { db, pool, isSQLite, sqliteDb };
+// SQLite boolean helper - converts JavaScript boolean to 0/1 for SQLite queries
+function dbBool(value: boolean): any {
+  if (isSQLite) {
+    return value ? 1 : 0;
+  }
+  return value;
+}
+
+// SQLite timestamp helper - returns current timestamp expression
+function dbNow(): any {
+  if (isSQLite) {
+    return "datetime('now')";
+  }
+  return new Date();
+}
+
+export { db, pool, isSQLite, sqliteDb, dbBool, dbNow };
