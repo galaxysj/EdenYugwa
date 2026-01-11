@@ -93,7 +93,7 @@ export function mapSqliteRow<T>(row: any): T | undefined {
     if (key.includes('is_') || key === 'seller_shipped' || key === 'is_active' || 
         key === 'block_unknown_devices' || key === 'require_location_verification' ||
         key === 'is_enabled' || key === 'is_deleted' || key === 'is_different_depositor' ||
-        key === 'was_successful') {
+        key === 'success') {
       mapped[camelKey] = parseDbBool(value);
     } else if (key.includes('_at') || key.includes('_date') || key === 'expires_at' || 
                key === 'last_activity' || key === 'created_at' || key === 'updated_at' ||

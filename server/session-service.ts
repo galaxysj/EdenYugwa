@@ -261,6 +261,11 @@ export class SessionService {
 
   // 사용자의 다른 모든 세션 종료 (현재 세션 제외)
   async terminateOtherSessions(userId: number, currentSessionId: string) {
+    if (isSQLite && sqliteDb) {
+      const stmt = sqliteDb.prepare(`UPDATE user_sessions SET is_active = 0 WHERE user_id = ? AND is_active = 1 AND session_id != ?`);
+      stmt.run(userId, currentSessionId);
+      return;
+    }
     await db
       .update(userSessions)
       .set({ isActive: false })

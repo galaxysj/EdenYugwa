@@ -1125,6 +1125,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProductPrice(productIndex: number): Promise<void> {
+    if (isSQLite && sqliteDb) {
+      const stmt = sqliteDb.prepare(`UPDATE product_prices SET is_active = 0, updated_at = datetime('now') WHERE product_index = ?`);
+      stmt.run(productIndex);
+      return;
+    }
     await db.update(productPrices)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(productPrices.productIndex, productIndex));
