@@ -1,6 +1,10 @@
-import { db } from "./db";
+import { db, isSQLite } from "./db";
 import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
+
+function getSQLiteTimestamp(): string {
+  return new Date().toISOString();
+}
 
 // User-Agent 파싱을 위한 간단한 유틸리티
 function parseUserAgent(userAgent: string) {
@@ -52,7 +56,7 @@ export class SessionService {
     const { deviceType, browserInfo } = parseUserAgent(sessionData.userAgent);
     const location = getLocationFromIP(sessionData.ipAddress);
 
-    const newSession: InsertUserSession = {
+    const newSession: any = {
       userId: sessionData.userId,
       sessionId: sessionData.sessionId,
       ipAddress: sessionData.ipAddress,
@@ -63,6 +67,10 @@ export class SessionService {
       isActive: true,
       expiresAt: sessionData.expiresAt,
     };
+    if (isSQLite) {
+      newSession.createdAt = getSQLiteTimestamp();
+      newSession.lastActivity = getSQLiteTimestamp();
+    }
 
     const [session] = await db.insert(userSessions).values(newSession).returning();
     return session;
@@ -132,9 +140,14 @@ export class SessionService {
         .returning();
       return updated;
     } else {
+      const values: any = { userId, ...settings };
+      if (isSQLite) {
+        values.createdAt = getSQLiteTimestamp();
+        values.updatedAt = getSQLiteTimestamp();
+      }
       const [created] = await db
         .insert(accessControlSettings)
-        .values({ userId, ...settings })
+        .values(values)
         .returning();
       return created;
     }
@@ -145,13 +158,17 @@ export class SessionService {
     const { deviceType } = parseUserAgent(attemptData.userAgent || '');
     const location = getLocationFromIP(attemptData.ipAddress);
 
+    const values: any = {
+      ...attemptData,
+      location,
+      deviceType,
+    };
+    if (isSQLite) {
+      values.createdAt = getSQLiteTimestamp();
+    }
     const [attempt] = await db
       .insert(loginAttempts)
-      .values({
-        ...attemptData,
-        location,
-        deviceType,
-      })
+      .values(values)
       .returning();
     
     return attempt;
@@ -276,18 +293,22 @@ export class SessionService {
     const location = getLocationFromIP(requestData.ipAddress);
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30분 후 만료
 
+    const values: any = {
+      userId: requestData.userId,
+      sessionId: requestData.sessionId,
+      ipAddress: requestData.ipAddress,
+      userAgent: requestData.userAgent,
+      location,
+      deviceType,
+      requestReason: requestData.requestReason,
+      expiresAt,
+    };
+    if (isSQLite) {
+      values.createdAt = getSQLiteTimestamp();
+    }
     const [request] = await db
       .insert(loginApprovalRequests)
-      .values([{
-        userId: requestData.userId,
-        sessionId: requestData.sessionId,
-        ipAddress: requestData.ipAddress,
-        userAgent: requestData.userAgent,
-        location,
-        deviceType,
-        requestReason: requestData.requestReason,
-        expiresAt,
-      }])
+      .values([values])
       .returning();
 
     return request;
