@@ -226,7 +226,17 @@ export class DatabaseStorage implements IStorage {
     };
     
     if (isSQLite) {
-      orderData.createdAt = new Date();
+      orderData.createdAt = new Date().toISOString();
+      // SQLite can't handle JSON objects directly, stringify them
+      if (orderData.dynamicProductQuantities !== null && orderData.dynamicProductQuantities !== undefined) {
+        orderData.dynamicProductQuantities = JSON.stringify(orderData.dynamicProductQuantities);
+      }
+      // Convert Date objects to ISO strings for SQLite
+      if (orderData.scheduledDate instanceof Date) {
+        orderData.scheduledDate = orderData.scheduledDate.toISOString();
+      }
+      // Convert booleans to integers for SQLite
+      orderData.isDifferentDepositor = orderData.isDifferentDepositor ? 1 : 0;
     }
     
     const [order] = await db
@@ -738,8 +748,11 @@ export class DatabaseStorage implements IStorage {
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
     const values: any = { ...customer };
     if (isSQLite) {
-      values.createdAt = new Date();
-      values.updatedAt = new Date();
+      values.createdAt = new Date().toISOString();
+      values.updatedAt = new Date().toISOString();
+      if (values.lastOrderDate instanceof Date) {
+        values.lastOrderDate = values.lastOrderDate.toISOString();
+      }
     }
     const [newCustomer] = await db.insert(customers).values(values).returning();
     return newCustomer;
@@ -907,12 +920,12 @@ export class DatabaseStorage implements IStorage {
         address2: firstOrder.address2,
         orderCount,
         totalSpent,
-        lastOrderDate,
+        lastOrderDate: lastOrderDate instanceof Date ? (isSQLite ? lastOrderDate.toISOString() : lastOrderDate) : lastOrderDate,
         notes: null
       };
       if (isSQLite) {
-        newCustomerData.createdAt = new Date();
-        newCustomerData.updatedAt = new Date();
+        newCustomerData.createdAt = new Date().toISOString();
+        newCustomerData.updatedAt = new Date().toISOString();
       }
       await db.insert(customers).values(newCustomerData);
       console.log(`${phoneNumber} 새로운 고객 생성 완료`);
@@ -970,8 +983,8 @@ export class DatabaseStorage implements IStorage {
         userRegisteredPhone: customerData.userRegisteredPhone || null
       };
       if (isSQLite) {
-        customerValues.createdAt = new Date();
-        customerValues.updatedAt = new Date();
+        customerValues.createdAt = new Date().toISOString();
+        customerValues.updatedAt = new Date().toISOString();
       }
       const [newCustomer] = await db.insert(customers).values(customerValues).returning();
 
@@ -985,7 +998,12 @@ export class DatabaseStorage implements IStorage {
   async bulkCreateCustomers(customersData: InsertCustomer[]): Promise<Customer[]> {
     try {
       const values = isSQLite 
-        ? customersData.map(c => ({ ...c, createdAt: new Date(), updatedAt: new Date() }))
+        ? customersData.map(c => ({ 
+            ...c, 
+            createdAt: new Date().toISOString(), 
+            updatedAt: new Date().toISOString(),
+            lastOrderDate: c.lastOrderDate instanceof Date ? c.lastOrderDate.toISOString() : c.lastOrderDate
+          }))
         : customersData;
       const result = await db.insert(customers).values(values as any).returning();
       return result;

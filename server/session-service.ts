@@ -2,8 +2,8 @@ import { db, isSQLite } from "./db";
 import { userSessions, accessControlSettings, loginAttempts, loginApprovalRequests, type InsertUserSession, type InsertAccessControlSettings, type InsertLoginAttempt, type InsertLoginApprovalRequest } from "@shared/schema";
 import { eq, and, gte, desc, lt } from "drizzle-orm";
 
-function getSQLiteTimestamp(): Date {
-  return new Date();
+function getSQLiteTimestamp(): string {
+  return new Date().toISOString();
 }
 
 // User-Agent 파싱을 위한 간단한 유틸리티
