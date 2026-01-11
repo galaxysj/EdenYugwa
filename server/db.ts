@@ -1,4 +1,7 @@
+import { createRequire } from 'module';
 import * as schema from "@shared/schema";
+
+const require = createRequire(import.meta.url);
 
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -11,14 +14,15 @@ if (!DATABASE_URL) {
 const isSQLite = DATABASE_URL.startsWith('file:');
 
 let db: any;
-let pool: any;
+let pool: any = null;
 
 if (isSQLite) {
-  const Database = require('better-sqlite3');
-  const { drizzle } = require('drizzle-orm/better-sqlite3');
+  // SQLite 모드 (라즈베리 파이)
   const fs = require('fs');
   const path = require('path');
-
+  const Database = require('better-sqlite3');
+  const { drizzle } = require('drizzle-orm/better-sqlite3');
+  
   const dataDir = process.env.DATA_DIR || './data';
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true });
@@ -42,16 +46,15 @@ if (isSQLite) {
   sqlite.pragma('temp_store = memory');
 
   db = drizzle(sqlite, { schema });
-  pool = null;
 } else {
+  // PostgreSQL 모드 (Replit)
   const { Pool, neonConfig } = require('@neondatabase/serverless');
   const { drizzle } = require('drizzle-orm/neon-serverless');
   const ws = require('ws');
-
+  
   neonConfig.webSocketConstructor = ws;
-
   pool = new Pool({ connectionString: DATABASE_URL });
   db = drizzle({ client: pool, schema });
 }
 
-export { db, pool };
+export { db, pool, isSQLite };

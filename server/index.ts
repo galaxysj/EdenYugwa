@@ -1,32 +1,58 @@
+import { createRequire } from 'module';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import passport from "./auth";
 import { userService } from "./user-service";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { isSQLite } from "./db";
+
+const require = createRequire(import.meta.url);
 
 const app = express();
-app.use(express.json({ limit: '50mb' })); // Increase limit for image uploads
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// 세션 설정
-const pgStore = connectPg(session);
-app.use(session({
-  store: new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    tableName: 'sessions',
-  }),
-  secret: process.env.SESSION_SECRET!,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24시간
-    secure: false, // development에서는 false
-    httpOnly: true,
-  },
-}));
+const DATABASE_URL = process.env.DATABASE_URL || '';
+
+// 세션 설정 (SQLite는 메모리 스토어, PostgreSQL은 pg 스토어)
+if (isSQLite) {
+  const MemStore = MemoryStore(session);
+  app.use(session({
+    store: new MemStore({
+      checkPeriod: 86400000
+    }),
+    secret: process.env.SESSION_SECRET || 'eden-hangwa-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+      httpOnly: true,
+    },
+  }));
+  console.log('메모리 세션 스토어 사용 (SQLite 모드)');
+} else {
+  const connectPg = require('connect-pg-simple');
+  const pgStore = connectPg(session);
+  app.use(session({
+    store: new pgStore({
+      conString: DATABASE_URL,
+      createTableIfMissing: false,
+      tableName: 'sessions',
+    }),
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      secure: false,
+      httpOnly: true,
+    },
+  }));
+  console.log('PostgreSQL 세션 스토어 사용');
+}
 
 // Passport 초기화
 app.use(passport.initialize());
@@ -76,19 +102,12 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen({
     port,
