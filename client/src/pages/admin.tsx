@@ -2504,36 +2504,167 @@ export default function Admin() {
       dynamicProductQuantities: {}
     });
     
-    const handleRevenueExcelDownload = async () => {
-      try {
-        const response = await fetch('/api/export/revenue');
-        
-        if (!response.ok) {
-          throw new Error('Export failed');
-        }
-        
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `에덴한과_매출관리_${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        
+    const handleRevenueExcelDownload = () => {
+      if (!filteredOrders || filteredOrders.length === 0) {
         toast({
-          title: "다운로드 완료",
-          description: "매출관리 엑셀 파일이 성공적으로 다운로드되었습니다.",
-        });
-      } catch (error) {
-        toast({
-          title: "다운로드 실패",
-          description: "매출관리 엑셀 파일 다운로드 중 오류가 발생했습니다.",
+          title: "내보낼 데이터 없음",
+          description: "매출 상세내역에 표시할 데이터가 없습니다.",
           variant: "destructive",
         });
+        return;
       }
+    
+      // '매출 상세내역' 테이블과 동일한 계산 로직을 사용하여 엑셀 데이터 생성
+      const excelData = filteredOrders
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .map((order) => {
+          const getOrderTimeProductName = (index: number, fallback: string) => {
+            if (dashboardContent.productNames && dashboardContent.productNames[index]) {
+              return dashboardContent.productNames[index].name;
+            }
+            return fallback;
+          };
+
+          const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? 
+            order.smallBoxPrice : (smallBoxPriceValue || (productNames[0]?.price ? parseInt(productNames[0].price) : 19000));
+          const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? 
+            order.largeBoxPrice : (largeBoxPriceValue || (productNames[1]?.price ? parseInt(productNames[1].price) : 21000));
+          const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? 
+            order.wrappingPrice : (wrappingPriceValue || (productNames[2]?.price ? parseInt(productNames[2].price) : 1000));
+          
+          const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
+          const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
+          const wrappingTotal = order.wrappingQuantity * wrappingPrice;
+          
+          let dynamicProductsTotal = 0;
+          if (order.dynamicProductQuantities) {
+            try {
+              const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                ? JSON.parse(order.dynamicProductQuantities) 
+                : order.dynamicProductQuantities;
+              Object.entries(dynamicQty).forEach(([index, quantity]) => {
+                const productIndex = parseInt(index);
+                const qty = Number(quantity);
+                if (productIndex >= 3 && qty > 0) {
+                  const storedDynamicPrice = order.dynamicProductPrices && order.dynamicProductPrices[productIndex];
+                  const productPriceSetting = settings?.find(s => s.key === `product_${productIndex}Price`);
+                  const productPrice = (storedDynamicPrice && storedDynamicPrice > 0) ? 
+                    storedDynamicPrice : 
+                    (productPriceSetting ? parseInt(productPriceSetting.value) : 
+                    (productNames[productIndex]?.price ? parseInt(productNames[productIndex].price) : 0));
+                  dynamicProductsTotal += qty * productPrice;
+                }
+              });
+            } catch (error) { console.error('Error parsing dynamic product quantities for excel export:', error); }
+          }
+          
+          const shippingFee = order.shippingFee || 0;
+          const recalculatedTotalRevenue = smallBoxTotal + largeBoxTotal + wrappingTotal + dynamicProductsTotal + shippingFee;
+          
+          const smallCost = smallBoxCostValue || order.smallBoxCost || (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0);
+          const largeCost = largeBoxCostValue || order.largeBoxCost || (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0);
+          const wrappingCost = wrappingCostValue || order.wrappingCost || (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0);
+          
+          const smallBoxesCost = order.smallBoxQuantity * smallCost;
+          const largeBoxesCost = order.largeBoxQuantity * largeCost;
+          const wrappingCostTotal = order.wrappingQuantity * wrappingCost;
+          
+          let dynamicProductsCost = 0;
+          if (order.dynamicProductQuantities) {
+            try {
+              const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                ? JSON.parse(order.dynamicProductQuantities) 
+                : order.dynamicProductQuantities;
+              Object.entries(dynamicQty).forEach(([index, quantity]) => {
+                const productIndex = parseInt(index);
+                const qty = Number(quantity);
+                if (productIndex >= 3 && qty > 0) {
+                  const productCostSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
+                  const productCost = productCostSetting ? parseInt(productCostSetting.value) : 
+                                    (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+                  dynamicProductsCost += qty * productCost;
+                }
+              });
+            } catch (error) { console.error('Error parsing dynamic product costs for excel export:', error); }
+          }
+          
+          const totalCost = smallBoxesCost + largeBoxesCost + wrappingCostTotal + dynamicProductsCost + shippingFee;
+          const discountAmount = order.discountAmount || 0;
+          const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < recalculatedTotalRevenue && !discountAmount) 
+            ? (recalculatedTotalRevenue - order.actualPaidAmount) : 0;
+          const netProfit = recalculatedTotalRevenue - totalCost - discountAmount - unpaidAmount;
+
+          const orderDetails = [
+            order.smallBoxQuantity > 0 ? `${getOrderTimeProductName(0, '한과1호')}×${order.smallBoxQuantity}` : null,
+            order.largeBoxQuantity > 0 ? `${getOrderTimeProductName(1, '한과2호')}×${order.largeBoxQuantity}` : null,
+            order.wrappingQuantity > 0 ? `${getOrderTimeProductName(2, '보자기')}×${order.wrappingQuantity}` : null,
+          ];
+
+          if (order.dynamicProductQuantities) {
+            try {
+              const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+                ? JSON.parse(order.dynamicProductQuantities) 
+                : order.dynamicProductQuantities;
+              Object.entries(dynamicQty).forEach(([index, quantity]) => {
+                const productIndex = parseInt(index);
+                const qty = Number(quantity);
+                if (qty > 0) {
+                  orderDetails.push(`${getOrderTimeProductName(productIndex, `상품${productIndex + 1}`)}×${qty}`);
+                }
+              });
+            } catch (e) { /* Do nothing */ }
+          }
+
+          return {
+            '주문번호': `#${order.orderNumber}`,
+            '고객명': order.customerName,
+            '주문일': new Date(order.createdAt).toLocaleDateString('ko-KR'),
+            '주문내역': orderDetails.filter(Boolean).join('\n'),
+            '매출금액': recalculatedTotalRevenue,
+            '실제입금액': order.actualPaidAmount || recalculatedTotalRevenue,
+            '할인금액': discountAmount > 0 ? discountAmount : 0,
+            '미입금액': unpaidAmount > 0 ? unpaidAmount : 0,
+            '총원가': totalCost,
+            '순수익': netProfit,
+          };
+        });
+    
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      
+      // 컬럼 너비 설정
+      ws['!cols'] = [
+        { width: 12 }, // 주문번호
+        { width: 12 }, // 고객명
+        { width: 12 }, // 주문일
+        { width: 25 }, // 주문내역
+        { width: 12 }, // 매출금액
+        { width: 12 }, // 실제입금액
+        { width: 12 }, // 할인금액
+        { width: 12 }, // 미입금액
+        { width: 12 }, // 총원가
+        { width: 12 }, // 순수익
+      ];
+
+      // 주문내역' 컬럼 줄바꿈
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+      for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+        const cell_address = {c:3, r:R};
+        const cell_ref = XLSX.utils.encode_cell(cell_address);
+        if(ws[cell_ref] && ws[cell_ref].t === 's') {
+            ws[cell_ref].s = { alignment: { wrapText: true, vertical: 'top' } };
+        }
+      }
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "매출상세내역");
+      
+      const today = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb, `매출_상세내역_${today}.xlsx`);
+      
+      toast({
+        title: "엑셀 다운로드 완료",
+        description: `${filteredOrders.length}개 주문의 매출 상세 내역이 다운로드되었습니다.`,
+      });
     };
 
     return (
