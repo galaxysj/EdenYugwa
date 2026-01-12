@@ -2044,34 +2044,31 @@ export default function Admin() {
       }
     }
     
-    // 행 높이 설정 (줄바꿈된 내용이 보이도록)
-    if (!ws['!rows']) ws['!rows'] = [];
-    for (let R = 1; R <= range.e.r; ++R) { // 헤더 제외하고 데이터 행만
-      ws['!rows'][R] = { hpt: 60 }; // 행 높이를 60으로 설정
-    }
-    
+    // 주소 길이에 맞춰 컬럼 너비 동적 계산
+    const maxAddressLength = excelData.reduce((w, r) => Math.max(w, r['주소'] ? r['주소'].length : 10), 10);
+
     // 컬럼 너비 설정
     ws['!cols'] = [
-      { width: 12 }, // 주문번호
-      { width: 12 }, // 주문일
-      { width: 10 }, // 주문시간
-      { width: 12 }, // 고객명
-      { width: 12 }, // 받는분
-      { width: 15 }, // 전화번호
-      { width: 30 }, // 주소
-      { width: 25 }, // 상품
-      { width: 12 }, // 주문금액
-      { width: 12 }, // 실입금액
-      { width: 12 }, // 할인금액
-      { width: 12 }, // 입금상태
-      { width: 12 }, // 주문상태
-      { width: 12 }, // 발송상태
-      { width: 15 }, // 예약발송일
-      { width: 15 }, // 발송완료일
-      { width: 15 }, // 매니저발송일
-      { width: 12 }, // 원가합계
-      { width: 12 }, // 순수익
-      { width: 20 }  // 메모
+      { wch: 12 }, // 주문번호
+      { wch: 12 }, // 주문일
+      { wch: 10 }, // 주문시간
+      { wch: 12 }, // 고객명
+      { wch: 12 }, // 받는분
+      { wch: 15 }, // 전화번호
+      { wch: maxAddressLength }, // 주소 (자동 너비)
+      { wch: 25 }, // 상품
+      { wch: 12 }, // 주문금액
+      { wch: 12 }, // 실입금액
+      { wch: 12 }, // 할인금액
+      { wch: 12 }, // 입금상태
+      { wch: 12 }, // 주문상태
+      { wch: 12 }, // 발송상태
+      { wch: 15 }, // 예약발송일
+      { wch: 15 }, // 발송완료일
+      { wch: 15 }, // 매니저발송일
+      { wch: 12 }, // 원가합계
+      { wch: 12 }, // 순수익
+      { wch: 20 }  // 메모
     ];
     
     const wb = XLSX.utils.book_new();
