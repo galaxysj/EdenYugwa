@@ -2044,7 +2044,7 @@ export default function Admin() {
       }
     }
     
-    // 주소 길이에 맞춰 컬럼 너비 동적 계산
+    // 주소 길이에 맞춰 컬럼 너비 동적 계산 (여분 10 추가)
     const maxAddressLength = excelData.reduce((w, r) => Math.max(w, r['주소'] ? r['주소'].length : 10), 10);
 
     // 컬럼 너비 설정
@@ -2055,7 +2055,7 @@ export default function Admin() {
       { wch: 12 }, // 고객명
       { wch: 12 }, // 받는분
       { wch: 15 }, // 전화번호
-      { wch: maxAddressLength }, // 주소 (자동 너비)
+      { wch: maxAddressLength + 10 }, // 주소 (자동 너비 + 여분)
       { wch: 25 }, // 상품
       { wch: 12 }, // 주문금액
       { wch: 12 }, // 실입금액
@@ -5038,35 +5038,9 @@ export default function Admin() {
     updateSellerShippedMutation.mutate([orderId]);
   };
 
-  const handleExcelDownload = async () => {
-    try {
-      const response = await fetch('/api/orders/export/excel');
-      if (!response.ok) {
-        throw new Error('엑셀 파일 다운로드에 실패했습니다');
-      }
-      
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `에덴한과_주문목록_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: "다운로드 완료",
-        description: "엑셀 파일이 성공적으로 다운로드되었습니다.",
-      });
-    } catch (error) {
-      toast({
-        title: "다운로드 실패",
-        description: "엑셀 파일 다운로드 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
+  const handleExcelDownload = () => {
+    // Call the client-side export function with all orders
+    exportToExcel(orders, "매니저_전체주문목록");
   };
 
   const formatPrice = (price: number | undefined | null) => {
