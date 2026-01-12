@@ -1895,6 +1895,30 @@ export default function Admin() {
 
   // Excel export function for admin
   const exportToExcel = (ordersList: Order[], fileName: string) => {
+    const getProductName = (index: number) => {
+      try {
+        const productNames = Array.isArray(dashboardContent.productNames) 
+          ? dashboardContent.productNames 
+          : JSON.parse(dashboardContent.productNames || '[]');
+        
+        if (productNames[index] && productNames[index].name) {
+          return productNames[index].name;
+        }
+        
+        // 기본값 반환
+        if (index === 0) return '한과1호';
+        if (index === 1) return '한과2호';
+        if (index === 2) return '보자기';
+        return `상품${index + 1}`;
+      } catch (error) {
+        console.error('상품명 파싱 오류:', error);
+        if (index === 0) return '한과1호';
+        if (index === 1) return '한과2호';
+        if (index === 2) return '보자기';
+        return `상품${index + 1}`;
+      }
+    };
+    
     const excelData = ordersList.map(order => {
       // Get product costs from dashboard content first, fallback to settings
       const productNames = dashboardContent.productNames || [];
@@ -1960,9 +1984,9 @@ export default function Admin() {
         '전화번호': order.customerPhone,
         '주소': `${order.address1} ${order.address2 || ''}`.trim(),
         '상품': [
-          order.smallBoxQuantity > 0 ? `${getProductName(0, '한과1호')}×${order.smallBoxQuantity}개` : '',
-          order.largeBoxQuantity > 0 ? `${getProductName(1, '한과2호')}×${order.largeBoxQuantity}개` : '',
-          order.wrappingQuantity > 0 ? `${getProductName(2, '보자기')}×${order.wrappingQuantity}개` : '',
+          order.smallBoxQuantity > 0 ? `${getProductName(0)}×${order.smallBoxQuantity}개` : '',
+          order.largeBoxQuantity > 0 ? `${getProductName(1)}×${order.largeBoxQuantity}개` : '',
+          order.wrappingQuantity > 0 ? `${getProductName(2)}×${order.wrappingQuantity}개` : '',
           ...(order.dynamicProductQuantities ? (() => {
             try {
               const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
@@ -1971,7 +1995,7 @@ export default function Admin() {
               return Object.entries(dynamicQty || {}).map(([index, quantity]) => {
                 const productIndex = parseInt(index);
                 const qty = Number(quantity);
-                const productName = getProductName(productIndex, `상품${productIndex + 1}`);
+                const productName = getProductName(productIndex);
                 return qty > 0 ? `${productName}×${qty}개` : '';
               }).filter(Boolean);
             } catch (error) {
