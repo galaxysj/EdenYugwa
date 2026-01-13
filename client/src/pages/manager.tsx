@@ -342,7 +342,11 @@ export default function ManagerDashboard() {
       ].filter(Boolean).join('\n'),
       '연락처': order.customerPhone,
       '배송지': `${order.address1} ${order.address2 || ''}`.trim(),
-      '판매자발송': order.sellerShipped ? '발송완료' : '발송대기'
+      '판매자발송': order.sellerShipped ? '발송완료' : '발송대기',
+      '실입금액': (order.actualPaidAmount || 0).toLocaleString(),
+      '할인금액': (order.discountAmount || 0).toLocaleString(),
+      '원가합계': (order.totalCost || 0).toLocaleString(),
+      '순수익': ((order.actualPaidAmount || 0) - (order.totalCost || 0)).toLocaleString(),
     }));
 
     const ws = XLSX.utils.json_to_sheet(excelData);
@@ -382,7 +386,11 @@ export default function ManagerDashboard() {
       { width: 35 }, // 주문내역 (더 넓게)
       { width: 15 }, // 연락처
       { width: 45 }, // 배송지 (더 넓게)
-      { width: 12 }  // 판매자발송
+      { width: 12 },  // 판매자발송
+      { width: 12 }, // 실입금액
+      { width: 12 }, // 할인금액
+      { width: 12 }, // 원가합계
+      { width: 12 }  // 순수익
     ];
     
     const wb = XLSX.utils.book_new();
