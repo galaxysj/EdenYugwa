@@ -84,71 +84,82 @@ export function SmsDialog({ order, children }: SmsDialogProps) {
 
   // iOS 단축어 링크로 SMS 발송하는 함수
   const sendSMSViaShortcut = (phoneNumber: string, message: string) => {
-    const input = `${phoneNumber}/${message}`;
-    
-    // 다양한 방법으로 시도
-    const methods = [
-      () => {
-        // 방법 1: shortcuts:// URL 스킴 (기본)
-        const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
-        console.log('방법 1 시도:', shortcutUrl);
-        window.location.href = shortcutUrl;
-      },
-      () => {
-        // 방법 2: x-callback-url 방식
-        const callbackUrl = `shortcuts://x-callback-url/run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
-        console.log('방법 2 시도:', callbackUrl);
-        window.location.href = callbackUrl;
-      },
-      () => {
-        // 방법 3: 단순한 shortcuts://run-shortcut
-        const simpleUrl = `shortcuts://run-shortcut?name=eden&input=${input}`;
-        console.log('방법 3 시도:', simpleUrl);
-        window.location.href = simpleUrl;
-      }
-    ];
+    // Check if it's an iOS device
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-    console.log('전화번호:', phoneNumber);
-    console.log('메시지:', message);
-    console.log('입력값:', input);
-    
-    try {
-      // 첫 번째 방법 시도
-      methods[0]();
+    if (isIOS) {
+      const input = `${phoneNumber}/${message}`;
       
-      // 1초 후 페이지가 여전히 있으면 다른 방법들 시도
-      setTimeout(() => {
-        console.log('첫 번째 방법 실패, 두 번째 방법 시도');
-        methods[1]();
-      }, 1000);
+      // 기존 iOS 단축어 로직 유지
+      const methods = [
+        () => {
+          const shortcutUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
+          console.log('iOS 방법 1 시도:', shortcutUrl);
+          window.location.href = shortcutUrl;
+        },
+        () => {
+          const callbackUrl = `shortcuts://x-callback-url/run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
+          console.log('iOS 방법 2 시도:', callbackUrl);
+          window.location.href = callbackUrl;
+        },
+        () => {
+          const simpleUrl = `shortcuts://run-shortcut?name=eden&input=${input}`;
+          console.log('iOS 방법 3 시도:', simpleUrl);
+          window.location.href = simpleUrl;
+        }
+      ];
+
+      console.log('전화번호:', phoneNumber);
+      console.log('메시지:', message);
+      console.log('입력값:', input);
       
-      setTimeout(() => {
-        console.log('두 번째 방법 실패, 세 번째 방법 시도');
-        methods[2]();
-      }, 2000);
+      try {
+        methods[0]();
+        
+        setTimeout(() => {
+          console.log('첫 번째 iOS 방법 실패, 두 번째 방법 시도');
+          methods[1]();
+        }, 1000);
+        
+        setTimeout(() => {
+          console.log('두 번째 iOS 방법 실패, 세 번째 방법 시도');
+          methods[2]();
+        }, 2000);
+        
+        toast({
+          title: "단축어 실행",
+          description: "iOS 단축어 앱을 열고 있습니다. 잠시만 기다려주세요.",
+        });
+        setOpen(false);
+        form.reset();
+      } catch (error) {
+        console.error('iOS 단축어 실행 오류:', error);
+        const finalUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
+        navigator.clipboard?.writeText(finalUrl).then(() => {
+          toast({
+            title: "단축어 URL 복사됨",
+            description: "단축어 URL이 클립보드에 복사되었습니다. Safari에서 붙여넣기하여 실행해주세요.",
+          });
+        }).catch(() => {
+          toast({
+            title: "단축어 실행 실패",
+            description: `수동으로 복사하여 Safari에서 실행해주세요: ${finalUrl}`,
+            variant: "destructive",
+          });
+        });
+      }
+    } else {
+      // PC (iOS 아님)인 경우 sms: 링크 생성 및 열기
+      const smsLink = `sms:/${phoneNumber}?body=${encodeURIComponent(message)}`;
+      console.log('PC SMS 링크 시도:', smsLink);
+      window.location.href = smsLink;
       
       toast({
-        title: "단축어 실행",
-        description: "iOS 단축어 앱을 열고 있습니다. 잠시만 기다려주세요.",
+        title: "SMS 발송",
+        description: "SMS 앱 또는 기본 메시징 클라이언트를 열고 있습니다.",
       });
       setOpen(false);
       form.reset();
-    } catch (error) {
-      console.error('단축어 실행 오류:', error);
-      // URL을 클립보드에 복사
-      const finalUrl = `shortcuts://run-shortcut?name=eden&input=${encodeURIComponent(input)}`;
-      navigator.clipboard?.writeText(finalUrl).then(() => {
-        toast({
-          title: "단축어 URL 복사됨",
-          description: "단축어 URL이 클립보드에 복사되었습니다. Safari에서 붙여넣기하여 실행해주세요.",
-        });
-      }).catch(() => {
-        toast({
-          title: "단축어 실행 실패",
-          description: `수동으로 복사하여 Safari에서 실행해주세요: ${finalUrl}`,
-          variant: "destructive",
-        });
-      });
     }
   };
 
