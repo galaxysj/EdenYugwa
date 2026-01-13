@@ -1920,60 +1920,86 @@ export default function Admin() {
     };
     
     const excelData = ordersList.map(order => {
-      // Get product costs from dashboard content first, fallback to settings
       const productNames = dashboardContent.productNames || [];
-      const smallProductCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : null;
-      const largeProductCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : null;
-      const wrappingProductCost = dashboardContent.wrappingCost ? parseInt(dashboardContent.wrappingCost) : null;
       
-      // Fallback to global cost settings if no product-specific cost
-      const smallCostSetting = settings?.find((s: Setting) => s.key === "smallBoxCost");
-      const largeCostSetting = settings?.find((s: Setting) => s.key === "largeBoxCost");
-      const wrappingCostSetting = settings?.find((s: Setting) => s.key === "wrappingCost");
+      // 1. Calculate Total Revenue (매출금액) accurately
+      const product0PriceSetting = settings?.find(s => s.key === "product_0Price");
+      const product1PriceSetting = settings?.find(s => s.key === "product_1Price");
+      const product2PriceSetting = settings?.find(s => s.key === "product_2Price");
+
+      const smallBoxPrice = (order.smallBoxPrice && order.smallBoxPrice > 0) ? order.smallBoxPrice : 
+        (product0PriceSetting ? parseInt(product0PriceSetting.value) : (productNames[0]?.price ? parseInt(productNames[0].price) : 19000));
+      const largeBoxPrice = (order.largeBoxPrice && order.largeBoxPrice > 0) ? order.largeBoxPrice : 
+        (product1PriceSetting ? parseInt(product1PriceSetting.value) : (productNames[1]?.price ? parseInt(productNames[1].price) : 21000));
+      const wrappingPrice = (order.wrappingPrice && order.wrappingPrice > 0) ? order.wrappingPrice :
+        (product2PriceSetting ? parseInt(product2PriceSetting.value) : (productNames[2]?.price ? parseInt(productNames[2].price) : 1000));
+
+      let totalRevenue = (order.smallBoxQuantity * smallBoxPrice) + 
+                         (order.largeBoxQuantity * largeBoxPrice) + 
+                         (order.wrappingQuantity * wrappingPrice);
+
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          Object.entries(dynamicQty || {}).forEach(([index, quantity]) => {
+            const productIndex = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0) {
+              const storedPrice = order.dynamicProductPrices && order.dynamicProductPrices[productIndex];
+              const priceSetting = settings?.find(s => s.key === `product_${productIndex}Price`);
+              const price = (storedPrice && storedPrice > 0) ? storedPrice : 
+                (priceSetting ? parseInt(priceSetting.value) : 
+                (productNames[productIndex]?.price ? parseInt(productNames[productIndex].price) : 0));
+              totalRevenue += qty * price;
+            }
+          });
+        } catch (e) { console.error('Error calculating dynamic product revenue for excel:', e); }
+      }
+      totalRevenue += order.shippingFee || 0;
+
+      // 2. Calculate Total Cost (원가합계) accurately
+      const product0CostSetting = settings?.find(s => s.key === "product_0Cost");
+      const product1CostSetting = settings?.find(s => s.key === "product_1Cost");
+      const product2CostSetting = settings?.find(s => s.key === "product_2Cost");
+
+      const smallCost = product0CostSetting ? parseInt(product0CostSetting.value) :
+        (order.smallBoxCost && order.smallBoxCost > 0 ? order.smallBoxCost : (productNames[0]?.cost ? parseInt(productNames[0].cost) : 0));
+      const largeCost = product1CostSetting ? parseInt(product1CostSetting.value) :
+        (order.largeBoxCost && order.largeBoxCost > 0 ? order.largeBoxCost : (productNames[1]?.cost ? parseInt(productNames[1].cost) : 0));
+      const wrappingCostValue = product2CostSetting ? parseInt(product2CostSetting.value) :
+        (order.wrappingCost && order.wrappingCost > 0 ? order.wrappingCost : (productNames[2]?.cost ? parseInt(productNames[2].cost) : 0));
+
+      let totalCost = (order.smallBoxQuantity * smallCost) + 
+                      (order.largeBoxQuantity * largeCost) + 
+                      (order.wrappingQuantity * wrappingCostValue);
+
+      if (order.dynamicProductQuantities) {
+        try {
+          const dynamicQty = typeof order.dynamicProductQuantities === 'string' 
+            ? JSON.parse(order.dynamicProductQuantities) 
+            : order.dynamicProductQuantities;
+          Object.entries(dynamicQty || {}).forEach(([index, quantity]) => {
+            const productIndex = parseInt(index);
+            const qty = Number(quantity);
+            if (qty > 0) {
+              const costSetting = settings?.find(s => s.key === `product_${productIndex}Cost`);
+              const cost = costSetting ? parseInt(costSetting.value) : 
+                (productNames[productIndex]?.cost ? parseInt(productNames[productIndex].cost) : 0);
+              totalCost += qty * cost;
+            }
+          });
+        } catch (e) { console.error('Error calculating dynamic product cost for excel:', e); }
+      }
+
+      // 3. Define other financial figures
+      const actualPaidAmount = order.actualPaidAmount || 0;
+      const discountAmount = order.discountAmount || 0;
       
-      // Use dynamic cost pricing from content management
-      const smallCost = productNames[0]?.cost ? parseInt(productNames[0].cost) : 
-                       (smallProductCost ?? (smallCostSetting ? parseInt(smallCostSetting.value) : 15000));
-      const largeCost = productNames[1]?.cost ? parseInt(productNames[1].cost) : 
-                       (largeProductCost ?? (largeCostSetting ? parseInt(largeCostSetting.value) : 16000));
-      const wrappingCostValue = productNames[2]?.cost ? parseInt(productNames[2].cost) : 
-                               (wrappingProductCost ?? (wrappingCostSetting ? parseInt(wrappingCostSetting.value) : 1000));
-      
-      // Calculate totals using prices from price settings first, then content management
-      const product0PriceSetting = settings?.find((s: Setting) => s.key === "product_0Price");
-      const product1PriceSetting = settings?.find((s: Setting) => s.key === "product_1Price");
-      const product2PriceSetting = settings?.find((s: Setting) => s.key === "product_2Price");
-      const product3PriceSetting = settings?.find((s: Setting) => s.key === "product_3Price");
-      
-      const smallBoxPrice = product0PriceSetting ? parseInt(product0PriceSetting.value) :
-                            (productNames[0]?.price ? parseInt(productNames[0].price) : 19000);
-      const largeBoxPrice = product1PriceSetting ? parseInt(product1PriceSetting.value) :
-                            (productNames[1]?.price ? parseInt(productNames[1].price) : 21000);
-      const wrappingPrice = (product2PriceSetting ? parseInt(product2PriceSetting.value) :
-                            (product3PriceSetting ? parseInt(product3PriceSetting.value) :
-                            (productNames[2]?.price ? parseInt(productNames[2].price) : 1000)));
-      
-      const smallBoxTotal = order.smallBoxQuantity * smallBoxPrice;
-      const largeBoxTotal = order.largeBoxQuantity * largeBoxPrice;
-      const wrappingTotal = order.wrappingQuantity * wrappingPrice;
-      const totalItems = order.smallBoxQuantity + order.largeBoxQuantity;
-      const shippingFee = totalItems >= 6 ? 0 : 4000;
-      
-      // Calculate costs
-      const smallBoxesCost = order.smallBoxQuantity * smallCost;
-      const largeBoxesCost = order.largeBoxQuantity * largeCost;
-      const wrappingCost = order.wrappingQuantity * wrappingCostValue;
-      const totalCost = smallBoxesCost + largeBoxesCost + wrappingCost;
-      
-      // Calculate total revenue (매출금액)
-      const totalRevenue = smallBoxTotal + largeBoxTotal + wrappingTotal + shippingFee;
-      
-      // Calculate unpaid amount (미입금액)
-      const unpaidAmount = (order.actualPaidAmount && order.actualPaidAmount < totalRevenue && !(order.discountAmount || 0)) 
-        ? (totalRevenue - order.actualPaidAmount) : 0;
-      
-      // 순수익 = 매출금액 - 원가 - 할인금액 - 미입금액
-      const netProfit = totalRevenue - totalCost - (order.discountAmount || 0) - unpaidAmount;
+      // 4. Calculate Net Profit (순수익) correctly
+      // 순수익 = 실입금액 - 원가합계
+      const netProfit = actualPaidAmount - totalCost;
       
       return {
         '주문번호': order.orderNumber,
@@ -2004,9 +2030,9 @@ export default function Admin() {
             }
           })() : [])
         ].filter(Boolean).join('\n'),
-        '주문금액': order.totalAmount,
-        '실입금액': order.actualPaidAmount || order.totalAmount,
-        '할인금액': order.discountAmount || 0,
+        '주문금액': totalRevenue,
+        '실입금액': actualPaidAmount,
+        '할인금액': discountAmount,
         '입금상태': order.paymentStatus === 'confirmed' ? '입금완료' : 
                    order.paymentStatus === 'partial' ? '부분결제' :
                    order.paymentStatus === 'refunded' ? '환불' : '입금대기',
