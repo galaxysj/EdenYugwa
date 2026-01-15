@@ -5,9 +5,6 @@ import passport from "./auth";
 import { userService } from "./user-service";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import https from "https";
-import http from "http";
-import fs from "fs";
 
 const app = express();
 
@@ -32,7 +29,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     maxAge: 24 * 60 * 60 * 1000, // 24시간
-    secure: process.env.COOKIE_SECURE === 'true', // HTTPS 환경에서만 true로 설정
+    secure: process.env.NODE_ENV === 'production', // Nginx 뒤에서 실행되므로 production에서 secure 쿠키 사용
     httpOnly: true,
   },
 }));
@@ -100,46 +97,9 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
   
-  // HTTPS 설정 (Let's Encrypt 인증서 사용)
-  const sslKeyPath = process.env.SSL_KEY_PATH;
-  const sslCertPath = process.env.SSL_CERT_PATH;
-  const httpsPort = parseInt(process.env.HTTPS_PORT || '443', 10);
-  
-  if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
-    // HTTPS 서버 실행
-    const httpsOptions = {
-      key: fs.readFileSync(sslKeyPath),
-      cert: fs.readFileSync(sslCertPath),
-    };
-    
-    const httpsServer = https.createServer(httpsOptions, app);
-    httpsServer.listen(httpsPort, "0.0.0.0", () => {
-      log(`HTTPS serving on port ${httpsPort}`);
-    });
-    
-    // HTTP → HTTPS 리다이렉트 (선택사항)
-    if (process.env.HTTP_REDIRECT === 'true') {
-      const httpApp = express();
-      httpApp.all('*', (req, res) => {
-        res.redirect(301, `https://${req.headers.host}${req.url}`);
-      });
-      http.createServer(httpApp).listen(port, "0.0.0.0", () => {
-        log(`HTTP redirect server on port ${port}`);
-      });
-    } else {
-      // HTTP도 같이 실행
-      server.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
-        log(`HTTP serving on port ${port}`);
-      });
-    }
-  } else {
-    // SSL 인증서 없으면 HTTP만 실행
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      log(`serving on port ${port}`);
-    });
-  }
+  // Nginx가 HTTPS를 처리하므로 여기서는 HTTP 서버만 실행합니다.
+  server.listen(port, "0.0.0.0", () => {
+    log(`serving on port ${port}`);
+  });
 })();
+

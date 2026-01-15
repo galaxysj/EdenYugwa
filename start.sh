@@ -4,12 +4,6 @@ export DATABASE_URL="postgresql://neondb_owner:npg_kU0ZuBOcHR6j@ep-quiet-king-ah
 export SESSION_SECRET=dsgflgfsduhgsfdouhigf
 export NODE_ENV=production
 export PORT=7000
-export HTTPS_PORT=443
-
-export SSL_KEY_PATH=/etc/letsencrypt/live/edenhangwa.duckdns.org/privkey.pem
-export SSL_CERT_PATH=/etc/letsencrypt/live/edenhangwa.duckdns.org/fullchain.pem
-export COOKIE_SECURE=true
-export HTTP_REDIRECT=true
 
 echo "Starting Eden Hangwa..."
 npm run start
