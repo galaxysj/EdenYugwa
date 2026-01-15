@@ -9,7 +9,7 @@ export HTTPS_PORT=443
 export SSL_KEY_PATH=/etc/letsencrypt/live/edenhangwa.duckdns.org/privkey.pem
 export SSL_CERT_PATH=/etc/letsencrypt/live/edenhangwa.duckdns.org/fullchain.pem
 export COOKIE_SECURE=true
-export HTTP_REDIRECT=trus
+export HTTP_REDIRECT=true
 
 echo "Starting Eden Hangwa..."
 npm run start
